@@ -1,22 +1,22 @@
--- DSH Asistente — capa de acción autónoma de la suite J.Franco.
--- Creado por J.Franco.
+-- DSH Assistant — autonomous action layer of the J.Franco suite.
+-- Created by J.Franco.
 --
--- Cómo usarlo:
---   1. Abre "Script Editor" y guarda este texto como APLICACIÓN llamada
---      "DSH Asistente".
---   2. Ponla en el Dock: ese es tu botón.
---   3. Un clic → te pregunta qué necesitas → habla (con dictado) o escribe,
---      empezando por "escucha" → la IA trabaja de forma autónoma con tus
---      plugins (perfil "campo") y el resultado se abre en TextEdit.
+-- How to use it:
+--   1. Open "Script Editor" and save this text as an APPLICATION named
+--      "DSH Assistant".
+--   2. Put it in the Dock: that is your button.
+--   3. One click → it asks what you need → speak (with dictation) or type,
+--      starting with "listen" → the AI works autonomously with your plugins
+--      (the "campo" profile) and the result opens in TextEdit.
 --
--- Requisito: haber creado el perfil "campo" con los plugins de la suite
--- (ver README de la suite).
+-- Requirement: the "campo" profile must exist with the suite's plugins
+-- (see the suite README).
 set dshBin to "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh"
-set theInput to text returned of (display dialog "¿Qué necesitas? Habla (con dictado) o escribe, empezando por \"escucha\"…" default answer "" with title "DSH Asistente" buttons {"Cancelar", "Ejecutar"} default button "Ejecutar")
+set theInput to text returned of (display dialog "What do you need? Speak (with dictation) or type, starting with \"listen\"…" default answer "" with title "DSH Assistant" buttons {"Cancel", "Run"} default button "Run")
 if theInput is "" then return
-display notification "DSH Asistente trabajando…" with title "DSH Asistente"
+display notification "DSH Assistant working…" with title "DSH Assistant"
 set shellCmd to dshBin & " --profile campo headless " & quoted form of theInput
 set theResult to do shell script shellCmd
-set resultFile to (path to desktop as text) & "DSH-Resultado.txt"
+set resultFile to (path to desktop as text) & "DSH-Result.txt"
 do shell script "printf %s " & quoted form of theResult & " > " & quoted form of (POSIX path of resultFile)
 tell application "TextEdit" to open (resultFile as alias)

@@ -1,16 +1,16 @@
--- DSH Escucha — tu botón de acceso rápido a DeepSeek Harness.
--- Creado por J.Franco.
+-- DSH Listen — your quick-access button for DeepSeek Harness.
+-- Created by J.Franco.
 --
--- Cómo usarlo:
---   1. Abre "Script Editor" (Editor de Scripts) en tu Mac.
---   2. Pega este texto y guárdalo como APLICACIÓN con el nombre "DSH Escucha".
---   3. Arrastra la aplicación al Dock: ese es tu botón.
---   4. Un clic en el botón trae DeepSeek Harness al frente y ya puedes
---      hablar (con dictado) o escribir "escucha" / "/listen".
+-- How to use it:
+--   1. Open "Script Editor" on your Mac.
+--   2. Paste this text and save it as an APPLICATION named "DSH Listen".
+--   3. Drag the application to the Dock: that is your button.
+--   4. One click brings DeepSeek Harness to the front, and you can speak
+--      (with dictation) or type "listen" / "/listen".
 --
--- Opcional: asigna una tecla rápida global a la aplicación con
--- Preferencias del Sistema → Teclado → Funciones rápidas (o con un
--- launcher de terceros) para activarla sin usar el Dock.
+-- Optional: assign a global shortcut to the app in System Settings →
+-- Keyboard → Shortcuts (or with a third-party launcher) to trigger it
+-- without using the Dock.
 tell application "DeepSeek Harness"
 	activate
 end tell

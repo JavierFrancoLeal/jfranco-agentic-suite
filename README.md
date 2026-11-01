@@ -83,7 +83,7 @@ work, adjust the rules, and measure the impact.
 ## 🚀 Quick start
 
 1. Install **DeepSeek Harness**.
-2. Add the five plugins (see [install instructions](docs/GUIA-USO-SIMPLE.md)):
+2. Add the five plugins (see [install instructions](docs/SIMPLE-USAGE.md)):
 
    ```
    dsh plugin --profile desktop add /path/to/jfranco-workflow-master
@@ -99,9 +99,9 @@ work, adjust the rules, and measure the impact.
 
 ## 📚 Documents
 
-- [Simple usage guide](docs/GUIA-USO-SIMPLE.md) — Siri-like setup, the clue,
+- [Simple usage guide](docs/SIMPLE-USAGE.md) — Siri-like setup, the clue,
   dictation, interpretation.
-- [Business playbook](docs/NEGOCIO.md) — install, teach, supervise, and learn
+- [Business playbook](docs/BUSINESS.md) — install, teach, supervise, and learn
   from real life.
 - [Simulation record](docs/SIMULACION.md) — the three field scenarios.
 - Decision templates: [hotel](docs/decisions-hotel.md) ·

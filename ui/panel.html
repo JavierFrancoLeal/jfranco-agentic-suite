@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,19 +30,19 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
 </head>
 <body>
 <header>
-  <h1 id="title">🎙️ DSH Asistente — Panel de Acción</h1>
-  <p id="subtitle">Suite J.Franco · DeepSeek Harness</p>
+  <h1 id="title">🎙️ DSH Assistant — Action Panel</h1>
+  <p id="subtitle">J.Franco Suite · DeepSeek Harness</p>
 </header>
 <main>
   <div id="langs" class="langs"></div>
 
-  <button class="primary" id="listenBtn">🎙️ ESCUCHAR / DICTAR</button>
+  <button class="primary" id="listenBtn">🎙️ LISTEN / DICTATE</button>
 
   <div class="prompt" id="prompt"></div>
 
   <div class="row">
-    <button class="copy" id="copyBtn">📋 Copiar para DSH</button>
-    <button class="speak" id="speakBtn">🔊 Leer en voz alta</button>
+    <button class="copy" id="copyBtn">📋 Copy for DSH</button>
+    <button class="speak" id="speakBtn">🔊 Read aloud</button>
   </div>
 
   <p class="note" id="note"></p>
@@ -134,7 +134,7 @@ const langsEl=document.getElementById("langs");
 const listenBtn=document.getElementById("listenBtn");
 const copyBtn=document.getElementById("copyBtn");
 const speakBtn=document.getElementById("speakBtn");
-let cur="es";
+let cur="en";
 let recording=false,rec=null;
 function applyLang(){
   const s=S[cur];
