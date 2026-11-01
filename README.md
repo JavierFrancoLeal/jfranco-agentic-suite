@@ -114,8 +114,10 @@ what was done automatically, what was proposed, and what you decided. If a
 immutable record of what the AI did in your company. The built-in
 **autonomy-grader** reads that record, grades every automatic action pattern
 (A/B/C/D), and proposes tier moves — reliable work earns more autonomy,
-errors bring it back. Owners supervise the work, adjust the rules, and
-measure the impact.
+errors bring it back. Ask for the **Management Summary** for the one-page
+owner report: totals, a per-worker table, sector KPIs, and the top three
+improvements. One account, many workers: see the
+[enterprise model](docs/ENTERPRISE.md).
 
 ## 🚀 Quick start
 
@@ -159,11 +161,14 @@ measure the impact.
   dictation, interpretation.
 - [Business playbook](docs/BUSINESS.md) — install, teach, supervise, and learn
   from real life.
-- [Simulation record](docs/SIMULACION.md) — the three field scenarios.
+- [Enterprise model](docs/ENTERPRISE.md) — one owner account, many workers,
+  worker tagging, telemetry, and the feedback loop.
 - [Sector catalog](docs/SECTOR-CATALOG.md) — where the suite fits across the
   whole economy, with 19 starter decision templates from hotel and
   restaurant to healthcare, legal, accounting, education, non-profits,
   government, and personal use.
+- [Restaurant KPIs](docs/kpi-restaurant.md) — example sector KPI file for the
+  Management Summary.
 
 ## 🗺️ Roadmap
 

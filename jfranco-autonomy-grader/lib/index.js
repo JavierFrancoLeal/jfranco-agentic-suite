@@ -57,8 +57,16 @@ const GRADE_BRIEFING = [
   "I only propose — you approve every change.",
 ].join(" ");
 
-/** Register the bundled skill provider on ctx.skills, and the /grade
- *  command on the host command registry when it resolves. */
+/** Briefing returned by the /summary command. */
+const SUMMARY_BRIEFING = [
+  "Management Summary ON.",
+  "I will read the supervision log and produce the one-page report: totals,",
+  "per-worker table, sector KPIs, and the top three improvements.",
+  "Plain language, ready for the owner.",
+].join(" ");
+
+/** Register the bundled skill provider on ctx.skills, and the /grade and
+ *  /summary commands on the host command registry when it resolves. */
 function apply(ctx) {
   ctx.skills.registerProvider(() => provider);
   const commands = ctx.get("commands");
@@ -73,6 +81,16 @@ function apply(ctx) {
         attachments: true,
       },
       handler: () => ({ text: GRADE_BRIEFING }),
+    });
+    commands.register({
+      definitionId: "@jfranco/autonomy-grader",
+      name: "summary",
+      description: "One-page management summary for the owner: totals, per-worker table, KPIs, suggestions",
+      input: {
+        hint: "[optional: a period, e.g. 'this week']",
+        attachments: true,
+      },
+      handler: () => ({ text: SUMMARY_BRIEFING }),
     });
   }
 }

@@ -56,6 +56,8 @@ Run through these checks before delivering:
 Deliver this compact report right BEFORE the output, addressed to the human,
 with the two sections separated:
 
+- **Worker:** the worker tag when provided (this is how the owner knows who
+  did what)
 - **Inputs detected:** one line (source + expectation, split into actions)
 - **Automatic actions — for you to verify:** one line per GREEN or
   SEMI-AUTOMATIC action with evidence (what was done, where, and the value or

@@ -43,7 +43,8 @@ If no data exists, say so and stop: the grader never invents evidence.
    actions, verifications, corrections, and gaps.
 2. **Group.** Group the evidence by action pattern (for example "note a
    client's phone number", "send an order to the kitchen") — and, when the
-   log records them, also by channel (voice, chat, camera) and by mission.
+   log records them, also by channel (voice, chat, camera), by mission, and
+   by worker (worker tags come from the panel or the session identity).
 3. **Count per pattern:** samples (executions), verified OK, corrected by the
    human, and errors or gaps found.
 4. **Score** the pattern:
@@ -93,6 +94,42 @@ quote" always proposed (YELLOW), 8 approvals.
 - note phone numbers: B (24/25) → keep GREEN, watch the wrong-field error.
 - send order to kitchen: A (12/12) → propose moving it to GREEN.
 - loan quote: C (8 samples, still YELLOW) → keep YELLOW; revisit at 20.
+
+## Management Summary (for owners)
+
+When the human asks for a "summary", "resumen", "weekly report", or invokes
+`/summary`, produce the one-page management report instead of the full
+grading:
+
+- **Period:** the dates covered.
+- **Totals:** sessions, automatic actions (GREEN + SEMI-AUTOMATIC),
+  proposals (approved / adjusted / rejected), corrections, and errors.
+- **Per worker:** one row each — sessions, automatic actions, approval rate,
+  corrections, autonomy level, and one line on what that worker could
+  improve.
+- **Sector KPIs:** computed from the log using the KPI definition file when
+  present (`kpi.md` in the workspace, `.dsh/kpi.md`, or `~/.dsh/kpi.md`);
+  otherwise show the generic KPIs (autonomy level, approval rate,
+  correction rate, error rate).
+- **Suggestions:** the top three improvements, each tied to evidence from
+  the log.
+- **Plain language:** the summary must be readable by a non-technical owner.
+
+## Sector KPIs
+
+A KPI definition file maps business metrics to log evidence. Generic KPIs
+are always available:
+
+- Autonomy level (1–5)
+- Proposal approval rate (approved / proposals)
+- Correction rate (corrections / automatic actions)
+- Error rate (errors / automatic actions)
+- Interpretation sessions (translated conversations)
+
+Sector-specific templates live in `docs/` (for example `kpi-restaurant.md`
+measures service speed through log timestamps; a hotel measures check-in
+time; a clinic measures appointment handling). When a `kpi.md` file exists,
+follow it and report each KPI with its value and its trend.
 
 ## Rules
 

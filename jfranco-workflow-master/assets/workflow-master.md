@@ -46,6 +46,13 @@ The human may also simply start relaying the conversation.
   attribute each utterance to its speaker and interpret both directions,
   keeping the workflow untouched.
 
+## Session identity
+
+When the human or the panel provides a worker tag (for example
+"Worker: María (waiter)"), keep it for the whole session: attribute the
+session's actions and reports to that worker. This is how the owner knows
+who did what; never invent a worker tag when none was given.
+
 ## How to listen
 
 1. **Capture, do not interrupt.** Let the human or the transcript flow. Do
