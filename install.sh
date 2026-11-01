@@ -34,14 +34,37 @@ echo "${GREEN}OK DeepSeek Harness found.${NC}"
 
 # 2. Sector (starter rules)
 echo ""
-echo "Choose your sector — this creates decisions.md with starter rules:"
-echo "  1) Hotel       2) Restaurant       3) Police       4) General (no template)"
-printf "Choice [1]: "; read SECTOR
+echo "Choose your sector — this creates decisions.md with starter rules"
+echo "(more sectors and guidance in docs/SECTOR-CATALOG.md):"
+echo "  1) Hotel & Hospitality        2) Restaurant & Food Service   3) Retail & Commerce"
+echo "  4) Healthcare (clinic)        5) Legal (lawyer, notary)      6) Accounting & Tax"
+echo "  7) Real Estate                8) Insurance                   9) Beauty & Wellness"
+echo " 10) Auto & Repairs            11) Logistics & Delivery       12) Education & Training"
+echo " 13) Non-profits & Community   14) Construction & Trades      15) Freelancers & Pros"
+echo " 16) Management & Executive    17) Tourism & Travel           18) Police & Public Safety"
+echo " 19) Government & Public       G) General (no template)"
+printf "Choice [G]: "; read SECTOR
 case "$SECTOR" in
+  1) TPL="$ROOT/docs/decisions-hotel.md" ;;
   2) TPL="$ROOT/docs/decisions-restaurant.md" ;;
-  3) TPL="$ROOT/docs/decisions-police.md" ;;
-  4) TPL="" ;;
-  *) TPL="$ROOT/docs/decisions-hotel.md" ;;
+  3) TPL="$ROOT/docs/decisions-retail.md" ;;
+  4) TPL="$ROOT/docs/decisions-healthcare.md" ;;
+  5) TPL="$ROOT/docs/decisions-legal.md" ;;
+  6) TPL="$ROOT/docs/decisions-accounting.md" ;;
+  7) TPL="$ROOT/docs/decisions-realestate.md" ;;
+  8) TPL="$ROOT/docs/decisions-insurance.md" ;;
+  9) TPL="$ROOT/docs/decisions-beauty.md" ;;
+  10) TPL="$ROOT/docs/decisions-auto.md" ;;
+  11) TPL="$ROOT/docs/decisions-logistics.md" ;;
+  12) TPL="$ROOT/docs/decisions-education.md" ;;
+  13) TPL="$ROOT/docs/decisions-nonprofit.md" ;;
+  14) TPL="$ROOT/docs/decisions-construction.md" ;;
+  15) TPL="$ROOT/docs/decisions-freelance.md" ;;
+  16) TPL="$ROOT/docs/decisions-management.md" ;;
+  17) TPL="$ROOT/docs/decisions-tourism.md" ;;
+  18) TPL="$ROOT/docs/decisions-police.md" ;;
+  19) TPL="$ROOT/docs/decisions-government.md" ;;
+  *) TPL="" ;;
 esac
 
 # 3. Profile

@@ -63,15 +63,29 @@ The suite ships two access points built for independent AI work:
   dictation, read-aloud, and copy-to-DSH. Works on Mac and Windows, in any
   browser. Sub-features (interpretation, lookups…) are activated by
   speaking, inside the flow — the input analysis decides the workflow.
+- **Install the panel as an app (PWA):** open
+  https://javierfrancoleal.github.io/jfranco-agentic-suite/ui/panel.html and
+  use the browser's **Install** action. The panel then lives in the
+  Dock/desktop with its own icon, remembers your language, and keeps working
+  offline.
 - **DSH Assistant** ([`ui/DSH-Asistente.applescript`](../ui/DSH-Asistente.applescript)
   for Mac, [`ui/DSH-Asistente.ps1`](../ui/DSH-Asistente.ps1) for Windows):
-  one-button launchers that run the five plugins autonomously through the
+  one-button launchers that run the six plugins autonomously through the
   headless `campo` profile (no DSH window needed) and open the result.
 - **One-time step for autonomous mode:** the `campo` profile uses an API key
   (the app's interactive session cannot be reused from outside, for
   security). Add your key once: `export DSH_DEEPSEEK_API_KEY=sk-...` in your
   Terminal (or startup shell). Without the key, use the **Action Panel**
   with the app open — it works with zero configuration.
+
+## 5.1 Sectors
+
+The installer offers **19 starter sectors** (hotel, restaurant, retail,
+healthcare, legal, accounting, real estate, insurance, beauty, auto,
+logistics, education, non-profits, construction, freelancers, management,
+tourism, police, government) plus General. The full mapping across the
+economy — including personal and community use — lives in
+[docs/SECTOR-CATALOG.md](SECTOR-CATALOG.md).
 
 To build the apps on your Mac: open **Script Editor**, paste the
 `.applescript` text, save it as an **Application**, and drag it to the Dock.

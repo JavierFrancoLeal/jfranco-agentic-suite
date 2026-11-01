@@ -26,13 +26,39 @@ if (-not (Test-Path $dsh)) {
 Write-Host "OK DeepSeek Harness found." -ForegroundColor Green
 
 # 2. Sector (starter rules)
-$sector = Read-Host "Choose your sector: 1) Hotel  2) Restaurant  3) Police  4) General [1]"
+Write-Host ""
+Write-Host "Choose your sector - this creates decisions.md with starter rules"
+Write-Host "(more sectors and guidance in docs\SECTOR-CATALOG.md):"
+Write-Host "  1) Hotel & Hospitality        2) Restaurant & Food Service   3) Retail & Commerce"
+Write-Host "  4) Healthcare (clinic)        5) Legal (lawyer, notary)      6) Accounting & Tax"
+Write-Host "  7) Real Estate                8) Insurance                   9) Beauty & Wellness"
+Write-Host " 10) Auto & Repairs            11) Logistics & Delivery       12) Education & Training"
+Write-Host " 13) Non-profits & Community   14) Construction & Trades      15) Freelancers & Pros"
+Write-Host " 16) Management & Executive    17) Tourism & Travel           18) Police & Public Safety"
+Write-Host " 19) Government & Public       G) General (no template)"
+$sector = Read-Host "Choice [G]"
 $tpl = $null
 switch ($sector) {
-  "2" { $tpl = "$Root\docs\decisions-restaurant.md" }
-  "3" { $tpl = "$Root\docs\decisions-police.md" }
-  "4" { $tpl = $null }
-  default { $tpl = "$Root\docs\decisions-hotel.md" }
+  "1"  { $tpl = "$Root\docs\decisions-hotel.md" }
+  "2"  { $tpl = "$Root\docs\decisions-restaurant.md" }
+  "3"  { $tpl = "$Root\docs\decisions-retail.md" }
+  "4"  { $tpl = "$Root\docs\decisions-healthcare.md" }
+  "5"  { $tpl = "$Root\docs\decisions-legal.md" }
+  "6"  { $tpl = "$Root\docs\decisions-accounting.md" }
+  "7"  { $tpl = "$Root\docs\decisions-realestate.md" }
+  "8"  { $tpl = "$Root\docs\decisions-insurance.md" }
+  "9"  { $tpl = "$Root\docs\decisions-beauty.md" }
+  "10" { $tpl = "$Root\docs\decisions-auto.md" }
+  "11" { $tpl = "$Root\docs\decisions-logistics.md" }
+  "12" { $tpl = "$Root\docs\decisions-education.md" }
+  "13" { $tpl = "$Root\docs\decisions-nonprofit.md" }
+  "14" { $tpl = "$Root\docs\decisions-construction.md" }
+  "15" { $tpl = "$Root\docs\decisions-freelance.md" }
+  "16" { $tpl = "$Root\docs\decisions-management.md" }
+  "17" { $tpl = "$Root\docs\decisions-tourism.md" }
+  "18" { $tpl = "$Root\docs\decisions-police.md" }
+  "19" { $tpl = "$Root\docs\decisions-government.md" }
+  default { $tpl = $null }
 }
 
 # 3. Profile

@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DSH Asistente — Panel de Acción</title>
+<meta name="theme-color" content="#4D6BFE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="DSH Assistant">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-icon-180.png">
+<title>DSH Assistant — Action Panel</title>
 <style>
 :root{--blue:#4D6BFE;--ink:#101828;--muted:#667085;--bg:#f6f7fb;--card:#fff;--ok:#22c55e;--bad:#ef4444;}
 *{box-sizing:border-box}
@@ -136,8 +141,13 @@ const copyBtn=document.getElementById("copyBtn");
 const speakBtn=document.getElementById("speakBtn");
 let cur="en";
 let recording=false,rec=null;
+try{
+  const saved=localStorage.getItem("dsh-lang");
+  if(saved && S[saved]) cur=saved;
+}catch(e){}
 function applyLang(){
   const s=S[cur];
+  try{localStorage.setItem("dsh-lang",cur);}catch(e){}
   document.getElementById("title").textContent=s.title;
   document.getElementById("subtitle").textContent=s.subtitle;
   document.getElementById("note").textContent=s.note(END[cur]);
@@ -191,6 +201,10 @@ if(!SR){
     listenBtn.textContent=S[cur].stop;
     rec.start();
   };
+}
+// PWA: register the service worker so the panel works offline.
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>
 </body>

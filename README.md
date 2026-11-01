@@ -136,6 +136,12 @@ measure the impact.
    voice dictation — or build the one-click desktop app (Mac/Windows scripts
    in [`ui/`](ui/)).
 
+4. **Install the panel as an app (PWA):** open the hosted panel at
+   https://javierfrancoleal.github.io/jfranco-agentic-suite/ui/panel.html and
+   use your browser's **Install** action — it gets a Dock/desktop icon,
+   remembers your language, and works offline. (The panel is PWA-ready:
+   manifest, service worker, and icons ship in [`ui/`](ui/).)
+
    Manual installation (optional):
 
    ```
@@ -154,9 +160,10 @@ measure the impact.
 - [Business playbook](docs/BUSINESS.md) — install, teach, supervise, and learn
   from real life.
 - [Simulation record](docs/SIMULACION.md) — the three field scenarios.
-- Decision templates: [hotel](docs/decisions-hotel.md) ·
-  [restaurant](docs/decisions-restaurant.md) ·
-  [police](docs/decisions-police.md).
+- [Sector catalog](docs/SECTOR-CATALOG.md) — where the suite fits across the
+  whole economy, with 19 starter decision templates from hotel and
+  restaurant to healthcare, legal, accounting, education, non-profits,
+  government, and personal use.
 
 ## 🗺️ Roadmap
 

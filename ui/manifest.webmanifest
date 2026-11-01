@@ -1,0 +1,17 @@
+{
+  "name": "DSH Assistant — Action Panel",
+  "short_name": "DSH Assistant",
+  "description": "One-button listening for the J.Franco Agentic Workflow Suite on DeepSeek Harness. The AI listens, works, proposes, and reports — you verify and decide.",
+  "start_url": "./panel.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f6f7fb",
+  "theme_color": "#4D6BFE",
+  "lang": "en",
+  "categories": ["productivity", "business", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
