@@ -34,5 +34,22 @@
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
     "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "directory": "jfranco-interpreter"
+  },
+  "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
+  "keywords": [
+    "deepseek-harness",
+    "agentic-workflow",
+    "super-agent",
+    "ai-assistant",
+    "accountability",
+    "plugins"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

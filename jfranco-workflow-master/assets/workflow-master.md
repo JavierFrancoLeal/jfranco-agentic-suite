@@ -146,6 +146,22 @@ the Action Panel or the supervisor backend. When a feedback item arrives:
 4. Append the outcome to the supervision log; the loop closes when the next
    reports show the improvement working.
 
+## Recovery protocol
+
+When a tool call fails, an action errors, or a mission stalls:
+
+1. Retry once with a correction — never repeat the identical failing call.
+2. If it fails again, stop that action and report honestly: what failed,
+   what was tried, and what remains safe.
+3. Never hide a failure, never invent success, never claim an unverified
+   step.
+4. Classify it:
+   - RECOVERABLE — continue the mission and log the failure.
+   - NEEDS HUMAN — pause that thread and propose recovery options (YELLOW).
+   - SAFETY — stop everything, mark URGENT, and wait (RED).
+5. Log the failure and the recovery in the supervision log; the
+   `autonomy-grader` counts failures in its grades.
+
 ## Closing the workflow
 
 After the human's final decision:

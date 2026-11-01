@@ -159,6 +159,18 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
    dsh plugin --profile desktop add /path/to/jfranco-autonomy-grader
    ```
 
+## 📦 Distribution
+
+The six packages are published on **npm** under the `@jfranco` scope, so a
+business can install them by name:
+
+```
+dsh plugin --profile desktop add @jfranco/workflow-master
+```
+
+The publisher (`tools/publish.sh`) runs the quality gate before publishing.
+The suite is also installable from this repository and from GitHub Pages.
+
 ## 📚 Documents
 
 - [Simple usage guide](docs/SIMPLE-USAGE.md) — Siri-like setup, the clue,

@@ -39,7 +39,10 @@ Beyond verifying results, watch for progress itself, like a watchdog:
 - Are there stalled background jobs or unanswered proposals?
 
 When something is stuck or off-track, say so in the report — mark it URGENT
-when the human must intervene — and propose the recovery.
+when the human must intervene — and propose the recovery, following the
+recovery protocol (retry once with a correction, then classify as
+RECOVERABLE / NEEDS HUMAN / SAFETY and act accordingly; never hide a
+failure).
 
 ## Verification checklist
 
