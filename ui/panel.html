@@ -28,6 +28,11 @@ main{max-width:560px;margin:0 auto;padding:16px}
 .row button{flex:1;min-width:130px;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;color:#fff;cursor:pointer}
 .copy{background:var(--blue)}
 .speak{background:#7c5cff}
+.fbcard{background:var(--card);border:1px solid #e3e6ee;border-radius:14px;padding:14px;margin:16px 0}
+.fbcard h3{margin:0 0 10px;font-size:16px}
+.fbcard select,.fbcard textarea,.fbcard button{width:100%;box-sizing:border-box;border:1px solid #e3e6ee;border-radius:10px;padding:10px;font-size:14px;margin-bottom:8px;font-family:inherit}
+.fbcard textarea{resize:vertical}
+.fbcard button{background:var(--blue);color:#fff;font-weight:600;border:none;cursor:pointer}
 .idinput{flex:1;min-width:140px;border:1px solid #e3e6ee;border-radius:12px;padding:11px 14px;font-size:15px;background:var(--card);color:var(--ink)}
 .note{font-size:13px;color:var(--muted);line-height:1.65}
 code{background:#eef0f7;border-radius:6px;padding:2px 6px;font-size:13px}
@@ -59,6 +64,18 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
   <p class="note" id="note"></p>
   <p class="note" id="legend"></p>
 </main>
+
+<div class="fbcard" style="max-width:560px;margin:0 auto 20px;width:calc(100% - 32px)">
+  <h3>Field Feedback</h3>
+  <select id="fbCat">
+    <option value="error">Error</option>
+    <option value="improvement">Improvement</option>
+    <option value="idea">Idea</option>
+  </select>
+  <textarea id="fbText" rows="3" placeholder="What happened? What should improve?"></textarea>
+  <button id="fbSend">Send feedback</button>
+</div>
+
 <footer id="footer">Suite J.Franco · open source (MIT) · autor J.Franco</footer>
 <script>
 "use strict";
@@ -216,6 +233,34 @@ if(!SR){
     rec.start();
   };
 }
+// Field feedback: send to the supervisor backend, or copy a prompt for DSH.
+const fbCat=document.getElementById("fbCat");
+const fbText=document.getElementById("fbText");
+const fbSend=document.getElementById("fbSend");
+fbSend.onclick=async()=>{
+  const text=fbText.value.trim();
+  if(!text){fbText.focus();return;}
+  const w=workerInput.value.trim(),r=roleInput.value.trim();
+  let sent=false;
+  try{
+    const res=await fetch("http://127.0.0.1:8787/api/feedback",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({worker:w||"anonymous",role:r,category:fbCat.value,text})
+    });
+    sent=res.ok;
+  }catch(e){}
+  if(sent){
+    fbSend.textContent="Sent — the agent will read it";
+    fbText.value="";
+    setTimeout(()=>fbSend.textContent="Send feedback",2500);
+  }else{
+    const prompt="Feedback ("+fbCat.value+")"+(w?" from "+w+(r?" ("+r+")":""):"")+": "+text;
+    try{await navigator.clipboard.writeText(prompt);}catch(e){}
+    fbSend.textContent="Supervisor offline — prompt copied for DSH";
+    fbText.value="";
+    setTimeout(()=>fbSend.textContent="Send feedback",3000);
+  }
+};
 // PWA: register the service worker so the panel works offline.
 if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
   navigator.serviceWorker.register("sw.js").catch(()=>{});

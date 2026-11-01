@@ -65,6 +65,16 @@ classification is a proposal the human can correct at any time.
    action; never guess silently on a TASK that will change files or run
    commands.
 
+## Trigger filtering (two levels)
+
+Like the super-agent's event pipeline, filter TRIGGERs in two levels:
+
+1. **Program level (fast):** apply deterministic rules first — the source
+   must be in the accepted list, and obvious noise is dropped without model
+   work.
+2. **Semantic level (slow):** only the remaining events are judged: is it
+   worth acting on? If not, stay quiet and log it as ignored.
+
 ## Sensor and device inputs
 
 A TRIGGER from a sensor is a fact, not a decision:

@@ -116,8 +116,12 @@ immutable record of what the AI did in your company. The built-in
 (A/B/C/D), and proposes tier moves — reliable work earns more autonomy,
 errors bring it back. Ask for the **Management Summary** for the one-page
 owner report: totals, a per-worker table, sector KPIs, and the top three
-improvements. One account, many workers: see the
-[enterprise model](docs/ENTERPRISE.md).
+improvements.
+
+The **Supervisor** ([supervisor/](supervisor/README.md)) is the owner's
+control panel: real logins and roles, live field reports, a feedback queue
+that the agent resolves, and the business-rules editor — one account, many
+workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
 ## 🚀 Quick start
 
@@ -168,14 +172,18 @@ improvements. One account, many workers: see the
   restaurant to healthcare, legal, accounting, education, non-profits,
   government, and personal use.
 - [Restaurant KPIs](docs/kpi-restaurant.md) — example sector KPI file for the
-  Management Summary.
+  Management Summary; KPI templates exist for all 19 sectors
+  (`docs/kpi-*.md`).
+- [Super-Agent adaptation](docs/SUPER-AGENT-ADAPTATION.md) — how the suite
+  maps to DeepSeek Harness's Router + Worker architecture (triggers,
+  watchdog, accept modes, speculative execution).
 
 ## 🗺️ Roadmap
 
-Floating in-app button and menu-bar mode · `supervisor` dashboard for owners
-(the `autonomy-grader` already delivers the trust grades behind it) ·
-always-on wake phrase and physical buttons · camera and sensor inputs ·
-connectors for specialized apps (PMS, POS, police databases).
+Floating in-app button and menu-bar mode · supervisor live dashboard and
+token metering · multi-site supervisors (A2A) · always-on wake phrase and
+physical buttons · camera and sensor inputs · connectors for specialized
+apps (PMS, POS, police databases).
 
 ## 🤝 Open source
 

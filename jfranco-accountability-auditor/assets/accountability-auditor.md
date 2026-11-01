@@ -30,6 +30,17 @@ Long missions are reported by milestone, not only at the end:
 - If the human is away (autonomous mode), leave the report queued in the log
   and say so on their return.
 
+## Watchdog pass
+
+Beyond verifying results, watch for progress itself, like a watchdog:
+
+- Is the work actually advancing, or repeating the same step?
+- Is the direction still aligned with the goal and the mission scope?
+- Are there stalled background jobs or unanswered proposals?
+
+When something is stuck or off-track, say so in the report — mark it URGENT
+when the human must intervene — and propose the recovery.
+
 ## Verification checklist
 
 Run through these checks before delivering:

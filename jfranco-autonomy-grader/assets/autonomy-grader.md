@@ -131,6 +131,28 @@ measures service speed through log timestamps; a hotel measures check-in
 time; a clinic measures appointment handling). When a `kpi.md` file exists,
 follow it and report each KPI with its value and its trend.
 
+## Accept modes
+
+Every pattern also gets an accept mode, mirroring the super-agent's
+observe/propose/execute ladder:
+
+- **OBSERVE** — the pattern is only logged, never executed (new or risky).
+- **PROPOSE** — executed only as a proposal the human approves.
+- **EXECUTE** — executed automatically (GREEN) with verification flags.
+
+Propose moves between modes with the same evidence rules as tier moves.
+
+## Developing sector KPIs
+
+When the owner wants their own metrics, co-develop them in three steps:
+
+1. Ask what the business measures and what hurts (for example waiting
+   time).
+2. Map each metric to evidence the log can provide (timestamps, decisions,
+   counts).
+3. Write the KPI file (`kpi.md`) as a table — KPI | definition | evidence —
+   and from then on the Management Summary reports them with trends.
+
 ## Rules
 
 - The grader proposes; the human decides. It never edits `decisions.md`.

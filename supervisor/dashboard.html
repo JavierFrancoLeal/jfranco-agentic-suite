@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Supervisor — J.Franco Suite</title>
+<style>
+:root{--blue:#4D6BFE;--ink:#101828;--muted:#667085;--bg:#f6f7fb;--card:#fff;--bad:#ef4444;--ok:#22c55e}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--blue);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;align-items:center}
+header h1{margin:0;font-size:19px}
+header button{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:10px;padding:8px 14px;cursor:pointer;font-size:14px}
+main{max-width:860px;margin:0 auto;padding:18px}
+.card{background:var(--card);border:1px solid #e3e6ee;border-radius:14px;padding:16px;margin:14px 0}
+.card h2{margin:0 0 10px;font-size:17px}
+input,select,textarea{width:100%;border:1px solid #e3e6ee;border-radius:10px;padding:10px;font-size:14px;margin-bottom:8px;font-family:inherit}
+textarea{resize:vertical}
+button.primary{background:var(--blue);color:#fff;border:none;border-radius:10px;padding:11px 16px;font-size:15px;font-weight:600;cursor:pointer}
+button.link{background:none;border:none;color:var(--blue);cursor:pointer;font-size:14px}
+pre{background:#0f172a;color:#d7e3f4;border-radius:10px;padding:12px;font-size:12.5px;overflow:auto;max-height:340px;white-space:pre-wrap}
+.tabs button{background:var(--card);border:1px solid #e3e6ee;border-radius:10px;padding:9px 14px;margin-right:8px;cursor:pointer;font-size:14px}
+.tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{border-bottom:1px solid #e3e6ee;padding:8px;text-align:left}
+.hidden{display:none}
+.note{color:var(--muted);font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🏢 Supervisor — J.Franco Suite</h1>
+  <span id="who"></span>
+  <button id="logoutBtn" class="hidden">Log out</button>
+</header>
+<main>
+  <!-- Login -->
+  <div id="loginView" class="card">
+    <h2>Log in</h2>
+    <input id="loginUser" placeholder="User">
+    <input id="loginPass" type="password" placeholder="Password">
+    <button class="primary" id="loginBtn">Log in</button>
+    <p class="note">Accounts are managed by the business owner (supervisor).</p>
+  </div>
+
+  <!-- Owner -->
+  <div id="ownerView" class="hidden">
+    <div class="tabs">
+      <button data-tab="overview" class="active">Overview</button>
+      <button data-tab="field">Field</button>
+      <button data-tab="rules">Rules</button>
+    </div>
+
+    <div id="tab-overview">
+      <div class="card">
+        <h2>Workers</h2>
+        <table id="usersTable"><thead><tr><th>User</th><th>Role</th></tr></thead><tbody></tbody></table>
+        <h2 style="margin-top:14px">Add worker</h2>
+        <input id="newUser" placeholder="User name">
+        <input id="newPass" type="password" placeholder="Password">
+        <select id="newRole"><option value="employee">employee</option><option value="owner">owner</option></select>
+        <button class="primary" id="addUserBtn">Add</button>
+      </div>
+      <div class="card">
+        <h2>Panel & tools</h2>
+        <p class="note">Workers open <b>/panel</b> on this machine (or the hosted panel). Field reports and feedback land here.</p>
+        <a href="/panel" target="_blank"><button class="primary">Open Action Panel</button></a>
+      </div>
+    </div>
+
+    <div id="tab-field" class="hidden">
+      <div class="card">
+        <h2>Field reports (supervision.md)</h2>
+        <button class="link" id="refreshReports">Refresh</button>
+        <pre id="reports"></pre>
+      </div>
+      <div class="card">
+        <h2>Feedback queue (feedback.md)</h2>
+        <button class="link" id="refreshFeedback">Refresh</button>
+        <pre id="feedback"></pre>
+        <p class="note">The super agent reads this queue and resolves errors and improvements (see workflow-master "Field feedback").</p>
+      </div>
+    </div>
+
+    <div id="tab-rules" class="hidden">
+      <div class="card">
+        <h2>Business rules (decisions.md)</h2>
+        <p class="note">These rules train the traffic light. Edits apply to the next task.</p>
+        <textarea id="decisions" rows="16"></textarea>
+        <button class="primary" id="saveDecisions">Save rules</button>
+        <span id="decisionsSaved" class="note"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employee -->
+  <div id="employeeView" class="hidden">
+    <div class="card">
+      <h2>Field report</h2>
+      <p class="note">What happened on your shift? It is appended to the supervision log.</p>
+      <textarea id="reportText" rows="5" placeholder="Describe the situation and what the AI did…"></textarea>
+      <button class="primary" id="reportBtn">Send report</button>
+    </div>
+    <div class="card">
+      <h2>Field feedback</h2>
+      <p class="note">Errors or improvements for the super agent to resolve.</p>
+      <select id="empFbCat"><option value="error">Error</option><option value="improvement">Improvement</option><option value="idea">Idea</option></select>
+      <textarea id="empFbText" rows="4" placeholder="What happened? What should improve?"></textarea>
+      <button class="primary" id="empFbBtn">Send feedback</button>
+    </div>
+    <div class="card">
+      <a href="/panel" target="_blank"><button class="primary">Open Action Panel</button></a>
+    </div>
+  </div>
+
+  <div id="msg" class="note"></div>
+</main>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+let token=null,me=null;
+const api=async(p,body)=>{const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});return r.json();};
+function show(view){["loginView","ownerView","employeeView"].forEach(v=>$(v).classList.add("hidden"));$(view).classList.remove("hidden");}
+function setWho(){const w=$("who");w.textContent=me?(me.name+" ("+me.role+")"):"";$("logoutBtn").classList.toggle("hidden",!me);}
+$("loginBtn").onclick=async()=>{
+  const r=await api("/api/login",{user:$("loginUser").value,password:$("loginPass").value});
+  if(r.error){$("msg").textContent="Login failed.";return;}
+  token=r.token;me={name:r.name,role:r.role};
+  sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));
+  setWho();
+  show(me.role==="owner"?"ownerView":"employeeView");
+  $("msg").textContent="";
+  if(me.role==="owner"){loadUsers();loadField();loadRules();}
+};
+$("logoutBtn").onclick=async()=>{await api("/api/logout",{});token=null;me=null;sessionStorage.clear();setWho();show("loginView");};
+async function loadUsers(){const r=await api("/api/users");const tb=$("usersTable").querySelector("tbody");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+u.name+"</td><td>"+u.role+"</td>";tb.appendChild(tr);});}
+$("addUserBtn").onclick=async()=>{const r=await api("/api/users",{name:$("newUser").value,password:$("newPass").value,role:$("newRole").value});$("msg").textContent=r.error?("Error: "+r.error):"Worker added.";loadUsers();$("newUser").value=$("newPass").value="";};
+async function loadField(){$("reports").textContent=(await api("/api/reports")).content||"(empty)";$("feedback").textContent=(await api("/api/feedback")).content||"(empty)";}
+$("refreshReports").onclick=loadField;$("refreshFeedback").onclick=loadField;
+async function loadRules(){$("decisions").value=(await api("/api/decisions")).content||"";}
+$("saveDecisions").onclick=async()=>{await api("/api/decisions",{content:$("decisions").value});$("decisionsSaved").textContent="Saved.";setTimeout(()=>$("decisionsSaved").textContent="",2000);};
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");
+  ["overview","field","rules"].forEach(t=>$("tab-"+t).classList.add("hidden"));
+  $("tab-"+b.dataset.tab).classList.remove("hidden");
+});
+$("reportBtn").onclick=async()=>{const r=await api("/api/report",{text:$("reportText").value});if(r.error){$("msg").textContent="Error: "+r.error;return;}$("reportText").value="";$("msg").textContent="Report sent.";setTimeout(()=>$("msg").textContent="",2000);};
+$("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.name,role:me.role,category:$("empFbCat").value,text:$("empFbText").value});if(r.error){$("msg").textContent="Error: "+r.error;return;}$("empFbText").value="";$("msg").textContent="Feedback sent.";setTimeout(()=>$("msg").textContent="",2000);};
+const st=sessionStorage.getItem("dsh-sup-token");
+if(st){token=st;me=JSON.parse(sessionStorage.getItem("dsh-sup-me")||"null");(async()=>{const r=await api("/api/me");if(!r||!r.name){token=null;me=null;setWho();show("loginView");return;}setWho();show(me.role==="owner"?"ownerView":"employeeView");if(me.role==="owner"){loadUsers();loadField();loadRules();}})();}
+else setWho();
+</script>
+</body>
+</html>
