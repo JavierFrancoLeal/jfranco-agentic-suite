@@ -2,13 +2,44 @@
 
 ![banner](assets/banner.svg)
 
+<p align="center">
+  <a href="#-super-agent-ready"><img src="https://img.shields.io/badge/Super%20Agent-Ready-4D6BFE?style=for-the-badge" alt="Super Agent Ready"></a>
+  <a href="https://github.com/JavierFrancoLeal/jfranco-agentic-suite/releases"><img src="https://img.shields.io/github/v/release/JavierFrancoLeal/jfranco-agentic-suite?label=release&style=for-the-badge" alt="release"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT"></a>
+  <a href="#-languages-and-interpretation"><img src="https://img.shields.io/badge/languages-10-7C5CFF?style=for-the-badge" alt="10 languages"></a>
+</p>
+
 **The AI that listens, works, proposes, and reports. You verify and decide.**
+**Super Agent Ready — the governance layer for autonomous agents.**
 
 An open-source suite of plugins for **DeepSeek Harness** that turns AI from a
 chatbot into a **trusted coworker**: it listens to real conversations,
 splits the work, does the safe part automatically, proposes the rest, and
 reports everything — while **you stay in control of every important
 decision**.
+
+---
+
+## ⚡ Super Agent Ready
+
+DeepSeek has entered the super-agent era: the open-source
+[Super-Agent](https://stocktwits.com/news-articles/markets/equity/deepseek-autonomous-coding-agent-anthropic-ipo-claude-code/cNGekVdR9cy)
+launched by the DeepSeek Harness team keeps working autonomously across group
+chats, GitHub, and developer tools. Autonomous agents need governance — and
+this suite is built exactly for that:
+
+- **Standby listening** — the agent stays on for the whole shift and folds
+  every new input into the live workflow, no re-triggering needed.
+- **Mission scope** — long autonomous missions run inside an agreed scope
+  with an autonomy budget; anything outside the scope is a question.
+- **Milestone reports** — accountability reports arrive per milestone, not
+  just at the end, and every one is appended to the supervision log.
+- **Autonomy grading** — the `autonomy-grader` measures how reliable each
+  automatic action really is (A/B/C/D) and proposes more autonomy only with
+  evidence.
+
+The result: agents that can work like super agents, under rules you train
+and with a record you can audit.
 
 ---
 

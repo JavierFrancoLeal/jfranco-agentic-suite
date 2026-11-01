@@ -5,6 +5,8 @@ kind: "package-bundle"
 
 # @jfranco/autonomy-grader
 
+> ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
+
 Created by **J.Franco**.
 
 ## Summary

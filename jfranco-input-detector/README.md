@@ -5,6 +5,8 @@ kind: "package-bundle"
 
 # @jfranco/input-detector
 
+> ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
+
 Created by **J.Franco**.
 
 ## Summary
