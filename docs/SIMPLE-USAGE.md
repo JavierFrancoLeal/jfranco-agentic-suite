@@ -3,6 +3,18 @@
 Keep your agents always available in the background, and wake them with a
 button, a keystroke, or a phrase — in any language.
 
+## 0. One-command installation
+
+Everything in this guide can be set up with one command:
+
+```sh
+./install.sh          # macOS / Linux
+```
+
+On Windows: right-click `install.ps1` → **Run with PowerShell**. Answer two
+questions (sector and mode) and the installer handles the rest: the six
+plugins, the starter `decisions.md`, the `supervision.md` log, and the panel.
+
 ## 1. Always in the background
 
 - Leave **DeepSeek Harness** open (minimized or on another screen): your

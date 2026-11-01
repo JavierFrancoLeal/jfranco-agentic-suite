@@ -120,7 +120,23 @@ measure the impact.
 ## 🚀 Quick start
 
 1. Install **DeepSeek Harness**.
-2. Add the six plugins (see [install instructions](docs/SIMPLE-USAGE.md)):
+2. Run the one-command installer and answer two questions (sector + mode):
+
+   ```sh
+   ./install.sh          # macOS / Linux
+   ```
+
+   On Windows: right-click `install.ps1` → **Run with PowerShell**.
+
+   The installer installs the six plugins, creates your starter
+   `decisions.md` from the sector template, activates the `supervision.md`
+   log, and offers to open the Action Panel.
+
+3. Open the [Action Panel](ui/panel.html) — one big button, 10 languages,
+   voice dictation — or build the one-click desktop app (Mac/Windows scripts
+   in [`ui/`](ui/)).
+
+   Manual installation (optional):
 
    ```
    dsh plugin --profile desktop add /path/to/jfranco-workflow-master
@@ -130,10 +146,6 @@ measure the impact.
    dsh plugin --profile desktop add /path/to/jfranco-interpreter
    dsh plugin --profile desktop add /path/to/jfranco-autonomy-grader
    ```
-
-3. Open the [Action Panel](ui/panel.html) — one big button, 10 languages,
-   voice dictation — or build the one-click desktop app (Mac/Windows scripts
-   in [`ui/`](ui/)).
 
 ## 📚 Documents
 

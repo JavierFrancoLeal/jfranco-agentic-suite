@@ -18,13 +18,15 @@ An **accountable workflow assistant** for companies:
 ## 2. Installing in the business
 
 1. Install **DeepSeek Harness** on the computer (Mac or Windows).
-2. Install the **suite** (`dsh plugin --profile desktop add <path>` for the
-   five `@jfranco/*` packages).
+2. Run the **one-command installer** (`install.sh` on Mac, `install.ps1` on
+   Windows): it asks two questions — sector and mode — then installs the six
+   plugins, creates the starter `decisions.md` from the sector template,
+   activates the `supervision.md` log, and offers to open the Action Panel.
 3. Open the **Action Panel** (`ui/panel.html`) in the browser, or build the
    **DSH Assistant** app (Mac: AppleScript; Windows: `DSH-Asistente.ps1`).
 4. Set the API key once for autonomous mode (the `campo` profile).
-5. Copy the **decision template** for the sector (hotel, restaurant,
-   police…) into `decisions.md` and adjust it with the business owner.
+5. Adjust `decisions.md` with the business owner (the installer copies the
+   sector template as the starting point).
 
 ## 3. Teaching the customer (1-hour session)
 
