@@ -1,0 +1,6 @@
+# @jfranco/input-detector — J.Franco's agentic-workflow plugin, stage 1.
+# Inserts the skill provider into the host plane of the Cordis tree, so every
+# agent preset (standard included) sees its skill through the global layer.
+- insert:
+    - id: input-detector
+      name: '@jfranco/input-detector'

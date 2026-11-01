@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Input Detector",
+    "description": "Detects every input — from you or a third party — and routes it before the agent acts. Stage 1 of the agentic workflow."
+  }
+}

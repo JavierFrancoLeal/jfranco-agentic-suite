@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DSH Asistente — Panel de Acción</title>
+<style>
+:root{--blue:#4D6BFE;--ink:#101828;--muted:#667085;--bg:#f6f7fb;--card:#fff;--ok:#22c55e;--bad:#ef4444;}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:var(--blue);color:#fff;padding:16px 20px;text-align:center}
+header h1{margin:0;font-size:21px}
+header p{margin:5px 0 0;opacity:.85;font-size:13px}
+main{max-width:560px;margin:0 auto;padding:16px}
+.langs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0 16px}
+.pill{background:var(--card);border:1px solid #e3e6ee;border-radius:999px;padding:8px 13px;font-size:13px;cursor:pointer}
+.pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.primary{display:block;width:100%;margin:14px 0;background:var(--ok);border:none;border-radius:22px;padding:26px 16px;font-size:26px;font-weight:700;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(34,197,94,.35)}
+.primary:active{transform:scale(.98)}
+.primary.live{background:var(--bad);box-shadow:0 4px 14px rgba(239,68,68,.35)}
+.prompt{background:var(--card);border:1px solid #e3e6ee;border-radius:14px;padding:14px;min-height:90px;white-space:pre-wrap;font-size:15px;line-height:1.55}
+.row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+.row button{flex:1;min-width:130px;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;color:#fff;cursor:pointer}
+.copy{background:var(--blue)}
+.speak{background:#7c5cff}
+.note{font-size:13px;color:var(--muted);line-height:1.65}
+code{background:#eef0f7;border-radius:6px;padding:2px 6px;font-size:13px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:18px}
+</style>
+</head>
+<body>
+<header>
+  <h1 id="title">🎙️ DSH Asistente — Panel de Acción</h1>
+  <p id="subtitle">Suite J.Franco · DeepSeek Harness</p>
+</header>
+<main>
+  <div id="langs" class="langs"></div>
+
+  <button class="primary" id="listenBtn">🎙️ ESCUCHAR / DICTAR</button>
+
+  <div class="prompt" id="prompt"></div>
+
+  <div class="row">
+    <button class="copy" id="copyBtn">📋 Copiar para DSH</button>
+    <button class="speak" id="speakBtn">🔊 Leer en voz alta</button>
+  </div>
+
+  <p class="note" id="note"></p>
+  <p class="note" id="legend"></p>
+</main>
+<footer id="footer">Suite J.Franco · open source (MIT) · autor J.Franco</footer>
+<script>
+"use strict";
+const LANG={
+ es:"escucha",en:"listen",fr:"écoute",de:"hör zu",it:"ascolta",pt:"escuta",
+ zh:"听",ja:"聞いて",ko:"들어봐",ar:"استمع"
+};
+const VOICE={es:"es-ES",en:"en-US",fr:"fr-FR",de:"de-DE",it:"it-IT",pt:"pt-PT",zh:"zh-CN",ja:"ja-JP",ko:"ko-KR",ar:"ar-SA"};
+const END={es:"eso es todo",en:"that's all",fr:"c'est tout",de:"das ist alles",it:"è tutto",pt:"é tudo",zh:"说完了",ja:"以上です",ko:"이상입니다",ar:"هذا كل شيء"};
+const S={
+ es:{title:"🎙️ DSH Asistente — Panel de Acción",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ ESCUCHAR / DICTAR",stop:"⏹️ DETENER",copy:"📋 Copiar para DSH",copied:"✅ ¡Copiado!",
+  speak:"🔊 Leer en voz alta",nospeech:"🎙️ Dictado no soportado",
+  placeholder:"Pulsa ESCUCHAR y habla tu conversación…",
+  clue:(w)=>`DSH, ${w} — comienzo a escuchar. Dime la conversación o las peticiones. Si aparecen varios idiomas, activa la interpretación cuando lo pida; el flujo principal (anotar, escribir, abrir aplicaciones…) sigue el análisis del input.`,
+  note:(end)=>`Pulsa ESCUCHAR, habla la conversación y di «${end}». Luego copia y pega la instrucción en una nueva sesión de DeepSeek Harness — o usa la app «DSH Asistente» para ejecución autónoma. La interpretación y las sub-funciones se activan hablando, dentro del flujo.`,
+  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifícalo) · 🟡 propuesta (tú decides) · 🔴 pregunta."},
+ en:{title:"🎙️ DSH Assistant — Action Panel",subtitle:"J.Franco Suite · DeepSeek Harness",
+  listen:"🎙️ LISTEN / DICTATE",stop:"⏹️ STOP",copy:"📋 Copy for DSH",copied:"✅ Copied!",
+  speak:"🔊 Read aloud",nospeech:"🎙️ Dictation not supported",
+  placeholder:"Tap LISTEN and speak your conversation…",
+  clue:(w)=>`DSH, ${w} — I'm starting to listen. Tell me the conversation or the requests. If several languages appear, activate interpretation when asked; the main flow (noting, writing, opening apps…) follows the input analysis.`,
+  note:(end)=>`Tap LISTEN, speak the conversation and say "${end}". Then copy and paste the instruction into a new DeepSeek Harness session — or use the "DSH Assistant" app for autonomous runs. Interpretation and sub-features are activated by speaking, inside the flow.`,
+  legend:"Traffic light: 🟢 automatic · ⚑ semi-automatic (verify it) · 🟡 proposal (you decide) · 🔴 ask."},
+ fr:{title:"🎙️ DSH Assistant — Panneau d'Action",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ ÉCOUTER / DICTER",stop:"⏹️ ARRÊTER",copy:"📋 Copier pour DSH",copied:"✅ Copié !",
+  speak:"🔊 Lire à voix haute",nospeech:"🎙️ Dictée non prise en charge",
+  placeholder:"Touchez ÉCOUTER et parlez…",
+  clue:(w)=>`DSH, ${w} — je commence à écouter. Racontez-moi la conversation ou les demandes. Si plusieurs langues apparaissent, activez l'interprétation à la demande ; le flux principal (noter, écrire, ouvrir des applications…) suit l'analyse.`,
+  note:(end)=>`Touchez ÉCOUTER, parlez et dites « ${end} ». Copiez ensuite l'instruction dans une nouvelle session DeepSeek Harness — ou utilisez l'app « DSH Assistant » pour l'exécution autonome. L'interprétation s'active en parlant, dans le flux.`,
+  legend:"Feux : 🟢 automatique · ⚑ semi-automatique (vérifiez) · 🟡 proposition (vous décidez) · 🔴 demandez."},
+ de:{title:"🎙️ DSH Assistent — Aktionspanel",subtitle:"J.Franco-Suite · DeepSeek Harness",
+  listen:"🎙️ ZUHÖREN / DIKTIEREN",stop:"⏹️ STOPP",copy:"📋 Für DSH kopieren",copied:"✅ Kopiert!",
+  speak:"🔊 Vorlesen",nospeech:"🎙️ Diktat nicht unterstützt",
+  placeholder:"Tippen Sie auf ZUHÖREN und sprechen Sie…",
+  clue:(w)=>`DSH, ${w} — ich beginne zuzuhören. Erzählen Sie mir das Gespräch oder die Anfragen. Bei mehreren Sprachen aktivieren Sie das Dolmetschen auf Zuruf; der Hauptablauf (notieren, schreiben, Apps öffnen…) folgt der Analyse.`,
+  note:(end)=>`Tippen Sie auf ZUHÖREN, sprechen Sie und sagen Sie «${end}». Kopieren Sie die Anweisung in eine neue Sitzung — oder nutzen Sie die App „DSH Assistent“ für autonome Ausführung. Das Dolmetschen aktivieren Sie per Sprache, im Ablauf.`,
+  legend:"Ampel: 🟢 automatisch · ⚑ halbautomatisch (prüfen) · 🟡 Vorschlag (Sie entscheiden) · 🔴 fragen."},
+ it:{title:"🎙️ DSH Assistente — Pannello Azioni",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ ASCOLTA / DETTA",stop:"⏹️ FERMA",copy:"📋 Copia per DSH",copied:"✅ Copiato!",
+  speak:"🔊 Leggi ad alta voce",nospeech:"🎙️ Dettatura non supportata",
+  placeholder:"Tocca ASCOLTA e parla…",
+  clue:(w)=>`DSH, ${w} — comincio ad ascoltare. Raccontami la conversazione o le richieste. Se compaiono più lingue, attiva l'interpretazione quando richiesto; il flusso principale (annotare, scrivere, aprire app…) segue l'analisi.`,
+  note:(end)=>`Tocca ASCOLTA, parla e di' «${end}». Poi copia e incolla l'istruzione in una nuova sessione — oppure usa l'app «DSH Assistente» per l'esecuzione autonoma. L'interpretazione si attiva parlando, dentro il flusso.`,
+  legend:"Semaforo: 🟢 automatico · ⚑ semi-automatico (verificalo) · 🟡 proposta (decidi tu) · 🔴 chiedi."},
+ pt:{title:"🎙️ DSH Assistente — Painel de Ação",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ OUVIR / DITAR",stop:"⏹️ PARAR",copy:"📋 Copiar para o DSH",copied:"✅ Copiado!",
+  speak:"🔊 Ler em voz alta",nospeech:"🎙️ Ditado não suportado",
+  placeholder:"Toque em OUVIR e fale…",
+  clue:(w)=>`DSH, ${w} — começo a ouvir. Conte-me a conversa ou os pedidos. Se aparecerem várias línguas, ative a interpretação quando pedido; o fluxo principal (anotar, escrever, abrir apps…) segue a análise.`,
+  note:(end)=>`Toque em OUVIR, fale e diga «${end}». Depois copie e cole a instrução numa nova sessão — ou use a app «DSH Assistente» para execução autónoma. A interpretação ativa-se falando, dentro do fluxo.`,
+  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifique) · 🟡 proposta (você decide) · 🔴 pergunte."},
+ zh:{title:"🎙️ DSH 助手 — 操作面板",subtitle:"J.Franco 套件 · DeepSeek Harness",
+  listen:"🎙️ 聆听 / 听写",stop:"⏹️ 停止",copy:"📋 复制到 DSH",copied:"✅ 已复制！",
+  speak:"🔊 朗读",nospeech:"🎙️ 不支持听写",
+  placeholder:"点击「聆听」并说出对话…",
+  clue:(w)=>`DSH，${w} — 我开始聆听。请告诉我对话或请求。若出现多种语言，按需启用口译；主流程（记录、书写、打开应用……）跟随输入分析。`,
+  note:(end)=>`点击「聆听」，说出对话并说「${end}」。然后将指令复制粘贴到新的会话 — 或使用「DSH 助手」应用自主执行。口译在流程中通过语音随时启用。`,
+  legend:"红绿灯：🟢 自动 · ⚑ 半自动（请核实）· 🟡 提议（你决定）· 🔴 询问。"},
+ ja:{title:"🎙️ DSH アシスタント — アクションパネル",subtitle:"J.Franco スイート · DeepSeek Harness",
+  listen:"🎙️ 聞く / 音声入力",stop:"⏹️ 停止",copy:"📋 DSHへコピー",copied:"✅ コピー済み！",
+  speak:"🔊 読み上げ",nospeech:"🎙️ 音声入力非対応",
+  placeholder:"「聞く」をタップして会話を話してください…",
+  clue:(w)=>`DSH、${w} — 聞き始めます。会話や依頼を教えてください。複数の言語が出たら、求めに応じて通訳を有効化；主フロー（記録、記入、アプリを開く…）は入力分析に従います。`,
+  note:(end)=>`「聞く」をタップし、会話を話して「${end}」と言います。その後、指示を新しいセッションに貼り付け — または「DSH アシスタント」アプリで自律実行。通訳はフローの中で音声で有効化できます。`,
+  legend:"信号：🟢 自動 · ⚑ 半自動（確認）· 🟡 提案（あなたが決定）· 🔴 質問。"},
+ ko:{title:"🎙️ DSH 어시스턴트 — 액션 패널",subtitle:"J.Franco 스위트 · DeepSeek Harness",
+  listen:"🎙️ 듣기 / 받아쓰기",stop:"⏹️ 중지",copy:"📋 DSH로 복사",copied:"✅ 복사됨!",
+  speak:"🔊 소리내어 읽기",nospeech:"🎙️ 받아쓰기 미지원",
+  placeholder:"「듣기」를 누르고 대화를 말하세요…",
+  clue:(w)=>`DSH, ${w} — 듣기 시작합니다. 대화나 요청을 말씀해 주세요. 여러 언어가 나오면 요청 시 통역을 활성화합니다. 주 흐름(기록, 작성, 앱 열기…)은 입력 분석을 따릅니다.`,
+  note:(end)=>`「듣기」를 누르고 대화를 말한 뒤 「${end}」라고 하세요. 그런 다음 지시를 새 세션에 붙여넣기 — 또는 「DSH 어시스턴트」 앱으로 자율 실행. 통역은 흐름 안에서 말로 활성화됩니다.`,
+  legend:"신호등: 🟢 자동 · ⚑ 반자동(확인) · 🟡 제안(당신이 결정) · 🔴 질문."},
+ ar:{title:"🎙️ مساعد DSH — لوحة الإجراءات",subtitle:"مجموعة J.Franco · DeepSeek Harness",
+  listen:"🎙️ استمع / أملي",stop:"⏹️ إيقاف",copy:"📋 نسخ إلى DSH",copied:"✅ تم النسخ!",
+  speak:"🔊 قراءة بصوت عالٍ",nospeech:"🎙️ الإملاء غير مدعوم",
+  placeholder:"اضغط «استمع» وتحدث…",
+  clue:(w)=>`DSH، ${w} — أبدأ الاستماع. أخبرني بالمحادثة أو الطلبات. عند ظهور عدة لغات فعّل الترجمة عند الطلب؛ التدفق الرئيسي (التدوين، الكتابة، فتح التطبيقات…) يتبع تحليل المدخلات.`,
+  note:(end)=>`اضغط «استمع»، وتحدث ثم قل «${end}». بعدها انسخ التعليمات والصقها في جلسة جديدة — أو استخدم تطبيق «مساعد DSH» للتنفيذ المستقل. تُفعَّل الترجمة بالكلام داخل سير العمل.`,
+  legend:"الإشارة: 🟢 تلقائي · ⚑ شبه تلقائي (تحقق) · 🟡 مقترح (أنت تقرر) · 🔴 اسأل."}
+};
+const promptEl=document.getElementById("prompt");
+const langsEl=document.getElementById("langs");
+const listenBtn=document.getElementById("listenBtn");
+const copyBtn=document.getElementById("copyBtn");
+const speakBtn=document.getElementById("speakBtn");
+let cur="es";
+let recording=false,rec=null;
+function applyLang(){
+  const s=S[cur];
+  document.getElementById("title").textContent=s.title;
+  document.getElementById("subtitle").textContent=s.subtitle;
+  document.getElementById("note").textContent=s.note(END[cur]);
+  document.getElementById("legend").textContent=s.legend;
+  copyBtn.textContent=s.copy;
+  speakBtn.textContent=s.speak;
+  if(!recording)listenBtn.textContent=s.listen;
+  promptEl.textContent=s.clue(LANG[cur]);
+}
+function pill(l){
+  const b=document.createElement("button");
+  b.className="pill"+(l===cur?" active":"");
+  b.textContent=l.toUpperCase()+" · "+LANG[l];
+  b.onclick=()=>{cur=l;document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));b.classList.add("active");applyLang();};
+  langsEl.appendChild(b);
+}
+for(const l of Object.keys(LANG))pill(l);
+applyLang();
+copyBtn.onclick=async()=>{
+  try{await navigator.clipboard.writeText(promptEl.textContent);}
+  catch(e){promptEl.select();document.execCommand("copy");}
+  copyBtn.textContent=S[cur].copied;
+  setTimeout(()=>copyBtn.textContent=S[cur].copy,1500);
+};
+speakBtn.onclick=()=>{
+  if(!("speechSynthesis" in window)){speakBtn.textContent="🔇";return;}
+  const u=new SpeechSynthesisUtterance(promptEl.textContent);
+  u.lang=VOICE[cur]||"es-ES";
+  speechSynthesis.speak(u);
+};
+let SR=null;
+SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){
+  listenBtn.disabled=true;
+  listenBtn.textContent=S[cur].nospeech;
+}else{
+  listenBtn.onclick=()=>{
+    if(rec){rec.stop();return;}
+    rec=new SR();
+    rec.lang=VOICE[cur]||"es-ES";
+    rec.continuous=true;
+    rec.interimResults=false;
+    rec.onresult=(e)=>{
+      let t="";
+      for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;
+      promptEl.textContent+=((promptEl.textContent.endsWith("…")||promptEl.textContent==="")?"":" ")+t;
+    };
+    rec.onend=()=>{recording=false;listenBtn.classList.remove("live");listenBtn.textContent=S[cur].listen;rec=null;};
+    recording=true;
+    listenBtn.classList.add("live");
+    listenBtn.textContent=S[cur].stop;
+    rec.start();
+  };
+}
+</script>
+</body>
+</html>

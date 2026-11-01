@@ -1,0 +1,38 @@
+{
+  "name": "@jfranco/interpreter",
+  "version": "1.0.0",
+  "description": "Real-time translation and interpretation for conversations in different languages — companion of the J.Franco agentic workflow.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "lib/index.js",
+    "assets",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24",
+    "dsh": ">=0.2.1-rc.0"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5"
+  }
+}

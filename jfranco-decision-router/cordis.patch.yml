@@ -1,0 +1,6 @@
+# @jfranco/decision-router — J.Franco's agentic-workflow plugin, stage 2.
+# Inserts the skill provider into the host plane of the Cordis tree, so every
+# agent preset (standard included) sees its skill through the global layer.
+- insert:
+    - id: decision-router
+      name: '@jfranco/decision-router'

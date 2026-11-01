@@ -1,0 +1,7 @@
+# @jfranco/interpreter — J.Franco's real-time interpretation layer.
+# Inserts the skill provider into the host plane of the Cordis tree. The
+# /interpret command is registered at runtime when the host command registry
+# resolves.
+- insert:
+    - id: interpreter
+      name: '@jfranco/interpreter'

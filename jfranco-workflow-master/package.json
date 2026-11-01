@@ -1,0 +1,38 @@
+{
+  "name": "@jfranco/workflow-master",
+  "version": "1.0.0",
+  "description": "Agentic-workflow trigger layer: listening mode that captures conversations, decodes the requests, and builds the workflow — automatic actions, proposals, and questions.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "lib/index.js",
+    "assets",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24",
+    "dsh": ">=0.2.1-rc.0"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5"
+  }
+}

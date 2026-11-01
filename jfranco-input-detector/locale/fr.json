@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Détecteur d’Entrées",
+    "description": "Détecte chaque entrée — de vous, d’un tiers ou d’un appareil — et l’achemine avant que l’agent n’agisse. Étape 1 du flux."
+  }
+}

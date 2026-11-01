@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Detector de Inputs",
+    "description": "Detecta cada input — tuyo, de un tercero o de un dispositivo — y lo enruta antes de que el agente actúe. Etapa 1 del flujo."
+  }
+}
