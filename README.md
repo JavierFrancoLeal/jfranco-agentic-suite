@@ -39,6 +39,9 @@ Input (you, a client, a third party, or a device)
 
 One button, one phrase — **"escucha" / "listen"** — and the AI takes over:
 it decodes the conversation, splits it into actions, and builds the workflow.
+Ready for the super-agent era: standby listening keeps the flow open for the
+whole shift, missions run by milestones with an agreed autonomy budget, and
+the autonomy-grader turns proven work into more autonomy.
 
 ## 🚦 The traffic light
 

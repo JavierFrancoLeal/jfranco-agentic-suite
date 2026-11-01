@@ -15,7 +15,7 @@ const RESOURCE_BASE = {
 
 const CANDIDATE = {
   name: "workflow-master",
-  description: "The trigger layer of the J.Franco agentic workflow: listening mode. Wake it with /listen, \"listen\", \"escucha\", or \"DSH, escucha\", or by relaying a conversation — then it captures everything, identifies who is asking, splits the conversation into discrete actions, and develops the workflow: automatic GREEN actions, semi-automatic flagged actions, YELLOW proposals waiting for the human, RED questions. Includes live advisory mode for earpiece use.",
+  description: "The trigger layer of the J.Franco agentic workflow: listening mode. Wake it with /listen, \"listen\", \"escucha\", or \"DSH, escucha\", or by relaying a conversation — then it captures everything, identifies who is asking, splits the conversation into discrete actions, and develops the workflow: automatic GREEN actions, semi-automatic flagged actions, YELLOW proposals waiting for the human, RED questions. Includes standby mode for persistent listening and live advisory mode for earpiece use.",
   invocation: {
     modelInvocable: true,
     userInvocable: true,

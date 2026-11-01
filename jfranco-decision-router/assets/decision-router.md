@@ -45,6 +45,22 @@ else is a proposal or a question:
   behalf), or anything whose consequences the human must answer for: YELLOW —
   propose and wait.
 
+## Mission scope
+
+A super-agent mission is a stretch of autonomous work with a start, a goal,
+and milestones. Before a long mission starts, agree the scope with the
+human:
+
+- What the mission covers and what it does not.
+- The autonomy budget: which tiers apply inside the mission, and where the
+  mission must pause (between milestones, at each proposal, at the end).
+- Anything outside the agreed scope is RED, even if the same action would be
+  GREEN inside it.
+
+Inside the scope, GREEN and SEMI-AUTOMATIC actions may run in batches and be
+logged; YELLOW proposals may be collected and presented per milestone. The
+human's decisions end or extend the mission.
+
 ## Worked example: bank advisor at reception
 
 | Action | Tier | Why |

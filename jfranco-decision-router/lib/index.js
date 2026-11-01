@@ -14,7 +14,7 @@ const RESOURCE_BASE = {
 
 const CANDIDATE = {
   name: "decision-router",
-  description: "The agent processes and proposes; the human decides. Automatic GREEN actions are logged for verification; safety-critical ones run semi-automatically with a mandatory verification flag; everything irreversible or needing accountability is a YELLOW proposal that waits for the human. Consult the user's decisions.md policy file and keep an audit trail. Stage 2 of the J.Franco agentic workflow.",
+  description: "The agent processes and proposes; the human decides. Automatic GREEN actions are logged for verification; safety-critical ones run semi-automatically with a mandatory verification flag; everything irreversible or needing accountability is a YELLOW proposal that waits for the human. Long work runs under an agreed mission scope. Consult the user's decisions.md policy file and keep an audit trail. Stage 2 of the J.Franco agentic workflow.",
   invocation: {
     modelInvocable: true,
     userInvocable: true,

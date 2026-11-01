@@ -24,11 +24,12 @@ classification is a proposal the human can correct at any time.
 
 ## Procedure
 
-1. **Detect the source.** Who or what is the input from — the user, a third
-   party the user is relaying, or a device/sensor? If it is a third party,
-   keep their identity in the trail (for example, "the client", "the
-   customer"). If it is a sensor, name the sensor (for example, "voice
-   analysis", "camera").
+1. **Detect the source and the channel.** Who or what is the input from —
+   the user, a third party the user is relaying, or a device/sensor? And
+   through which channel does it arrive — voice, a group chat, a document, a
+   camera, or a button? Keep both in the trail. If it is a third party, keep
+   their identity (for example, "the client", "the customer"). If it is a
+   sensor, name the sensor (for example, "voice analysis", "camera").
 2. **Detect the expectations and split them.** What actions or outcomes are
    expected? One conversation often carries SEVERAL requests: split them into
    a list of discrete actions, like a cashier writing down an order item by
@@ -74,6 +75,17 @@ A TRIGGER from a sensor is a fact, not a decision:
   lookup.
 - Never let a sensor alert authorize an action by itself: the tiers and the
   human's decision still apply.
+
+## Live action list
+
+During long or persistent conversations (standby mode), the split is not a
+one-time snapshot: keep the list of actions alive.
+
+- When the conversation adds a request, append the action.
+- When an action finishes, mark it done.
+- When new evidence changes a class or a tier, re-route that action and say
+  so in one line.
+- The `accountability-auditor` skill reports the final state of the list.
 
 ## Live field situations (earpiece)
 

@@ -42,7 +42,8 @@ If no data exists, say so and stop: the grader never invents evidence.
 1. **Collect.** Read every entry: inputs, decisions with tiers, automatic
    actions, verifications, corrections, and gaps.
 2. **Group.** Group the evidence by action pattern (for example "note a
-   client's phone number", "send an order to the kitchen").
+   client's phone number", "send an order to the kitchen") — and, when the
+   log records them, also by channel (voice, chat, camera) and by mission.
 3. **Count per pattern:** samples (executions), verified OK, corrected by the
    human, and errors or gaps found.
 4. **Score** the pattern:
@@ -75,6 +76,8 @@ Deliver this compact report:
 
 - **Evidence:** the patterns analyzed and the samples per pattern.
 - **Grades:** a table — pattern, samples, OK, corrected, errors, grade.
+- **Mission and channel grades:** the same A/B/C/D applied per channel and
+  per mission, when the log allows it.
 - **Proposed moves:** each suggestion as the exact `decisions.md` line to add
   or change, with the evidence that justifies it.
 - **Autonomy level:** the overall level and what it means.

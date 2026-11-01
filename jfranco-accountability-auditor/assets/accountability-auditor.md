@@ -18,6 +18,18 @@ record; the output is not final until the human has decided.
   made decisions (mandatory).
 - On demand, when the human asks for an audit or review (class REVIEW).
 
+## Milestone reports
+
+Long missions are reported by milestone, not only at the end:
+
+- Before each milestone completes (or at the human's cadence), deliver the
+  compact report for the stretch just finished.
+- Mark what changed since the last report, and what remains open.
+- The final report at mission end summarizes every milestone; each milestone
+  entry is also appended to the supervision log.
+- If the human is away (autonomous mode), leave the report queued in the log
+  and say so on their return.
+
 ## Verification checklist
 
 Run through these checks before delivering:

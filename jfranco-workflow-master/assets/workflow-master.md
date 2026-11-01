@@ -57,7 +57,8 @@ The human may also simply start relaying the conversation.
    ask ONE clarifying question when the human pauses.
 3. **Find the stop.** The human signals the end ("that's all", "eso es
    todo", "done", or asks "what did you understand?"). Until then, keep
-   listening.
+   listening. To keep listening beyond this conversation, ask for standby
+   mode instead of stopping.
 4. **Decode and split.** Turn the conversation into a list of discrete
    actions, each with its source and expectation. Use the `input-detector`
    classes: QUESTION / TASK / TRIGGER / REVIEW / WORKFLOW.
@@ -93,6 +94,22 @@ earpiece — switch to advisory mode:
 - Give advice as a proposal: state the option, the source (law, rule, data),
   and your recommendation — the human in the field decides on the spot.
 - Never block the flow with long reports; save the full report for the end.
+
+## Standby mode (persistent listening)
+
+In the super-agent era, listening does not end with "that's all": it can
+stay open for the whole shift or conversation.
+
+- If the human says "stay on standby", "quédate atento", or similar, keep
+  listening across turns: every new input — a new request, a sensor alert, a
+  relayed message — is detected and folded into the live workflow without a
+  new clue.
+- Keep the action list alive: append new actions, mark finished ones, and
+  re-tier as evidence arrives.
+- Standby does not widen the tiers: automatic actions still follow the
+  GREEN and SEMI-AUTOMATIC rules, and proposals still wait for the human.
+- Confirm standby with one line ("Standby ON — I'll keep listening") and
+  announce when leaving it.
 
 ## Closing the workflow
 
