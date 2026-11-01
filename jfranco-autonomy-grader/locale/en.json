@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Autonomy Grader",
+    "description": "Grades the reliability of automatic decisions from the supervision log and proposes tier moves — the human approves. Governance layer of the agentic workflow."
+  }
+}

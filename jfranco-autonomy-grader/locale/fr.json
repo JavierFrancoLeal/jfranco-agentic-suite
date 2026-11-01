@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Évaluateur d’Autonomie",
+    "description": "Note la fiabilité des décisions automatiques à partir du journal de supervision et propose des changements de niveau — le propriétaire approuve. Couche de gouvernance du flux."
+  }
+}

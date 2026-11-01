@@ -77,13 +77,16 @@ Every action gets a tier **before** anything happens:
 Every session ends with an **Accountability Report** — what was understood,
 what was done automatically, what was proposed, and what you decided. If a
 `supervision.md` file exists, every report is appended to it: a living,
-immutable record of what the AI did in your company. Owners supervise the
-work, adjust the rules, and measure the impact.
+immutable record of what the AI did in your company. The built-in
+**autonomy-grader** reads that record, grades every automatic action pattern
+(A/B/C/D), and proposes tier moves — reliable work earns more autonomy,
+errors bring it back. Owners supervise the work, adjust the rules, and
+measure the impact.
 
 ## 🚀 Quick start
 
 1. Install **DeepSeek Harness**.
-2. Add the five plugins (see [install instructions](docs/SIMPLE-USAGE.md)):
+2. Add the six plugins (see [install instructions](docs/SIMPLE-USAGE.md)):
 
    ```
    dsh plugin --profile desktop add /path/to/jfranco-workflow-master
@@ -91,6 +94,7 @@ work, adjust the rules, and measure the impact.
    dsh plugin --profile desktop add /path/to/jfranco-decision-router
    dsh plugin --profile desktop add /path/to/jfranco-accountability-auditor
    dsh plugin --profile desktop add /path/to/jfranco-interpreter
+   dsh plugin --profile desktop add /path/to/jfranco-autonomy-grader
    ```
 
 3. Open the [Action Panel](ui/panel.html) — one big button, 10 languages,
@@ -110,7 +114,8 @@ work, adjust the rules, and measure the impact.
 
 ## 🗺️ Roadmap
 
-Floating in-app button and menu-bar mode · `supervisor` dashboard for owners ·
+Floating in-app button and menu-bar mode · `supervisor` dashboard for owners
+(the `autonomy-grader` already delivers the trust grades behind it) ·
 always-on wake phrase and physical buttons · camera and sensor inputs ·
 connectors for specialized apps (PMS, POS, police databases).
 

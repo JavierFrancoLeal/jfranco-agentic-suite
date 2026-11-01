@@ -66,7 +66,8 @@ If a supervision file exists — `supervision.md` in the workspace root,
 each Accountability Report to it after delivery: a dated entry with the
 inputs detected, the decisions (tiers and approvals), the automatic actions,
 and the human's decisions. This file is the owner's living record of what
-the AI did in the company; never edit or remove earlier entries.
+the AI did in the company; never edit or remove earlier entries. The
+`autonomy-grader` skill reads this log to propose tier moves.
 
 ## Worked example: bank advisor at reception
 

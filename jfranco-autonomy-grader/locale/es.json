@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Calificador de Autonomía",
+    "description": "Califica la fiabilidad de las decisiones automáticas según el registro de supervisión y propone mover niveles — el dueño aprueba. Capa de gobierno del flujo."
+  }
+}

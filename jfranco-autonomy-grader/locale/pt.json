@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Avaliador de Autonomia",
+    "description": "Avalia a confiabilidade das decisões automáticas a partir do registro de supervisão e propõe mudanças de nível — o dono aprova. Camada de governança do fluxo."
+  }
+}
