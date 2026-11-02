@@ -97,6 +97,12 @@ and the human's decisions. This file is the owner's living record of what
 the AI did in the company; never edit or remove earlier entries. The
 `autonomy-grader` skill reads this log to propose tier moves.
 
+**Usage reporting:** when a supervisor is reachable
+(http://127.0.0.1:8787) and the worker tag is known, report the session's
+usage by POSTing `/api/usage` with `{worker, tokens, model}` at the end of
+the session — use the approximate token count when known, and skip silently
+otherwise. This feeds the owner's per-worker cost table.
+
 ## Worked example: bank advisor at reception
 
 After noting the client's phone number (GREEN) and preparing a loan quote

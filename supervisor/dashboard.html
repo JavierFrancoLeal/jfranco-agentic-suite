@@ -39,6 +39,14 @@ td,th{border-bottom:1px solid #e3e6ee;padding:9px 6px;text-align:left}
 .row{display:flex;gap:8px;flex-wrap:wrap}
 .row .btn{flex:1;min-width:110px}
 .switchuser{margin-top:26px;text-align:center}
+#wallView{max-width:1100px}
+.wall-head{font-size:34px;font-weight:800;color:#fff;text-align:center;margin:10px 0}
+.wall-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.wall-card{background:#1b2436;color:#fff;border-radius:16px;padding:20px;text-align:center}
+.wall-card .v{font-size:44px;font-weight:800}
+.wall-card .l{font-size:15px;opacity:.85}
+body.wall{background:#0b1220}
+body.wall pre{max-height:40vh}
 @media (max-width:560px){
   header h1{font-size:15px}
   .listen{font-size:24px;padding:26px 12px}
@@ -85,8 +93,13 @@ td,th{border-bottom:1px solid #e3e6ee;padding:9px 6px;text-align:left}
         <button class="btn" id="addUserBtn">Add worker</button>
       </div>
       <div class="card">
+        <h2>Usage & cost <span class="note">(per worker, estimated)</span></h2>
+        <table id="usageTable"><thead><tr><th>Worker</th><th>Sessions</th><th>Tokens</th><th>Est. cost</th></tr></thead><tbody></tbody></table>
+        <p class="hint">Agents report usage at the end of each session (/api/usage). Rate configurable with DSH_PRICE_PER_MILLION.</p>
+      </div>
+      <div class="card">
         <h2>Action Panel</h2>
-        <p class="note">Workers open <b>/panel</b> from their tablet or phone on this network.</p>
+        <p class="note">Workers open <b>/panel</b> from their tablet or phone on this network. Big screens: <b>/?wall=1</b>.</p>
         <a href="/panel" target="_blank"><button class="btn">Open Action Panel</button></a>
       </div>
     </div>
@@ -157,6 +170,16 @@ td,th{border-bottom:1px solid #e3e6ee;padding:9px 6px;text-align:left}
     <div class="switchuser"><button class="btn small gray" id="switchBtn">Switch user</button></div>
   </div>
 
+  <!-- Wallboard (factory big screen): /?wall=1 -->
+  <div id="wallView" class="hidden">
+    <div class="wall-head">🏭 J.Franco Suite — Live</div>
+    <div class="wall-grid" id="wallCards"></div>
+    <div class="card" style="margin-top:14px">
+      <h2 style="color:#fff">Field pulse</h2>
+      <pre id="wallFeed"></pre>
+    </div>
+  </div>
+
   <div id="msg" class="note" style="text-align:center"></div>
 </main>
 <script>
@@ -164,7 +187,7 @@ td,th{border-bottom:1px solid #e3e6ee;padding:9px 6px;text-align:left}
 const $=id=>document.getElementById(id);
 let token=null,me=null,auto=false;
 const api=async(p,body)=>{try{const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});return r.json();}catch(e){return {error:"network"};}};
-function show(view){["loginView","ownerView","leadView","employeeView"].forEach(v=>$(v).classList.add("hidden"));$(view).classList.remove("hidden");}
+function show(view){["loginView","ownerView","leadView","employeeView","wallView"].forEach(v=>$(v).classList.add("hidden"));$(view).classList.remove("hidden");}
 function setWho(){const w=$("who");w.textContent=me?(me.name+" · "+me.role):"";$("logoutBtn").style.display=me?"inline-block":"none";}
 async function loadMetrics(into){
   const m=await api("/api/metrics");
@@ -179,9 +202,16 @@ async function loadMetrics(into){
 function showMsg(t){$("msg").textContent=t;setTimeout(()=>$("msg").textContent="",2500);}
 async function enter(){
   setWho();
-  if(me.role==="owner"){show("ownerView");loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();}
+  if(me.role==="owner"){show("ownerView");loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();}
   else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();}
   else{show("employeeView");$("workerHi").textContent="👋 "+me.name;}
+}
+async function loadUsage(){
+  const tb=$("usageTable")?$("usageTable").querySelector("tbody"):null;
+  if(!tb)return;
+  const r=await api("/api/usage");
+  tb.innerHTML="";
+  (r.rows||[]).forEach(x=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+x.worker+"</td><td>"+x.sessions+"</td><td>"+(x.tokens||0).toLocaleString()+"</td><td>$"+(x.cost||0).toFixed(2)+"</td>";tb.appendChild(tr);});
 }
 $("loginBtn").onclick=async()=>{
   const r=await api("/api/login",{user:$("loginUser").value,password:$("loginPass").value});
@@ -214,6 +244,20 @@ $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.nam
 const st=sessionStorage.getItem("dsh-sup-token");
 if(st){token=st;me=JSON.parse(sessionStorage.getItem("dsh-sup-me")||"null");(async()=>{const r=await api("/api/me");if(!r||!r.name){logout();return;}enter();})();}
 else setWho();
+// Wallboard mode: /?wall=1 — public aggregated numbers for factory screens.
+if(location.search.indexOf("wall=1")>=0){
+  document.body.classList.add("wall");
+  show("wallView");
+  const tick=async()=>{
+    try{
+      const r=await (await fetch("/api/wall")).json();
+      const cards=[["Reports this week",r.reportsWeek],["Feedback",r.feedback],["Workers active",r.workers],["Reports total",r.reports]];
+      $("wallCards").innerHTML=cards.map(c=>'<div class="wall-card"><div class="v">'+(c[1]===undefined?"–":c[1])+'</div><div class="l">'+c[0]+'</div></div>').join("");
+      $("wallFeed").textContent=r.feedbackTail||"(no field activity yet)";
+    }catch(e){$("wallFeed").textContent="Cannot reach the supervisor server.";}
+  };
+  tick();setInterval(tick,30000);
+}
 </script>
 </body>
 </html>

@@ -39,6 +39,10 @@ const REPORTS_FILE = path.join(DATA_DIR, "supervision.md");
 const FEEDBACK_FILE = path.join(DATA_DIR, "feedback.md");
 const DECISIONS_FILE = path.join(DATA_DIR, "decisions.md");
 const DB_FILE = path.join(DATA_DIR, "supervisor.db");
+const USAGE_FILE = path.join(DATA_DIR, "usage.md");
+const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
+const TLS_KEY = process.env.DSH_TLS_KEY || path.join(DATA_DIR, "certs", "key.pem");
+const TLS_CERT = process.env.DSH_TLS_CERT || path.join(DATA_DIR, "certs", "cert.pem");
 const SESSION_TTL = 8 * 60 * 60 * 1000;
 
 // ---------- SQLite storage (--db) ----------
@@ -52,6 +56,7 @@ if (USE_DB) {
     CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, worker TEXT, text TEXT);
     CREATE TABLE IF NOT EXISTS feedback (id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, worker TEXT, role TEXT, category TEXT, text TEXT);
     CREATE TABLE IF NOT EXISTS decisions (id INTEGER PRIMARY KEY CHECK (id = 1), content TEXT, updated TEXT);
+    CREATE TABLE IF NOT EXISTS usage (id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT, worker TEXT, tokens INTEGER, model TEXT);
   `);
 }
 
@@ -127,6 +132,29 @@ function readDecisions() {
 function writeDecisions(content) {
   if (db) db.prepare("INSERT INTO decisions (id,content,updated) VALUES (1,?,?) ON CONFLICT(id) DO UPDATE SET content=excluded.content, updated=excluded.updated").run(String(content || ""), ts());
   else fs.writeFileSync(DECISIONS_FILE, String(content || ""));
+}
+function appendUsage(worker, tokens, model) {
+  if (db) db.prepare("INSERT INTO usage (ts,worker,tokens,model) VALUES (?,?,?,?)").run(ts(), worker || "anonymous", Number(tokens) || 0, model || "unknown");
+  else {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    const head = fs.existsSync(USAGE_FILE) ? "" : "# usage.md — token usage reported per session.\n\n";
+    fs.appendFileSync(USAGE_FILE, head + "## " + ts() + " — " + (worker || "anonymous") + " — " + (Number(tokens) || 0) + " tokens (" + (model || "unknown") + ")\n");
+  }
+}
+function usageRows() {
+  if (db) return db.prepare("SELECT worker, COUNT(*) sessions, SUM(tokens) tokens FROM usage GROUP BY worker ORDER BY tokens DESC").all()
+    .map((r) => ({ worker: r.worker, sessions: r.sessions, tokens: r.tokens || 0, cost: Math.round(((r.tokens || 0) / 1e6) * PRICE_PER_MILLION * 100) / 100 }));
+  const rows = new Map();
+  try {
+    for (const line of fs.readFileSync(USAGE_FILE, "utf8").split("\n")) {
+      const m = /^## .+ — (\S+) — (\d+) tokens/.exec(line);
+      if (!m) continue;
+      const r = rows.get(m[1]) || { worker: m[1], sessions: 0, tokens: 0 };
+      r.sessions += 1; r.tokens += Number(m[2]);
+      rows.set(m[1], r);
+    }
+  } catch {}
+  return [...rows.values()].map((r) => ({ ...r, cost: Math.round((r.tokens / 1e6) * PRICE_PER_MILLION * 100) / 100 })).sort((a, b) => b.tokens - a.tokens);
 }
 function readTail(f, n = 200) { try { const t = fs.readFileSync(f, "utf8"); return t.split("\n").slice(-n).join("\n"); } catch { return ""; } }
 function metrics() {
@@ -236,6 +264,21 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/reports" && req.method === "GET") { if (!managerOnly(res, req)) return; return send(res, 200, { content: readReports(200) }); }
   if (pathname === "/api/metrics" && req.method === "GET") { if (!managerOnly(res, req)) return; return send(res, 200, metrics()); }
+  // Usage: workers/agents report token counts per session; managers see cost per worker.
+  if (pathname === "/api/usage" && req.method === "POST") {
+    const b = await json(req);
+    appendUsage(b.worker, b.tokens, b.model);
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/usage" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    return send(res, 200, { pricePerMillion: PRICE_PER_MILLION, rows: usageRows() });
+  }
+  // Public wallboard feed: aggregated numbers only, no secrets.
+  if (pathname === "/api/wall" && req.method === "GET") {
+    const m = metrics();
+    return send(res, 200, { ...m, feedbackTail: readFeedback(60) });
+  }
   if (pathname === "/api/decisions" && req.method === "GET") { if (!ownerOnly(res, req)) return; return send(res, 200, { content: readDecisions() }); }
   if (pathname === "/api/decisions" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); writeDecisions(b.content); return send(res, 200, { ok: true }); }
   if (pathname === "/api/users" && req.method === "GET") { if (!ownerOnly(res, req)) return; const u = loadUsers(); return send(res, 200, { users: Object.entries(u).map(([name, v]) => ({ name, role: v.role })) }); }
@@ -279,13 +322,11 @@ http.createServer(handler).listen(PORT, HOST, () => {
   console.log("Dashboard: http://" + HOST + ":" + PORT + "/dashboard   Panel: http://" + HOST + ":" + PORT + "/panel");
 });
 if (HTTPS_ON) {
-  const keyPath = path.join(DATA_DIR, "certs", "key.pem");
-  const certPath = path.join(DATA_DIR, "certs", "cert.pem");
-  if (!fs.existsSync(keyPath) || !fs.existsSync(certPath)) {
-    console.error("TLS enabled but certificates are missing. Run: sh tools/make-cert.sh");
+  if (!fs.existsSync(TLS_KEY) || !fs.existsSync(TLS_CERT)) {
+    console.error("TLS enabled but certificates are missing. Run: sh tools/make-cert.sh (self-signed) or sh tools/letsencrypt.sh <domain> <email> (real).");
     process.exit(1);
   }
-  https.createServer({ key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) }, handler).listen(HTTPS_PORT, HOST, () => {
-    console.log("HTTPS: https://" + HOST + ":" + HTTPS_PORT + " (self-signed; see docs/BROWSERS.md)");
+  https.createServer({ key: fs.readFileSync(TLS_KEY), cert: fs.readFileSync(TLS_CERT) }, handler).listen(HTTPS_PORT, HOST, () => {
+    console.log("HTTPS: https://" + HOST + ":" + HTTPS_PORT + " (cert: " + TLS_CERT + ")");
   });
 }
