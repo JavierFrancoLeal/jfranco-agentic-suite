@@ -26,6 +26,8 @@ PID="/tmp/dsh-demo.pid"
 if [ "${1:-start}" = "stop" ]; then
   kill "$(cat "$PID" 2>/dev/null)" 2>/dev/null || true
   kill "$(cat "$PID.tunnel" 2>/dev/null)" 2>/dev/null || true
+  lsof -tiTCP:"$PORT" -sTCP:LISTEN 2>/dev/null | xargs kill 2>/dev/null || true
+  pkill -f "dsh-demo" 2>/dev/null || true
   rm -rf "$DEMO"
   echo "Demo stopped. Every demo file deleted."
   exit 0
