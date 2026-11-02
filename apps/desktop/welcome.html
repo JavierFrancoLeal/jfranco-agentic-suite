@@ -9,9 +9,9 @@
 body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff 55%,#a78bfa);min-height:100vh;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
 .step{max-width:460px;width:100%;text-align:center;animation:rise .5s ease}
 @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.langbox{width:min(460px,90vw);height:80px;margin:44px auto 0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.30);border-radius:10px;backdrop-filter:blur(8px);overflow:hidden;cursor:pointer;position:relative;transition:background .2s;box-shadow:0 10px 30px rgba(15,23,42,.15)}
+.langbox{width:min(460px,90vw);height:80px;margin:44px auto 0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.30);border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:background .2s;box-shadow:0 10px 30px rgba(15,23,42,.15)}
 .langbox:hover{background:rgba(255,255,255,.18)}
-.ticks{display:flex;flex-direction:column;animation:reel 20s linear infinite}
+.ticks{display:flex;flex-direction:column;animation:reel 20s linear infinite;will-change:transform}
 .tick{height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;opacity:.85}
 @keyframes reel{0%{transform:translateY(0)}100%{transform:translateY(-800px)}}
 .overlay{position:fixed;inset:0;background:linear-gradient(160deg,#4D6BFE,#7c5cff 60%,#a78bfa);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:60;animation:rise .28s ease}
@@ -89,10 +89,12 @@ ar:{title:"مرحبًا بك في Le Veilleux",name:"اسمك (المالك)",pa
 let cur="en";
 // The glass reel: language names passing through, semi-transparent.
 const ticksEl=document.getElementById("ticks");
-for(const l of Object.keys(LANGS)){
-  const d=document.createElement("div");
-  d.className="tick";d.textContent=LANGS[l];
-  ticksEl.appendChild(d);
+for(let pass=0;pass<2;pass++){
+  for(const l of Object.keys(LANGS)){
+    const d=document.createElement("div");
+    d.className="tick";d.textContent=LANGS[l];
+    ticksEl.appendChild(d);
+  }
 }
 // Full-screen list, English centered, the rest by software-industry priority
 // (GitHub/StackOverflow order): es, fr, de, ja, zh, pt, it, ko, ar
