@@ -18,7 +18,7 @@ let tray = null;
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => { if (win) { win.show(); win.focus(); } });
+  app.on("second-instance", () => { if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); } });
 
   function createWindow() {
     win = new BrowserWindow({
@@ -36,6 +36,7 @@ if (!app.requestSingleInstanceLock()) {
         sandbox: true,
       },
     });
+    win.on("closed", () => { win = null; });
     win.setMenuBarVisibility(false);
     win.loadURL(TARGET_URL);
     win.webContents.setWindowOpenHandler(({ url }) => {
@@ -61,13 +62,13 @@ if (!app.requestSingleInstanceLock()) {
       tray = new Tray(icon.resize({ width: 18, height: 18 }));
       tray.setToolTip("Le Veilleux — l'IA travaille, l'humain veille");
       tray.setContextMenu(Menu.buildFromTemplate([
-        { label: "Abrir Le Veilleux", click: () => { win.show(); win.focus(); } },
+        { label: "Abrir Le Veilleux", click: () => { if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); } } },
         { type: "separator" },
         { label: "Salir", click: () => app.quit() },
       ]));
     } catch (e) { /* tray optional (kiosk) */ }
     app.on("activate", () => {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow();
+      if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); }
     });
   });
 
