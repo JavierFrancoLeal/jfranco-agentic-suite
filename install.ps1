@@ -81,7 +81,7 @@ if ($profiles -contains "campo") {
 - id: agent-default-model
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
-    provider: deepseek-api-key
+    provider: deepseek-official
     model: deepseek-chat
     reasoningEffort: max
 "@ | Out-File -Encoding UTF8 "$campo\cordis.patch.yml"

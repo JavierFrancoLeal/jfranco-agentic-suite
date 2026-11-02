@@ -4,7 +4,7 @@
 
 Author of the **J.Franco Agentic Workflow Suite** for DeepSeek Harness:
 
-- `@javierfrancoleal/workflow-master` v1.0.0 — 2026
+- `@javierfrancoleal/workflow-master` v1.1.0 — 2026
 - `@javierfrancoleal/input-detector` v1.0.0 — 2026
 - `@javierfrancoleal/decision-router` v1.0.0 — 2026
 - `@javierfrancoleal/accountability-auditor` v1.0.0 — 2026

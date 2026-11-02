@@ -1,6 +1,6 @@
 // Service worker for the DSH Assistant Action Panel (J.Franco suite).
 // Offline-first: caches the panel so the app keeps working without a network.
-const CACHE = "dsh-panel-v1";
+const CACHE = "dsh-panel-v2";
 const ASSETS = [
   "./panel.html",
   "./manifest.webmanifest",
