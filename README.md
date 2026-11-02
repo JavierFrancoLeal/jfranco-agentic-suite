@@ -1,4 +1,6 @@
-# 🎙️ J.Franco Agentic Workflow Suite
+# 🎙️ Veilleux — the J.Franco agentic workflow suite
+
+*The AI works. The human watches, decides, reviews.* 🍁
 
 ![banner](assets/banner.svg)
 
@@ -11,7 +13,7 @@
 </p>
 
 **The AI that listens, works, proposes, and reports. You verify and decide.**
-**Super Agent Ready — the governance layer for autonomous agents.**
+**Veilleux — the governance layer for autonomous agents. Super Agent Ready.**
 
 An open-source suite of plugins for **DeepSeek Harness** that turns AI from a
 chatbot into a **trusted coworker**: it listens to real conversations,
