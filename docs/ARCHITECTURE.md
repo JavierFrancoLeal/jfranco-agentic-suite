@@ -56,6 +56,16 @@ default**: `{ "key": "…", "fast": "deepseek-chat", "deep": "deepseek-reasoner"
   questions in the deep queue (`/api/deep`) → the Reasoner brain, whose
   answers land in the reports.
 
+## Homeostasis — the first new organ (server-side)
+
+Per the industrial lens, self-regulation is engineering, not a skill:
+
+- `GET /api/health` — the pulse: uptime, workers, reports, and the daily budget (`spentTodayUsd` / `budgetUsd`).
+- **The daily token budget** — `DSH_DAILY_BUDGET_USD` (default $5). When the day's spend reaches the limit, the costly endpoints (`/api/live/transcript`, `/api/deep`) answer 429: *"the brain rests until tomorrow."* No runaway costs.
+- The dashboard shows the budget pulse in the Usage card, and the field screens show a friendly "budget reached" message.
+
+The organism now breathes: it knows its pulse and stops eating when full.
+
 ## Installation models (mise en place)
 
 ### Model A — today (install DSH, then Le Veilleux)

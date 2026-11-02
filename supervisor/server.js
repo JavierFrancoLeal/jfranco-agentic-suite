@@ -43,6 +43,26 @@ const USAGE_FILE = path.join(DATA_DIR, "usage.md");
 const LIVE_FILE = path.join(DATA_DIR, "live.json");
 const SECTOR_FILE = path.join(DATA_DIR, "sector.json");
 const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
+// Homeostasis: the daily token budget (metabolic limit). The brain rests
+// when the budget is spent — no runaway costs.
+const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 5);
+function todayCostUsd() {
+  const day = new Date().toISOString().slice(0, 10);
+  let tokens = 0;
+  if (db) {
+    try { tokens = db.prepare("SELECT COALESCE(SUM(tokens),0) t FROM usage WHERE ts >= ?").get(day + "T00:00:00.000Z").t || 0; } catch {}
+  } else {
+    try {
+      for (const line of fs.readFileSync(USAGE_FILE, "utf8").split("\n")) {
+        if (line.indexOf(day) < 0) continue;
+        const m = /(\d+) tokens/.exec(line);
+        if (m) tokens += Number(m[1]);
+      }
+    } catch {}
+  }
+  return Math.round((tokens / 1e6) * PRICE_PER_MILLION * 100) / 100;
+}
+function budgetOk() { return todayCostUsd() < DAILY_BUDGET_USD; }
 const TLS_KEY = process.env.DSH_TLS_KEY || path.join(DATA_DIR, "certs", "key.pem");
 const TLS_CERT = process.env.DSH_TLS_CERT || path.join(DATA_DIR, "certs", "cert.pem");
 const SESSION_TTL = 8 * 60 * 60 * 1000;
@@ -331,6 +351,10 @@ async function api(req, res, pathname) {
     return send(res, 200, liveRead());
   }
   // The active sector pack: one dashboard skeleton, many business skins.
+  if (pathname === "/api/health" && req.method === "GET") {
+    const m = metrics();
+    return send(res, 200, { ok: true, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd() }, true);
+  }
   if (pathname === "/api/sector" && req.method === "GET") {
     try { return send(res, 200, JSON.parse(fs.readFileSync(SECTOR_FILE, "utf8"))); }
     catch { return send(res, 200, { id: "generic", tableLabel: { en: "Table", es: "Mesa" }, ordersTarget: { en: "Orders", es: "Pedidos" }, entity: { en: "person", es: "persona" }, fields: [] }); }
@@ -404,6 +428,7 @@ async function api(req, res, pathname) {
   // Deep-queue: questions for the Reasoner brain (the second brain, by default).
   if (pathname === "/api/deep" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
+    if (!budgetOk()) return send(res, 429, { error: "daily budget reached — homeostasis: the brain rests until tomorrow" });
     const b = await json(req);
     const s2 = liveRead();
     s2.deep = s2.deep || [];
@@ -423,6 +448,7 @@ async function api(req, res, pathname) {
     return send(res, 200, { ok: true }, true);
   }
   if (pathname === "/api/live/transcript" && req.method === "POST") {
+    if (!budgetOk()) return send(res, 429, { error: "daily budget reached — homeostasis: the brain rests until tomorrow" });
     const b = await json(req);
     const s = liveRead();
     s.inbox = s.inbox || [];
