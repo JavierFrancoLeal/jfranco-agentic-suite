@@ -164,7 +164,7 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
 ## 📦 Distribution
 
-The seven packages are published on **npm** under the `@javierfrancoleal` scope, so a
+The nine packages are published on **npm** under the `@javierfrancoleal` scope, so a
 business can install them by name:
 
 ```
