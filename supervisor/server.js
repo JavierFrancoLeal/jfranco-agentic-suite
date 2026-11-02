@@ -44,6 +44,7 @@ const LIVE_FILE = path.join(DATA_DIR, "live.json");
 const SECTOR_FILE = path.join(DATA_DIR, "sector.json");
 const REG_FILE = path.join(DATA_DIR, "register.json");
 const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
+const VERSION = "1.0.25";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -384,7 +385,7 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/health" && req.method === "GET") {
     const m = metrics();
-    return send(res, 200, { ok: true, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd(), budgetPct: DAILY_BUDGET_USD > 0 ? Math.round((todayCostUsd() / DAILY_BUDGET_USD) * 100) : 0 }, true);
+    return send(res, 200, { ok: true, version: VERSION, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd(), budgetPct: DAILY_BUDGET_USD > 0 ? Math.round((todayCostUsd() / DAILY_BUDGET_USD) * 100) : 0 }, true);
   }
   if (pathname === "/api/sector" && req.method === "GET") {
     try { return send(res, 200, JSON.parse(fs.readFileSync(SECTOR_FILE, "utf8"))); }

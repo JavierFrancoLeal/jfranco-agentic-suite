@@ -350,7 +350,7 @@ body.wall pre{max-height:40vh}
   <div id="toast" class="toast"></div>
   <div id="msg" class="note" style="text-align:center"></div>
 </main>
-<footer class="foot"><div class="langs" id="footLangs"></div><div class="copyr">Suite J.Franco · open source (MIT) · autor J.Franco</div></footer>
+<footer class="foot"><div class="langs" id="footLangs"></div><div class="copyr">Le Veilleux · open source (MIT) · autor J.Franco</div><div class="copyr" id="verBadge" style="opacity:.75;margin-top:2px"></div></footer>
 <script>
 "use strict";
 const LANG={es:"ES",en:"EN",fr:"FR",de:"DE",it:"IT",pt:"PT",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
@@ -436,6 +436,7 @@ async function loadRegister(){
     renderRegSales(r);
   }
   if(me&&me.role==="employee"){$("regCount").textContent=(r.sales||[]).length+" "+t("salesToday");}
+  try{api("/api/health").then(hp=>{if(hp&&hp.version)$("verBadge").textContent="supervisor v"+hp.version+" · app 0.1.0 · dsh "+((hp.workers!==undefined)?"":"")+"runtime";});}catch(e){}
 }
 function renderRegSales(r){
   const q=($("regSearch").value||"").toLowerCase();
