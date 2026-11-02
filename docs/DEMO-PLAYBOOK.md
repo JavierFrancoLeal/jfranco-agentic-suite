@@ -5,6 +5,49 @@ or to a business development organization such as
 [SADC](https://www.sadc-cae.ca/en/). Total setup: ~15 minutes. Demo: 10–15
 minutes.
 
+## 0. Zero-tech business via their phones (isolated sandbox)
+
+For a business with **no computers at all** (for example a restaurant), run
+the demo entirely from your own laptop as an isolated sandbox — your
+personal information is never touched or exposed:
+
+```sh
+sh tools/demo-sandbox.sh          # start: isolated data, port 8790, demo users
+sh tools/demo-sandbox.sh stop     # stop: deletes every demo file
+```
+
+What the sandbox guarantees:
+
+- Its **own data directory** under `/tmp` — your real `~/.dsh` (users,
+  credentials, logs) is never read or written.
+- **Demo users only** (`DemoOwner`, `DemoWaiter`) — no personal accounts.
+- Serves **only** the panel, the dashboard, and the wallboard — no files
+  from your computer are ever served.
+- A different port (8790), so your real supervisor keeps running untouched.
+
+### Connecting their phones
+
+- If the restaurant has WiFi: phones join it, then open
+  `http://<your-mac-ip>:8790/dashboard?wall=1`.
+- If there is **no WiFi at all**: turn your Mac into a hotspot
+  (System Settings → General → Sharing → Internet Sharing) or use a phone
+  hotspot, and have everyone join that network.
+- Tip: create a QR code for the wallboard URL beforehand with any QR
+  generator, print it, and the staff just scans it.
+
+### The live simulation flow (restaurant)
+
+1. **Phones (staff):** open the wallboard — big live numbers, no login.
+2. **Your laptop:** the AI flow runs here (DeepSeek Harness session): you
+   play the waiter with a real staff member as the "customer". The traffic
+   light, the proposals, and the report happen live on your screen.
+3. **The wow moment:** invite a staff member to post feedback from their
+   phone (`DemoWaiter` view) — everyone's wallboard updates in seconds.
+   Show the owner view on your laptop: the report, the cost per worker, and
+   the rules editor.
+4. Close with: *"the AI works, the human decides, the owner sees
+   everything — and you just saw it from your own phones."*
+
 ## 1. What to bring
 
 - **Laptop (the brain)** with DeepSeek Harness + the suite installed, and
