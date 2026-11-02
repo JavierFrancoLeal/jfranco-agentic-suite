@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Triage des Incidents",
+    "description": "La couche de triage du créateur : les bugs essentiels sont corrigés immédiatement ; les non essentiels sont consignés et acceptés en bêta. Le créateur décide."
+  }
+}

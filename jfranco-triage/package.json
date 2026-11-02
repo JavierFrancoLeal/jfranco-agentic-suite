@@ -1,0 +1,55 @@
+{
+  "name": "@javierfrancoleal/triage",
+  "version": "1.0.0",
+  "description": "The creator's issue-triage layer of the J.Franco agentic workflow: classify every bug (essential vs non-essential), accept Beta-level defects deliberately, and keep the essential flow moving. The creator makes the distinction.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "lib/index.js",
+    "assets",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24",
+    "dsh": ">=0.2.1-rc.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "directory": "jfranco-triage"
+  },
+  "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
+  "keywords": [
+    "deepseek-harness",
+    "agentic-workflow",
+    "super-agent",
+    "issue-triage",
+    "beta",
+    "j-franco"
+  ],
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5"
+  }
+}
