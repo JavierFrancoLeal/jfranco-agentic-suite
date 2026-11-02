@@ -326,7 +326,7 @@ async function api(req, res, pathname) {
     if (type === "orders") {
       const lv = liveRead();
       body = "# Le Veilleux — orders & bill\n\n" + ts() + "\n\n" +
-        (lv.orders || []).map((o) => "- " + (o.table ? "Table " + o.table + " · " : "") + o.person + ": " + o.request + " (" + o.status + ")").join("\n") +
+        (lv.orders || []).map((o) => "- " + (o.table ? "Table " + o.table + " · " : "") + o.person + ": " + o.request + " (" + o.status + (o.paid ? ", paid" : ", pending") + ")").join("\n") +
         "\n\nTotal items: " + (lv.orders || []).length + "\n";
       name = "le-veilleux-orders.md";
     } else if (type === "usage") {
@@ -416,7 +416,7 @@ async function api(req, res, pathname) {
     const b = await json(req);
     const s = liveRead();
     const o = s.orders.find((x) => x.id === b.orderId);
-    if (o) o.status = b.status || "sent";
+    if (o) { if (b.status === "paid") { o.paid = true; } else { o.status = b.status || "sent"; } }
     liveWrite(s);
     return send(res, 200, { ok: !!o });
   }

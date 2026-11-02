@@ -60,6 +60,26 @@ the service they used to pay for (reconciliation) is now included.
 3. The POS double-entry errors.
 4. One dashboard instead of three apps.
 
+## The decision for our stage (rationality in time and space)
+
+We are at zero clients — like the animation bug, payment integration is
+NON-ESSENTIAL today and must not block the essential flow (first client).
+
+**Adopted system: CASH-FIRST WITH PROOF (created, not integrated).**
+
+- Every restaurant already has a terminal or a till. We do not process
+  money; we give the OWNER what they pay others for: **reconciliation**.
+- The waiter taps **"Mark paid"** on each order; the owner sees
+  "Collected: 7 of 9 orders" and exports the daily bill with paid/pending
+  per line.
+- Zero integrations, zero accounts, zero fees, zero legal risk. Works in
+  every restaurant today.
+
+**Trigger rule (the creator decides):** integrate a processor only when
+three or more paying clients explicitly ask for it. Then choose by
+geography: Quebec → Lightspeed/Moneris (Interac Debit); elsewhere →
+Stripe Payment Links.
+
 ## What we need from the creator
 
 1. Choose the first provider: **Stripe** (fastest API) or **Lightspeed**
