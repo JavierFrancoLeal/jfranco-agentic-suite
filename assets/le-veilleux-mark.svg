@@ -1,10 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
   <defs>
-    <linearGradient id="eyeG" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="strokeG" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#4D6BFE"/>
       <stop offset="1" stop-color="#7c5cff"/>
     </linearGradient>
   </defs>
-  <path d="M32 14 C 14 14, 7 24.5, 7 32 C 7 39.5, 14 50, 32 50 C 50 50, 57 39.5, 57 32 C 57 24.5, 50 14, 32 14 Z" fill="none" stroke="url(#eyeG)" stroke-width="6" stroke-linecap="round"/>
-  <path d="M32 22.5 C 37 27.6, 39 31.2, 39 35 A 7 7 0 1 1 25 35 C 25 31.2, 27 27.6, 32 22.5 Z" fill="#FACC15"/>
+  <style>
+    @keyframes draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+    .draw{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.8s cubic-bezier(.4,0,.2,1) forwards}
+  </style>
+  <path class="draw" pathLength="100" d="M10 32
+    C10 22 16 14 32 14
+    C48 14 54 22 54 32
+    C54 42 48 50 32 50
+    C20 50 12.5 45.2 10.5 38.5
+    C14 42.5 20 41 25.4 34.8
+    A6.6 6.6 0 0 1 38.6 34.8
+    C38.6 31.4 36.6 28.2 32 22.5
+    C27.4 28.2 25.4 31.4 25.4 34.8"
+    fill="none" stroke="url(#strokeG)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

@@ -24,6 +24,8 @@ body.dark .toast{background:#e6ecf7;color:#0b1220}
 .checkpop{animation:pop .3s ease}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 @keyframes flick{0%,100%{opacity:1}42%{opacity:.82}50%{opacity:1}58%{opacity:.9}}
+@keyframes drawStroke{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+.mark svg path{stroke-dasharray:100;stroke-dashoffset:100;animation:drawStroke 1.6s cubic-bezier(.4,0,.2,1) forwards}
 .mark svg path:last-child{animation:flick 3.2s ease-in-out infinite;transform-origin:32px 34px}
 .person{animation:rise .3s ease backwards}
 .person:nth-child(1){animation-delay:.03s}
@@ -146,7 +148,7 @@ body.wall pre{max-height:40vh}
 <main>
   <div id="loginView" class="card" style="max-width:440px;margin:26px auto">
     <div class="loginbrand">
-      <div class="mark" style="background:none;box-shadow:none"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="eyeGdash" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4D6BFE"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><path d="M32 14 C 14 14, 7 24.5, 7 32 C 7 39.5, 14 50, 32 50 C 50 50, 57 39.5, 57 32 C 57 24.5, 50 14, 32 14 Z" fill="none" stroke="url(#eyeGdash)" stroke-width="6" stroke-linecap="round"/><path d="M32 22.5 C 37 27.6, 39 31.2, 39 35 A 7 7 0 1 1 25 35 C 25 31.2, 27 27.6, 32 22.5 Z" fill="#FACC15"/></svg></div>
+      <div class="mark" style="background:none;box-shadow:none"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="osgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4D6BFE"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><path pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="url(#osgd)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <h2>Le Veilleux</h2>
       <p id="tagline">The AI works. The human decides.</p>
     </div>
@@ -283,7 +285,7 @@ body.wall pre{max-height:40vh}
   <div id="wallView" class="hidden">
     <div class="wall-top">
       <div class="wall-brand">
-        <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 14 C 14 14, 7 24.5, 7 32 C 7 39.5, 14 50, 32 50 C 50 50, 57 39.5, 57 32 C 57 24.5, 50 14, 32 14 Z" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round"/><path d="M32 22.5 C 37 27.6, 39 31.2, 39 35 A 7 7 0 1 1 25 35 C 25 31.2, 27 27.6, 32 22.5 Z" fill="#FACC15"/></svg>
+        <svg width="34" height="34" viewBox="0 0 64 64" aria-hidden="true"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <div><b>Le Veilleux</b><span id="wallSector"></span></div>
       </div>
       <div class="wall-clock"><b id="wallClock">--:--</b><span id="wallDate"></span></div>
