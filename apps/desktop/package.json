@@ -22,7 +22,8 @@
       "preload.js",
       "assets/**",
       "brain/**",
-      "ui/**"
+      "ui/**",
+      "welcome.html"
     ],
     "mac": {
       "category": "public.app-category.business",

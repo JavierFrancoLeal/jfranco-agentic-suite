@@ -9,11 +9,15 @@
 // Appliance behavior: when the target is the local machine, the app starts
 // the bundled supervisor itself (Electron doubles as Node), so double-click
 // = brain on + dashboard open. No more blank blue windows.
-const { app, BrowserWindow, Tray, Menu, shell, nativeImage } = require("electron");
+const { app, BrowserWindow, Tray, Menu, shell, nativeImage, ipcMain } = require("electron");
 const path = require("node:path");
 const os = require("node:os");
 const net = require("node:net");
 const { spawn } = require("node:child_process");
+const fs = require("node:fs");
+const DATA_DIR = path.join(os.homedir(), ".dsh", "supervisor-data");
+const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
+function firstRun() { try { return !fs.existsSync(USERS_FILE); } catch { return true; } }
 
 const TARGET_URL = process.env.LE_VEILLEUX_URL || "http://127.0.0.1:8787/dashboard";
 const KIOSK = process.argv.includes("--kiosk");
@@ -110,10 +114,26 @@ if (!app.requestSingleInstanceLock()) {
     win.loadURL(TARGET_URL);
   }
 
+  ipcMain.on("leveilleux-setup", async (_e, p) => {
+    const serverJs = path.join(__dirname, "brain", "server.js");
+    const packs = path.join(__dirname, "brain", "sector-packs");
+    const runInit = () => new Promise((res) => {
+      const c = spawn(process.execPath, [serverJs, "init", "--owner", String(p.user || "Owner"), "--password", String(p.password || "password123"), "--owner-label", String(p.user || "Owner")], {
+        env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DATA: DATA_DIR, DSH_SECTOR_PACKS_DIR: packs }, stdio: "ignore",
+      });
+      c.on("exit", (code) => res(code));
+    });
+    const code = await runInit();
+    if (code === 0 && p.sector) {
+      try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.copyFileSync(path.join(packs, String(p.sector) + ".json"), path.join(DATA_DIR, "sector.json")); } catch {}
+    }
+    if (win && !win.isDestroyed()) win.loadURL(TARGET_URL);
+  });
   app.whenReady().then(async () => {
     const ok = await ensureBrain();
     createWindow();
-    if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
+    if (LOCAL && firstRun()) { await new Promise((r) => setTimeout(r, 300)); try { if (win && !win.isDestroyed()) win.loadFile(path.join(__dirname, "welcome.html")); } catch {} }
+    else if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
     try {
       const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));
       tray = new Tray(icon.resize({ width: 18, height: 18 }));
