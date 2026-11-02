@@ -163,7 +163,7 @@ td,th{border-bottom:1px solid #e3e6ee;padding:9px 6px;text-align:left}
 "use strict";
 const $=id=>document.getElementById(id);
 let token=null,me=null,auto=false;
-const api=async(p,body)=>{const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});return r.json();};
+const api=async(p,body)=>{try{const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});return r.json();}catch(e){return {error:"network"};}};
 function show(view){["loginView","ownerView","leadView","employeeView"].forEach(v=>$(v).classList.add("hidden"));$(view).classList.remove("hidden");}
 function setWho(){const w=$("who");w.textContent=me?(me.name+" · "+me.role):"";$("logoutBtn").style.display=me?"inline-block":"none";}
 async function loadMetrics(into){
@@ -185,7 +185,7 @@ async function enter(){
 }
 $("loginBtn").onclick=async()=>{
   const r=await api("/api/login",{user:$("loginUser").value,password:$("loginPass").value});
-  if(r.error){showMsg("Login failed.");return;}
+  if(r.error){showMsg(r.error==="network"?"Cannot reach the supervisor server. Is it running (node server.js --lan)?":"Login failed.");return;}
   token=r.token;me={name:r.name,role:r.role};
   sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));
   $("loginPass").value="";
