@@ -111,7 +111,8 @@ if (!app.requestSingleInstanceLock()) {
         setTimeout(() => app.quit(), 400);
       });
     }
-    win.loadURL(TARGET_URL);
+    if (LOCAL && firstRun()) win.loadFile(path.join(__dirname, "welcome.html"));
+    else win.loadURL(TARGET_URL);
   }
 
   ipcMain.on("leveilleux-setup", async (_e, p) => {
