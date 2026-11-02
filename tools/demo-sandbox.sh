@@ -108,7 +108,7 @@ mkdir -p "$DEMO"
 
 # Demo users (nothing personal)
 DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" "$NODE" "$ROOT/supervisor/server.js" \
-  init --owner DemoOwner --password demo-owner --owner-label "Directora" --employee DemoWaiter --employee-password demo123 --employee-label "Mesera" --lead DemoKitchen --lead-password demo123 --lead-label "Cocinero" >/dev/null
+  init --owner DemoOwner --password demo-owner --owner-label "Directora" --employee DemoWaiter --employee-password demo1234 --employee-label "Mesera" --lead DemoKitchen --lead-password demo1234 --lead-label "Cocinero" >/dev/null
 
 # Starter rules: restaurant sector, isolated in the demo data dir
 {
@@ -118,8 +118,7 @@ DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" "$NODE" "$ROOT/superviso
 } > "$DEMO/decisions.md"
 
 # Start the isolated server on the local network
-DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" caffeinate -i "$NODE" "$ROOT/supervisor/server.js" --lan \
-  > /tmp/dsh-demo.log 2>&1 &
+nohup env DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" caffeinate -i "$NODE" "$ROOT/supervisor/server.js" --lan > /tmp/dsh-demo.log 2>&1 &
 echo $! > "$PID"
 sleep 1.2
 
@@ -132,7 +131,7 @@ echo "Staff phones — wallboard (no login):"
 echo "  http://$IP:$PORT/dashboard?wall=1"
 echo ""
 echo "A staff phone — worker view:"
-echo "  http://$IP:$PORT/dashboard   →  DemoWaiter / demo123"
+echo "  http://$IP:$PORT/dashboard   →  DemoWaiter / demo1234"
 echo ""
 echo "Your laptop — owner view:"
 echo "  http://$IP:$PORT/dashboard   →  DemoOwner / demo-owner"
