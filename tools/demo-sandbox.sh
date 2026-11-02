@@ -39,7 +39,7 @@ if [ "${1:-start}" = "tunnel" ]; then
   if [ ! -f "$HOME/.ssh/id_ed25519" ] && [ ! -f "$HOME/.ssh/id_rsa" ]; then
     ssh-keygen -t ed25519 -N "" -f "$HOME/.ssh/id_ed25519" >/dev/null 2>&1
   fi
-  ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 \
+  caffeinate -i ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=15 -o ServerAliveCountMax=3 \
     -R "80:localhost:8790" nokey@localhost.run > /tmp/dsh-demo-tunnel.log 2>&1 &
   echo $! > "$PID.tunnel"
   sleep 6
