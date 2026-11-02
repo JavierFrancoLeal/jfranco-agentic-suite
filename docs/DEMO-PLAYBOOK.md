@@ -33,13 +33,21 @@ What the sandbox guarantees:
   (System Settings → General → Sharing → Internet Sharing) or use a phone
   hotspot, and have everyone join that network.
 - **Option C — public link (works on ANY network, even mobile data):**
-  `sh tools/demo-sandbox.sh tunnel` prints a temporary public
-  `https://….lhr.life` URL. Share the wallboard link with the phones and
-  they connect instantly — no WiFi configuration at all. Note: the tunnel
-  is a third-party relay; demo data is fake, but stop the tunnel after the
-  demo (`sh tools/demo-sandbox.sh stop`).
+  `sh tools/demo-sandbox.sh tunnel` (or `quick` for start+tunnel in one
+  command) prints a temporary public `https://….lhr.life` URL. Share the
+  wallboard link with the phones and they connect instantly — no WiFi
+  configuration at all. Note: the tunnel is a third-party relay; demo data
+  is fake, but stop the tunnel after the demo (`sh tools/demo-sandbox.sh stop`).
 - Tip: create a QR code for the wallboard URL beforehand with any QR
   generator, print it, and the staff just scans it.
+
+### Troubleshooting: phone times out on the LOCAL link
+
+| Check | If true, the fix |
+|---|---|
+| Phone IP (Settings → WiFi → network details) does not start with the Mac's subnet | Phone is on another network (extender/guest/4G) → use option B or C |
+| Phone IP is on the same subnet but still times out | Two usual causes: **(1)** the browser's HTTPS-Only mode refuses `http://` → try Chrome, or disable HTTPS-Only in Firefox; **(2)** the router isolates WiFi clients → use option C |
+| The public link (option C) always works | Use option C as the default for demos |
 
 ### The live simulation flow (restaurant)
 

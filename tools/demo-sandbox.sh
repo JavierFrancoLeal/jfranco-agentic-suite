@@ -59,6 +59,12 @@ if [ "${1:-start}" = "tunnel" ]; then
   exit 0
 fi
 
+if [ "${1:-start}" = "quick" ]; then
+  sh "$0" >/dev/null 2>&1
+  sh "$0" tunnel
+  exit 0
+fi
+
 rm -rf "$DEMO"
 mkdir -p "$DEMO"
 
@@ -98,5 +104,9 @@ echo "  http://$IP:$PORT/panel"
 echo ""
 echo "Phones must be on the SAME WiFi as this computer — or share your"
 echo "Mac's connection (System Settings → General → Sharing → Internet Sharing)."
+echo ""
+echo "If a phone cannot open the LOCAL link (timeout) while on the same"
+echo "network, use the PUBLIC link instead:  sh tools/demo-sandbox.sh tunnel"
+echo "  (one command: sh tools/demo-sandbox.sh quick)"
 echo ""
 echo "Stop and delete everything:  sh tools/demo-sandbox.sh stop"
