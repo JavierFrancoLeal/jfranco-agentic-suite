@@ -1,0 +1,83 @@
+{
+  "id": "clinic",
+  "tableLabel": {
+    "en": "Patient",
+    "es": "Paciente",
+    "fr": "Patient",
+    "de": "Patient",
+    "it": "Paziente",
+    "pt": "Paciente",
+    "zh": "患者",
+    "ja": "患者",
+    "ko": "환자",
+    "ar": "المريض"
+  },
+  "ordersTarget": {
+    "en": "Requests — desk & record",
+    "es": "Solicitudes — mostrador y expediente",
+    "fr": "Demandes — accueil et dossier",
+    "de": "Anfragen — Empfang & Akte",
+    "it": "Richieste — sportello e cartella",
+    "pt": "Pedidos — balcão e processo",
+    "zh": "请求 — 前台与病历",
+    "ja": "依頼 — 受付とカルテ",
+    "ko": "요청 — 접수 및 기록",
+    "ar": "الطلبات — الاستقبال والملف"
+  },
+  "entity": {
+    "en": "patient",
+    "es": "paciente",
+    "fr": "patient",
+    "de": "Patient",
+    "it": "paziente",
+    "pt": "paciente",
+    "zh": "患者",
+    "ja": "患者",
+    "ko": "환자",
+    "ar": "مريض"
+  },
+  "fields": [
+    {
+      "id": "prescription",
+      "type": "text",
+      "label": {
+        "en": "Prescription",
+        "es": "Receta",
+        "fr": "Ordonnance",
+        "de": "Rezept",
+        "it": "Ricetta",
+        "pt": "Receita",
+        "zh": "处方",
+        "ja": "処方箋",
+        "ko": "처방전",
+        "ar": "الوصفة"
+      }
+    }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Receptionist",
+        "es": "Recepcionista",
+        "fr": "Réceptionniste"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Head nurse",
+        "es": "Enfermera jefe",
+        "fr": "Infirmière en chef"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Medical director",
+        "es": "Director médico",
+        "fr": "Directeur médical"
+      },
+      "level": "owner"
+    }
+  ]
+}

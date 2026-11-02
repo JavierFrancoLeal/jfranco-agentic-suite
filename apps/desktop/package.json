@@ -20,7 +20,8 @@
     "files": [
       "main.js",
       "preload.js",
-      "assets/**"
+      "assets/**",
+      "brain/**"
     ],
     "mac": {
       "category": "public.app-category.business",
