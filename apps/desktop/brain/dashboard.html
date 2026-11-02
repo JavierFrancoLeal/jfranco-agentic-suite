@@ -578,7 +578,7 @@ $("closeOverlay").onclick=()=>{$("langOverlay").style.display="none";};
 setTimeout(()=>{
   $("langStep").style.display="flex";
 },1600);
-function pill(l){for(const host of ["langs","footLangs"]){const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$(host).appendChild(b);}}
+function pill(l){for(const host of ["footLangs"]){const el=$(host);if(!el)continue;const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$(host).appendChild(b);}}
 for(const l of Object.keys(LANG))pill(l);
 try{const q=new URLSearchParams(location.search);const ql=q.get("lang");if(ql&&S[ql])cur=ql;}catch(e){}
 try{const saved=localStorage.getItem("dsh-lang");if(saved&&S[saved])cur=saved;}catch(e){}
