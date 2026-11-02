@@ -97,7 +97,7 @@ autoInstallPeers: false
 
 # 5. Install the six plugins into each chosen profile
 $plugins = @("jfranco-workflow-master", "jfranco-input-detector", "jfranco-decision-router",
-             "jfranco-accountability-auditor", "jfranco-interpreter", "jfranco-autonomy-grader")
+             "jfranco-accountability-auditor", "jfranco-interpreter", "jfranco-autonomy-grader", "jfranco-usage-auditor")
 foreach ($p in $profiles) {
   Write-Host ""
   Write-Host "Installing the six plugins into profile '$p'..." -ForegroundColor Blue

@@ -162,11 +162,12 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
 ## 📦 Distribution
 
-The six packages are published on **npm** under the `@javierfrancoleal` scope, so a
+The seven packages are published on **npm** under the `@javierfrancoleal` scope, so a
 business can install them by name:
 
 ```
 dsh plugin --profile desktop add @javierfrancoleal/workflow-master
+dsh plugin --profile desktop add @javierfrancoleal/usage-auditor
 ```
 
 The publisher (`tools/publish.sh`) runs the quality gate before publishing.

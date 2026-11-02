@@ -1,0 +1,7 @@
+# @javierfrancoleal/usage-auditor — J.Franco's self-review layer.
+# Inserts the skill provider into the host plane of the Cordis tree. The
+# /audit command is registered at runtime when the host command registry
+# resolves.
+- insert:
+    - id: usage-auditor
+      name: '@javierfrancoleal/usage-auditor'

@@ -1,0 +1,56 @@
+{
+  "name": "@javierfrancoleal/usage-auditor",
+  "version": "1.0.0",
+  "description": "The self-review layer of the J.Franco agentic workflow: audits real-life usage from the logs — telemetry, friction points, marketing intelligence, and concrete improvement proposals. The human approves every edit.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "lib/index.js",
+    "assets",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24",
+    "dsh": ">=0.2.1-rc.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "directory": "jfranco-usage-auditor"
+  },
+  "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
+  "keywords": [
+    "deepseek-harness",
+    "agentic-workflow",
+    "super-agent",
+    "ai-assistant",
+    "accountability",
+    "plugins",
+    "telemetry"
+  ],
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5"
+  }
+}

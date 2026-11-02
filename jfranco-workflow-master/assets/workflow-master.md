@@ -144,7 +144,8 @@ the Action Panel or the supervisor backend. When a feedback item arrives:
    costs, and the exact rule or text to edit. Never change rules without the
    owner's approval.
 4. Append the outcome to the supervision log; the loop closes when the next
-   reports show the improvement working.
+   reports show the improvement working. The `usage-auditor` skill reviews
+   these loops periodically and proposes deeper fixes.
 
 ## Recovery protocol
 

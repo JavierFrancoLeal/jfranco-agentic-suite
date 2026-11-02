@@ -117,7 +117,7 @@ for prof in $PROFILES; do
   echo ""
   echo "${BLUE}Installing the six plugins into profile '$prof'…${NC}"
   for p in jfranco-workflow-master jfranco-input-detector jfranco-decision-router \
-           jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader; do
+           jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader jfranco-usage-auditor; do
     if "$DSH" plugin --profile "$prof" add "$ROOT/$p" >/dev/null 2>&1; then
       echo "${GREEN}OK $p -> $prof${NC}"
     else

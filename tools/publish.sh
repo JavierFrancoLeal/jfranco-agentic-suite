@@ -26,7 +26,7 @@ echo "Running the quality gate first…"
 sh tools/check.sh
 
 for p in jfranco-workflow-master jfranco-input-detector jfranco-decision-router \
-         jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader; do
+         jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader jfranco-usage-auditor; do
   echo ""
   echo "Publishing $p…"
   (cd "$p" && "$NODE" "$PNPM" publish --access public --no-git-checks)
@@ -39,4 +39,5 @@ echo "  dsh plugin --profile desktop add @javierfrancoleal/input-detector"
 echo "  dsh plugin --profile desktop add @javierfrancoleal/decision-router"
 echo "  dsh plugin --profile desktop add @javierfrancoleal/accountability-auditor"
 echo "  dsh plugin --profile desktop add @javierfrancoleal/interpreter"
-echo "  dsh plugin --profile desktop add @javierfrancoleal/autonomy-grader"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/autonomy-grader
+  dsh plugin --profile desktop add @javierfrancoleal/usage-auditor"

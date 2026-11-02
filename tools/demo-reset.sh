@@ -19,7 +19,7 @@ echo "=== J.Franco demo reset ==="
 
 # 2. Archive previous demo logs (never delete history)
 STAMP="$(date +%s)"
-for f in supervision.md feedback.md usage.md; do
+for f in supervision.md feedback.md usage.md audit.md; do
   [ -f "$HOME/.dsh/$f" ] && mv "$HOME/.dsh/$f" "$HOME/.dsh/$f.demo-$STAMP"
 done
 
