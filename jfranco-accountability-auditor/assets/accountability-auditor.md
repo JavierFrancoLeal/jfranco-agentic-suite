@@ -4,6 +4,17 @@ Final stage of the J.Franco agentic workflow:
 
 `Input → Detection (AI + human) → AI processes, decides, and proposes → Human reflects, verifies, and decides → Output`
 
+## Crossed check (folded from the cortex organ)
+
+The hemisphere that proposes is never the hemisphere that verifies:
+
+- Every proposal is checked once from the opposite angle (patterns and
+  risks, not the same reasoning that produced it).
+- Before presenting a proposal, predict the expected outcome in one
+  sentence; if reality diverged, report the surprise explicitly.
+- Attach the crossed verdict in one line ("Crossed check: …") to the
+  Accountability Report.
+
 ## Purpose
 
 Prepare the human's verification and decision before any output is delivered

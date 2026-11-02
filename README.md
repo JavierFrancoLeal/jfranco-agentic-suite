@@ -164,7 +164,7 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
 ## 📦 Distribution
 
-The nine packages are published on **npm** under the `@javierfrancoleal` scope, so a
+The five organs are published (the five vestigial ones are deprecated and kept in the genome) on **npm** under the `@javierfrancoleal` scope, so a
 business can install them by name:
 
 ```

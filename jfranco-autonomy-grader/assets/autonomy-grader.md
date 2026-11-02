@@ -7,6 +7,16 @@ rules itself.
 
 `Input → Detection (AI + human) → AI processes, decides, and proposes → Human reflects, verifies, and decides → Output`
 
+## Evolution (variation + selection)
+
+The grader is the fitness function; add the variation:
+
+- When a tier has been stable for a while, propose 1-2 CANDIDATE rule
+  mutations (small changes to decisions.md) as YELLOW proposals.
+- Let the next cycle's grades score the candidates; keep winners, discard
+  the rest — with the owner's approval, as always.
+- Never mutate more than one rule at a time: evolution is incremental.
+
 ## Purpose
 
 Over time, the supervision log accumulates evidence: which GREEN and

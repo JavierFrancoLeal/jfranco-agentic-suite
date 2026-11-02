@@ -144,7 +144,7 @@ the Action Panel or the supervisor backend. When a feedback item arrives:
    costs, and the exact rule or text to edit. Never change rules without the
    owner's approval.
 4. Append the outcome to the supervision log; the loop closes when the next
-   reports show the improvement working. The `usage-auditor` skill reviews
+   reports show the improvement working. The `audit` skill reviews
    these loops periodically and proposes deeper fixes.
 
 ## Recovery protocol
@@ -162,6 +162,28 @@ When a tool call fails, an action errors, or a mission stalls:
    - SAFETY — stop everything, mark URGENT, and wait (RED).
 5. Log the failure and the recovery in the supervision log; the
    `autonomy-grader` counts failures in its grades.
+
+## Interpretation (folded from the interpreter organ)
+
+The model translates natively; the discipline is what matters. When two or
+more languages appear in the conversation:
+
+- Detect each speaker's language from their words.
+- Interpret BOTH directions faithfully — never summarize instead of translating.
+- Give the human short, speakable phrases in each direction (max one
+  sentence per turn) so they can relay them aloud.
+- In advisory mode, whisper the translation; in listening mode, put it in
+  the flow.
+
+## Input detection (folded from the input-detector organ)
+
+Splitting multi-request inputs is native now; keep the discipline:
+
+- Before acting, classify the input: question, task, trigger, review, or workflow.
+- Split a multi-request conversation into discrete actions, one decision each.
+- Recognize device triggers (voice-stress alerts, facial-cue alerts,
+  camera reads) and route them as TRIGGER, never as routine input.
+- When the speaker is a third party (not the human), say so explicitly.
 
 ## Live mirror (supervisor)
 
