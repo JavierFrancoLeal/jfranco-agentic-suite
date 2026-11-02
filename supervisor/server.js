@@ -303,7 +303,7 @@ async function api(req, res, pathname) {
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/sector-presets" && req.method === "GET") {
-    const dir = path.join(ROOT, "docs", "sector-packs");
+    const dir = process.env.DSH_SECTOR_PACKS_DIR || path.join(ROOT, "docs", "sector-packs");
     const out = [];
     try {
       for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json")).sort()) {

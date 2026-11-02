@@ -1,0 +1,43 @@
+{
+  "name": "@javierfrancoleal/dsh-supervisor",
+  "version": "1.0.0",
+  "description": "The central control plane of the J.Franco agentic workflow suite: user accounts, the live conversation flow (listen → per-person summary → confirm → orders), telemetry, and the universal sector dashboard with 10 languages. Created by J.Franco.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "server.js",
+  "bin": {
+    "jfranco-supervisor": "bin/jfranco-supervisor.js"
+  },
+  "files": [
+    "server.js",
+    "dashboard.html",
+    "panel.html",
+    "manifest.webmanifest",
+    "icons",
+    "sector-packs",
+    "bin",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "directory": "supervisor-pkg"
+  },
+  "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
+  "keywords": [
+    "deepseek-harness",
+    "agentic-workflow",
+    "super-agent",
+    "dashboard",
+    "sectors",
+    "multi-language",
+    "rbac"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
