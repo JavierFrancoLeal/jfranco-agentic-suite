@@ -35,6 +35,12 @@ web standards. This document records the audit.
   LAN, same-origin, and it works fully.)
 - **Supervisor unreachable:** the dashboard now shows "Cannot reach the
   supervisor server" instead of failing silently.
+- **Safari mixed-content — solved with HTTPS:** start the Supervisor with
+  `--https` (certificates via `tools/make-cert.sh`) and open
+  `https://<server-ip>:8443/panel`: same-origin, no mixed-content blocks.
+  Self-signed certificates show a one-time browser warning on first visit;
+  a real certificate (domain + Let's Encrypt) is the production path for
+  full PWA installation on Android.
 
 ## Manual test checklist (per browser)
 

@@ -23,9 +23,16 @@ role-based; the employee view is kiosk-style with one big LISTEN button.
 # one time: create the owner (and optionally the first employee)
 node server.js init --owner Maria --password secret123 --employee Luis --employee-password luis456
 
-# every day: run the server (add --lan so tablets on the WiFi can reach it)
-node server.js --lan
+# every day: run the server
+#   --lan   → reachable from tablets/phones on the WiFi (bind 0.0.0.0)
+#   --db    → SQLite storage (node:sqlite, zero deps) for 100+ employee sites
+#   --https → also serve HTTPS on port 8443 (fixes Safari mixed-content; PWA-ready)
+node server.js --lan --https --db
 ```
+
+Certificates for HTTPS: `sh tools/make-cert.sh` (self-signed; browsers show a
+warning on first visit — a real certificate via a domain is the production
+path).
 
 Open **http://<server-ip>:8787/dashboard** (owner/employees) and
 **http://<server-ip>:8787/panel** (the Action Panel served locally).
@@ -49,4 +56,4 @@ decisions.md in the dashboard.`
 
 - Token-cost metering per worker (from session logs).
 - Live dashboard updates (server-sent events).
-- Remote access for multi-site businesses (with TLS).
+- Remote access for multi-site businesses (with a real TLS certificate).
