@@ -27,11 +27,17 @@ What the sandbox guarantees:
 
 ### Connecting their phones
 
-- If the restaurant has WiFi: phones join it, then open
+- **Option A — same WiFi:** phones join the restaurant's WiFi, then open
   `http://<your-mac-ip>:8790/dashboard?wall=1`.
-- If there is **no WiFi at all**: turn your Mac into a hotspot
+- **Option B — no WiFi or blocked network:** turn your Mac into a hotspot
   (System Settings → General → Sharing → Internet Sharing) or use a phone
   hotspot, and have everyone join that network.
+- **Option C — public link (works on ANY network, even mobile data):**
+  `sh tools/demo-sandbox.sh tunnel` prints a temporary public
+  `https://….lhr.life` URL. Share the wallboard link with the phones and
+  they connect instantly — no WiFi configuration at all. Note: the tunnel
+  is a third-party relay; demo data is fake, but stop the tunnel after the
+  demo (`sh tools/demo-sandbox.sh stop`).
 - Tip: create a QR code for the wallboard URL beforehand with any QR
   generator, print it, and the staff just scans it.
 

@@ -25,8 +25,37 @@ PID="/tmp/dsh-demo.pid"
 
 if [ "${1:-start}" = "stop" ]; then
   kill "$(cat "$PID" 2>/dev/null)" 2>/dev/null || true
+  kill "$(cat "$PID.tunnel" 2>/dev/null)" 2>/dev/null || true
   rm -rf "$DEMO"
   echo "Demo stopped. Every demo file deleted."
+  exit 0
+fi
+
+if [ "${1:-start}" = "tunnel" ]; then
+  # Public URL mode: phones work from ANY network (even 4G), no WiFi needed.
+  # Uses a temporary third-party tunnel (localhost.run). Demo data is fake,
+  # but note that traffic passes through their servers during the demo.
+  command -v ssh >/dev/null 2>&1 || { echo "ssh not found"; exit 1; }
+  if [ ! -f "$HOME/.ssh/id_ed25519" ] && [ ! -f "$HOME/.ssh/id_rsa" ]; then
+    ssh-keygen -t ed25519 -N "" -f "$HOME/.ssh/id_ed25519" >/dev/null 2>&1
+  fi
+  ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=30 \
+    -R "80:localhost:8790" nokey@localhost.run > /tmp/dsh-demo-tunnel.log 2>&1 &
+  echo $! > "$PID.tunnel"
+  sleep 6
+  URL="$(grep -oE 'https://[a-z0-9-]+\.lhr\.life' /tmp/dsh-demo-tunnel.log | head -1)"
+  if [ -z "$URL" ]; then
+    echo "Tunnel did not start. Check /tmp/dsh-demo-tunnel.log"
+    exit 1
+  fi
+  echo ""
+  echo "=== PUBLIC DEMO LINK (works on any network, even mobile data) ==="
+  echo ""
+  echo "  Wallboard (phones, no login):  $URL/dashboard?wall=1"
+  echo "  Dashboard:                     $URL/dashboard"
+  echo "  Panel:                         $URL/panel"
+  echo ""
+  echo "Stop everything:  sh tools/demo-sandbox.sh stop"
   exit 0
 fi
 
