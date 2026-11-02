@@ -45,7 +45,16 @@ for f in "$ROOT"/docs/sector-packs/*.json; do
   b="$(basename "$f")"
   cmp -s "$f" "$ROOT/supervisor-pkg/sector-packs/$b" 2>/dev/null || { cp "$f" "$ROOT/supervisor-pkg/sector-packs/$b"; CHANGED=1; }
 done
-sname="$("$NODE" -e 'console.log(require(process.argv[1]).name)' "$ROOT/supervisor-pkg/package.json")"
+# Desktop app bundle: keep the brain + UI copies fresh
+  for pair in "supervisor/dashboard.html:apps/desktop/brain/dashboard.html" "ui/panel.html:apps/desktop/ui/panel.html" "ui/manifest.webmanifest:apps/desktop/ui/manifest.webmanifest" "ui/sw.js:apps/desktop/ui/sw.js"; do
+    src="${pair%%:*}"; dst="${pair##*:}";
+    cmp -s "$ROOT/$src" "$ROOT/$dst" || { cp "$ROOT/$src" "$ROOT/$dst"; CHANGED=1; }
+  done
+  for f in "$ROOT"/ui/icons/*; do
+    b="$(basename "$f")"
+    cmp -s "$f" "$ROOT/apps/desktop/ui/icons/$b" 2>/dev/null || { cp "$f" "$ROOT/apps/desktop/ui/icons/$b"; CHANGED=1; }
+  done
+  sname="$("$NODE" -e 'console.log(require(process.argv[1]).name)' "$ROOT/supervisor-pkg/package.json")"
 if [ "$CHANGED" = 1 ]; then
   nv="$(bump "$ROOT/supervisor-pkg/package.json")"
   echo "supervisor: fuentes cambiaron → v$nv"

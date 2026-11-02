@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4D6BFE">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Le Veilleux">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-icon-180.png">
+<title>Le Veilleux — Action Panel</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234D6BFE'/%3E%3Cstop offset='1' stop-color='%237c5cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8' fill='none' stroke='url(%23f)' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{--blue:#4D6BFE;--ink:#101828;--muted:#667085;--bg:#f6f7fb;--card:#fff;--line:#e3e6ee;--line2:#eef0f7;--ok:#22c55e;--bad:#ef4444}
+body.dark{--ink:#e6ecf7;--muted:#94a3b8;--bg:#0b1220;--card:#141f31;--line:#26334d;--line2:#26334d}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;padding:18px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header .logo{font-size:30px}
+header .ht{flex:1;min-width:180px}
+header h1{margin:0;font-size:20px}
+header p{margin:3px 0 0;opacity:.85;font-size:12.5px}
+.chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:600}
+main{max-width:580px;margin:0 auto;padding:16px}
+.idcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.idcard .avatar{width:38px;height:38px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+.idcard .who{flex:1;min-width:130px}
+.idcard .who b{display:block;font-size:15px}
+.idcard .who span{font-size:12.5px;color:var(--muted)}
+.idcard input{width:110px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;background:var(--card);color:var(--ink)}
+.idcard.warn{border-color:var(--bad);background:#fff5f5}
+.idcard a{color:var(--blue);font-weight:700;font-size:13.5px}
+.primary{display:block;width:100%;margin:14px 0;background:var(--ok);border:none;border-radius:22px;padding:28px 16px;font-size:26px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 4px 14px rgba(34,197,94,.35)}
+.primary:active{transform:scale(.98)}
+.primary.live{background:var(--bad);box-shadow:0 4px 14px rgba(239,68,68,.35);animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 24px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
+.status{text-align:center;font-size:13.5px;color:var(--muted);margin:4px 0}
+.prompt{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:90px;white-space:pre-wrap;font-size:15px;line-height:1.55}
+.row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+.row button{flex:1;min-width:130px;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;color:#fff;cursor:pointer}
+.copy{background:var(--blue)}
+.speak{background:#7c5cff}
+.fbcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:16px 0}
+.fbcard h3{margin:0 0 10px;font-size:16px}
+.fbcard select,.fbcard textarea,.fbcard button{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;margin-bottom:8px;font-family:inherit;background:var(--card);color:var(--ink)}
+.fbcard textarea{resize:vertical}
+.fbcard button{background:var(--blue);color:#fff;font-weight:600;border:none;cursor:pointer}
+.note{font-size:13px;color:var(--muted);line-height:1.65}
+code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
+.foot{text-align:center;padding:6px 16px 16px}
+.foot .langs{margin:8px 0}
+.foot .copyr{font-size:12px;color:var(--muted)}
+.langs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:13px;cursor:pointer;color:var(--ink)}
+.pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><svg width="30" height="26" viewBox="0 0 64 64" aria-hidden="true"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <div class="ht">
+    <h1 id="title">DSH Assistant — Action Panel</h1>
+    <p id="subtitle">J.Franco · DeepSeek Harness · Québec 🍁</p>
+  </div>
+  <button class="chip" id="darkBtn" style="cursor:pointer">🌙</button>
+</header>
+<main>
+  <div class="idcard" id="idCard">
+    <div class="avatar" id="avatar">?</div>
+    <div class="who">
+      <b id="whoName">—</b>
+      <span id="whoRole"></span>
+    </div>
+    <input id="workerInput" placeholder="User">
+    <input id="roleInput" placeholder="Role">
+  </div>
+  <div id="gateCard" class="idcard warn hidden" style="display:none">
+    <div class="avatar">🔒</div>
+    <div class="who"><b id="gateTitle">Not identified</b><span id="gateHint"></span></div>
+    <a href="/dashboard" id="gateLink">Log in on the Dashboard</a>
+  </div>
+
+  <button class="primary" id="listenBtn">🎙️ LISTEN / DICTATE</button>
+  <div class="status" id="status"></div>
+
+  <div class="prompt" id="prompt"></div>
+
+  <div class="row">
+    <button class="copy" id="copyBtn">📋 Copy for DSH</button>
+    <button class="speak" id="speakBtn">🔊 Read aloud</button>
+  </div>
+
+  <p class="note" id="note"></p>
+  <p class="note" id="legend"></p>
+
+  <div class="fbcard">
+    <h3 id="fbTitle">Field Feedback</h3>
+    <select id="fbCat">
+      <option id="catError" value="error">Error</option>
+      <option id="catImprovement" value="improvement">Improvement</option>
+      <option id="catIdea" value="idea">Idea</option>
+    </select>
+    <textarea id="fbText" rows="3" placeholder="What happened? What should improve?"></textarea>
+    <button id="fbSend">Send feedback</button>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="langs" id="langs"></div>
+  <div class="copyr">Suite J.Franco · open source (MIT) · autor J.Franco</div>
+</footer>
+<script>
+"use strict";
+const LANG={es:"escucha",en:"listen",fr:"écoute",de:"hör zu",it:"ascolta",pt:"escuta",zh:"听",ja:"聞いて",ko:"들어봐",ar:"استمع"};
+const VOICE={es:"es-ES",en:"en-US",fr:"fr-FR",de:"de-DE",it:"it-IT",pt:"pt-PT",zh:"zh-CN",ja:"ja-JP",ko:"ko-KR",ar:"ar-SA"};
+const END={es:"eso es todo",en:"that's all",fr:"c'est tout",de:"das ist alles",it:"è tutto",pt:"é tudo",zh:"说完了",ja:"以上です",ko:"이상입니다",ar:"هذا كل شيء"};
+const S={
+ es:{worker:"Usuario",role:"Puesto",title:"🎙️ Le Veilleux — Panel de Acción",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ ESCUCHAR / DICTAR",stop:"⏹️ DETENER",copy:"📋 Copiar para DSH",copied:"✅ ¡Copiado!",
+  speak:"🔊 Leer en voz alta",nospeech:"🎙️ Dictado no soportado",
+  recording:"🔴 Grabando — toca DETENER al terminar",micError:"Micrófono no disponible — revisa los permisos del navegador.",
+  signedIn:"Sesión de",notIdentified:"Sin identificar",loginLink:"Inicia sesión en el Dashboard",
+  gateHint:"Para usar este panel, identifícate primero.",
+  placeholder:"Pulsa ESCUCHAR y habla tu conversación…",
+  clue:(w)=>`DSH, ${w} — comienzo a escuchar. Dime la conversación o las peticiones. Si aparecen varios idiomas, activa la interpretación cuando lo pida; el flujo principal (anotar, escribir, abrir aplicaciones…) sigue el análisis del input.`,
+  note:(end)=>`Pulsa ESCUCHAR, habla la conversación y di «${end}». Luego copia y pega la instrucción en una nueva sesión de DeepSeek Harness — o usa la app «DSH Asistente» para ejecución autónoma.`,
+  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifícalo) · 🟡 propuesta (tú decides) · 🔴 pregunta.",fbTitle:"Feedback de campo",fbPh:"¿Qué pasó? ¿Qué debe mejorar?",fbSent:"Enviado — el agente lo leerá",fbOffline:"Supervisor sin conexión — prompt copiado para DSH",catError:"Error",catImprovement:"Mejora",catIdea:"Idea"},
+ en:{worker:"User",role:"Role",title:"🎙️ Le Veilleux — Action Panel",subtitle:"J.Franco Suite · DeepSeek Harness",
+  listen:"🎙️ LISTEN / DICTATE",stop:"⏹️ STOP",copy:"📋 Copy for DSH",copied:"✅ Copied!",
+  speak:"🔊 Read aloud",nospeech:"🎙️ Dictation not supported",
+  recording:"🔴 Recording — tap STOP when done",micError:"Microphone unavailable — check browser permissions.",
+  signedIn:"Signed in as",notIdentified:"Not identified",loginLink:"Log in on the Dashboard",
+  gateHint:"To use this panel, identify yourself first.",
+  placeholder:"Tap LISTEN and speak your conversation…",
+  clue:(w)=>`DSH, ${w} — I'm starting to listen. Tell me the conversation or the requests. If several languages appear, activate interpretation when asked; the main flow (noting, writing, opening apps…) follows the input analysis.`,
+  note:(end)=>`Tap LISTEN, speak the conversation and say "${end}". Then copy and paste the instruction into a new DeepSeek Harness session — or use the "DSH Assistant" app for autonomous runs.`,
+  legend:"Traffic light: 🟢 automatic · ⚑ semi-automatic (verify it) · 🟡 proposal (you decide) · 🔴 ask.",fbTitle:"Field Feedback",fbPh:"What happened? What should improve?",fbSent:"Sent — the agent will read it",fbOffline:"Supervisor offline — prompt copied for DSH",catError:"Error",catImprovement:"Improvement",catIdea:"Idea"},
+ fr:{worker:"Utilisateur",role:"Fonction",title:"🎙️ Le Veilleux — Panneau d'Action",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ ÉCOUTER / DICTER",stop:"⏹️ ARRÊTER",copy:"📋 Copier pour DSH",copied:"✅ Copié !",
+  speak:"🔊 Lire à voix haute",nospeech:"🎙️ Dictée non prise en charge",
+  recording:"🔴 Enregistrement — touchez ARRÊTER à la fin",micError:"Micro indisponible — vérifiez les autorisations du navigateur.",
+  signedIn:"Connecté en tant que",notIdentified:"Non identifié",loginLink:"Connectez-vous sur le Dashboard",
+  gateHint:"Pour utiliser ce panneau, identifiez-vous d'abord.",
+  placeholder:"Touchez ÉCOUTER et parlez…",
+  clue:(w)=>`DSH, ${w} — je commence à écouter. Racontez-moi la conversation ou les demandes. Si plusieurs langues apparaissent, activez l'interprétation à la demande ; le flux principal (noter, écrire, ouvrir des applications…) suit l'analyse.`,
+  note:(end)=>`Touchez ÉCOUTER, parlez et dites « ${end} ». Copiez ensuite l'instruction dans une nouvelle session DeepSeek Harness — ou utilisez l'app « DSH Assistant » pour l'exécution autonome.`,
+  legend:"Feux : 🟢 automatique · ⚑ semi-automatique (vérifiez) · 🟡 proposition (vous décidez) · 🔴 demandez.",fbTitle:"Feedback terrain",fbPh:"Que s'est-il passé ? Que faut-il améliorer ?",fbSent:"Envoyé — l'agent le lira",fbOffline:"Superviseur hors ligne — invite copiée pour DSH",catError:"Erreur",catImprovement:"Amélioration",catIdea:"Idée"},
+ de:{worker:"Benutzer",role:"Rolle",title:"🎙️ Le Veilleux — Aktionspanel",subtitle:"J.Franco-Suite · DeepSeek Harness",
+  listen:"🎙️ ZUHÖREN / DIKTIEREN",stop:"⏹️ STOPP",copy:"📋 Für DSH kopieren",copied:"✅ Kopiert!",
+  speak:"🔊 Vorlesen",nospeech:"🎙️ Diktat nicht unterstützt",
+  recording:"🔴 Aufnahme — tippen Sie STOPP am Ende",micError:"Mikrofon nicht verfügbar — Browser-Berechtigungen prüfen.",
+  signedIn:"Angemeldet als",notIdentified:"Nicht angemeldet",loginLink:"Im Dashboard anmelden",
+  gateHint:"Bitte zuerst anmelden, um dieses Panel zu nutzen.",
+  placeholder:"Tippen Sie auf ZUHÖREN und sprechen Sie…",
+  clue:(w)=>`DSH, ${w} — ich beginne zuzuhören. Erzählen Sie mir das Gespräch oder die Anfragen. Bei mehreren Sprachen aktivieren Sie das Dolmetschen auf Zuruf; der Hauptablauf folgt der Analyse.`,
+  note:(end)=>`Tippen Sie auf ZUHÖREN, sprechen Sie und sagen Sie «${end}». Kopieren Sie die Anweisung in eine neue Sitzung — oder nutzen Sie die App „DSH Assistent“.`,
+  legend:"Ampel: 🟢 automatisch · ⚑ halbautomatisch (prüfen) · 🟡 Vorschlag (Sie entscheiden) · 🔴 fragen.",fbTitle:"Feld-Feedback",fbPh:"Was ist passiert? Was soll besser werden?",fbSent:"Gesendet — der Agent liest es",fbOffline:"Supervisor offline — Prompt für DSH kopiert",catError:"Fehler",catImprovement:"Verbesserung",catIdea:"Idee"},
+ it:{worker:"Utente",role:"Ruolo",title:"🎙️ Le Veilleux — Pannello Azioni",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ ASCOLTA / DETTA",stop:"⏹️ FERMA",copy:"📋 Copia per DSH",copied:"✅ Copiato!",
+  speak:"🔊 Leggi ad alta voce",nospeech:"🎙️ Dettatura non supportata",
+  recording:"🔴 Registrazione — tocca FERMA alla fine",micError:"Microfono non disponibile — controlla i permessi.",
+  signedIn:"Accesso come",notIdentified:"Non identificato",loginLink:"Accedi dal Dashboard",
+  gateHint:"Per usare questo pannello, identificati prima.",
+  placeholder:"Tocca ASCOLTA e parla…",
+  clue:(w)=>`DSH, ${w} — comincio ad ascoltare. Raccontami la conversazione o le richieste. Se compaiono più lingue, attiva l'interpretazione quando richiesto; il flusso principale segue l'analisi.`,
+  note:(end)=>`Tocca ASCOLTA, parla e di' «${end}». Poi copia e incolla l'istruzione in una nuova sessione — oppure usa l'app «DSH Assistente».`,
+  legend:"Semaforo: 🟢 automatico · ⚑ semi-automatico (verificalo) · 🟡 proposta (decidi tu) · 🔴 chiedi.",fbTitle:"Feedback di campo",fbPh:"Cosa è successo? Cosa va migliorato?",fbSent:"Inviato — l'agente lo leggerà",fbOffline:"Supervisore offline — prompt copiato per DSH",catError:"Errore",catImprovement:"Miglioria",catIdea:"Idea"},
+ pt:{worker:"Usuário",role:"Função",title:"🎙️ Le Veilleux — Painel de Ação",subtitle:"Suite J.Franco · DeepSeek Harness",
+  listen:"🎙️ OUVIR / DITAR",stop:"⏹️ PARAR",copy:"📋 Copiar para o DSH",copied:"✅ Copiado!",
+  speak:"🔊 Ler em voz alta",nospeech:"🎙️ Ditado não suportado",
+  recording:"🔴 A gravar — toque PARAR no fim",micError:"Microfone indisponível — verifique as permissões.",
+  signedIn:"Sessão de",notIdentified:"Não identificado",loginLink:"Inicie sessão no Dashboard",
+  gateHint:"Para usar este painel, identifique-se primeiro.",
+  placeholder:"Toque em OUVIR e fale…",
+  clue:(w)=>`DSH, ${w} — começo a ouvir. Conte-me a conversa ou os pedidos. Se aparecerem várias línguas, ative a interpretação quando pedido; o fluxo principal segue a análise.`,
+  note:(end)=>`Toque em OUVIR, fale e diga «${end}». Depois copie e cole a instrução numa nova sessão — ou use a app «DSH Assistente».`,
+  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifique) · 🟡 proposta (você decide) · 🔴 pergunte.",fbTitle:"Feedback de campo",fbPh:"O que aconteceu? O que deve melhorar?",fbSent:"Enviado — o agente vai ler",fbOffline:"Supervisor offline — prompt copiado para o DSH",catError:"Erro",catImprovement:"Melhoria",catIdea:"Ideia"},
+ zh:{worker:"用户",role:"职位",title:"🎙️ Le Veilleux — 操作面板",subtitle:"J.Franco 套件 · DeepSeek Harness",
+  listen:"🎙️ 聆听 / 听写",stop:"⏹️ 停止",copy:"📋 复制到 DSH",copied:"✅ 已复制！",
+  speak:"🔊 朗读",nospeech:"🎙️ 不支持听写",
+  recording:"🔴 录音中 — 完成后点击停止",micError:"麦克风不可用 — 请检查浏览器权限。",
+  signedIn:"已登录：",notIdentified:"未识别",loginLink:"请在 Dashboard 登录",
+  gateHint:"请先登录后再使用此面板。",
+  placeholder:"点击「聆听」并说出对话…",
+  clue:(w)=>`DSH，${w} — 我开始聆听。请告诉我对话或请求。若出现多种语言，按需启用口译；主流程跟随输入分析。`,
+  note:(end)=>`点击「聆听」，说出对话并说「${end}」。然后将指令复制粘贴到新的会话 — 或使用「DSH 助手」应用。`,
+  legend:"红绿灯：🟢 自动 · ⚑ 半自动（请核实）· 🟡 提议（你决定）· 🔴 询问。",fbTitle:"现场反馈",fbPh:"发生了什么？什么需要改进？",fbSent:"已发送 — 智能体会读取",fbOffline:"主管离线 — 提示已复制到 DSH",catError:"错误",catImprovement:"改进",catIdea:"想法"},
+ ja:{worker:"ユーザー",role:"役割",title:"🎙️ Le Veilleux — アクションパネル",subtitle:"J.Franco スイート · DeepSeek Harness",
+  listen:"🎙️ 聞く / 音声入力",stop:"⏹️ 停止",copy:"📋 DSHへコピー",copied:"✅ コピー済み！",
+  speak:"🔊 読み上げ",nospeech:"🎙️ 音声入力非対応",
+  recording:"🔴 録音中 — 終わったら停止をタップ",micError:"マイクが使えません — ブラウザの権限を確認してください。",
+  signedIn:"ログイン中：",notIdentified:"未確認",loginLink:"Dashboardでログイン",
+  gateHint:"このパネルを使うには、まずログインしてください。",
+  placeholder:"「聞く」をタップして会話を話してください…",
+  clue:(w)=>`DSH、${w} — 聞き始めます。会話や依頼を教えてください。複数の言語が出たら、求めに応じて通訳を有効化；主フローは入力分析に従います。`,
+  note:(end)=>`「聞く」をタップし、会話を話して「${end}」と言います。その後、指示を新しいセッションに貼り付け — または「DSH アシスタント」アプリで自律実行。`,
+  legend:"信号：🟢 自動 · ⚑ 半自動（確認）· 🟡 提案（あなたが決定）· 🔴 質問。",fbTitle:"現場フィードバック",fbPh:"何が起きましたか？何を改善すべき？",fbSent:"送信済み — エージェントが読みます",fbOffline:"スーパーバイザーオフライン — プロンプトをDSH用にコピー",catError:"エラー",catImprovement:"改善",catIdea:"アイデア"},
+ ko:{worker:"사용자",role:"역할",title:"🎙️ Le Veilleux — 액션 패널",subtitle:"J.Franco 스위트 · DeepSeek Harness",
+  listen:"🎙️ 듣기 / 받아쓰기",stop:"⏹️ 중지",copy:"📋 DSH로 복사",copied:"✅ 복사됨!",
+  speak:"🔊 소리내어 읽기",nospeech:"🎙️ 받아쓰기 미지원",
+  recording:"🔴 녹음 중 — 끝나면 중지를 누르세요",micError:"마이크를 사용할 수 없습니다 — 브라우저 권한을 확인하세요.",
+  signedIn:"로그인:",notIdentified:"미확인",loginLink:"Dashboard에서 로그인",
+  gateHint:"이 패널을 사용하려면 먼저 로그인하세요.",
+  placeholder:"「듣기」를 누르고 대화를 말하세요…",
+  clue:(w)=>`DSH, ${w} — 듣기 시작합니다. 대화나 요청을 말씀해 주세요. 여러 언어가 나오면 요청 시 통역을 활성화합니다. 주 흐름은 입력 분석을 따릅니다.`,
+  note:(end)=>`「듣기」를 누르고 대화를 말한 뒤 「${end}」라고 하세요. 그런 다음 지시를 새 세션에 붙여넣기 — 또는 「DSH 어시스턴트」 앱으로 자율 실행.`,
+  legend:"신호등: 🟢 자동 · ⚑ 반자동(확인) · 🟡 제안(당신이 결정) · 🔴 질문.",fbTitle:"현장 피드백",fbPh:"무슨 일이 있었나요? 무엇을 개선할까요?",fbSent:"전송됨 — 에이전트가 읽습니다",fbOffline:"감독자 오프라인 — DSH용 프롬프트 복사됨",catError:"오류",catImprovement:"개선",catIdea:"아이디어"},
+ ar:{worker:"المستخدم",role:"الدور",title:"🎙️ Le Veilleux — لوحة الإجراءات",subtitle:"مجموعة J.Franco · DeepSeek Harness",
+  listen:"🎙️ استمع / أملي",stop:"⏹️ إيقاف",copy:"📋 نسخ إلى DSH",copied:"✅ تم النسخ!",
+  speak:"🔊 قراءة بصوت عالٍ",nospeech:"🎙️ الإملاء غير مدعوم",
+  recording:"🔴 جارٍ التسجيل — اضغط إيقاف عند الانتهاء",micError:"الميكروفون غير متاح — تحقق من أذونات المتصفح.",
+  signedIn:"مسجّل باسم",notIdentified:"غير معرّف",loginLink:"سجّل الدخول في Dashboard",
+  gateHint:"للاستخدام، يجب تسجيل الدخول أولًا.",
+  placeholder:"اضغط «استمع» وتحدث…",
+  clue:(w)=>`DSH، ${w} — أبدأ الاستماع. أخبرني بالمحادثة أو الطلبات. عند ظهور عدة لغات فعّل الترجمة عند الطلب؛ التدفق الرئيسي يتبع تحليل المدخلات.`,
+  note:(end)=>`اضغط «استمع»، وتحدث ثم قل «${end}». بعدها انسخ التعليمات والصقها في جلسة جديدة — أو استخدم تطبيق «مساعد DSH».`,
+  legend:"الإشارة: 🟢 تلقائي · ⚑ شبه تلقائي (تحقق) · 🟡 مقترح (أنت تقرر) · 🔴 اسأل.",fbTitle:"ملاحظات ميدانية",fbPh:"ماذا حدث؟ ما الذي يجب تحسينه؟",fbSent:"أُرسل — سيقرأه الوكيل",fbOffline:"المشرف غير متصل — تم نسخ الموجه إلى DSH",catError:"خطأ",catImprovement:"تحسين",catIdea:"فكرة"}
+};
+const $=id=>document.getElementById(id);
+const promptEl=$("prompt"),langsEl=$("langs"),workerInput=$("workerInput"),roleInput=$("roleInput");
+let cur="en",darkOn=false,recording=false,armed=false,rec=null,interim="",finalText="";
+// Session continuity: the dashboard sends ?user=…&role=…&lang=…
+const q=new URLSearchParams(location.search);
+try{
+  const savedUser=localStorage.getItem("dsh-worker"),savedRole=localStorage.getItem("dsh-role");
+  if(q.get("user"))localStorage.setItem("dsh-worker",q.get("user"));
+  if(q.get("role"))localStorage.setItem("dsh-role",q.get("role"));
+  if(q.get("label"))localStorage.setItem("dsh-role",q.get("label"));
+  workerInput.value=q.get("user")||savedUser||"";
+  roleInput.value=q.get("label")||q.get("role")||savedRole||"";
+  if(q.get("lang")&&S[q.get("lang")]){cur=q.get("lang");localStorage.setItem("dsh-lang",cur);}
+  else if(localStorage.getItem("dsh-lang")&&S[localStorage.getItem("dsh-lang")])cur=localStorage.getItem("dsh-lang");
+}catch(e){}
+workerInput.oninput=()=>{try{localStorage.setItem("dsh-worker",workerInput.value.trim());}catch(e){}updateIdentity();};
+roleInput.oninput=()=>{try{localStorage.setItem("dsh-role",roleInput.value.trim());}catch(e){}updateIdentity();};
+function identity(){const w=workerInput.value.trim(),r=roleInput.value.trim();return w?("Worker: "+w+(r?" ("+r+")":"")+". "):"";}
+function updateIdentity(){
+  const w=workerInput.value.trim(),r=roleInput.value.trim();
+  $("idCard").style.display=w?"flex":"none";
+  $("gateCard").style.display=w?"none":"flex";
+  if(w){
+    $("whoName").textContent=w;
+    $("whoRole").textContent=S[cur].signedIn+(r?" · "+r:"");
+    $("avatar").textContent=w.slice(0,1).toUpperCase();
+  }
+}
+function applyLang(){
+  const s=S[cur];
+  try{localStorage.setItem("dsh-lang",cur);}catch(e){}
+  $("title").textContent=s.title;
+  $("subtitle").textContent=s.subtitle;
+  $("note").textContent=s.note(END[cur]);
+  $("legend").textContent=s.legend;
+  $("copyBtn").textContent=s.copy;
+  $("speakBtn").textContent=s.speak;
+  if(!recording)$("listenBtn").textContent=s.listen;
+  workerInput.placeholder=s.worker;
+  roleInput.placeholder=s.role;
+  $("gateTitle").textContent=s.notIdentified;
+  $("gateHint").textContent=s.gateHint;
+  $("gateLink").textContent=s.loginLink;
+  $("fbTitle").textContent=s.fbTitle;
+  $("fbText").placeholder=s.fbPh;
+  $("catError").textContent=s.catError;
+  $("catImprovement").textContent=s.catImprovement;
+  $("catIdea").textContent=s.catIdea;
+  promptEl.textContent=identity()+s.clue(LANG[cur])+(finalText?(" "+finalText):"");
+  updateIdentity();
+  document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
+}
+function pill(l){
+  const b=document.createElement("button");
+  b.className="pill";b.dataset.l=l;
+  b.textContent=l.toUpperCase()+" · "+LANG[l];
+  b.onclick=()=>{cur=l;applyLang();};
+  langsEl.appendChild(b);
+}
+for(const l of Object.keys(LANG))pill(l);
+applyLang();
+function applyToggles(){document.body.classList.toggle("dark",darkOn);$("darkBtn").textContent=darkOn?"☀️":"🌙";}
+$("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-panel-dark",darkOn?"1":"0");}catch(e){}applyToggles();};
+try{darkOn=localStorage.getItem("dsh-panel-dark")==="1";}catch(e){}
+applyToggles();
+$("copyBtn").onclick=async()=>{
+  try{await navigator.clipboard.writeText(promptEl.textContent);}
+  catch(e){promptEl.select();document.execCommand("copy");}
+  $("copyBtn").textContent=S[cur].copied;
+  setTimeout(()=>$("copyBtn").textContent=S[cur].copy,1500);
+};
+$("speakBtn").onclick=()=>{
+  if(!("speechSynthesis" in window)){$("speakBtn").textContent="🔇";return;}
+  const u=new SpeechSynthesisUtterance(promptEl.textContent);
+  u.lang=VOICE[cur]||"es-ES";
+  speechSynthesis.speak(u);
+};
+// Dictation: continuous + auto-restart while armed (fixes the instant stop).
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){
+  $("listenBtn").disabled=true;
+  $("listenBtn").textContent=S[cur].nospeech;
+}else{
+  $("listenBtn").onclick=()=>{
+    if(rec){armed=false;try{rec.stop();}catch(e){}return;}
+    armed=true;
+    startRec();
+  };
+}
+function startRec(){
+  try{
+    rec=new SR();
+    rec.lang=VOICE[cur]||"es-ES";
+    rec.continuous=true;
+    rec.interimResults=true;
+    let finalAcc="";
+    finalText="";
+    rec.onresult=(e)=>{
+      let interimTxt="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const r=e.results[i];
+        if(r.isFinal){finalAcc+=(finalAcc?" ":"")+r[0].transcript;}
+        else interimTxt+=r[0].transcript;
+      }
+      finalText=finalAcc;
+      const base=identity()+S[cur].clue(LANG[cur]);
+      promptEl.textContent=base+(finalAcc?(" "+finalAcc):"")+(interimTxt?(" …"+interimTxt+"…"):"");
+      interim=finalAcc;
+    };
+    rec.onend=()=>{
+      recording=false;
+      $("listenBtn").classList.remove("live");
+      $("status").textContent="";
+      rec=null;
+      if(armed){setTimeout(startRec,250);} // silence auto-stop → keep listening
+      else{$("listenBtn").textContent=S[cur].listen;}
+    };
+    rec.onerror=(e)=>{
+      if(e.error==="not-allowed"){armed=false;$("status").textContent=S[cur].micError;}
+      else if(e.error==="no-speech"){/* armed keeps restarting */}
+      else{armed=false;$("status").textContent=S[cur].micError;}
+      if(!armed){recording=false;$("listenBtn").classList.remove("live");$("listenBtn").textContent=S[cur].listen;rec=null;}
+    };
+    recording=true;
+    $("listenBtn").classList.add("live");
+    $("listenBtn").textContent=S[cur].stop;
+    $("status").textContent=S[cur].recording;
+    rec.start();
+  }catch(e){
+    armed=false;recording=false;
+    $("status").textContent=S[cur].micError;
+    $("listenBtn").textContent=S[cur].listen;
+  }
+}
+// Field feedback: send to the supervisor backend, or copy a prompt for DSH.
+$("fbSend").onclick=async()=>{
+  const text=$("fbText").value.trim();
+  if(!text){$("fbText").focus();return;}
+  const w=workerInput.value.trim(),r=roleInput.value.trim();
+  let sent=false;
+  try{
+    const SUP=(location.port==="8787"||location.port==="8443")?location.origin:"http://127.0.0.1:8787";
+    const res=await fetch(SUP+"/api/feedback",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({worker:w||"anonymous",role:r,category:$("fbCat").value,text})
+    });
+    sent=res.ok;
+  }catch(e){}
+  if(sent){
+    $("fbSend").textContent=S[cur].fbSent;
+    $("fbText").value="";
+    setTimeout(()=>$("fbSend").textContent=S[cur].fbSent,2500);
+  }else{
+    const prompt="Feedback ("+$("fbCat").value+")"+(w?" from "+w+(r?" ("+r+")":""):"")+": "+text;
+    try{await navigator.clipboard.writeText(prompt);}catch(e){}
+    $("fbSend").textContent=S[cur].fbOffline;
+    $("fbText").value="";
+    setTimeout(()=>$("fbSend").textContent=S[cur].fbSent,3000);
+  }
+};
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register("sw.js").catch(()=>{});
+}
+</script>
+</body>
+</html>
