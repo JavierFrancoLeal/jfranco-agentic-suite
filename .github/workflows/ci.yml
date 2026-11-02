@@ -15,3 +15,14 @@ jobs:
           node-version: 24
       - name: Run the suite quality gate
         run: sh tools/check.sh
+
+  check-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run the suite quality gate (PowerShell)
+        shell: pwsh
+        run: ./tools/check.ps1

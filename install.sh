@@ -170,11 +170,23 @@ echo "  2. Edit ~/.dsh/decisions.md any time to train your rules."
 case " $PROFILES " in
   *" campo "*) echo "  3. Autonomous mode: set your API key once — export DSH_DEEPSEEK_API_KEY=sk-..." ;;
 esac
-if [ "$(uname)" = "Darwin" ]; then
-  echo ""
-  printf "Open the Action Panel now? [Y/n]: "; read OP
-  case "$OP" in
-    n|N|no) ;;
-    *) open "$ROOT/ui/panel.html" ;;
-  esac
-fi
+case "$(uname)" in
+  Darwin)
+    echo ""
+    printf "Open the Action Panel now? [Y/n]: "; read OP
+    case "$OP" in
+      n|N|no) ;;
+      *) open "$ROOT/ui/panel.html" ;;
+    esac
+    ;;
+  Linux)
+    if command -v xdg-open >/dev/null 2>&1; then
+      echo ""
+      printf "Open the Action Panel now? [Y/n]: "; read OP
+      case "$OP" in
+        n|N|no) ;;
+        *) xdg-open "$ROOT/ui/panel.html" ;;
+      esac
+    fi
+    ;;
+esac

@@ -201,6 +201,14 @@ token metering · multi-site supervisors (A2A) · always-on wake phrase and
 physical buttons · camera and sensor inputs · connectors for specialized
 apps (PMS, POS, police databases).
 
+## 🖥️ Supported platforms
+
+The brain (DeepSeek Harness + plugins + Supervisor) runs on **Linux,
+Windows, and macOS** (Node ≥24). Workers use the **Action Panel and
+dashboard from any device** — including **Android** tablets and phones over
+the business WiFi. Full matrix and per-platform setup:
+[docs/PLATFORMS.md](docs/PLATFORMS.md).
+
 ## 🤝 Open source
 
 **MIT licensed** — free to use, audit, and share. Created by
