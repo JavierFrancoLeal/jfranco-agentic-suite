@@ -37,6 +37,8 @@ pre{background:#0f172a;color:#d7e3f4;border-radius:12px;padding:12px;font-size:1
 table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 .hidden{display:none}
+.foot{text-align:center;padding:6px 16px 16px}
+.foot .copyr{font-size:12px;color:var(--muted)}
 .eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;padding:4px}
 .passwrap{position:relative}
 .loginerr{background:#fee2e2;color:#b91c1c;border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px;display:block}
@@ -122,7 +124,7 @@ body.wall pre{max-height:40vh}
         <table id="usageTable"><thead><tr><th id="thWorker">Worker</th><th id="thSessions">Sessions</th><th id="thTokens">Tokens</th><th id="thCost">Est. cost</th></tr></thead><tbody></tbody></table>
       </div>
       <div class="card"><h2 id="panelTitle">Action Panel</h2><p class="note" id="panelNote">Workers open the panel from their tablet or phone.</p>
-        <a href="/panel" target="_blank"><button class="btn" id="openPanel">Open Action Panel</button></a>
+        <a href="/panel" target="_blank" id="openPanelLink"><button class="btn" id="openPanel">Open Action Panel</button></a>
       </div>
     </div>
     <div id="tab-field" class="hidden">
@@ -161,7 +163,7 @@ body.wall pre{max-height:40vh}
     <div class="card"><h2 id="leadOrdersTitle">Orders — kitchen & bill</h2><div id="leadOrders"></div></div>
     <div class="card"><h2 id="leadReportsTitle">Field reports</h2><button class="btn small gray" id="leadRefresh">Refresh</button><pre id="leadReports"></pre></div>
     <div class="card"><h2 id="leadFeedbackTitle">Feedback queue</h2><pre id="leadFeedback"></pre></div>
-    <div class="card"><a href="/panel" target="_blank"><button class="btn" id="leadOpenPanel">Open Action Panel</button></a></div>
+    <div class="card"><a href="/panel" target="_blank" id="leadOpenPanelLink"><button class="btn" id="leadOpenPanel">Open Action Panel</button></a></div>
   </div>
 
   <div id="employeeView" class="hidden">
@@ -209,6 +211,7 @@ body.wall pre{max-height:40vh}
 
   <div id="msg" class="note" style="text-align:center"></div>
 </main>
+<footer class="foot"><div class="langs" id="footLangs"></div><div class="copyr">Suite J.Franco · open source (MIT) · autor J.Franco</div></footer>
 <script>
 "use strict";
 const LANG={es:"ES",en:"EN",fr:"FR",de:"DE",it:"IT",pt:"PT",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
@@ -233,6 +236,7 @@ $("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-dark",dar
 $("soundBtn").onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("dsh-sound",soundOn?"1":"0");}catch(e){}applyToggles();};
 try{darkOn=localStorage.getItem("dsh-dark")==="1";soundOn=localStorage.getItem("dsh-sound")!=="0";}catch(e){}
 applyToggles();
+function panelLinks(){const u=me?encodeURIComponent(me.name):"",r=me?encodeURIComponent(me.role):"";$("openPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&lang="+cur);$("leadOpenPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&lang="+cur);}
 function applyLang(){
   try{localStorage.setItem("dsh-lang",cur);}catch(e){}
   $("loginTitle").textContent=t("login");$("loginUser").placeholder=t("user");
@@ -258,8 +262,9 @@ function applyLang(){
   $("trailTitle").textContent=t("conversationTrail");$("trailHint").textContent=t("trailHint");
   $("sayText").placeholder=t("sayPh");$("sayBtn").textContent=t("sendPhrase");$("aiHint").textContent=t("aiHint");if(!recording)$("micBtn").textContent=t("dictate");
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
+  panelLinks();
 }
-function pill(l){const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$("langs").appendChild(b);}
+function pill(l){for(const host of ["langs","footLangs"]){const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$(host).appendChild(b);}}
 for(const l of Object.keys(LANG))pill(l);
 try{const saved=localStorage.getItem("dsh-lang");if(saved&&S[saved])cur=saved;}catch(e){}
 applyLang();
