@@ -37,7 +37,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
     "directory": "jfranco-accountability-auditor"
   },
   "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
