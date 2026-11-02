@@ -37,6 +37,10 @@ for f in server.js dashboard.html; do
   cmp -s "$ROOT/supervisor/$f" "$ROOT/supervisor-pkg/$f" || { cp "$ROOT/supervisor/$f" "$ROOT/supervisor-pkg/$f"; CHANGED=1; }
 done
 cmp -s "$ROOT/ui/panel.html" "$ROOT/supervisor-pkg/panel.html" || { cp "$ROOT/ui/panel.html" "$ROOT/supervisor-pkg/panel.html"; CHANGED=1; }
+for f in "$ROOT"/ui/icons/*; do
+  b="$(basename "$f")"
+  cmp -s "$f" "$ROOT/supervisor-pkg/icons/$b" 2>/dev/null || { cp "$f" "$ROOT/supervisor-pkg/icons/$b"; CHANGED=1; }
+done
 for f in "$ROOT"/docs/sector-packs/*.json; do
   b="$(basename "$f")"
   cmp -s "$f" "$ROOT/supervisor-pkg/sector-packs/$b" 2>/dev/null || { cp "$f" "$ROOT/supervisor-pkg/sector-packs/$b"; CHANGED=1; }

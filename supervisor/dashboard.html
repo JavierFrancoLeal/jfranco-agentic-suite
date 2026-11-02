@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#4D6BFE">
 <title>Le Veilleux — Dashboard</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234D6BFE'/%3E%3Cpath d='M32 16 C 15 16, 8.5 25.5, 8.5 32 C 8.5 38.5, 15 48, 32 48 C 49 48, 55.5 38.5, 55.5 32 C 55.5 25.5, 49 16, 32 16 Z' fill='none' stroke='%23fff' stroke-width='4.5'/%3E%3Cpath d='M32 23.5 C 36.6 28.2, 38.6 31.4, 38.6 34.8 A 6.6 6.6 0 1 1 25.4 34.8 C 25.4 31.4, 27.4 28.2, 32 23.5 Z' fill='%23FACC15'/%3E%3C/svg%3E">
 <style>
 :root{--blue:#4D6BFE;--green:#22c55e;--amber:#facc15;--red:#ef4444;--ink:#101828;--muted:#667085;--bg:#f6f7fb;--card:#fff;--card2:var(--card2);--line:var(--line);--line2:var(--line2)}
 body.dark{--ink:#e6ecf7;--muted:#94a3b8;--bg:#0b1220;--card:#141f31;--card2:#18253a;--line:#26334d;--line2:#26334d}
@@ -22,6 +23,8 @@ body.dark .toast{background:#e6ecf7;color:#0b1220}
 .bnav button.active{color:var(--blue);font-weight:700}
 .checkpop{animation:pop .3s ease}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes flick{0%,100%{opacity:1}42%{opacity:.82}50%{opacity:1}58%{opacity:.9}}
+.mark svg path:last-child{animation:flick 3.2s ease-in-out infinite;transform-origin:32px 34px}
 .person{animation:rise .3s ease backwards}
 .person:nth-child(1){animation-delay:.03s}
 .person:nth-child(2){animation-delay:.09s}
