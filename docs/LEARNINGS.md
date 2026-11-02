@@ -33,3 +33,16 @@ but the rule is now law:
    node_modules.
 3. Before any destructive step, `git status` must be clean — every working
    change committed and pushed. Interrupted work must be resumable.
+
+## 2026-11-02 — Z-index ledger + explicit transition timeline
+
+Two bugs from one screen stack: the language overlay opened BEHIND the
+language step (z-index 90 < 95) so clicks "did nothing", and the splash
+faded while the next screen already showed (timing overlap).
+
+Rules:
+1. Keep a z-index ledger: splash 100 · language step 95 · overlay (Apple
+   menu) 110 · toast 60. Every new fixed layer must be ordered against it.
+2. Sequence transitions explicitly: previous screen fully faded BEFORE the
+   next appears (splash out at 1300 + 500ms fade → step in at 1900).
+3. The strict smoke test stays: dead references and missing ids crash CI.
