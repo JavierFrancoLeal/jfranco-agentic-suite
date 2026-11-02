@@ -42,7 +42,13 @@
       "target": "AppImage",
       "icon": "assets/icon.png",
       "category": "Office"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "../../dist/le-veilleux-runtime",
+        "to": "runtime"
+      }
+    ]
   },
   "allowScripts": {
     "electron@37.10.3": true

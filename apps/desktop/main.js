@@ -17,6 +17,8 @@ const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const DATA_DIR = path.join(os.homedir(), ".dsh", "supervisor-data");
 const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
+const bundledDsh = () => { const c = path.join(process.resourcesPath, "runtime", "cli", "bin", "dsh"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
+const bundledNode = () => { const c = path.join(process.resourcesPath, "runtime", "primary-runtime", "dependencies", "node", "bin", "node"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
 function firstRun() { try { return !fs.existsSync(USERS_FILE); } catch { return true; } }
 
 const TARGET_URL = process.env.LE_VEILLEUX_URL || "http://127.0.0.1:8787/dashboard";
@@ -140,6 +142,14 @@ if (!app.requestSingleInstanceLock()) {
       ];
       let dsh = null;
       for (const c of candidates) { try { if (fs.existsSync(c)) { dsh = c; break; } } catch {} }
+      if (!dsh && bundledDsh()) dsh = bundledDsh();
+      // Model B: with the bundled runtime, create the profile with it too.
+      if (bundledDsh()) {
+        const setup = path.join(process.resourcesPath, "runtime", "setup-profile.sh");
+        if (fs.existsSync(setup)) {
+          try { await new Promise((res) => { const c = spawn("sh", [setup], { stdio: "ignore" }); c.on("exit", res); }); } catch {}
+        }
+      }
       if (dsh) {
         const standby = path.join(__dirname, "brain", "agent-standby.sh");
         if (fs.existsSync(standby)) {
