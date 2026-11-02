@@ -73,9 +73,12 @@ distribution bundles its kernel), so a client installs ONE file and the
 first-run wizard only asks: language, owner, sector, **and the DeepSeek
 key** ("choose your DeepSeek brain"). No terminal, no second install.
 
-This is the roadmap: the app already bundles the supervisor; bundling the
-harness runtime completes the distribution. Pending the harness
-redistribution terms, Model A covers every client today.
+STATUS: BUILT. Licenses verified (MIT + BSD-3-Clause, both permit
+redistribution with attribution — see LICENSES.md). `tools/build-runtime-pack.sh`
+produces the runtime pack; the desktop installer includes it as
+extraResources, and the first-run wizard creates the profile and starts the
+agent with the bundled runtime. Remaining: code signing (Apple Developer /
+Windows) for public distribution.
 
 ## Version matrix (the distribution release)
 
