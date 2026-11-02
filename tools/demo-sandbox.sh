@@ -65,6 +65,17 @@ if [ "${1:-start}" = "quick" ]; then
   exit 0
 fi
 
+if [ "${1:-start}" = "qr" ]; then
+  # Generate a printable QR code for the current public wallboard link.
+  URL="$(grep -oE 'https://[a-z0-9-]+\.lhr\.life' /tmp/dsh-demo-tunnel.log | head -1)"
+  if [ -z "$URL" ]; then echo "No public link yet — run: sh tools/demo-sandbox.sh quick"; exit 1; fi
+  QR="/tmp/dsh-demo-qr.png"
+  curl -sL --max-time 20 -o "$QR" "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$URL/dashboard?wall=1" 2>/dev/null || echo "$URL")"
+  echo "QR saved: $QR  →  Wallboard link: $URL/dashboard?wall=1"
+  open "$QR" 2>/dev/null || true
+  exit 0
+fi
+
 rm -rf "$DEMO"
 mkdir -p "$DEMO"
 
