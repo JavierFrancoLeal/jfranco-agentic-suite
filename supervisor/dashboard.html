@@ -7,8 +7,8 @@
 <title>Le Veilleux — Dashboard</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%234D6BFE'/%3E%3Cpath d='M32 16 C 15 16, 8.5 25.5, 8.5 32 C 8.5 38.5, 15 48, 32 48 C 49 48, 55.5 38.5, 55.5 32 C 55.5 25.5, 49 16, 32 16 Z' fill='none' stroke='%23fff' stroke-width='4.5'/%3E%3Cpath d='M32 23.5 C 36.6 28.2, 38.6 31.4, 38.6 34.8 A 6.6 6.6 0 1 1 25.4 34.8 C 25.4 31.4, 27.4 28.2, 32 23.5 Z' fill='%23FACC15'/%3E%3C/svg%3E">
 <style>
-:root{--blue:#4D6BFE;--green:#22c55e;--amber:#facc15;--red:#ef4444;--ink:#101828;--muted:#667085;--bg:#f6f7fb;--card:#fff;--card2:var(--card2);--line:var(--line);--line2:var(--line2)}
-body.dark{--ink:#e6ecf7;--muted:#94a3b8;--bg:#0b1220;--card:#141f31;--card2:#18253a;--line:#26334d;--line2:#26334d}
+:root{--blue:#4D6BFE;--violet:#7c5cff;--green:#22c55e;--amber:#facc15;--red:#ef4444;--ink:#101828;--muted:#667085;--bg:#eef2ff;--card:rgba(255,255,255,.78);--card2:rgba(255,255,255,.62);--line:rgba(15,23,42,.10);--line2:rgba(15,23,42,.06)}
+body.dark{background:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%);background-attachment:fixed;--ink:#e6ecf7;--muted:#94a3b8;--bg:#0b1220;--card:rgba(20,31,49,.8);--card2:rgba(24,37,58,.62);--line:rgba(148,163,184,.16);--line2:rgba(148,163,184,.10)}
 .anim{animation:slidein .28s ease}
 @keyframes slidein{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
 .empty{text-align:center;padding:26px 12px;color:var(--muted);font-size:14px;border:1px dashed var(--line);border-radius:14px}
@@ -52,22 +52,22 @@ body.dark #loginView{background:rgba(20,31,49,.93)}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(77,107,254,.18)}
 @media(max-width:560px){.bnav{display:flex}.tabs{display:none}body{padding-bottom:70px}button,.btn,.pill,.confirmBtn{min-height:44px}}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
-header{background:var(--blue);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(165deg,#e8edff 0%,#f6f7fb 45%,#fdf1f8 100%);background-attachment:fixed;color:var(--ink);-webkit-tap-highlight-color:transparent}
+header{background:linear-gradient(135deg,#4D6BFE,#7c5cff);box-shadow:0 4px 18px rgba(77,107,254,.28);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 header h1{margin:0;font-size:18px}
 header .who{font-size:13px;opacity:.9}
 button{font-family:inherit;cursor:pointer}
-.btn{border:none;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:600;color:#fff;background:var(--blue)}
+.btn{border:none;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(135deg,#4D6BFE,#7c5cff);box-shadow:0 4px 12px rgba(77,107,254,.22)}
 .btn.gray{background:var(--line2);color:var(--ink)}
 .btn.small{padding:8px 12px;font-size:13px}
 main{max-width:960px;margin:0 auto;padding:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:12px 0}
+.card{background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px;margin:12px 0}
 .card h2{margin:0 0 10px;font-size:16px}
 input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;margin-bottom:8px;font-family:inherit;background:var(--card)}
 textarea{resize:vertical;min-height:80px}
 pre{background:#0f172a;color:#d7e3f4;border-radius:12px;padding:12px;font-size:12.5px;overflow:auto;max-height:320px;white-space:pre-wrap;margin:0}
 .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.metric{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.metric{background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:16px;box-shadow:0 4px 14px rgba(15,23,42,.05);padding:12px;text-align:center}
 .metric .v{font-size:26px;font-weight:700;color:var(--blue)}
 .metric .l{font-size:12px;color:var(--muted);margin-top:2px}
 .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
@@ -142,7 +142,7 @@ td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 button{transition:transform .12s ease}
 button:active{transform:scale(.97)}
 button:focus-visible,.pill:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
-body.wall{background:#0b1220}
+body.wall{background:linear-gradient(165deg,#0b1220 0%,#131c30 60%,#1e1b4b 100%);background-attachment:fixed}
 body.wall pre{max-height:40vh}
 @media (max-width:560px){header h1{font-size:15px}.listen{font-size:24px;padding:26px 12px}input,select,textarea,button{font-size:16px}}
 </style>
