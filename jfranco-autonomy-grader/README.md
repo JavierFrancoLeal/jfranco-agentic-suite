@@ -3,7 +3,7 @@ description: "Governance layer: grades the reliability of automatic decisions an
 kind: "package-bundle"
 ---
 
-# @jfranco/autonomy-grader
+# @javierfrancoleal/autonomy-grader
 
 > ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
 

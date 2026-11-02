@@ -6,7 +6,7 @@
 #   2. Trigger .github/workflows/publish.yml from the GitHub Actions tab.
 #
 # This script is the manual alternative, used when you have an npm token
-# with publish rights (granular tokens must include the @jfranco scope):
+# with publish rights (granular tokens must include the @javierfrancoleal scope):
 #   pnpm config set //registry.npmjs.org/:_authToken=npm_YOUR_TOKEN
 #   sh tools/publish.sh
 set -e
@@ -34,9 +34,9 @@ done
 
 echo ""
 echo "All six packages published. Install them with:"
-echo "  dsh plugin --profile desktop add @jfranco/workflow-master"
-echo "  dsh plugin --profile desktop add @jfranco/input-detector"
-echo "  dsh plugin --profile desktop add @jfranco/decision-router"
-echo "  dsh plugin --profile desktop add @jfranco/accountability-auditor"
-echo "  dsh plugin --profile desktop add @jfranco/interpreter"
-echo "  dsh plugin --profile desktop add @jfranco/autonomy-grader"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/workflow-master"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/input-detector"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/decision-router"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/accountability-auditor"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/interpreter"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/autonomy-grader"

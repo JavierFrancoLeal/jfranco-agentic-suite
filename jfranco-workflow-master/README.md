@@ -3,7 +3,7 @@ description: "The trigger layer: listening mode that captures conversations, dec
 kind: "package-bundle"
 ---
 
-# @jfranco/workflow-master
+# @javierfrancoleal/workflow-master
 
 > ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
 

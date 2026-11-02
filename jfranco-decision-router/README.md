@@ -3,7 +3,7 @@ description: "Route every decision through pre-trained GREEN/YELLOW/RED tiers an
 kind: "package-bundle"
 ---
 
-# @jfranco/decision-router
+# @javierfrancoleal/decision-router
 
 > ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
 

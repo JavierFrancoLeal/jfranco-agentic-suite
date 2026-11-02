@@ -3,7 +3,7 @@ description: "Real-time translation and interpretation for conversations in diff
 kind: "package-bundle"
 ---
 
-# @jfranco/interpreter
+# @javierfrancoleal/interpreter
 
 > ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
 

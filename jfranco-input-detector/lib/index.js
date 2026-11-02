@@ -1,4 +1,4 @@
-// @jfranco/input-detector — agentic-workflow stage 1: input detection.
+// @javierfrancoleal/input-detector — agentic-workflow stage 1: input detection.
 // Created by J.Franco. Registers a bundled skill provider on the host skill
 // registry, following the @deepseek-ai/dsh-skill-badge provider pattern.
 import { readFile } from "node:fs/promises";

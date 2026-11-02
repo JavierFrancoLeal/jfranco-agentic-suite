@@ -1,4 +1,4 @@
-// @jfranco/workflow-master — trigger layer ("listening mode") of the J.Franco
+// @javierfrancoleal/workflow-master — trigger layer ("listening mode") of the J.Franco
 // agentic workflow. Created by J.Franco. Registers the workflow-master skill
 // provider on the host skill registry and, when the host command registry is
 // available, the /listen command that starts listening mode.
@@ -66,7 +66,7 @@ function apply(ctx) {
   if (commands !== undefined) {
     commands.register({
       // Branded ids are identity strings at runtime; this id names the owner.
-      definitionId: "@jfranco/workflow-master",
+      definitionId: "@javierfrancoleal/workflow-master",
       name: "listen",
       description: "Start listening mode: capture a conversation or requests and build the workflow",
       input: {

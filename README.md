@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="#-super-agent-ready"><img src="https://img.shields.io/badge/Super%20Agent-Ready-4D6BFE?style=for-the-badge" alt="Super Agent Ready"></a>
+  <a href="https://www.npmjs.com/package/@javierfrancoleal/workflow-master"><img src="https://img.shields.io/npm/v/@javierfrancoleal/workflow-master?label=npm&style=for-the-badge" alt="npm"></a>
   <a href="https://github.com/JavierFrancoLeal/jfranco-agentic-suite/releases"><img src="https://img.shields.io/github/v/release/JavierFrancoLeal/jfranco-agentic-suite?label=release&style=for-the-badge" alt="release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT"></a>
   <a href="#-languages-and-interpretation"><img src="https://img.shields.io/badge/languages-10-7C5CFF?style=for-the-badge" alt="10 languages"></a>
@@ -161,11 +162,11 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
 ## 📦 Distribution
 
-The six packages are published on **npm** under the `@jfranco` scope, so a
+The six packages are published on **npm** under the `@javierfrancoleal` scope, so a
 business can install them by name:
 
 ```
-dsh plugin --profile desktop add @jfranco/workflow-master
+dsh plugin --profile desktop add @javierfrancoleal/workflow-master
 ```
 
 The publisher (`tools/publish.sh`) runs the quality gate before publishing.

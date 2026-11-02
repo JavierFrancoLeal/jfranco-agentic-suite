@@ -3,7 +3,7 @@ description: "Mandatory reflection and verification pass that emits an Accountab
 kind: "package-bundle"
 ---
 
-# @jfranco/accountability-auditor
+# @javierfrancoleal/accountability-auditor
 
 > ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
 

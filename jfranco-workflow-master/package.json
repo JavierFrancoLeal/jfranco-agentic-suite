@@ -1,5 +1,5 @@
 {
-  "name": "@jfranco/workflow-master",
+  "name": "@javierfrancoleal/workflow-master",
   "version": "1.0.0",
   "description": "Agentic-workflow trigger layer: listening mode that captures conversations, decodes the requests, and builds the workflow — automatic actions, proposals, and questions.",
   "author": "J.Franco",

@@ -3,7 +3,7 @@ description: "Detect, classify, and route every user input before acting — sta
 kind: "package-bundle"
 ---
 
-# @jfranco/input-detector
+# @javierfrancoleal/input-detector
 
 > ⚡ **Super Agent Ready** — part of the J.Franco governance layer for autonomous agents.
 
@@ -39,7 +39,7 @@ classification, and you can invoke it yourself by name.
 
 You co-detect with the agent: correct any classification and your correction
 becomes authoritative. Route behavior for TASK and WORKFLOW inputs is trained
-through the companion plugin `@jfranco/decision-router` and its `decisions.md`
+through the companion plugin `@javierfrancoleal/decision-router` and its `decisions.md`
 policy file.
 
 ## License

@@ -4,12 +4,12 @@
 
 Author of the **J.Franco Agentic Workflow Suite** for DeepSeek Harness:
 
-- `@jfranco/workflow-master` v1.0.0 — 2026
-- `@jfranco/input-detector` v1.0.0 — 2026
-- `@jfranco/decision-router` v1.0.0 — 2026
-- `@jfranco/accountability-auditor` v1.0.0 — 2026
-- `@jfranco/interpreter` v1.0.0 — 2026
-- `@jfranco/autonomy-grader` v1.0.0 — 2026
+- `@javierfrancoleal/workflow-master` v1.0.0 — 2026
+- `@javierfrancoleal/input-detector` v1.0.0 — 2026
+- `@javierfrancoleal/decision-router` v1.0.0 — 2026
+- `@javierfrancoleal/accountability-auditor` v1.0.0 — 2026
+- `@javierfrancoleal/interpreter` v1.0.0 — 2026
+- `@javierfrancoleal/autonomy-grader` v1.0.0 — 2026
 
 Also author of the suite's action layer: the Action Panel
 (`ui/panel.html`), the DSH Asistente launcher (`ui/DSH-Asistente.applescript`),

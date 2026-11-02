@@ -1,4 +1,4 @@
-// @jfranco/decision-router — agentic-workflow stage 2: tiered decisions.
+// @javierfrancoleal/decision-router — agentic-workflow stage 2: tiered decisions.
 // Created by J.Franco. Registers a bundled skill provider on the host skill
 // registry, following the @deepseek-ai/dsh-skill-badge provider pattern.
 import { readFile } from "node:fs/promises";

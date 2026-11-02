@@ -1,4 +1,4 @@
-// @jfranco/interpreter — real-time translation and interpretation layer of
+// @javierfrancoleal/interpreter — real-time translation and interpretation layer of
 // the J.Franco agentic workflow. Created by J.Franco. Registers the
 // interpreter skill provider on the host skill registry and, when the host
 // command registry is available, the /interpret command.
@@ -66,7 +66,7 @@ function apply(ctx) {
   if (commands !== undefined) {
     commands.register({
       // Branded ids are identity strings at runtime; this id names the owner.
-      definitionId: "@jfranco/interpreter",
+      definitionId: "@javierfrancoleal/interpreter",
       name: "interpret",
       description: "Start interpretation mode: translate and interpret a conversation in real time",
       input: {

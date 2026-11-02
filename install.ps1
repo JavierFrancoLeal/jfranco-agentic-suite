@@ -5,7 +5,7 @@
 #   1. Locates DeepSeek Harness.
 #   2. Asks your sector (creates decisions.md with starter rules).
 #   3. Asks where to install: desktop, campo (autonomous), or both.
-#   4. Installs the six @jfranco/* plugins into each chosen profile.
+#   4. Installs the six @javierfrancoleal/* plugins into each chosen profile.
 #   5. Creates ~/.dsh/decisions.md (training) and ~/.dsh/supervision.md (log).
 #
 # Usage: right-click > "Run with PowerShell". Safe to re-run.

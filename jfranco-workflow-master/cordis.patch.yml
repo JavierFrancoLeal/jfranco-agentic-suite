@@ -1,7 +1,7 @@
-# @jfranco/workflow-master — J.Franco's agentic-workflow trigger layer.
+# @javierfrancoleal/workflow-master — J.Franco's agentic-workflow trigger layer.
 # Inserts the skill provider into the host plane of the Cordis tree. The
 # /listen command is registered at runtime when the host command registry
 # resolves.
 - insert:
     - id: workflow-master
-      name: '@jfranco/workflow-master'
+      name: '@javierfrancoleal/workflow-master'

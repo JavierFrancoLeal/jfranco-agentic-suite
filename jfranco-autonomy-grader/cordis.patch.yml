@@ -1,7 +1,7 @@
-# @jfranco/autonomy-grader — J.Franco's governance layer.
+# @javierfrancoleal/autonomy-grader — J.Franco's governance layer.
 # Inserts the skill provider into the host plane of the Cordis tree. The
 # /grade command is registered at runtime when the host command registry
 # resolves.
 - insert:
     - id: autonomy-grader
-      name: '@jfranco/autonomy-grader'
+      name: '@javierfrancoleal/autonomy-grader'

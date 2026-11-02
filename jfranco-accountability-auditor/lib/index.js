@@ -1,4 +1,4 @@
-// @jfranco/accountability-auditor — agentic-workflow stage 3: reflection and
+// @javierfrancoleal/accountability-auditor — agentic-workflow stage 3: reflection and
 // verification. Created by J.Franco. Registers a bundled skill provider on the
 // host skill registry, following the @deepseek-ai/dsh-skill-badge provider pattern.
 import { readFile } from "node:fs/promises";

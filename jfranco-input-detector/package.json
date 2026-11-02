@@ -1,5 +1,5 @@
 {
-  "name": "@jfranco/input-detector",
+  "name": "@javierfrancoleal/input-detector",
   "version": "1.0.0",
   "description": "Agentic-workflow stage 1: detect, classify, and route every user input before acting.",
   "author": "J.Franco",

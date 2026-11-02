@@ -1,4 +1,4 @@
-// @jfranco/autonomy-grader — governance layer of the J.Franco agentic
+// @javierfrancoleal/autonomy-grader — governance layer of the J.Franco agentic
 // workflow. Created by J.Franco. Registers the autonomy-grader skill provider
 // on the host skill registry and, when the host command registry is
 // available, the /grade command.
@@ -73,7 +73,7 @@ function apply(ctx) {
   if (commands !== undefined) {
     commands.register({
       // Branded ids are identity strings at runtime; this id names the owner.
-      definitionId: "@jfranco/autonomy-grader",
+      definitionId: "@javierfrancoleal/autonomy-grader",
       name: "grade",
       description: "Grade the reliability of automatic decisions and propose tier moves",
       input: {
@@ -83,7 +83,7 @@ function apply(ctx) {
       handler: () => ({ text: GRADE_BRIEFING }),
     });
     commands.register({
-      definitionId: "@jfranco/autonomy-grader",
+      definitionId: "@javierfrancoleal/autonomy-grader",
       name: "summary",
       description: "One-page management summary for the owner: totals, per-worker table, KPIs, suggestions",
       input: {
