@@ -204,7 +204,7 @@ body.wall pre{max-height:40vh}
         <table id="usersTable"><thead><tr><th id="thUser">User</th><th id="thRole">Role</th></tr></thead><tbody></tbody></table>
         <h2 style="margin-top:14px" id="addWorkerTitle">Add worker</h2>
         <div id="suggestUsers" class="row"></div>
-        <input id="newUser" placeholder="User name"><input id="newPass" type="password" placeholder="Password">
+        <input id="newUser" placeholder="User name"><input id="newPass" type="password" placeholder="Password" minlength="8">
         <input id="newLabel" placeholder="Role label (e.g. Cook)">
         <select id="newRole"><option id="optEmployee" value="employee">employee</option><option id="optLead" value="lead">lead</option><option id="optOwner" value="owner">owner</option></select>
         <button class="btn" id="addUserBtn">Add worker</button>
@@ -427,18 +427,19 @@ const LVL={employee:"lvlEmployee",lead:"lvlLead",owner:"lvlOwner"};
 function setWho(){const w=$("who");w.textContent=me?(me.label||me.name):"";const c=$("idChip");if(me){c.style.display="inline-block";c.textContent=me.name.slice(0,1).toUpperCase()+" · "+(me.label||me.name)+" · "+t(LVL[me.role]||"lvlEmployee");}else{c.style.display="none";}$("logoutBtn").style.display=me?"inline-block":"none";}
 function toast(m){const el=$("toast");el.textContent=m;el.classList.add("show");clearTimeout(el.__t);el.__t=setTimeout(()=>el.classList.remove("show"),2200);}
 function skel(n){let out="";for(let i=0;i<n;i++)out+='<div class="skel" style="height:38px;margin:8px 0"></div>';return out;}
+const esc=(s)=>String(s==null?"":s).replace(/[&<>"']/g,(c)=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 function empty(ico,txt){return '<div class="empty"><span class="ico">'+ico+'</span>'+txt+'</div>';}
 function showMsg(x){$("msg").textContent=x;toast(x);setTimeout(()=>$("msg").textContent="",2500);}
 function countUp(el,target,dur){dur=dur||650;const t0=performance.now();const step=(now)=>{const p=Math.min(1,(now-t0)/dur);el.textContent=Math.round(target*p).toLocaleString();if(p<1)requestAnimationFrame(step);};requestAnimationFrame(step);}
 async function loadMetrics(into){into.innerHTML=skel(2);const m=await api("/api/metrics");into.innerHTML="";const cards=[[t("reports"),m.reports],[t("week"),m.reportsWeek],[t("feedback"),m.feedback],[t("workersActive"),m.workers]];for(const [l,v] of cards){const d=document.createElement("div");d.className="metric";d.innerHTML='<div class="v">–</div><div class="l">'+l+'</div>';into.appendChild(d);if(typeof v==="number")countUp(d.querySelector(".v"),v);}}
 async function loadUsage(){const tb=$("usageTable")?$("usageTable").querySelector("tbody"):null;if(!tb)return;tb.innerHTML='<tr><td colspan="4">'+skel(2)+'</td></tr>';const r=await api("/api/usage");tb.innerHTML="";
   if(!(r.rows||[]).length){tb.innerHTML='<tr><td colspan="4">'+empty("📊",t("noUsage"))+'</td></tr>';return;}
-  (r.rows||[]).forEach(x=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+x.worker+"</td><td>"+x.sessions+"</td><td>"+(x.tokens||0).toLocaleString()+"</td><td>$"+(x.cost||0).toFixed(2)+"</td>";tb.appendChild(tr);});}
+  (r.rows||[]).forEach(x=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+esc(x.worker)+"</td><td>"+x.sessions+"</td><td>"+(x.tokens||0).toLocaleString()+"</td><td>$"+(x.cost||0).toFixed(2)+"</td>";tb.appendChild(tr);});}
 function orderRow(o,canUpdate){
   const d=document.createElement("div");d.className="order";
   const stat=document.createElement("span");stat.className="stat";const ICON={sent:"📤",prep:"🍳",ready:"✅",delivered:"🛎️"};
   stat.textContent=(ICON[o.status]||"📤")+" "+t(o.status||"sent");
-  d.innerHTML="<b>"+(o.table?((PACK&&PACK.tableLabel&&PACK.tableLabel[cur]?PACK.tableLabel[cur]:"Table")+" "+o.table+" · "):"")+o.person+"</b>";
+  d.innerHTML="<b>"+(o.table?((PACK&&PACK.tableLabel&&PACK.tableLabel[cur]?PACK.tableLabel[cur]:"Table")+" "+o.table+" · "):"")+esc(o.person)+"</b>";
   const txt=document.createElement("span");txt.className="txt";txt.textContent=o.request;
   d.appendChild(txt);d.appendChild(stat);
   if(canUpdate&&o.status!=="delivered"){
@@ -486,10 +487,10 @@ function renderSummary(live){
   for(const p of live.speakers){
     const d=document.createElement("div");d.className="person";
     const done=p.requests.filter(r=>r.status==="confirmed").length;
-    let h='<div class="pname">'+t("person")+" "+(p.id.replace("p",""))+" — "+p.name+'<span class="pcnt">('+done+'/'+p.requests.length+')</span></div>';
+    let h='<div class="pname">'+t("person")+" "+(p.id.replace("p",""))+" — "+esc(p.name)+'<span class="pcnt">('+done+'/'+p.requests.length+')</span></div>';
     for(const r of p.requests){
       const confirmed=r.status==="confirmed";
-      h+='<div class="req"><span class="txt">'+r.text+'</span>'+
+      h+='<div class="req"><span class="txt">'+esc(r.text)+'</span>'+
         '<span class="tier tier-'+r.tier+'">'+t("tier"+r.tier)+'</span>'+
         '<button class="confirmBtn'+(confirmed?" done":"")+'" data-req="'+r.id+'">'+(confirmed?t("confirmed"):t("confirm"))+'</button></div>'+
         (confirmed?'<div class="sentline">✓ '+t("sentNote")+'</div>':'');
@@ -534,9 +535,9 @@ $("loginBtn").onclick=async()=>{
 function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);setWho();show("loginView");}
 $("logoutBtn").onclick=logout;
 const sb=$("switchBtn");if(sb)sb.onclick=logout;
-async function loadUsers(){const tb=$("usersTable").querySelector("tbody");tb.innerHTML='<tr><td colspan="2">'+skel(2)+'</td></tr>';const r=await api("/api/users");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+u.name+"</td><td>"+(u.label||u.name)+" · "+t(LVL[u.role]||"lvlEmployee")+"</td>";tb.appendChild(tr);});}
+async function loadUsers(){const tb=$("usersTable").querySelector("tbody");tb.innerHTML='<tr><td colspan="2">'+skel(2)+'</td></tr>';const r=await api("/api/users");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+esc(u.name)+"</td><td>"+esc(u.label||u.name)+" · "+t(LVL[u.role]||"lvlEmployee")+"</td>";tb.appendChild(tr);});}
 $("addUserBtn").onclick=async()=>{const r=await api("/api/users",{name:$("newUser").value,password:$("newPass").value,role:$("newRole").value,label:$("newLabel").value});showMsg(r.error?"Error: "+r.error:t("workerAdded"));if(!r.error){loadUsers();$("newUser").value=$("newPass").value="";}};
-async function loadField(){$("reports").innerHTML=skel(2);$("feedback").innerHTML=skel(1);$("trail").innerHTML=skel(1);const rc=(await api("/api/reports")).content;if(rc){$("reports").innerHTML="<pre>"+rc+"</pre>";}else{$("reports").innerHTML=empty("📋",t("noReports"));}const fc=(await api("/api/feedback")).content;if(fc){$("feedback").innerHTML="<pre>"+fc+"</pre>";}else{$("feedback").innerHTML=empty("💬",t("feedbackQueue"));}const live=await api("/api/live");const ib=(live.inbox||[]).map(x=>"[•] "+x.worker+": "+x.text).join("\n");if(ib){$("trail").innerHTML="<pre>"+ib+"</pre>";}else{$("trail").innerHTML=empty("🗒️",t("conversationTrail"));}}
+async function loadField(){$("reports").innerHTML=skel(2);$("feedback").innerHTML=skel(1);$("trail").innerHTML=skel(1);const rc=(await api("/api/reports")).content;if(rc){$("reports").innerHTML="<pre>"+esc(rc)+"</pre>";}else{$("reports").innerHTML=empty("📋",t("noReports"));}const fc=(await api("/api/feedback")).content;if(fc){$("feedback").innerHTML="<pre>"+esc(fc)+"</pre>";}else{$("feedback").innerHTML=empty("💬",t("feedbackQueue"));}const live=await api("/api/live");const ib=(live.inbox||[]).map(x=>"[•] "+esc(x.worker)+": "+esc(x.text)).join("\n");if(ib){$("trail").innerHTML="<pre>"+ib+"</pre>";}else{$("trail").innerHTML=empty("🗒️",t("conversationTrail"));}}
 async function loadLead(){$("leadReports").textContent=(await api("/api/reports")).content||"(empty)";$("leadFeedback").textContent=(await api("/api/feedback")).content||"(empty)";}
 $("refreshReports").onclick=loadField;$("leadRefresh").onclick=loadLead;
 const ar=$("autoRefresh");
@@ -571,7 +572,7 @@ $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.nam
 const st=sessionStorage.getItem("dsh-sup-token");
 if(st){token=st;me=JSON.parse(sessionStorage.getItem("dsh-sup-me")||"null");(async()=>{const r=await api("/api/me");if(!r||!r.name){logout();return;}enter();})();}
 else setWho();
-async function wallTick(){try{const r=await (await fetch("/api/wall")).json();const cards=[[t("week"),r.reportsWeek],[t("ordersTitle"),r.orders],[t("feedback"),r.feedback],[t("workersActive"),r.workers],[t("reportsTotal"),r.reports]];$("wallCards").innerHTML=cards.map(c=>'<div class="wall-card"><div class="v">'+(c[1]===undefined?"–":c[1])+'</div><div class="l">'+c[0]+'</div></div>').join("");const ticks=[...(r.ordersTail||[]).map(x=>"🔔 "+x),...(r.feedbackTail||"").split("\n").filter(Boolean).slice(-4)];$("wallFeed").innerHTML=ticks.length?ticks.map(x=>'<div class="tick">'+x+'</div>').join(""):'<div class="tick dim">'+t("noActivity")+'</div>';try{const s=await (await fetch("/api/sector")).json();$("wallSector").textContent=(s&&s.id)?s.id:"";}catch(e){}}catch(e){$("wallFeed").innerHTML='<div class="tick dim">'+t("cannotReach")+'</div>';}}
+async function wallTick(){try{const r=await (await fetch("/api/wall")).json();const cards=[[t("week"),r.reportsWeek],[t("ordersTitle"),r.orders],[t("feedback"),r.feedback],[t("workersActive"),r.workers],[t("reportsTotal"),r.reports]];$("wallCards").innerHTML=cards.map(c=>'<div class="wall-card"><div class="v">'+(c[1]===undefined?"–":c[1])+'</div><div class="l">'+c[0]+'</div></div>').join("");const ticks=[...(r.ordersTail||[]).map(x=>"🔔 "+esc(x)),...(r.feedbackTail||"").split("\n").filter(Boolean).slice(-4).map(esc)];$("wallFeed").innerHTML=ticks.length?ticks.map(x=>'<div class="tick">'+x+'</div>').join(""):'<div class="tick dim">'+t("noActivity")+'</div>';try{const s=await (await fetch("/api/sector")).json();$("wallSector").textContent=(s&&s.id)?s.id:"";}catch(e){}}catch(e){$("wallFeed").innerHTML='<div class="tick dim">'+t("cannotReach")+'</div>';}}
 function clockTick(){const d=new Date();$("wallClock").textContent=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});$("wallDate").textContent=d.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});}
 if(location.search.indexOf("wall=1")>=0){
   document.body.classList.add("wall");show("wallView");

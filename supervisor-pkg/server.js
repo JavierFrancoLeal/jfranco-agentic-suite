@@ -46,6 +46,18 @@ const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
 const TLS_KEY = process.env.DSH_TLS_KEY || path.join(DATA_DIR, "certs", "key.pem");
 const TLS_CERT = process.env.DSH_TLS_CERT || path.join(DATA_DIR, "certs", "cert.pem");
 const SESSION_TTL = 8 * 60 * 60 * 1000;
+// Login brute-force protection: per-IP escalating lockout.
+const loginAttempts = new Map();
+const MAX_FAILS = 8, BASE_LOCK_MS = 60 * 1000;
+function loginBlocked(ip) {
+  const a = loginAttempts.get(ip);
+  if (!a) return null;
+  if (a.lockUntil && Date.now() < a.lockUntil) return Math.ceil((a.lockUntil - Date.now()) / 1000);
+  if (a.fails >= MAX_FAILS) { a.lockUntil = Date.now() + BASE_LOCK_MS * Math.pow(2, a.lockCount || 0); a.lockCount = (a.lockCount || 0) + 1; a.fails = 0; return Math.ceil((a.lockUntil - Date.now()) / 1000); }
+  return null;
+}
+function loginFail(ip) { const a = loginAttempts.get(ip) || { fails: 0 }; a.fails += 1; loginAttempts.set(ip, a); }
+function loginOk(ip) { loginAttempts.delete(ip); }
 
 // ---------- SQLite storage (--db) ----------
 let db = null;
@@ -73,6 +85,7 @@ if (ARGS[0] === "init") {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   if (db) { db.exec("CREATE TABLE IF NOT EXISTS users (name TEXT PRIMARY KEY, salt TEXT, hash TEXT, role TEXT, label TEXT, created TEXT)"); try { db.exec("ALTER TABLE users ADD COLUMN label TEXT"); } catch {} }
   const add = (name, pw, role, label) => {
+    if (String(pw).length < 8) { console.error("init: password for " + name + " must be at least 8 characters"); process.exit(1); }
     const salt = crypto.randomBytes(16).toString("hex");
     const hash = crypto.scryptSync(pw, salt, 64).toString("hex");
     if (db) db.prepare("INSERT OR REPLACE INTO users (name,salt,hash,role,label,created) VALUES (?,?,?,?,?,?)").run(name, salt, hash, role, label || name, new Date().toISOString());
@@ -240,26 +253,30 @@ const CORS = {
   "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
-function send(res, code, obj) { res.writeHead(code, { "Content-Type": "application/json; charset=utf-8", ...CORS }); res.end(JSON.stringify(obj)); }
+function send(res, code, obj, pub) { const h = { "Content-Type": "application/json; charset=utf-8" }; if (pub) Object.assign(h, CORS); res.writeHead(code, h); res.end(JSON.stringify(obj)); }
 
 // ---------- API ----------
 async function api(req, res, pathname) {
   if (req.method === "OPTIONS") { res.writeHead(204, CORS); return res.end(); }
   if (pathname === "/api/login" && req.method === "POST") {
+    const ip = (req.headers["x-forwarded-for"] || req.socket.remoteAddress || "?").toString().split(",")[0].trim();
+    const wait = loginBlocked(ip);
+    if (wait) return send(res, 429, { error: "too many attempts — retry in " + wait + " s" });
     const b = await json(req);
     const users = loadUsers();
     const u = users[b.user];
-    if (!u || hashPw(String(b.password || ""), u.salt) !== u.hash) return send(res, 401, { error: "bad credentials" });
+    if (!u || hashPw(String(b.password || ""), u.salt) !== u.hash) { loginFail(ip); return send(res, 401, { error: "bad credentials" }); }
+    loginOk(ip);
     const token = issue(b.user, u.role, u.label);
     res.setHeader("Set-Cookie", "dsh_sup=" + token + "; Path=/; HttpOnly; SameSite=Lax");
-    return send(res, 200, { token, name: b.user, role: u.role });
+    return send(res, 200, { token, name: b.user, role: u.role }, true);
   }
   if (pathname === "/api/logout" && req.method === "POST") { const s = auth(req); if (s) for (const [t, v] of sessions) if (v.name === s.name) sessions.delete(t); return send(res, 200, { ok: true }); }
   if (pathname === "/api/me") { const s = auth(req); return send(res, 200, s ? { name: s.name, role: s.role, label: s.label || s.name } : { error: "unauthorized" }); }
   if (pathname === "/api/feedback" && req.method === "POST") {
     const b = await json(req);
     appendFeedback(b.worker, b.role, b.category, b.text);
-    return send(res, 200, { ok: true });
+    return send(res, 200, { ok: true }, true);
   }
   if (pathname === "/api/feedback" && req.method === "GET") { if (!managerOnly(res, req)) return; return send(res, 200, { content: readFeedback(200) }); }
   if (pathname === "/api/report" && req.method === "POST") {
@@ -306,7 +323,7 @@ async function api(req, res, pathname) {
   if (pathname === "/api/wall" && req.method === "GET") {
     const m = metrics();
     const lv = liveRead();
-    return send(res, 200, { ...m, orders: (lv.orders || []).length, ordersTail: (lv.orders || []).slice(-3).map((o) => (o.table ? "M" + o.table + " · " : "") + o.person + " — " + o.request), feedbackTail: readFeedback(60) });
+    return send(res, 200, { ...m, orders: (lv.orders || []).length, ordersTail: (lv.orders || []).slice(-3).map((o) => (o.table ? "M" + o.table + " · " : "") + o.person + " — " + o.request), feedbackTail: readFeedback(60) }, true);
   }
   // Live conversation flow: worker screens, per-person summary, orders to
   // the kitchen and the central system (the supervisor itself).
@@ -405,6 +422,7 @@ async function api(req, res, pathname) {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
     if (!b.name || !b.password) return send(res, 400, { error: "name and password required" });
+    if (String(b.password).length < 8) return send(res, 400, { error: "password must be at least 8 characters" });
     const u = loadUsers();
     if (u[b.name]) return send(res, 409, { error: "user exists" });
     const salt = crypto.randomBytes(16).toString("hex");
