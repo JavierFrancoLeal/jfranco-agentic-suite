@@ -46,6 +46,13 @@ echo "OK ui"
 
 echo "== supervisor =="
 "$NODE" --check supervisor/server.js
+"$NODE" -e '
+  const fs=require("fs");
+  const h=fs.readFileSync("supervisor/dashboard.html","utf8");
+  const m=h.match(/<script>([\s\S]*?)<\/script>/);
+  if(!m) throw new Error("dashboard: script block missing");
+  new Function(m[1]);
+'
 echo "OK supervisor"
 
 echo "== installers =="

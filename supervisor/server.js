@@ -16,7 +16,10 @@ const os = require("os");
 const crypto = require("crypto");
 
 const PORT = Number(process.env.DSH_SUPERVISOR_PORT || 8787);
-const HOST = process.env.DSH_SUPERVISOR_HOST || "127.0.0.1";
+// LAN mode: `node server.js --lan` binds to all interfaces so business
+// tablets and phones on the local WiFi can reach the supervisor.
+const LAN = process.argv.slice(2).includes("--lan");
+const HOST = process.env.DSH_SUPERVISOR_HOST || (LAN ? "0.0.0.0" : "127.0.0.1");
 const ROOT = path.join(__dirname, "..");
 const UI_DIR = path.join(ROOT, "ui");
 const DATA_DIR = process.env.DSH_SUPERVISOR_DATA || path.join(os.homedir(), ".dsh");
@@ -79,6 +82,11 @@ function ownerOnly(res, req) {
   if (!s || s.role !== "owner") { res.writeHead(403, { "Content-Type": "application/json" }); res.end(JSON.stringify({ error: "owner only" })); return false; }
   return true;
 }
+function managerOnly(res, req) {
+  const s = auth(req);
+  if (!s || (s.role !== "owner" && s.role !== "lead")) { res.writeHead(403, { "Content-Type": "application/json" }); res.end(JSON.stringify({ error: "manager only" })); return false; }
+  return true;
+}
 function json(req) {
   return new Promise((ok) => {
     let b = "";
@@ -112,14 +120,43 @@ async function api(req, res, pathname) {
     append(FEEDBACK_FILE, "## " + ts() + " — " + (b.category || "feedback") + " from " + (b.worker || "anonymous") + (b.role ? " (" + b.role + ")" : "") + "\n\n" + String(b.text || "").trim() + "\n\n");
     return send(res, 200, { ok: true });
   }
-  if (pathname === "/api/feedback" && req.method === "GET") { if (!ownerOnly(res, req)) return; return send(res, 200, { content: readTail(FEEDBACK_FILE, 200) }); }
+  if (pathname === "/api/feedback" && req.method === "GET") { if (!managerOnly(res, req)) return; return send(res, 200, { content: readTail(FEEDBACK_FILE, 200) }); }
   if (pathname === "/api/report" && req.method === "POST") {
     const s = auth(req); if (!s) return send(res, 401, { error: "unauthorized" });
     const b = await json(req);
     append(REPORTS_FILE, "## " + ts() + " — report by " + s.name + "\n\n" + String(b.text || "").trim() + "\n\n");
     return send(res, 200, { ok: true });
   }
-  if (pathname === "/api/reports" && req.method === "GET") { if (!ownerOnly(res, req)) return; return send(res, 200, { content: readTail(REPORTS_FILE, 200) }); }
+  if (pathname === "/api/reports" && req.method === "GET") { if (!managerOnly(res, req)) return; return send(res, 200, { content: readTail(REPORTS_FILE, 200) }); }
+  // Live metrics for the owner/lead dashboard (parsed from the logs).
+  if (pathname === "/api/metrics" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const parse = (file) => {
+      try {
+        const out = [];
+        for (const line of fs.readFileSync(file, "utf8").split("\n")) {
+          const m = /^## (\d{4}-\d{2}-\d{2}T[\d:.]+Z) — (.+)$/.exec(line);
+          if (m) out.push({ date: m[1], desc: m[2] });
+        }
+        return out;
+      } catch { return []; }
+    };
+    const reps = parse(REPORTS_FILE), fb = parse(FEEDBACK_FILE);
+    const week = 7 * 24 * 3600e3, now = Date.now();
+    const inWeek = (e) => now - new Date(e.date).getTime() < week;
+    const workers = new Set();
+    fb.forEach((e) => { const m = /from (\S+)/.exec(e.desc); if (m) workers.add(m[1]); });
+    reps.forEach((e) => { const m = /by (\S+)/.exec(e.desc); if (m) workers.add(m[1]); });
+    return send(res, 200, {
+      reports: reps.length,
+      reportsWeek: reps.filter(inWeek).length,
+      feedback: fb.length,
+      feedbackWeek: fb.filter(inWeek).length,
+      workers: workers.size,
+      lastReport: reps.length ? reps[reps.length - 1].date : null,
+      lastFeedback: fb.length ? fb[fb.length - 1].date : null,
+    });
+  }
   if (pathname === "/api/decisions" && req.method === "GET") { if (!ownerOnly(res, req)) return; try { return send(res, 200, { content: fs.readFileSync(DECISIONS_FILE, "utf8") }); } catch { return send(res, 200, { content: "" }); } }
   if (pathname === "/api/decisions" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); fs.writeFileSync(DECISIONS_FILE, String(b.content || "")); return send(res, 200, { ok: true }); }
   if (pathname === "/api/users" && req.method === "GET") { if (!ownerOnly(res, req)) return; const u = loadUsers(); return send(res, 200, { users: Object.entries(u).map(([name, v]) => ({ name, role: v.role })) }); }
@@ -130,7 +167,7 @@ async function api(req, res, pathname) {
     const u = loadUsers();
     if (u[b.name]) return send(res, 409, { error: "user exists" });
     const salt = crypto.randomBytes(16).toString("hex");
-    u[b.name] = { salt, hash: hashPw(String(b.password), salt), role: b.role === "owner" ? "owner" : "employee" };
+    u[b.name] = { salt, hash: hashPw(String(b.password), salt), role: b.role === "owner" ? "owner" : (b.role === "lead" ? "lead" : "employee") };
     saveUsers(u);
     return send(res, 200, { ok: true });
   }

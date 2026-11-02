@@ -180,6 +180,9 @@ The suite is also installable from this repository and from GitHub Pages.
   from real life.
 - [Enterprise model](docs/ENTERPRISE.md) — one owner account, many workers,
   worker tagging, telemetry, and the feedback loop.
+- [Hardware guide](docs/HARDWARE.md) — what the business actually buys: the
+  two deployment scenarios (small restaurant, 100+ manufacturer) and what
+  they mean for the interface.
 - [Sector catalog](docs/SECTOR-CATALOG.md) — where the suite fits across the
   whole economy, with 19 starter decision templates from hotel and
   restaurant to healthcare, legal, accounting, education, non-profits,

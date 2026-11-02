@@ -6,11 +6,16 @@ A small local server for the business with **real logins, roles, and the
 central dashboard**:
 
 - **Owner** — manages worker accounts, reads the live field reports
-  (`supervision.md`), reviews the feedback queue, and edits the business
-  rules (`decisions.md`) from the dashboard.
+  (`supervision.md`), reviews the feedback queue, sees live metrics, and
+  edits the business rules (`decisions.md`) from the dashboard.
+- **Lead (team leader)** — reads field reports and feedback, and opens the
+  panel for their team.
 - **Employees** — log in with their own user and password, send field
   reports and feedback, and open the Action Panel. They never touch the
   rules, the payments, or the accounts.
+
+The dashboard is responsive (tablet → desktop), touch-friendly, and
+role-based; the employee view is kiosk-style with one big LISTEN button.
 
 ## Start
 
@@ -18,12 +23,12 @@ central dashboard**:
 # one time: create the owner (and optionally the first employee)
 node server.js init --owner Maria --password secret123 --employee Luis --employee-password luis456
 
-# every day: run the server
-node server.js
+# every day: run the server (add --lan so tablets on the WiFi can reach it)
+node server.js --lan
 ```
 
-Open **http://127.0.0.1:8787/dashboard** (owner/employees) and
-**http://127.0.0.1:8787/panel** (the Action Panel served locally).
+Open **http://<server-ip>:8787/dashboard** (owner/employees) and
+**http://<server-ip>:8787/panel** (the Action Panel served locally).
 
 ## Security model
 
