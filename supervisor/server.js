@@ -40,6 +40,7 @@ const FEEDBACK_FILE = path.join(DATA_DIR, "feedback.md");
 const DECISIONS_FILE = path.join(DATA_DIR, "decisions.md");
 const DB_FILE = path.join(DATA_DIR, "supervisor.db");
 const USAGE_FILE = path.join(DATA_DIR, "usage.md");
+const LIVE_FILE = path.join(DATA_DIR, "live.json");
 const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
 const TLS_KEY = process.env.DSH_TLS_KEY || path.join(DATA_DIR, "certs", "key.pem");
 const TLS_CERT = process.env.DSH_TLS_CERT || path.join(DATA_DIR, "certs", "cert.pem");
@@ -157,6 +158,8 @@ function usageRows() {
   return [...rows.values()].map((r) => ({ ...r, cost: Math.round((r.tokens / 1e6) * PRICE_PER_MILLION * 100) / 100 })).sort((a, b) => b.tokens - a.tokens);
 }
 function readTail(f, n = 200) { try { const t = fs.readFileSync(f, "utf8"); return t.split("\n").slice(-n).join("\n"); } catch { return ""; } }
+function liveRead() { try { return JSON.parse(fs.readFileSync(LIVE_FILE, "utf8")); } catch { return { status: "idle", worker: null, startedAt: null, speakers: [], orders: [] }; } }
+function liveWrite(s) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(LIVE_FILE, JSON.stringify(s, null, 2)); }
 function metrics() {
   if (db) {
     const q = (sql) => db.prepare(sql).get().n;
@@ -278,6 +281,59 @@ async function api(req, res, pathname) {
   if (pathname === "/api/wall" && req.method === "GET") {
     const m = metrics();
     return send(res, 200, { ...m, feedbackTail: readFeedback(60) });
+  }
+  // Live conversation flow: worker screens, per-person summary, orders to
+  // the kitchen and the central system (the supervisor itself).
+  if (pathname === "/api/live" && req.method === "GET") {
+    return send(res, 200, liveRead());
+  }
+  if (pathname === "/api/live/start" && req.method === "POST") {
+    const b = await json(req);
+    liveWrite({ status: "listening", worker: b.worker || "worker", startedAt: ts(), speakers: [], orders: [] });
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/live/summary" && req.method === "POST") {
+    const b = await json(req);
+    const s = liveRead();
+    s.status = "summary";
+    s.worker = b.worker || s.worker;
+    s.speakers = (b.speakers || []).map((p, i) => ({
+      id: "p" + (i + 1),
+      name: p.name || ("Person " + (i + 1)),
+      requests: (p.requests || []).map((r, j) => ({
+        id: "p" + (i + 1) + "-r" + (j + 1),
+        text: String(r.text || ""),
+        tier: r.tier || "GREEN",
+        status: "pending",
+      })),
+    }));
+    liveWrite(s);
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/live/confirm" && req.method === "POST") {
+    const b = await json(req);
+    const s = liveRead();
+    let ok = false;
+    for (const p of s.speakers) for (const r of p.requests) {
+      if (r.id === b.requestId && r.status !== "confirmed") {
+        r.status = "confirmed"; ok = true;
+        s.orders.push({ id: "o" + (s.orders.length + 1), ts: ts(), person: p.name, request: r.text, tier: r.tier, status: "sent" });
+      }
+    }
+    liveWrite(s);
+    return send(res, 200, { ok });
+  }
+  if (pathname === "/api/live/order" && req.method === "POST") {
+    const b = await json(req);
+    const s = liveRead();
+    const o = s.orders.find((x) => x.id === b.orderId);
+    if (o) o.status = b.status || "sent";
+    liveWrite(s);
+    return send(res, 200, { ok: !!o });
+  }
+  if (pathname === "/api/live/close" && req.method === "POST") {
+    liveWrite({ status: "idle", worker: null, startedAt: null, speakers: [], orders: [] });
+    return send(res, 200, { ok: true });
   }
   if (pathname === "/api/decisions" && req.method === "GET") { if (!ownerOnly(res, req)) return; return send(res, 200, { content: readDecisions() }); }
   if (pathname === "/api/decisions" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); writeDecisions(b.content); return send(res, 200, { ok: true }); }

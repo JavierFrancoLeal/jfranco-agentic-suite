@@ -163,6 +163,23 @@ When a tool call fails, an action errors, or a mission stalls:
 5. Log the failure and the recovery in the supervision log; the
    `autonomy-grader` counts failures in its grades.
 
+## Live mirror (supervisor)
+
+When a supervisor is reachable (http://127.0.0.1:8787) and a worker tag is
+known, mirror the live workflow state so the worker's screen stays in sync:
+
+- On listening start: `POST /api/live/start` with the worker tag.
+- After decoding: `POST /api/live/summary` with `speakers` — one entry per
+  person, each with `name` and `requests` (`text` and `tier`). The worker
+  confirms each request on their screen.
+- When the human confirms an order: `POST /api/live/confirm` with the
+  `requestId`. The supervisor routes it to the kitchen and the central
+  system automatically.
+- On workflow close: `POST /api/live/close`.
+
+If the supervisor is unreachable, skip silently — the flow continues
+without the live screen.
+
 ## Closing the workflow
 
 After the human's final decision:
