@@ -168,6 +168,8 @@ When a tool call fails, an action errors, or a mission stalls:
 When a supervisor is reachable (http://127.0.0.1:8787) and a worker tag is
 known, mirror the live workflow state so the worker's screen stays in sync:
 
+- The standby agent feeds you the captured conversation (transcripts from
+  the worker's device arrive through its prompt).
 - On listening start: `POST /api/live/start` with the worker tag.
 - After decoding: `POST /api/live/summary` with `speakers` — one entry per
   person, each with `name` and `requests` (`text` and `tier`). The worker

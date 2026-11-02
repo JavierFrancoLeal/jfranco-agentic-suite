@@ -60,6 +60,7 @@ sh -n tools/demo-reset.sh
 sh -n tools/demo-sandbox.sh
 sh -n tools/make-cert.sh
 sh -n tools/letsencrypt.sh
+sh -n tools/agent-standby.sh
 echo "OK demo tools"
 
 echo "== installers =="

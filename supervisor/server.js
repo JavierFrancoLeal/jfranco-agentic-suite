@@ -158,7 +158,7 @@ function usageRows() {
   return [...rows.values()].map((r) => ({ ...r, cost: Math.round((r.tokens / 1e6) * PRICE_PER_MILLION * 100) / 100 })).sort((a, b) => b.tokens - a.tokens);
 }
 function readTail(f, n = 200) { try { const t = fs.readFileSync(f, "utf8"); return t.split("\n").slice(-n).join("\n"); } catch { return ""; } }
-function liveRead() { try { return JSON.parse(fs.readFileSync(LIVE_FILE, "utf8")); } catch { return { status: "idle", worker: null, startedAt: null, speakers: [], orders: [] }; } }
+function liveRead() { try { const s = JSON.parse(fs.readFileSync(LIVE_FILE, "utf8")); s.inbox = s.inbox || []; return s; } catch { return { status: "idle", worker: null, startedAt: null, speakers: [], orders: [], inbox: [] }; } }
 function liveWrite(s) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(LIVE_FILE, JSON.stringify(s, null, 2)); }
 function metrics() {
   if (db) {
@@ -332,8 +332,23 @@ async function api(req, res, pathname) {
     return send(res, 200, { ok: !!o });
   }
   if (pathname === "/api/live/close" && req.method === "POST") {
-    liveWrite({ status: "idle", worker: null, startedAt: null, speakers: [], orders: [] });
+    liveWrite({ status: "idle", worker: null, startedAt: null, speakers: [], orders: [], inbox: [] });
     return send(res, 200, { ok: true });
+  }
+  // Speech/text from the worker's device → the always-connected AI agent.
+  if (pathname === "/api/live/transcript" && req.method === "POST") {
+    const b = await json(req);
+    const s = liveRead();
+    s.inbox = s.inbox || [];
+    s.inbox.push({ id: "t" + (s.inbox.length + 1), ts: ts(), worker: b.worker || s.worker, text: String(b.text || "").trim() });
+    liveWrite(s);
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/live/inbox" && req.method === "GET") {
+    const s = liveRead();
+    const items = (s.inbox || []).filter((x) => !x.acked);
+    if (items.length) { s.inbox.forEach((x) => { x.acked = true; }); liveWrite(s); }
+    return send(res, 200, { items });
   }
   if (pathname === "/api/decisions" && req.method === "GET") { if (!ownerOnly(res, req)) return; return send(res, 200, { content: readDecisions() }); }
   if (pathname === "/api/decisions" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); writeDecisions(b.content); return send(res, 200, { ok: true }); }
