@@ -138,6 +138,7 @@ body.wall pre{max-height:40vh}
   <div id="employeeView" class="hidden">
     <div id="wHome">
       <div class="card" style="text-align:center;padding:8px"><h2 id="workerHi" style="margin:0"></h2></div>
+      <input id="tableInput" placeholder="Table #" style="margin:8px 0">
       <button class="listen" id="startBtn">▶ START</button>
       <div class="card"><h2 id="reportTitle">Field report</h2><textarea id="reportText" rows="4" placeholder="What happened on your shift?"></textarea><button class="btn" id="reportBtn">Send report</button></div>
       <div class="card"><h2 id="fbTitle">Field feedback</h2>
@@ -194,7 +195,7 @@ ko:{login:"로그인",user:"사용자",password:"비밀번호",loginBtn:"로그�
 ar:{login:"تسجيل الدخول",user:"المستخدم",password:"كلمة المرور",loginBtn:"دخول",loginHint:"الحسابات يديرها صاحب العمل.",loginFailed:"فشل تسجيل الدخول.",cannotReach:"تعذر الوصول إلى الخادم. هل هو قيد التشغيل؟",workerAdded:"تمت إضافة الموظف.",saved:"تم الحفظ.",reportSent:"تم إرسال التقرير.",feedbackSent:"تم إرسال الملاحظات.",wallOpen:"اللوحة المباشرة",logout:"خروج",overview:"نظرة عامة",field:"الميدان",rules:"القواعد",reports:"التقارير",week:"هذا الأسبوع",feedback:"الملاحظات",workersActive:"موظفون نشطون",reportsTotal:"إجمالي التقارير",workers:"الموظفون",thUser:"المستخدم",thRole:"الدور",addWorker:"إضافة موظف",userName:"اسم المستخدم",addBtn:"إضافة",usage:"الاستخدام والتكلفة",usageSub:"(لكل موظف، تقديري)",thWorker:"الموظف",thSessions:"الجلسات",thTokens:"الرموز",thCost:"التكلفة التقديرية",panel:"لوحة الإجراءات",panelNote:"يفتح الموظفون اللوحة من أجهزتهم.",openPanel:"فتح اللوحة",fieldReports:"تقارير الميدان",feedbackQueue:"قائمة الملاحظات",feedbackHint:"يقرأ الوكيل هذه القائمة ويحل المشكلات.",refresh:"تحديث",autoOn:"تلقائي: ON",autoOff:"تلقائي: OFF",rulesTitle:"قواعد العمل",rulesHint:"هذه القواعد تدرّب الإشارة الضوئية.",saveRules:"حفظ القواعد",listen:"🎙️ استمع",hi:"👋 ",reportTitle:"تقرير ميداني",reportPh:"ماذا حدث في نوبتك؟",sendReport:"إرسال",fbTitle:"ملاحظات ميدانية",fbPh:"ماذا حدث؟ ما الذي يجب تحسينه؟",sendFeedback:"إرسال",switchUser:"تبديل المستخدم",wallHead:"🏭 مجموعة J.Franco — مباشر",wallPulse:"نبض الميدان",noActivity:"(لا نشاط بعد)",start:"▶ ابدأ",listening:"أستمع… تفضل بالحديث",listeningHint:"يتم التقاط المحادثة وتقسيمها حسب الأشخاص.",stopListening:"⏹ إيقاف",summaryTitle:"ملخص المحادثة",confirm:"تأكيد ✓",confirmed:"مؤكد ✓",sentNote:"أُرسل إلى المطبخ والنظام المركزي",newConv:"محادثة جديدة",ordersTitle:"الطلبات — المطبخ والحساب",person:"شخص",noSummary:"سيظهر الملخص هنا مع اكتشاف المحادثة.",prep:"قيد التحضير",ready:"جاهز",delivered:"تم التسليم",sent:"أُرسل",back:"رجوع",sayPh:"تحدث أو اكتب ما قاله كل شخص…",sendPhrase:"إرسال",dictate:"🎙️ إملاء",aiHint:"الصوت والنص يصلان مباشرة إلى الذكاء الاصطناعي — يظهر الملخص تلقائيًا.",micUnsupported:"الإملاء غير مدعوم",processing:"الذكاء الاصطناعي يلخّص…"}
 };
 const $=id=>document.getElementById(id);
-let token=null,me=null,auto=false,cur="en",livePoll=null;
+let token=null,me=null,auto=false,cur="en",livePoll=null,PACK=null;
 function t(k){return (S[cur]&&S[cur][k])||S.en[k]||k;}
 function applyLang(){
   try{localStorage.setItem("dsh-lang",cur);}catch(e){}
@@ -224,6 +225,8 @@ function pill(l){const b=document.createElement("button");b.className="pill";b.d
 for(const l of Object.keys(LANG))pill(l);
 try{const saved=localStorage.getItem("dsh-lang");if(saved&&S[saved])cur=saved;}catch(e){}
 applyLang();
+function applyPack(){if(!PACK)return;$("tableInput").placeholder=(PACK.tableLabel&&PACK.tableLabel[cur])||"Table";const ot=(PACK.ordersTarget&&PACK.ordersTarget[cur])||t("ordersTitle");$("ordersTitle").textContent=ot;$("leadOrdersTitle").textContent=ot;$("ordersTitle2").textContent=ot;}
+(async()=>{PACK=await api("/api/sector");applyPack();})();
 const api=async(p,body)=>{try{const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});return r.json();}catch(e){return {error:"network"};}};
 function show(view){["loginView","ownerView","leadView","employeeView","wallView"].forEach(v=>$(v).classList.add("hidden"));$(view).classList.remove("hidden");}
 function setWho(){const w=$("who");w.textContent=me?(me.name+" · "+me.role):"";$("logoutBtn").style.display=me?"inline-block":"none";}
@@ -233,7 +236,7 @@ async function loadUsage(){const tb=$("usageTable")?$("usageTable").querySelecto
 function orderRow(o,canUpdate){
   const d=document.createElement("div");d.className="order";
   const stat=document.createElement("span");stat.className="stat";stat.textContent=t(o.status||"sent");
-  d.innerHTML="<b>"+o.person+"</b>";
+  d.innerHTML="<b>"+(o.table?((PACK&&PACK.tableLabel&&PACK.tableLabel[cur]?PACK.tableLabel[cur]:"Table")+" "+o.table+" · "):"")+o.person+"</b>";
   const txt=document.createElement("span");txt.className="txt";txt.textContent=o.request;
   d.appendChild(txt);d.appendChild(stat);
   if(canUpdate&&o.status!=="delivered"){
@@ -270,7 +273,7 @@ async function workerFlow(){
   if(!me){return;}
   $("wHome").classList.add("hidden");$("wListen").classList.add("hidden");$("wSummary").classList.add("hidden");
   if(live.status==="listening"){$("wListen").classList.remove("hidden");$("listeningBtn").textContent="🎙️ "+ (live.worker||"");}
-  else if(live.status==="summary"){$("wSummary").classList.remove("hidden");renderSummary(live);}
+  else if(live.status==="summary"){$("wSummary").classList.remove("hidden");$("summaryTitle").textContent=t("summaryTitle")+(live.table?(" — "+(PACK&&PACK.tableLabel&&PACK.tableLabel[cur]?PACK.tableLabel[cur]:"Table")+" "+live.table):"");renderSummary(live);}
   else{$("wHome").classList.remove("hidden");}
   renderOrders();
 }
@@ -294,7 +297,7 @@ function renderSummary(live){
     body.appendChild(d);
   }
 }
-$("startBtn").onclick=async()=>{await api("/api/live/start",{worker:me.name});workerFlow();};
+$("startBtn").onclick=async()=>{await api("/api/live/start",{worker:me.name,table:$("tableInput").value.trim()||null});workerFlow();};
 $("stopBtn").onclick=async()=>{const live=await api("/api/live");if((live.speakers||[]).length){live.status="summary";await api("/api/live/summary",{speakers:live.speakers});}else{await api("/api/live/close",{});}workerFlow();};
 $("newConvBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 $("toHomeBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};

@@ -1,0 +1,6 @@
+{
+  "id": "hotel",
+  "tableLabel": {"en": "Room", "es": "Habitación"},
+  "ordersTarget": {"en": "Requests — front desk & folio", "es": "Solicitudes — recepción y cuenta"},
+  "entity": {"en": "guest", "es": "huésped"}
+}

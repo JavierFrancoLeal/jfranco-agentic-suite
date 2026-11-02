@@ -41,6 +41,7 @@ const DECISIONS_FILE = path.join(DATA_DIR, "decisions.md");
 const DB_FILE = path.join(DATA_DIR, "supervisor.db");
 const USAGE_FILE = path.join(DATA_DIR, "usage.md");
 const LIVE_FILE = path.join(DATA_DIR, "live.json");
+const SECTOR_FILE = path.join(DATA_DIR, "sector.json");
 const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
 const TLS_KEY = process.env.DSH_TLS_KEY || path.join(DATA_DIR, "certs", "key.pem");
 const TLS_CERT = process.env.DSH_TLS_CERT || path.join(DATA_DIR, "certs", "cert.pem");
@@ -287,9 +288,14 @@ async function api(req, res, pathname) {
   if (pathname === "/api/live" && req.method === "GET") {
     return send(res, 200, liveRead());
   }
+  // The active sector pack: one dashboard skeleton, many business skins.
+  if (pathname === "/api/sector" && req.method === "GET") {
+    try { return send(res, 200, JSON.parse(fs.readFileSync(SECTOR_FILE, "utf8"))); }
+    catch { return send(res, 200, { id: "generic", tableLabel: { en: "Table", es: "Mesa" }, ordersTarget: { en: "Orders", es: "Pedidos" }, entity: { en: "person", es: "persona" } }); }
+  }
   if (pathname === "/api/live/start" && req.method === "POST") {
     const b = await json(req);
-    liveWrite({ status: "listening", worker: b.worker || "worker", startedAt: ts(), speakers: [], orders: [] });
+    liveWrite({ status: "listening", worker: b.worker || "worker", table: b.table || null, startedAt: ts(), speakers: [], orders: [], inbox: [] });
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/live/summary" && req.method === "POST") {
@@ -317,7 +323,7 @@ async function api(req, res, pathname) {
     for (const p of s.speakers) for (const r of p.requests) {
       if (r.id === b.requestId && r.status !== "confirmed") {
         r.status = "confirmed"; ok = true;
-        s.orders.push({ id: "o" + (s.orders.length + 1), ts: ts(), person: p.name, request: r.text, tier: r.tier, status: "sent" });
+        s.orders.push({ id: "o" + (s.orders.length + 1), ts: ts(), table: s.table, person: p.name, request: r.text, tier: r.tier, status: "sent" });
       }
     }
     liveWrite(s);

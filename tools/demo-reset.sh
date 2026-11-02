@@ -31,6 +31,10 @@ done
   cat "$ROOT/docs/decisions-customerservice.md"
 } > "$HOME/.dsh/decisions.md"
 
+# 3b. Sector pack (restaurant by default; switch with:
+#     cp docs/sector-packs/hotel.json $DEMO/sector.json)
+cp "$ROOT/docs/sector-packs/restaurant.json" "$DEMO/sector.json"
+
 # 4. Done
 echo ""
 echo "Demo state ready."

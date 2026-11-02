@@ -1,0 +1,6 @@
+{
+  "id": "restaurant",
+  "tableLabel": {"en": "Table", "es": "Mesa"},
+  "ordersTarget": {"en": "Orders — kitchen & bill", "es": "Pedidos — cocina y cuenta"},
+  "entity": {"en": "person", "es": "persona"}
+}

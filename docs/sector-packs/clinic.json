@@ -1,0 +1,6 @@
+{
+  "id": "clinic",
+  "tableLabel": {"en": "Patient", "es": "Paciente"},
+  "ordersTarget": {"en": "Requests — desk & record", "es": "Solicitudes — mostrador y expediente"},
+  "entity": {"en": "patient", "es": "paciente"}
+}
