@@ -280,6 +280,28 @@ async function api(req, res, pathname) {
     if (!managerOnly(res, req)) return;
     return send(res, 200, { pricePerMillion: PRICE_PER_MILLION, rows: usageRows() });
   }
+  // Export the records as a downloadable Markdown file (owner/lead).
+  if (pathname === "/api/export" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const q = new URL(req.url, "http://localhost").searchParams;
+    const type = q.get("type") || "reports";
+    let body = "", name = "le-veilleux-reports.md";
+    if (type === "orders") {
+      const lv = liveRead();
+      body = "# Le Veilleux — orders & bill\n\n" + ts() + "\n\n" +
+        (lv.orders || []).map((o) => "- " + (o.table ? "Table " + o.table + " · " : "") + o.person + ": " + o.request + " (" + o.status + ")").join("\n") +
+        "\n\nTotal items: " + (lv.orders || []).length + "\n";
+      name = "le-veilleux-orders.md";
+    } else if (type === "usage") {
+      body = "# Le Veilleux — usage & cost\n\n" + ts() + "\n\n| Worker | Sessions | Tokens | Est. cost |\n|---|---|---|---|\n" +
+        usageRows().map((r) => "| " + r.worker + " | " + r.sessions + " | " + r.tokens + " | $" + r.cost.toFixed(2) + " |").join("\n") + "\n";
+      name = "le-veilleux-usage.md";
+    } else {
+      body = fs.existsSync(REPORTS_FILE) ? fs.readFileSync(REPORTS_FILE, "utf8") : "# Le Veilleux — no reports yet\n";
+    }
+    res.writeHead(200, { "Content-Type": "text/markdown; charset=utf-8", "Content-Disposition": 'attachment; filename="' + name + '"' });
+    return res.end(body);
+  }
   // Public wallboard feed: aggregated numbers only, no secrets.
   if (pathname === "/api/wall" && req.method === "GET") {
     const m = metrics();
