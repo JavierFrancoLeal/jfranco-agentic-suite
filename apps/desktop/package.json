@@ -23,7 +23,6 @@
       "assets/**",
       "brain/**",
       "ui/**",
-      "welcome.html",
       "brain/agent-standby.sh"
     ],
     "mac": {

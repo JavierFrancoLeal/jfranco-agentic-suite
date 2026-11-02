@@ -366,6 +366,21 @@ async function api(req, res, pathname) {
   if (pathname === "/api/register/add" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); r.items.push({ name: String(b.name || ""), price: Number(b.price) || 0 }); regWrite(r); return send(res, 200, { ok: true }); }
   if (pathname === "/api/register/charge" && req.method === "POST") { const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); if (!r.items.length) return send(res, 400, { error: "no items" }); const total = Math.round(r.items.reduce((a, x) => a + x.price, 0) * 100) / 100; r.sales.push({ ts: ts(), worker: u.name, method: b.method || "terminal", items: r.items, total }); r.items = []; regWrite(r); return send(res, 200, { ok: true, total }); }
   if (pathname === "/api/register/close" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); if (!r.items.length || true) { const leftover = r.items.length ? Math.round(r.items.reduce((a, x) => a + x.price, 0) * 100) / 100 : 0; if (leftover) r.sales.push({ ts: ts(), items: r.items, total: leftover }); r.items = []; } r.status = "closed"; r.closedAt = ts(); r.declared = Number(b.declared) || 0; regWrite(r); return send(res, 200, regView()); }
+  if (pathname === "/api/setup-status" && req.method === "GET") {
+    return send(res, 200, { users: Object.keys(loadUsers()).length }, true);
+  }
+  if (pathname === "/api/setup" && req.method === "POST") {
+    const b = await json(req);
+    const u = loadUsers();
+    if (Object.keys(u).length > 0) return send(res, 409, { error: "setup already done — log in instead" });
+    if (!b.user || String(b.password).length < 8) return send(res, 400, { error: "name and a password of at least 8 characters are required" });
+    const salt = crypto.randomBytes(16).toString("hex");
+    u[b.user] = { salt, hash: hashPw(String(b.password), salt), role: "owner", label: b.user };
+    saveUsers(u);
+    if (b.sector) { try { const dir = process.env.DSH_SECTOR_PACKS_DIR || path.join(ROOT, "docs", "sector-packs"); fs.copyFileSync(path.join(dir, String(b.sector) + ".json"), SECTOR_FILE); } catch {} }
+    const token = issue(b.user, "owner", b.user);
+    return send(res, 200, { token, name: b.user, role: "owner", label: b.user }, true);
+  }
   if (pathname === "/api/health" && req.method === "GET") {
     const m = metrics();
     return send(res, 200, { ok: true, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd(), budgetPct: DAILY_BUDGET_USD > 0 ? Math.round((todayCostUsd() / DAILY_BUDGET_USD) * 100) : 0 }, true);

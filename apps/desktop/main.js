@@ -114,8 +114,7 @@ if (!app.requestSingleInstanceLock()) {
         setTimeout(() => app.quit(), 400);
       });
     }
-    if (LOCAL && firstRun()) win.loadFile(path.join(__dirname, "welcome.html"));
-    else win.loadURL(TARGET_URL);
+    win.loadURL(TARGET_URL);
   }
 
   ipcMain.on("leveilleux-setup", async (_e, p) => {
@@ -167,8 +166,7 @@ if (!app.requestSingleInstanceLock()) {
   app.whenReady().then(async () => {
     const ok = await ensureBrain();
     createWindow();
-    if (LOCAL && firstRun()) { await new Promise((r) => setTimeout(r, 300)); try { if (win && !win.isDestroyed()) win.loadFile(path.join(__dirname, "welcome.html")); } catch {} }
-    else if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
+    if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
     try {
       const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));
       tray = new Tray(icon.resize({ width: 18, height: 18 }));
