@@ -11,9 +11,8 @@ body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:
 @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
 .langbox{width:min(460px,90vw);height:80px;margin:44px auto 0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.30);border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:background .2s;box-shadow:0 10px 30px rgba(15,23,42,.15)}
 .langbox:hover{background:rgba(255,255,255,.18)}
-.ticks{display:flex;flex-direction:column;animation:reel 20s linear infinite;will-change:transform}
+.ticks{display:flex;flex-direction:column;will-change:transform}
 .tick{height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;opacity:.85}
-@keyframes reel{0%{transform:translateY(0)}100%{transform:translateY(-800px)}}
 .overlay{position:fixed;inset:0;background:linear-gradient(160deg,#4D6BFE,#7c5cff 60%,#a78bfa);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:60;animation:rise .28s ease}
 .overlay .top{position:absolute;top:22px;right:26px}
 .overlay .close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;width:44px;height:44px;font-size:18px;cursor:pointer}
@@ -96,6 +95,15 @@ for(let pass=0;pass<2;pass++){
     ticksEl.appendChild(d);
   }
 }
+// Seamless loop: requestAnimationFrame + modulo — no keyframe restart, no jump.
+const TICK_H=80, N=Object.keys(LANGS).length, CYCLE=20000;
+const start0=performance.now();
+(function frame(now){
+  const t=(now-start0)%CYCLE;
+  const y=(t/CYCLE)*N*TICK_H;
+  ticksEl.style.transform="translateY(-"+y+"px)";
+  requestAnimationFrame(frame);
+})(start0);
 // Full-screen list, English centered, the rest by software-industry priority
 // (GitHub/StackOverflow order): es, fr, de, ja, zh, pt, it, ko, ar
 const ORDER=["it","zh","de","es","en","fr","ja","pt","ko","ar"];
