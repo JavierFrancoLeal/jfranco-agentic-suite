@@ -34,6 +34,31 @@ if [ "${1:-start}" = "stop" ]; then
 fi
 
 if [ "${1:-start}" = "tunnel" ]; then
+  # Public URL mode: phones work from ANY network. Prefer cloudflared
+  # (goes straight through, no "Opening…" interstitial); fall back to ssh.
+  CF=""
+  for c in "$HOME/bin/cloudflared" "$(command -v cloudflared 2>/dev/null)"; do
+    if [ -n "$c" ] && [ -x "$c" ]; then CF="$c"; break; fi
+  done
+  if [ -n "$CF" ]; then
+    "$CF" tunnel --url "http://127.0.0.1:$PORT" --no-autoupdate > /tmp/dsh-demo-tunnel.log 2>&1 &
+    echo $! > "$PID.tunnel"
+    sleep 7
+    URL="$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/dsh-demo-tunnel.log | head -1)"
+    if [ -n "$URL" ]; then
+      echo ""
+      echo "=== PUBLIC DEMO LINK (direct, no interstitial) ==="
+      echo ""
+      echo "  Dashboard (login):             $URL/dashboard"
+      echo "  Wallboard (no login):          $URL/dashboard?wall=1"
+      echo "  Panel:                         $URL/panel"
+      echo ""
+      echo "Note: free tunnels expire (≈2h) — if the link ever dies, run: sh tools/demo-sandbox.sh tunnel"
+      echo "Stop everything:  sh tools/demo-sandbox.sh stop"
+      exit 0
+    fi
+    echo "cloudflared falló — probando el túnel ssh…"
+  fi
   # Public URL mode: phones work from ANY network (even 4G), no WiFi needed.
   # Uses a temporary third-party tunnel (localhost.run). Demo data is fake,
   # but note that traffic passes through their servers during the demo.
@@ -45,7 +70,7 @@ if [ "${1:-start}" = "tunnel" ]; then
     -R "80:localhost:8790" nokey@localhost.run > /tmp/dsh-demo-tunnel.log 2>&1 &
   echo $! > "$PID.tunnel"
   sleep 6
-  URL="$(grep -oE 'https://[a-z0-9-]+\.lhr\.life' /tmp/dsh-demo-tunnel.log | head -1)"
+  URL="$(grep -oE 'https://[a-z0-9-]+\.(lhr\.life|trycloudflare\.com)' /tmp/dsh-demo-tunnel.log | head -1)"
   if [ -z "$URL" ]; then
     echo "Tunnel did not start. Check /tmp/dsh-demo-tunnel.log"
     exit 1

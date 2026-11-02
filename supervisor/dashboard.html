@@ -75,6 +75,13 @@ pre{background:#0f172a;color:#d7e3f4;border-radius:12px;padding:12px;font-size:1
 .tabs button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
+#splash{position:fixed;inset:0;background:linear-gradient(135deg,#4D6BFE,#7c5cff);display:flex;align-items:center;justify-content:center;z-index:100;transition:opacity .5s,visibility .5s}
+#splash.done{opacity:0;visibility:hidden}
+.splash-inner{text-align:center;color:#fff;padding:20px}
+.splash-inner b{display:block;font-size:22px;margin-top:14px;letter-spacing:.02em}
+.splash-inner span{font-size:12.5px;opacity:.85}
+@media (prefers-reduced-motion: no-preference){.splash-inner svg path{stroke-dasharray:100;stroke-dashoffset:100;animation:drawStroke 1.2s cubic-bezier(.4,0,.2,1) forwards}}
+@media (prefers-reduced-motion: reduce){#splash{display:none}}
 .hidden{display:none}
 .kban{background:#fef3c7;border:1px solid #f59e0b;color:#92400e;border-radius:12px;padding:12px 14px;margin:10px 0;font-weight:700;font-size:15px}
 .chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
@@ -141,6 +148,10 @@ body.wall pre{max-height:40vh}
 </style>
 </head>
 <body>
+<div id="splash"><div class="splash-inner">
+    <svg width="96" height="96" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="splg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e0e7ff"/></linearGradient></defs><path pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="url(#splg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <b>Le Veilleux</b><span id="splashTag">The AI works. The human watches, decides, reviews.</span>
+  </div></div>
 <header>
   <h1 id="appTitle"><svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg> <span style="vertical-align:5px">Le Veilleux</span></h1>
   <span class="who" id="who"></span>
@@ -328,6 +339,7 @@ $("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-dark",dar
 $("soundBtn").onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("dsh-sound",soundOn?"1":"0");}catch(e){}applyToggles();};
 try{darkOn=localStorage.getItem("dsh-dark")==="1";soundOn=localStorage.getItem("dsh-sound")!=="0";}catch(e){}
 applyToggles();
+setTimeout(()=>{$("splash").classList.add("done");},1500);
 async function reRenderDynamic(){
   if(!me)return;
   if(me.role==="owner"){loadMetrics($("ownerMetrics"));loadUsers();loadUsage();loadField();renderOrders();renderSuggest();}
@@ -374,6 +386,7 @@ function panelLinks(){const u=me?encodeURIComponent(me.name):"",r=me?encodeURICo
 function applyLang(){
   try{localStorage.setItem("dsh-lang",cur);}catch(e){}
   $("welcomeClose").onclick=()=>{$("welcomeCard").style.display="none";try{localStorage.setItem("lv-welcome","1");}catch(e){}};
+  $("splashTag").textContent=t("tagline");
   $("welcomeTitle").textContent=t("welcomeTitle");$("welcomeBody").textContent=t("welcomeBody");$("wallNote").textContent=t("wallNote");
   $("loginTitle").textContent=t("login");$("tagline").textContent=t("tagline");$("loginUser").placeholder=t("user");
 ["loginUser","loginPass"].forEach(id=>$(id).addEventListener("input",()=>$("loginError").classList.add("hidden")));$("loginPass").placeholder=t("password");
