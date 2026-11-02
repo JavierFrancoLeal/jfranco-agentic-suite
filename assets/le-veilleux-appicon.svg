@@ -4,15 +4,15 @@
       <stop offset="0" stop-color="#4D6BFE"/>
       <stop offset="1" stop-color="#7c5cff"/>
     </linearGradient>
-    <radialGradient id="sheen" cx="0.5" cy="0.18" r="1.1">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+    <radialGradient id="sheen" cx="0.5" cy="0.15" r="1.2">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.30"/>
       <stop offset="0.55" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
   </defs>
   <rect width="1024" height="1024" fill="url(#appg)"/>
   <rect width="1024" height="1024" fill="url(#sheen)"/>
-  <g transform="translate(212,212) scale(9.375)">
-    <path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="32" cy="34.8" r="3.6" fill="#FACC15"/>
+  <g transform="translate(62,92) scale(14.06)">
+    <path d="M2 32 C2 21 9 12 32 12 C55 12 62 21 62 32 C62 43 55 52 32 52 C17 52 6.5 48 3.5 40 C8 44 16 42 23 35.8 A7.8 7.8 0 0 1 41 35.8 C41 31.8 38.6 28 32 21.5 C25.4 28 23 31.8 23 35.8" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="32" cy="35.8" r="3.6" fill="#FACC15"/>
   </g>
 </svg>

@@ -3,37 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Le Veilleux — Welcome</title>
+<title>Le Veilleux — Bienvenue</title>
 <style>
-:root{--blue:#4D6BFE;--violet:#7c5cff;--ink:#101828;--muted:#667085}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff 55%,#a78bfa);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.card{background:rgba(255,255,255,.94);border-radius:24px;box-shadow:0 30px 70px rgba(15,23,42,.35);max-width:440px;width:100%;padding:34px 30px;text-align:center;animation:rise .5s ease}
+body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff 55%,#a78bfa);min-height:100vh;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
+.step{max-width:460px;width:100%;text-align:center;animation:rise .5s ease}
 @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.hello{font-size:44px;font-weight:800;margin:26px 0 30px;height:56px;display:flex;align-items:center;justify-content:center;transition:opacity .5s}
+.hello.fade{opacity:0}
+.langs{display:flex;flex-direction:column;gap:10px;text-align:left}
+.langrow{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:16px 20px;font-size:19px;cursor:pointer;backdrop-filter:blur(6px);transition:background .15s,transform .1s;display:flex;justify-content:space-between;align-items:center}
+.langrow:hover{background:rgba(255,255,255,.22)}
+.langrow:active{transform:scale(.98)}
+.langrow .sub{font-size:13px;opacity:.75}
 svg .stroke{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.6s cubic-bezier(.4,0,.2,1) forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
-h1{font-size:22px;margin:14px 0 2px;color:var(--ink)}
-.tag{color:var(--muted);font-size:13px;margin:0 0 14px}
-.langs{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:0 0 18px}
-.pill{background:#fff;border:1px solid #e3e6ee;border-radius:999px;padding:6px 11px;font-size:12px;cursor:pointer;color:var(--ink)}
-.pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.card{background:rgba(255,255,255,.95);border-radius:24px;box-shadow:0 30px 70px rgba(15,23,42,.35);max-width:440px;width:100%;padding:34px 30px;text-align:center;color:#101828;animation:rise .5s ease}
+.card h1{font-size:22px;margin:0 0 4px}
+.card .tag{color:#667085;font-size:13px;margin:0 0 18px}
 input,select{width:100%;border:1px solid #e3e6ee;border-radius:12px;padding:12px 14px;font-size:15px;margin-bottom:10px;font-family:inherit}
-input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(77,107,254,.18)}
+input:focus,select:focus{outline:none;border-color:#4D6BFE;box-shadow:0 0 0 3px rgba(77,107,254,.18)}
 button{width:100%;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#4D6BFE,#7c5cff);cursor:pointer;transition:transform .12s}
 button:active{transform:scale(.97)}
 button:disabled{opacity:.6;cursor:wait}
-.hint{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+.back{background:none;border:none;color:#667085;font-size:13px;cursor:pointer;margin-top:12px;width:auto;padding:6px 12px}
+.hint{font-size:12px;color:#667085;margin-top:10px;line-height:1.5}
 </style>
 </head>
 <body>
-<div class="card">
-  <svg width="92" height="92" viewBox="0 0 64 64" aria-hidden="true">
-    <defs><linearGradient id="wg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4D6BFE"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs>
-    <path class="stroke" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="url(#wg)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <h1>Le Veilleux</h1>
+
+<!-- STEP 1: language first, like Apple's "Hello" -->
+<div class="step" id="step1">
+  <svg width="120" height="120" viewBox="0 0 64 64" aria-hidden="true"><path class="stroke" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="hello" id="hello">Bonjour</div>
+  <div class="langs" id="langList"></div>
+</div>
+
+<!-- STEP 2: one compact form, in the chosen language -->
+<div class="card hidden" id="step2" style="display:none">
+  <h1 id="wTitle">Welcome to Le Veilleux</h1>
   <p class="tag" id="tagline">The AI works. The human watches, decides, reviews.</p>
-  <div class="langs" id="langs"></div>
   <input id="owner" placeholder="Your name (the owner)">
   <input id="password" type="password" placeholder="Password (min. 8 characters)" minlength="8">
   <select id="sector">
@@ -47,42 +56,67 @@ button:disabled{opacity:.6;cursor:wait}
   </select>
   <button id="go">Create my Le Veilleux</button>
   <p class="hint" id="hint">This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.</p>
+  <button class="back" id="back">← Change language</button>
 </div>
+
 <script>
 "use strict";
-const TAGS={
- en:"The AI works. The human watches, decides, reviews.",
- es:"La IA trabaja. El humano vela, decide, revisa.",
- fr:"L'IA travaille. L'humain veille, décide, revoit.",
- de:"Die KI arbeitet. Der Mensch wacht, entscheidet, prüft.",
- it:"L'IA lavora. L'umano veglia, decide, rivede.",
- pt:"A IA trabalha. O humano vela, decide, revê.",
- zh:"AI 工作，人来守护、决定、复核。",
- ja:"AIが働き、人間が見守り、決め、見直す。",
- ko:"AI가 일하고 사람이 지키고, 결정하고, 검토합니다.",
- ar:"الذكاء الاصطناعي يعمل، والإنسان يراقب ويقرر ويراجع."
+const GREET=["Bonjour","Hola","Hello","你好","مرحبا","안녕하세요","こんにちは","Hallo","Ciao","Olá"];
+const LANGS={fr:"Français",en:"English",es:"Español",de:"Deutsch",it:"Italiano",pt:"Português",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
+const TAGS={en:"The AI works. The human watches, decides, reviews.",es:"La IA trabaja. El humano vela, decide, revisa.",fr:"L'IA travaille. L'humain veille, décide, revoit.",de:"Die KI arbeitet. Der Mensch wacht, entscheidet, prüft.",it:"L'IA lavora. L'umano veglia, decide, rivede.",pt:"A IA trabalha. O humano vela, decide, revê.",zh:"AI 工作，人来守护、决定、复核。",ja:"AIが働き、人間が見守り、決め、見直す。",ko:"AI가 일하고 사람이 지키고, 결정하고, 검토합니다.",ar:"الذكاء الاصطناعي يعمل، والإنسان يراقب ويقرر ويراجع."};
+const S={
+en:{title:"Welcome to Le Veilleux",name:"Your name (the owner)",pass:"Password (min. 8 characters)",btn:"Create my Le Veilleux",hint:"This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.",back:"← Change language"},
+es:{title:"Bienvenido a Le Veilleux",name:"Tu nombre (el dueño)",pass:"Contraseña (mín. 8 caracteres)",btn:"Crear mi Le Veilleux",hint:"Esto crea el cerebro en esta computadora: tu cuenta, tu sector, tus reglas. Nada sale de la máquina.",back:"← Cambiar idioma"},
+fr:{title:"Bienvenue chez Le Veilleux",name:"Votre nom (le propriétaire)",pass:"Mot de passe (min. 8 caractères)",btn:"Créer mon Le Veilleux",hint:"Cela crée le cerveau sur cet ordinateur : votre compte, votre secteur, vos règles. Rien ne quitte la machine.",back:"← Changer de langue"},
+de:{title:"Willkommen bei Le Veilleux",name:"Ihr Name (der Inhaber)",pass:"Passwort (min. 8 Zeichen)",btn:"Mein Le Veilleux erstellen",hint:"Das erstellt das Gehirn auf diesem Computer: Ihr Konto, Ihre Branche, Ihre Regeln. Nichts verlässt den Rechner.",back:"← Sprache ändern"},
+it:{title:"Benvenuto in Le Veilleux",name:"Il tuo nome (il proprietario)",pass:"Password (min. 8 caratteri)",btn:"Crea il mio Le Veilleux",hint:"Crea il cervello su questo computer: il tuo account, il tuo settore, le tue regole. Nulla esce dalla macchina.",back:"← Cambia lingua"},
+pt:{title:"Bem-vindo ao Le Veilleux",name:"O seu nome (o dono)",pass:"Senha (mín. 8 caracteres)",btn:"Criar o meu Le Veilleux",hint:"Isto cria o cérebro neste computador: a sua conta, o seu setor, as suas regras. Nada sai da máquina.",back:"← Mudar idioma"},
+zh:{title:"欢迎使用 Le Veilleux",name:"您的姓名（所有者）",pass:"密码（至少8个字符）",btn:"创建我的 Le Veilleux",hint:"这将在此计算机上创建大脑：您的账户、行业和规则。一切都不离开机器。",back:"← 更改语言"},
+ja:{title:"Le Veilleux へようこそ",name:"お名前（オーナー）",pass:"パスワード（8文字以上）",btn:"Le Veilleux を作成",hint:"このコンピュータ上に頭脳を作成します：アカウント、セクター、ルール。すべてマシン内に留まります。",back:"← 言語を変更"},
+ko:{title:"Le Veilleux에 오신 것을 환영합니다",name:"이름(소유자)",pass:"비밀번호(8자 이상)",btn:"내 Le Veilleux 만들기",hint:"이 컴퓨터에 두뇌를 만듭니다: 계정, 업종, 규칙. 모든 것이 기기 안에 머무릅니다.",back:"← 언어 변경"},
+ar:{title:"مرحبًا بك في Le Veilleux",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Le Veilleux الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة"}
 };
-const NAMES={es:"ES",en:"EN",fr:"FR",de:"DE",it:"IT",pt:"PT",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
 let cur="en";
-const langsEl=document.getElementById("langs");
-for(const l of Object.keys(TAGS)){
-  const b=document.createElement("button");
-  b.className="pill"+(l===cur?" active":"");
-  b.textContent=NAMES[l];
-  b.onclick=()=>{cur=l;document.getElementById("tagline").textContent=TAGS[l];document.querySelectorAll(".pill").forEach(p=>p.classList.remove("active"));b.classList.add("active");};
-  langsEl.appendChild(b);
+// rotating hello (Apple style)
+const helloEl=document.getElementById("hello");
+let gi=0;
+setInterval(()=>{helloEl.classList.add("fade");setTimeout(()=>{gi=(gi+1)%GREET.length;helloEl.textContent=GREET[gi];helloEl.classList.remove("fade");},450);},1800);
+// language list
+const list=document.getElementById("langList");
+for(const [l,name] of Object.entries(LANGS)){
+  const r=document.createElement("div");
+  r.className="langrow";
+  r.innerHTML='<span>'+name+'</span><span class="sub">'+GREET[Object.keys(LANGS).indexOf(l)]+'</span>';
+  r.onclick=()=>choose(l);
+  list.appendChild(r);
 }
+function choose(l){
+  cur=l;
+  const s=S[l];
+  document.getElementById("wTitle").textContent=s.title;
+  document.getElementById("tagline").textContent=TAGS[l];
+  document.getElementById("owner").placeholder=s.name;
+  document.getElementById("password").placeholder=s.pass;
+  document.getElementById("go").textContent=s.btn;
+  document.getElementById("hint").textContent=s.hint;
+  document.getElementById("back").textContent=s.back;
+  document.getElementById("step1").style.display="none";
+  document.getElementById("step2").style.display="block";
+}
+document.getElementById("back").onclick=()=>{
+  document.getElementById("step2").style.display="none";
+  document.getElementById("step1").style.display="block";
+};
 document.getElementById("go").onclick=()=>{
   const owner=document.getElementById("owner").value.trim();
   const password=document.getElementById("password").value;
   const sector=document.getElementById("sector").value;
-  if(!owner||password.length<8){alert("Enter your name and a password of at least 8 characters.");return;}
+  if(!owner||password.length<8){alert(S[cur].name+" / "+S[cur].pass);return;}
   const btn=document.getElementById("go");
-  btn.disabled=true;btn.textContent="Creating…";
+  btn.disabled=true;btn.textContent="…";
   try{
-    if(window.leVeilleux&&window.leVeilleux.setup)window.leVeilleux.setup({user:owner,password,sector});
-    else{location.reload();}
-  }catch(e){btn.disabled=false;btn.textContent="Create my Le Veilleux";}
+    if(window.leVeilleux&&window.leVeilleux.setup)window.leVeilleux.setup({user:owner,password,sector,lang:cur});
+  }catch(e){btn.disabled=false;btn.textContent=S[cur].btn;}
 };
 </script>
 </body>

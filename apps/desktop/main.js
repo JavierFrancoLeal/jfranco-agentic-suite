@@ -128,7 +128,7 @@ if (!app.requestSingleInstanceLock()) {
     if (code === 0 && p.sector) {
       try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.copyFileSync(path.join(packs, String(p.sector) + ".json"), path.join(DATA_DIR, "sector.json")); } catch {}
     }
-    if (win && !win.isDestroyed()) win.loadURL(TARGET_URL);
+    if (win && !win.isDestroyed()) win.loadURL(TARGET_URL + (TARGET_URL.includes("?") ? "&" : "?") + "lang=" + encodeURIComponent(String(p.lang || "en")));
   });
   app.whenReady().then(async () => {
     const ok = await ensureBrain();
