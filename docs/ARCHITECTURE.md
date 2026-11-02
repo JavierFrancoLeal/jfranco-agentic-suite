@@ -50,8 +50,11 @@ harness. Everything above is Le Veilleux and is always the same.
 
 - The brain is identified by: `provider: deepseek-official` ·
   `model: deepseek-chat` (DeepSeek-V4-Pro Max) · `DEEPSEEK_API_KEY`.
-- The brain contract is stored in `~/.dsh/brain.json`:
-  `{ "key": "…", "model": "deepseek-chat" }`.
+- The brain contract is stored in `~/.dsh/brain.json` — **both brains by
+default**: `{ "key": "…", "fast": "deepseek-chat", "deep": "deepseek-reasoner" }`.
+- The standby agent routes automatically: field transcripts → the fast brain;
+  questions in the deep queue (`/api/deep`) → the Reasoner brain, whose
+  answers land in the reports.
 
 ## Installation models (mise en place)
 

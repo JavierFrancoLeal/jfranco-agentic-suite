@@ -133,7 +133,7 @@ if (!app.requestSingleInstanceLock()) {
     }
     // The brain contract (Layer 0 + Layer 1 of the distribution).
     if (code === 0) {
-      try { fs.mkdirSync(path.join(os.homedir(), ".dsh"), { recursive: true }); fs.writeFileSync(path.join(os.homedir(), ".dsh", "brain.json"), JSON.stringify({ key: String(p.key || ""), model: String(p.model || "deepseek-chat") }, null, 2)); } catch {}
+      try { fs.mkdirSync(path.join(os.homedir(), ".dsh"), { recursive: true }); fs.writeFileSync(path.join(os.homedir(), ".dsh", "brain.json"), JSON.stringify({ key: String(p.key || ""), fast: String(p.model || "deepseek-chat"), deep: "deepseek-reasoner" }, null, 2)); } catch {}
     }
     // If the harness is present and a key was given, light the always-connected agent.
     if (code === 0 && p.key) {
