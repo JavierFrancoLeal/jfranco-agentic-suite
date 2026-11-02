@@ -12,6 +12,24 @@ body.dark{--ink:#e6ecf7;--muted:#94a3b8;--bg:#0b1220;--card:#141f31;--card2:#182
 @keyframes slidein{from{opacity:0;transform:translateX(26px)}to{opacity:1;transform:none}}
 .empty{text-align:center;padding:26px 12px;color:var(--muted);font-size:14px;border:1px dashed var(--line);border-radius:14px}
 .empty .ico{font-size:30px;display:block;margin-bottom:6px}
+.skel{background:linear-gradient(90deg,var(--line) 25%,var(--line2) 50%,var(--line) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:10px;min-height:16px}
+@keyframes shimmer{to{background-position:-200% 0}}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86%;text-align:center}
+.toast.show{opacity:1}
+body.dark .toast{background:#e6ecf7;color:#0b1220}
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:none;justify-content:space-around;padding:6px 0 8px;z-index:50}
+.bnav button{background:none;border:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:12px;min-height:44px;font-family:inherit}
+.bnav button.active{color:var(--blue);font-weight:700}
+.checkpop{animation:pop .3s ease}
+@keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+.person{animation:rise .3s ease backwards}
+.person:nth-child(1){animation-delay:.03s}
+.person:nth-child(2){animation-delay:.09s}
+.person:nth-child(3){animation-delay:.15s}
+.person:nth-child(4){animation-delay:.21s}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:560px){.bnav{display:flex}.tabs{display:none}body{padding-bottom:70px}button,.btn,.pill,.confirmBtn{min-height:44px}}
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);-webkit-tap-highlight-color:transparent}
 header{background:var(--blue);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
@@ -114,6 +132,12 @@ body.wall pre{max-height:40vh}
       <button data-tab="rules" id="tabRules">Rules</button>
       <button data-tab="sector" id="tabSector">Sector</button>
     </div>
+    <nav class="bnav" id="ownerBnav">
+      <button data-tab="overview" class="active">📊<span id="bnavOverview">Overview</span></button>
+      <button data-tab="field">🗒️<span id="bnavField">Field</span></button>
+      <button data-tab="rules">📜<span id="bnavRules">Rules</span></button>
+      <button data-tab="sector">🏪<span id="bnavSector">Sector</span></button>
+    </nav>
     <div id="tab-overview">
       <div class="card"><h2 id="workersTitle">Workers</h2>
         <table id="usersTable"><thead><tr><th id="thUser">User</th><th id="thRole">Role</th></tr></thead><tbody></tbody></table>
@@ -218,6 +242,7 @@ body.wall pre{max-height:40vh}
     <div class="card" style="margin-top:14px"><h2 style="color:#fff" id="wallPulseTitle">Field pulse</h2><pre id="wallFeed"></pre></div>
   </div>
 
+  <div id="toast" class="toast"></div>
   <div id="msg" class="note" style="text-align:center"></div>
 </main>
 <footer class="foot"><div class="langs" id="footLangs"></div><div class="copyr">Suite J.Franco · open source (MIT) · autor J.Franco</div></footer>
@@ -296,7 +321,7 @@ function applyLang(){
   $("wallHead").textContent=t("wallHead");$("wallPulseTitle").textContent=t("wallPulse");
   $("notifBtn").textContent=t("enableNotif");$("notifHint").textContent=t("notifHint");
   $("optEmployee").textContent=t("lvlEmployee");$("optLead").textContent=t("lvlLead");$("optOwner").textContent=t("lvlOwner");$("newLabel").placeholder=t("labelPh");
-  $("tabSector").textContent=t("sectorTab");$("sectorPresetsTitle").textContent=t("sectorPresets");$("customSectorTitle").textContent=t("customSector");$("saveSectorBtn").textContent=t("saveSector");$("aiSectorBtn").textContent=t("aiSuggest");
+  $("tabSector").textContent=t("sectorTab");$("bnavOverview").textContent=t("overview");$("bnavField").textContent=t("field");$("bnavRules").textContent=t("rules");$("bnavSector").textContent=t("sectorTab");$("sectorPresetsTitle").textContent=t("sectorPresets");$("customSectorTitle").textContent=t("customSector");$("saveSectorBtn").textContent=t("saveSector");$("aiSectorBtn").textContent=t("aiSuggest");
   $("trailTitle").textContent=t("conversationTrail");$("trailHint").textContent=t("trailHint");
   $("sayText").placeholder=t("sayPh");$("sayBtn").textContent=t("sendPhrase");$("aiHint").textContent=t("aiHint");if(!recording)$("micBtn").textContent=t("dictate");
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
@@ -312,10 +337,13 @@ const api=async(p,body)=>{try{const r=await fetch(p,{method:body?"POST":"GET",he
 function show(view){["loginView","ownerView","leadView","employeeView","wallView"].forEach(v=>$(v).classList.add("hidden"));const el=$(view);el.classList.remove("hidden");el.classList.remove("anim");void el.offsetWidth;el.classList.add("anim");}
 const LVL={employee:"lvlEmployee",lead:"lvlLead",owner:"lvlOwner"};
 function setWho(){const w=$("who");w.textContent=me?(me.label||me.name):"";const c=$("idChip");if(me){c.style.display="inline-block";c.textContent=me.name.slice(0,1).toUpperCase()+" · "+(me.label||me.name)+" · "+t(LVL[me.role]||"lvlEmployee");}else{c.style.display="none";}$("logoutBtn").style.display=me?"inline-block":"none";}
+function toast(m){const el=$("toast");el.textContent=m;el.classList.add("show");clearTimeout(el.__t);el.__t=setTimeout(()=>el.classList.remove("show"),2200);}
+function skel(n){let out="";for(let i=0;i<n;i++)out+='<div class="skel" style="height:38px;margin:8px 0"></div>';return out;}
 function empty(ico,txt){return '<div class="empty"><span class="ico">'+ico+'</span>'+txt+'</div>';}
-function showMsg(x){$("msg").textContent=x;setTimeout(()=>$("msg").textContent="",2500);}
-async function loadMetrics(into){const m=await api("/api/metrics");into.innerHTML="";const cards=[[t("reports"),m.reports],[t("week"),m.reportsWeek],[t("feedback"),m.feedback],[t("workersActive"),m.workers]];for(const [l,v] of cards){const d=document.createElement("div");d.className="metric";d.innerHTML='<div class="v">'+(v===undefined?"–":v)+'</div><div class="l">'+l+'</div>';into.appendChild(d);}}
-async function loadUsage(){const tb=$("usageTable")?$("usageTable").querySelector("tbody"):null;if(!tb)return;const r=await api("/api/usage");tb.innerHTML="";
+function showMsg(x){$("msg").textContent=x;toast(x);setTimeout(()=>$("msg").textContent="",2500);}
+function countUp(el,target,dur){dur=dur||650;const t0=performance.now();const step=(now)=>{const p=Math.min(1,(now-t0)/dur);el.textContent=Math.round(target*p).toLocaleString();if(p<1)requestAnimationFrame(step);};requestAnimationFrame(step);}
+async function loadMetrics(into){into.innerHTML=skel(2);const m=await api("/api/metrics");into.innerHTML="";const cards=[[t("reports"),m.reports],[t("week"),m.reportsWeek],[t("feedback"),m.feedback],[t("workersActive"),m.workers]];for(const [l,v] of cards){const d=document.createElement("div");d.className="metric";d.innerHTML='<div class="v">–</div><div class="l">'+l+'</div>';into.appendChild(d);if(typeof v==="number")countUp(d.querySelector(".v"),v);}}
+async function loadUsage(){const tb=$("usageTable")?$("usageTable").querySelector("tbody"):null;if(!tb)return;tb.innerHTML='<tr><td colspan="4">'+skel(2)+'</td></tr>';const r=await api("/api/usage");tb.innerHTML="";
   if(!(r.rows||[]).length){tb.innerHTML='<tr><td colspan="4">'+empty("📊",t("noUsage"))+'</td></tr>';return;}
   (r.rows||[]).forEach(x=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+x.worker+"</td><td>"+x.sessions+"</td><td>"+(x.tokens||0).toLocaleString()+"</td><td>$"+(x.cost||0).toFixed(2)+"</td>";tb.appendChild(tr);});}
 function orderRow(o,canUpdate){
@@ -333,6 +361,7 @@ function orderRow(o,canUpdate){
   return d;
 }
 async function renderOrders(){
+  for(const id of ["ownerOrders","leadOrders","workerOrders"]){const el=$(id);if(el)el.innerHTML=skel(2);}
   const live=await api("/api/live");
   for(const id of ["ownerOrders","leadOrders","workerOrders"]){
     const el=$(id);if(!el)continue;
@@ -376,8 +405,9 @@ function renderSummary(live){
     }
     d.innerHTML=h;
     d.querySelectorAll(".confirmBtn").forEach(b=>b.onclick=async()=>{
+      if(b.classList.contains("done"))return;
+      b.textContent=t("confirmed");b.classList.add("done","checkpop");haptic();toast(t("confirmed"));
       await api("/api/live/confirm",{requestId:b.dataset.req});
-      haptic();
       workerFlow();
     });
     body.appendChild(d);
@@ -413,9 +443,9 @@ $("loginBtn").onclick=async()=>{
 function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);setWho();show("loginView");}
 $("logoutBtn").onclick=logout;
 const sb=$("switchBtn");if(sb)sb.onclick=logout;
-async function loadUsers(){const r=await api("/api/users");const tb=$("usersTable").querySelector("tbody");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+u.name+"</td><td>"+(u.label||u.name)+" · "+t(LVL[u.role]||"lvlEmployee")+"</td>";tb.appendChild(tr);});}
+async function loadUsers(){const tb=$("usersTable").querySelector("tbody");tb.innerHTML='<tr><td colspan="2">'+skel(2)+'</td></tr>';const r=await api("/api/users");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+u.name+"</td><td>"+(u.label||u.name)+" · "+t(LVL[u.role]||"lvlEmployee")+"</td>";tb.appendChild(tr);});}
 $("addUserBtn").onclick=async()=>{const r=await api("/api/users",{name:$("newUser").value,password:$("newPass").value,role:$("newRole").value,label:$("newLabel").value});showMsg(r.error?"Error: "+r.error:t("workerAdded"));if(!r.error){loadUsers();$("newUser").value=$("newPass").value="";}};
-async function loadField(){const rc=(await api("/api/reports")).content;if(rc){$("reports").innerHTML="<pre>"+rc+"</pre>";}else{$("reports").innerHTML=empty("📋",t("noReports"));}const fc=(await api("/api/feedback")).content;if(fc){$("feedback").innerHTML="<pre>"+fc+"</pre>";}else{$("feedback").innerHTML=empty("💬",t("feedbackQueue"));}const live=await api("/api/live");const ib=(live.inbox||[]).map(x=>"[•] "+x.worker+": "+x.text).join("\n");if(ib){$("trail").innerHTML="<pre>"+ib+"</pre>";}else{$("trail").innerHTML=empty("🗒️",t("conversationTrail"));}}
+async function loadField(){$("reports").innerHTML=skel(2);$("feedback").innerHTML=skel(1);$("trail").innerHTML=skel(1);const rc=(await api("/api/reports")).content;if(rc){$("reports").innerHTML="<pre>"+rc+"</pre>";}else{$("reports").innerHTML=empty("📋",t("noReports"));}const fc=(await api("/api/feedback")).content;if(fc){$("feedback").innerHTML="<pre>"+fc+"</pre>";}else{$("feedback").innerHTML=empty("💬",t("feedbackQueue"));}const live=await api("/api/live");const ib=(live.inbox||[]).map(x=>"[•] "+x.worker+": "+x.text).join("\n");if(ib){$("trail").innerHTML="<pre>"+ib+"</pre>";}else{$("trail").innerHTML=empty("🗒️",t("conversationTrail"));}}
 async function loadLead(){$("leadReports").textContent=(await api("/api/reports")).content||"(empty)";$("leadFeedback").textContent=(await api("/api/feedback")).content||"(empty)";}
 $("refreshReports").onclick=loadField;$("leadRefresh").onclick=loadLead;
 const ar=$("autoRefresh");
@@ -444,7 +474,7 @@ $("aiSectorBtn").onclick=async()=>{
 };
 async function loadRules(){$("decisions").value=(await api("/api/decisions")).content||"";}
 $("saveDecisions").onclick=async()=>{await api("/api/decisions",{content:$("decisions").value});$("decisionsSaved").textContent=t("saved");setTimeout(()=>$("decisionsSaved").textContent="",2000);};
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector"].forEach(x=>$("tab-"+x).classList.add("hidden"));$("tab-"+b.dataset.tab).classList.remove("hidden");});
+document.querySelectorAll(".tabs button, .bnav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button, .bnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector"].forEach(x=>$("tab-"+x).classList.add("hidden"));$("tab-"+b.dataset.tab).classList.remove("hidden");});
 $("reportBtn").onclick=async()=>{const r=await api("/api/report",{text:$("reportText").value});if(r.error){showMsg("Error: "+r.error);return;}$("reportText").value="";showMsg(t("reportSent"));};
 $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.name,role:me.role,category:$("empFbCat").value,text:$("empFbText").value});if(r.error){showMsg("Error: "+r.error);return;}$("empFbText").value="";showMsg(t("feedbackSent"));};
 const st=sessionStorage.getItem("dsh-sup-token");
