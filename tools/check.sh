@@ -62,6 +62,9 @@ sh -n tools/make-cert.sh
 sh -n tools/letsencrypt.sh
 sh -n tools/agent-standby.sh
 sh -n tools/activate-ai.sh
+sh -n tools/autostart/install-autostart.sh
+sh -n tools/sync-all.sh
+sh -n tools/sync-check.sh
 echo "OK demo tools"
 
 echo "== installers =="
