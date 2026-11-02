@@ -240,6 +240,13 @@ $("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-dark",dar
 $("soundBtn").onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("dsh-sound",soundOn?"1":"0");}catch(e){}applyToggles();};
 try{darkOn=localStorage.getItem("dsh-dark")==="1";soundOn=localStorage.getItem("dsh-sound")!=="0";}catch(e){}
 applyToggles();
+async function reRenderDynamic(){
+  if(!me)return;
+  if(me.role==="owner"){loadMetrics($("ownerMetrics"));loadUsers();loadUsage();loadField();renderOrders();renderSuggest();}
+  else if(me.role==="lead"){loadMetrics($("leadMetrics"));loadLead();renderOrders();}
+  else{$("workerHi").textContent=t("hi")+(me.label||me.name);workerFlow();}
+  if(location.search.indexOf("wall=1")>=0)wallTick();
+}
 function panelLinks(){const u=me?encodeURIComponent(me.name):"",r=me?encodeURIComponent(me.role):"",lb=me?encodeURIComponent(me.label||me.name):"";$("openPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);$("leadOpenPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);}
 function applyLang(){
   try{localStorage.setItem("dsh-lang",cur);}catch(e){}
@@ -268,6 +275,7 @@ function applyLang(){
   $("sayText").placeholder=t("sayPh");$("sayBtn").textContent=t("sendPhrase");$("aiHint").textContent=t("aiHint");if(!recording)$("micBtn").textContent=t("dictate");
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
   panelLinks();
+  reRenderDynamic();
 }
 function pill(l){for(const host of ["langs","footLangs"]){const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$(host).appendChild(b);}}
 for(const l of Object.keys(LANG))pill(l);
@@ -416,10 +424,10 @@ $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.nam
 const st=sessionStorage.getItem("dsh-sup-token");
 if(st){token=st;me=JSON.parse(sessionStorage.getItem("dsh-sup-me")||"null");(async()=>{const r=await api("/api/me");if(!r||!r.name){logout();return;}enter();})();}
 else setWho();
+async function wallTick(){try{const r=await (await fetch("/api/wall")).json();const cards=[[t("week"),r.reportsWeek],[t("feedback"),r.feedback],[t("workersActive"),r.workers],[t("reportsTotal"),r.reports]];$("wallCards").innerHTML=cards.map(c=>'<div class="wall-card"><div class="v">'+(c[1]===undefined?"–":c[1])+'</div><div class="l">'+c[0]+'</div></div>').join("");$("wallFeed").textContent=r.feedbackTail||t("noActivity");}catch(e){$("wallFeed").textContent=t("cannotReach");}}
 if(location.search.indexOf("wall=1")>=0){
   document.body.classList.add("wall");show("wallView");
-  const tick=async()=>{try{const r=await (await fetch("/api/wall")).json();const cards=[[t("week"),r.reportsWeek],[t("feedback"),r.feedback],[t("workersActive"),r.workers],[t("reportsTotal"),r.reports]];$("wallCards").innerHTML=cards.map(c=>'<div class="wall-card"><div class="v">'+(c[1]===undefined?"–":c[1])+'</div><div class="l">'+c[0]+'</div></div>').join("");$("wallFeed").textContent=r.feedbackTail||t("noActivity");}catch(e){$("wallFeed").textContent=t("cannotReach");}};
-  tick();setInterval(tick,30000);
+  wallTick();setInterval(wallTick,30000);
 }
 </script>
 </body>
