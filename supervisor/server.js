@@ -42,6 +42,7 @@ const DB_FILE = path.join(DATA_DIR, "supervisor.db");
 const USAGE_FILE = path.join(DATA_DIR, "usage.md");
 const LIVE_FILE = path.join(DATA_DIR, "live.json");
 const SECTOR_FILE = path.join(DATA_DIR, "sector.json");
+const REG_FILE = path.join(DATA_DIR, "register.json");
 const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
@@ -196,6 +197,9 @@ function usageRows() {
 function readTail(f, n = 200) { try { const t = fs.readFileSync(f, "utf8"); return t.split("\n").slice(-n).join("\n"); } catch { return ""; } }
 function liveRead() { try { const s = JSON.parse(fs.readFileSync(LIVE_FILE, "utf8")); s.inbox = s.inbox || []; s.deep = s.deep || []; return s; } catch { return { status: "idle", worker: null, startedAt: null, speakers: [], orders: [], inbox: [], deep: [] }; } }
 function liveWrite(s) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(LIVE_FILE, JSON.stringify(s, null, 2)); }
+function regRead() { try { return JSON.parse(fs.readFileSync(REG_FILE, "utf8")); } catch { return { status: "closed", openedAt: null, items: [], sales: [], declared: null }; } }
+function regWrite(r) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(REG_FILE, JSON.stringify(r, null, 2)); }
+function regView() { const r = regRead(); const recorded = Math.round((r.sales || []).reduce((a, x) => a + (x.total || 0), 0) * 100) / 100; return { ...r, recorded, variance: r.declared == null ? null : Math.round((r.declared - recorded) * 100) / 100 }; }
 function metrics() {
   if (db) {
     const q = (sql) => db.prepare(sql).get().n;
@@ -329,6 +333,12 @@ async function api(req, res, pathname) {
         (lv.orders || []).map((o) => "- " + (o.table ? "Table " + o.table + " · " : "") + o.person + ": " + o.request + " (" + o.status + (o.paid ? ", paid" : ", pending") + ")").join("\n") +
         "\n\nTotal items: " + (lv.orders || []).length + "\n";
       name = "le-veilleux-orders.md";
+    } else if (type === "register") {
+      const r = regView();
+      body = "# Le Veilleux — Z-report (counter-register)\n\n" + ts() + "\n\n" +
+        (r.sales || []).map((x, i) => "| " + (i + 1) + " | " + x.ts.slice(11, 16) + " | " + x.items.map((it) => it.name + " ($" + it.price + ")").join(", ") + " | $" + x.total + " |").join("\n") +
+        "\n\nRecorded (Le Veilleux): $" + r.recorded + "\nDeclared (terminal): $" + (r.declared == null ? "—" : r.declared) + "\nVariance: $" + (r.variance == null ? "—" : r.variance) + "\n";
+      name = "le-veilleux-zreport.md";
     } else if (type === "usage") {
       body = "# Le Veilleux — usage & cost\n\n" + ts() + "\n\n| Worker | Sessions | Tokens | Est. cost |\n|---|---|---|---|\n" +
         usageRows().map((r) => "| " + r.worker + " | " + r.sessions + " | " + r.tokens + " | $" + r.cost.toFixed(2) + " |").join("\n") + "\n";
@@ -351,6 +361,11 @@ async function api(req, res, pathname) {
     return send(res, 200, liveRead());
   }
   // The active sector pack: one dashboard skeleton, many business skins.
+  if (pathname === "/api/register" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); return send(res, 200, regView()); }
+  if (pathname === "/api/register/open" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); regWrite({ status: "open", openedAt: ts(), worker: b.worker || "worker", items: [], sales: [], declared: null }); return send(res, 200, { ok: true }); }
+  if (pathname === "/api/register/add" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); r.items.push({ name: String(b.name || ""), price: Number(b.price) || 0 }); regWrite(r); return send(res, 200, { ok: true }); }
+  if (pathname === "/api/register/charge" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const r = regRead(); if (!r.items.length) return send(res, 400, { error: "no items" }); const total = Math.round(r.items.reduce((a, x) => a + x.price, 0) * 100) / 100; r.sales.push({ ts: ts(), items: r.items, total }); r.items = []; regWrite(r); return send(res, 200, { ok: true, total }); }
+  if (pathname === "/api/register/close" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); if (!r.items.length || true) { const leftover = r.items.length ? Math.round(r.items.reduce((a, x) => a + x.price, 0) * 100) / 100 : 0; if (leftover) r.sales.push({ ts: ts(), items: r.items, total: leftover }); r.items = []; } r.status = "closed"; r.closedAt = ts(); r.declared = Number(b.declared) || 0; regWrite(r); return send(res, 200, regView()); }
   if (pathname === "/api/health" && req.method === "GET") {
     const m = metrics();
     return send(res, 200, { ok: true, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd(), budgetPct: DAILY_BUDGET_USD > 0 ? Math.round((todayCostUsd() / DAILY_BUDGET_USD) * 100) : 0 }, true);
