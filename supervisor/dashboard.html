@@ -264,7 +264,6 @@ for(const l of Object.keys(LANG))pill(l);
 try{const saved=localStorage.getItem("dsh-lang");if(saved&&S[saved])cur=saved;}catch(e){}
 applyLang();
 function applyPack(){if(!PACK)return;$("tableInput").placeholder=(PACK.tableLabel&&PACK.tableLabel[cur])||"Table";const ot=(PACK.ordersTarget&&PACK.ordersTarget[cur])||t("ordersTitle");$("ordersTitle").textContent=ot;$("leadOrdersTitle").textContent=ot;$("ordersTitle2").textContent=ot;}
-(async()=>{PACK=await api("/api/sector");applyPack();})();
 const api=async(p,body)=>{try{const r=await fetch(p,{method:body?"POST":"GET",headers:{"Content-Type":"application/json",...(token?{Authorization:"Bearer "+token}:{})},body:body?JSON.stringify(body):undefined});return r.json();}catch(e){return {error:"network"};}};
 function show(view){["loginView","ownerView","leadView","employeeView","wallView"].forEach(v=>$(v).classList.add("hidden"));const el=$(view);el.classList.remove("hidden");el.classList.remove("anim");void el.offsetWidth;el.classList.add("anim");}
 function setWho(){const w=$("who");w.textContent=me?(me.name+" · "+me.role):"";$("logoutBtn").style.display=me?"inline-block":"none";}
@@ -344,6 +343,7 @@ $("stopBtn").onclick=async()=>{const live=await api("/api/live");if((live.speake
 $("newConvBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 $("toHomeBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 async function enter(){
+  if(!PACK){PACK=await api("/api/sector");applyPack();}
   setWho();
   if(me.role==="owner"){show("ownerView");loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
   else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();}
