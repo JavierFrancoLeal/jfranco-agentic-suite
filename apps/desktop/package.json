@@ -23,7 +23,8 @@
       "assets/**",
       "brain/**",
       "ui/**",
-      "welcome.html"
+      "welcome.html",
+      "brain/agent-standby.sh"
     ],
     "mac": {
       "category": "public.app-category.business",

@@ -54,6 +54,11 @@ button:disabled{opacity:.6;cursor:wait}
   <p class="tag" id="tagline">The AI works. The human watches, decides, reviews.</p>
   <input id="owner" placeholder="Your name (the owner)">
   <input id="password" type="password" placeholder="Password (min. 8 characters)" minlength="8">
+  <input id="key" type="password" placeholder="DeepSeek API key (optional — paste now or later)">
+  <select id="model">
+    <option value="deepseek-chat">DeepSeek-V4-Pro Max (deepseek-chat)</option>
+    <option value="deepseek-reasoner">DeepSeek Reasoner (deepseek-reasoner)</option>
+  </select>
   <select id="sector">
     <option value="restaurant">🍽️ Restaurant</option>
     <option value="hotel">🏨 Hotel</option>
@@ -74,16 +79,16 @@ const GREET=["Bonjour","Hola","Hello","你好","مرحبا","안녕하세요","�
 const LANGS={fr:"Français",en:"English",es:"Español",de:"Deutsch",it:"Italiano",pt:"Português",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
 const TAGS={en:"The AI works. The human watches, decides, reviews.",es:"La IA trabaja. El humano vela, decide, revisa.",fr:"L'IA travaille. L'humain veille, décide, revoit.",de:"Die KI arbeitet. Der Mensch wacht, entscheidet, prüft.",it:"L'IA lavora. L'umano veglia, decide, rivede.",pt:"A IA trabalha. O humano vela, decide, revê.",zh:"AI 工作，人来守护、决定、复核。",ja:"AIが働き、人間が見守り、決め、見直す。",ko:"AI가 일하고 사람이 지키고, 결정하고, 검토합니다.",ar:"الذكاء الاصطناعي يعمل، والإنسان يراقب ويقرر ويراجع."};
 const S={
-en:{title:"Welcome to Le Veilleux",name:"Your name (the owner)",pass:"Password (min. 8 characters)",btn:"Create my Le Veilleux",hint:"This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.",back:"← Change language"},
-es:{title:"Bienvenido a Le Veilleux",name:"Tu nombre (el dueño)",pass:"Contraseña (mín. 8 caracteres)",btn:"Crear mi Le Veilleux",hint:"Esto crea el cerebro en esta computadora: tu cuenta, tu sector, tus reglas. Nada sale de la máquina.",back:"← Cambiar idioma"},
-fr:{title:"Bienvenue chez Le Veilleux",name:"Votre nom (le propriétaire)",pass:"Mot de passe (min. 8 caractères)",btn:"Créer mon Le Veilleux",hint:"Cela crée le cerveau sur cet ordinateur : votre compte, votre secteur, vos règles. Rien ne quitte la machine.",back:"← Changer de langue"},
-de:{title:"Willkommen bei Le Veilleux",name:"Ihr Name (der Inhaber)",pass:"Passwort (min. 8 Zeichen)",btn:"Mein Le Veilleux erstellen",hint:"Das erstellt das Gehirn auf diesem Computer: Ihr Konto, Ihre Branche, Ihre Regeln. Nichts verlässt den Rechner.",back:"← Sprache ändern"},
-it:{title:"Benvenuto in Le Veilleux",name:"Il tuo nome (il proprietario)",pass:"Password (min. 8 caratteri)",btn:"Crea il mio Le Veilleux",hint:"Crea il cervello su questo computer: il tuo account, il tuo settore, le tue regole. Nulla esce dalla macchina.",back:"← Cambia lingua"},
-pt:{title:"Bem-vindo ao Le Veilleux",name:"O seu nome (o dono)",pass:"Senha (mín. 8 caracteres)",btn:"Criar o meu Le Veilleux",hint:"Isto cria o cérebro neste computador: a sua conta, o seu setor, as suas regras. Nada sai da máquina.",back:"← Mudar idioma"},
-zh:{title:"欢迎使用 Le Veilleux",name:"您的姓名（所有者）",pass:"密码（至少8个字符）",btn:"创建我的 Le Veilleux",hint:"这将在此计算机上创建大脑：您的账户、行业和规则。一切都不离开机器。",back:"← 更改语言"},
-ja:{title:"Le Veilleux へようこそ",name:"お名前（オーナー）",pass:"パスワード（8文字以上）",btn:"Le Veilleux を作成",hint:"このコンピュータ上に頭脳を作成します：アカウント、セクター、ルール。すべてマシン内に留まります。",back:"← 言語を変更"},
-ko:{title:"Le Veilleux에 오신 것을 환영합니다",name:"이름(소유자)",pass:"비밀번호(8자 이상)",btn:"내 Le Veilleux 만들기",hint:"이 컴퓨터에 두뇌를 만듭니다: 계정, 업종, 규칙. 모든 것이 기기 안에 머무릅니다.",back:"← 언어 변경"},
-ar:{title:"مرحبًا بك في Le Veilleux",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Le Veilleux الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة"}
+en:{title:"Welcome to Le Veilleux",name:"Your name (the owner)",pass:"Password (min. 8 characters)",btn:"Create my Le Veilleux",hint:"This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.",back:"← Change language",key:"DeepSeek API key (optional — paste now or later)",model:"Model"},
+es:{title:"Bienvenido a Le Veilleux",name:"Tu nombre (el dueño)",pass:"Contraseña (mín. 8 caracteres)",btn:"Crear mi Le Veilleux",hint:"Esto crea el cerebro en esta computadora: tu cuenta, tu sector, tus reglas. Nada sale de la máquina.",back:"← Cambiar idioma",key:"Clave API de DeepSeek (opcional — pégala ahora o después)",model:"Modelo"},
+fr:{title:"Bienvenue chez Le Veilleux",name:"Votre nom (le propriétaire)",pass:"Mot de passe (min. 8 caractères)",btn:"Créer mon Le Veilleux",hint:"Cela crée le cerveau sur cet ordinateur : votre compte, votre secteur, vos règles. Rien ne quitte la machine.",back:"← Changer de langue",key:"Clé API DeepSeek (facultatif — collez-la maintenant ou plus tard)",model:"Modèle"},
+de:{title:"Willkommen bei Le Veilleux",name:"Ihr Name (der Inhaber)",pass:"Passwort (min. 8 Zeichen)",btn:"Mein Le Veilleux erstellen",hint:"Das erstellt das Gehirn auf diesem Computer: Ihr Konto, Ihre Branche, Ihre Regeln. Nichts verlässt den Rechner.",back:"← Sprache ändern",key:"DeepSeek-API-Schlüssel (optional — jetzt oder später einfügen)",model:"Modell"},
+it:{title:"Benvenuto in Le Veilleux",name:"Il tuo nome (il proprietario)",pass:"Password (min. 8 caratteri)",btn:"Crea il mio Le Veilleux",hint:"Crea il cervello su questo computer: il tuo account, il tuo settore, le tue regole. Nulla esce dalla macchina.",back:"← Cambia lingua",key:"Chiave API DeepSeek (facoltativa — incollala ora o dopo)",model:"Modello"},
+pt:{title:"Bem-vindo ao Le Veilleux",name:"O seu nome (o dono)",pass:"Senha (mín. 8 caracteres)",btn:"Criar o meu Le Veilleux",hint:"Isto cria o cérebro neste computador: a sua conta, o seu setor, as suas regras. Nada sai da máquina.",back:"← Mudar idioma",key:"Chave API DeepSeek (opcional — cole agora ou depois)",model:"Modelo"},
+zh:{title:"欢迎使用 Le Veilleux",name:"您的姓名（所有者）",pass:"密码（至少8个字符）",btn:"创建我的 Le Veilleux",hint:"这将在此计算机上创建大脑：您的账户、行业和规则。一切都不离开机器。",back:"← 更改语言",key:"DeepSeek API 密钥（可选 — 现在或稍后粘贴）",model:"模型"},
+ja:{title:"Le Veilleux へようこそ",name:"お名前（オーナー）",pass:"パスワード（8文字以上）",btn:"Le Veilleux を作成",hint:"このコンピュータ上に頭脳を作成します：アカウント、セクター、ルール。すべてマシン内に留まります。",back:"← 言語を変更",key:"DeepSeek APIキー（任意 — 今または後で貼り付け）",model:"モデル"},
+ko:{title:"Le Veilleux에 오신 것을 환영합니다",name:"이름(소유자)",pass:"비밀번호(8자 이상)",btn:"내 Le Veilleux 만들기",hint:"이 컴퓨터에 두뇌를 만듭니다: 계정, 업종, 규칙. 모든 것이 기기 안에 머무릅니다.",back:"← 언어 변경",key:"DeepSeek API 키(선택 — 지금 또는 나중에 붙여넣기)",model:"모델"},
+ar:{title:"مرحبًا بك في Le Veilleux",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Le Veilleux الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة",key:"مفتاح DeepSeek API (اختياري — الصقه الآن أو لاحقًا)",model:"النموذج"}
 };
 let cur="en";
 // The glass reel: language names passing through, semi-transparent.
@@ -146,7 +151,7 @@ document.getElementById("go").onclick=()=>{
   const btn=document.getElementById("go");
   btn.disabled=true;btn.textContent="…";
   try{
-    if(window.leVeilleux&&window.leVeilleux.setup)window.leVeilleux.setup({user:owner,password,sector,lang:cur});
+    if(window.leVeilleux&&window.leVeilleux.setup)window.leVeilleux.setup({user:owner,password,sector,lang:cur,key:document.getElementById("key").value.trim(),model:document.getElementById("model").value});
   }catch(e){btn.disabled=false;btn.textContent=S[cur].btn;}
 };
 </script>

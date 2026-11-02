@@ -129,6 +129,29 @@ if (!app.requestSingleInstanceLock()) {
     if (code === 0 && p.sector) {
       try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.copyFileSync(path.join(packs, String(p.sector) + ".json"), path.join(DATA_DIR, "sector.json")); } catch {}
     }
+    // The brain contract (Layer 0 + Layer 1 of the distribution).
+    if (code === 0) {
+      try { fs.mkdirSync(path.join(os.homedir(), ".dsh"), { recursive: true }); fs.writeFileSync(path.join(os.homedir(), ".dsh", "brain.json"), JSON.stringify({ key: String(p.key || ""), model: String(p.model || "deepseek-chat") }, null, 2)); } catch {}
+    }
+    // If the harness is present and a key was given, light the always-connected agent.
+    if (code === 0 && p.key) {
+      const candidates = [
+        "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh",
+      ];
+      let dsh = null;
+      for (const c of candidates) { try { if (fs.existsSync(c)) { dsh = c; break; } } catch {} }
+      if (dsh) {
+        const standby = path.join(__dirname, "brain", "agent-standby.sh");
+        if (fs.existsSync(standby)) {
+          try {
+            spawn("sh", [standby], {
+              env: { ...process.env, DEEPSEEK_API_KEY: String(p.key), DSH_SUPERVISOR_URL: "http://127.0.0.1:8787", DSH_BIN: dsh, PATH: process.env.PATH },
+              stdio: "ignore", detached: true,
+            }).unref();
+          } catch {}
+        }
+      }
+    }
     if (win && !win.isDestroyed()) win.loadURL(TARGET_URL + (TARGET_URL.includes("?") ? "&" : "?") + "lang=" + encodeURIComponent(String(p.lang || "en")));
   });
   app.whenReady().then(async () => {
