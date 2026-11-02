@@ -32,6 +32,10 @@ pre{background:#0f172a;color:#d7e3f4;border-radius:12px;padding:12px;font-size:1
 table{width:100%;border-collapse:collapse;font-size:14px}
 td,th{border-bottom:1px solid #e3e6ee;padding:9px 6px;text-align:left}
 .hidden{display:none}
+.eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;font-size:18px;cursor:pointer;padding:4px}
+.passwrap{position:relative}
+.loginerr{background:#fee2e2;color:#b91c1c;border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px;display:block}
+.loginok{background:#dcfce7;color:#15803d;border-radius:10px;padding:10px 12px;margin:8px 0;font-size:14px;display:block}
 .note{color:var(--muted);font-size:13px}
 .hint{font-size:12.5px;color:var(--muted);margin-top:4px}
 .listen{display:block;width:100%;border:none;border-radius:24px;padding:34px 16px;font-size:28px;font-weight:800;color:#fff;background:var(--green);box-shadow:0 6px 20px rgba(34,197,94,.4);margin:14px 0}
@@ -80,7 +84,11 @@ body.wall pre{max-height:40vh}
     <h2 id="loginTitle">Log in</h2>
     <div id="langs" class="langs"></div>
     <input id="loginUser" placeholder="User" autocomplete="username">
-    <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+    <div class="passwrap">
+      <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
+      <button class="eye" id="eyeBtn" type="button">👁</button>
+    </div>
+    <div id="loginError" class="loginerr hidden"></div>
     <button class="btn" id="loginBtn" style="width:100%">Log in</button>
     <p class="hint" id="loginHint">Accounts are managed by the business owner.</p>
     <a href="/dashboard?wall=1"><button class="btn gray small" id="openWall" style="width:100%;margin-top:6px">Live wallboard</button></a>
@@ -214,7 +222,8 @@ let token=null,me=null,auto=false,cur="en",livePoll=null,PACK=null;
 function t(k){return (S[cur]&&S[cur][k])||S.en[k]||k;}
 function applyLang(){
   try{localStorage.setItem("dsh-lang",cur);}catch(e){}
-  $("loginTitle").textContent=t("login");$("loginUser").placeholder=t("user");$("loginPass").placeholder=t("password");
+  $("loginTitle").textContent=t("login");$("loginUser").placeholder=t("user");
+["loginUser","loginPass"].forEach(id=>$(id).addEventListener("input",()=>$("loginError").classList.add("hidden")));$("loginPass").placeholder=t("password");
   $("loginBtn").textContent=t("loginBtn");$("loginHint").textContent=t("loginHint");$("openWall").textContent=t("wallOpen");$("logoutBtn").textContent=t("logout");
   $("tabOverview").textContent=t("overview");$("tabField").textContent=t("field");$("tabRules").textContent=t("rules");
   $("workersTitle").textContent=t("workers");$("thUser").textContent=t("thUser");$("thRole").textContent=t("thRole");
@@ -324,9 +333,18 @@ async function enter(){
   else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();}
   else{show("employeeView");$("workerHi").textContent=t("hi")+me.name;workerFlow();if(livePoll)clearInterval(livePoll);livePoll=setInterval(()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
+let pwVisible=false;
+$("eyeBtn").onclick=()=>{pwVisible=!pwVisible;$("loginPass").type=pwVisible?"text":"password";$("eyeBtn").textContent=pwVisible?"🙈":"👁";};
 $("loginBtn").onclick=async()=>{
-  const r=await api("/api/login",{user:$("loginUser").value,password:$("loginPass").value});
-  if(r.error){showMsg(r.error==="network"?t("cannotReach"):t("loginFailed"));return;}
+  const err=$("loginError");
+  err.classList.add("hidden");
+  const u=$("loginUser").value.trim(),p=$("loginPass").value;
+  if(!u||!p){err.textContent=t("fillBoth");err.classList.remove("hidden");return;}
+  $("loginBtn").disabled=true;$("loginBtn").textContent=t("loggingIn");
+  const r=await api("/api/login",{user:u,password:p});
+  $("loginBtn").disabled=false;$("loginBtn").textContent=t("loginBtn");
+  if(r.error){err.textContent=r.error==="network"?t("cannotReach"):t("loginFailed");err.classList.remove("hidden");return;}
+  err.classList.add("hidden");
   token=r.token;me={name:r.name,role:r.role};
   sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));
   $("loginPass").value="";enter();
