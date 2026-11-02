@@ -9,13 +9,20 @@
 body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff 55%,#a78bfa);min-height:100vh;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
 .step{max-width:460px;width:100%;text-align:center;animation:rise .5s ease}
 @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.hello{font-size:44px;font-weight:800;margin:26px 0 30px;height:56px;display:flex;align-items:center;justify-content:center;transition:opacity .5s}
-.hello.fade{opacity:0}
-.langs{display:flex;flex-direction:column;gap:10px;text-align:left}
-.langrow{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:16px;padding:16px 20px;font-size:19px;cursor:pointer;backdrop-filter:blur(6px);transition:background .15s,transform .1s;display:flex;justify-content:space-between;align-items:center}
-.langrow:hover{background:rgba(255,255,255,.22)}
-.langrow:active{transform:scale(.98)}
-.langrow .sub{font-size:13px;opacity:.75}
+.langbox{width:min(340px,86vw);height:58px;margin:34px auto 0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.30);border-radius:10px;backdrop-filter:blur(8px);overflow:hidden;cursor:pointer;position:relative;transition:background .2s;box-shadow:0 10px 30px rgba(15,23,42,.15)}
+.langbox:hover{background:rgba(255,255,255,.18)}
+.ticks{display:flex;flex-direction:column;animation:reel 9s linear infinite}
+.tick{height:58px;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:600;opacity:.85}
+@keyframes reel{0%{transform:translateY(0)}100%{transform:translateY(-580px)}}
+.overlay{position:fixed;inset:0;background:linear-gradient(160deg,#4D6BFE,#7c5cff 60%,#a78bfa);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:60;animation:rise .28s ease}
+.overlay .top{position:absolute;top:22px;right:26px}
+.overlay .close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;width:44px;height:44px;font-size:18px;cursor:pointer}
+.orow{width:min(520px,92vw);display:flex;justify-content:space-between;align-items:center;padding:15px 22px;border-radius:14px;font-size:19px;color:#fff;cursor:pointer;transition:background .15s,transform .1s}
+.orow:hover{background:rgba(255,255,255,.12)}
+.orow:active{transform:scale(.98)}
+.orow .sub{font-size:13px;opacity:.7}
+.orow.center{background:rgba(255,255,255,.30);font-size:23px;font-weight:800;border:1px solid rgba(255,255,255,.45)}
+.orow.center .sub{opacity:.9}
 svg .stroke{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.6s cubic-bezier(.4,0,.2,1) forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 .card{background:rgba(255,255,255,.95);border-radius:24px;box-shadow:0 30px 70px rgba(15,23,42,.35);max-width:440px;width:100%;padding:34px 30px;text-align:center;color:#101828;animation:rise .5s ease}
@@ -35,8 +42,11 @@ button:disabled{opacity:.6;cursor:wait}
 <!-- STEP 1: language first, like Apple's "Hello" -->
 <div class="step" id="step1">
   <svg width="120" height="120" viewBox="0 0 64 64" aria-hidden="true"><path class="stroke" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  <div class="hello" id="hello">Bonjour</div>
-  <div class="langs" id="langList"></div>
+  <div class="langbox" id="langBox"><div class="ticks" id="ticks"></div></div>
+  <div class="overlay hidden" id="overlay" style="display:none">
+    <div class="top"><button class="close" id="closeOverlay">✕</button></div>
+    <div id="oList" style="width:min(520px,92vw)"></div>
+  </div>
 </div>
 
 <!-- STEP 2: one compact form, in the chosen language -->
@@ -77,19 +87,30 @@ ko:{title:"Le Veilleux에 오신 것을 환영합니다",name:"이름(소유자)
 ar:{title:"مرحبًا بك في Le Veilleux",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Le Veilleux الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة"}
 };
 let cur="en";
-// rotating hello (Apple style)
-const helloEl=document.getElementById("hello");
-let gi=0;
-setInterval(()=>{helloEl.classList.add("fade");setTimeout(()=>{gi=(gi+1)%GREET.length;helloEl.textContent=GREET[gi];helloEl.classList.remove("fade");},450);},1800);
-// language list
-const list=document.getElementById("langList");
-for(const [l,name] of Object.entries(LANGS)){
-  const r=document.createElement("div");
-  r.className="langrow";
-  r.innerHTML='<span>'+name+'</span><span class="sub">'+GREET[Object.keys(LANGS).indexOf(l)]+'</span>';
-  r.onclick=()=>choose(l);
-  list.appendChild(r);
+// The glass reel: language names passing through, semi-transparent.
+const ticksEl=document.getElementById("ticks");
+for(const l of Object.keys(LANGS)){
+  const d=document.createElement("div");
+  d.className="tick";d.textContent=LANGS[l];
+  ticksEl.appendChild(d);
 }
+// Full-screen list, English centered, the rest by software-industry priority
+// (GitHub/StackOverflow order): es, fr, de, ja, zh, pt, it, ko, ar
+const ORDER=["it","zh","de","es","en","fr","ja","pt","ko","ar"];
+const oList=document.getElementById("oList");
+for(const l of ORDER){
+  const r=document.createElement("div");
+  r.className="orow"+(l==="en"?" center":"");
+  r.innerHTML='<span>'+LANGS[l]+'</span><span class="sub">'+GREET[Object.keys(LANGS).indexOf(l)]+'</span>';
+  r.onclick=()=>choose(l);
+  oList.appendChild(r);
+}
+document.getElementById("langBox").onclick=()=>{
+  document.getElementById("overlay").style.display="flex";
+  const en=oList.querySelector(".center");
+  if(en)en.scrollIntoView({block:"center"});
+};
+document.getElementById("closeOverlay").onclick=()=>{document.getElementById("overlay").style.display="none";};
 function choose(l){
   cur=l;
   const s=S[l];
