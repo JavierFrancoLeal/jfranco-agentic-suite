@@ -51,8 +51,8 @@ if [ "${1:-start}" = "tunnel" ]; then
   echo ""
   echo "=== PUBLIC DEMO LINK (works on any network, even mobile data) ==="
   echo ""
-  echo "  Wallboard (phones, no login):  $URL/dashboard?wall=1"
-  echo "  Dashboard:                     $URL/dashboard"
+  echo "  Dashboard (login):             $URL/dashboard"
+  echo "  Wallboard (no login):          $URL/dashboard?wall=1"
   echo "  Panel:                         $URL/panel"
   echo ""
   echo "Stop everything:  sh tools/demo-sandbox.sh stop"
@@ -70,8 +70,8 @@ if [ "${1:-start}" = "qr" ]; then
   URL="$(grep -oE 'https://[a-z0-9-]+\.lhr\.life' /tmp/dsh-demo-tunnel.log | head -1)"
   if [ -z "$URL" ]; then echo "No public link yet — run: sh tools/demo-sandbox.sh quick"; exit 1; fi
   QR="/tmp/dsh-demo-qr.png"
-  curl -sL --max-time 20 -o "$QR" "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$URL/dashboard?wall=1" 2>/dev/null || echo "$URL")"
-  echo "QR saved: $QR  →  Wallboard link: $URL/dashboard?wall=1"
+  curl -sL --max-time 20 -o "$QR" "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=$(python3 -c "import urllib.parse,sys;print(urllib.parse.quote(sys.argv[1]))" "$URL/dashboard" 2>/dev/null || echo "$URL")"
+  echo "QR saved: $QR  →  Dashboard link: $URL/dashboard"
   open "$QR" 2>/dev/null || true
   exit 0
 fi
