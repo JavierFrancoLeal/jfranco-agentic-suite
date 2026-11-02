@@ -133,6 +133,7 @@ function loadUsers() {
 }
 function saveUsers(u) {
   if (db) { /* inserts handled per-user */ return; }
+  fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(USERS_FILE, JSON.stringify(u, null, 2));
 }
 function hashPw(pw, salt) { return crypto.scryptSync(pw, salt, 64).toString("hex"); }
