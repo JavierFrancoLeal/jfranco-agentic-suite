@@ -189,7 +189,10 @@ The suite is also installable from this repository and from GitHub Pages.
   government, and personal use.
 - [Restaurant KPIs](docs/kpi-restaurant.md) — example sector KPI file for the
   Management Summary; KPI templates exist for all 19 sectors
-  (`docs/kpi-*.md`).
+  (`docs/kpi-*.md`), plus [customer service](docs/kpi-customerservice.md).
+- [Demo playbook](docs/DEMO-PLAYBOOK.md) — from zero to a live demo for a
+  customer-service business (SADC-ready), with the bilingual scenario, the
+  one-command demo reset, and the follow-up plan.
 - [Super-Agent adaptation](docs/SUPER-AGENT-ADAPTATION.md) — how the suite
   maps to DeepSeek Harness's Router + Worker architecture (triggers,
   watchdog, accept modes, speculative execution).

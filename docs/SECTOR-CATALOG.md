@@ -28,6 +28,7 @@ product.
 | Activity | Nearest template |
 |---|---|
 | Wholesale and retail | `decisions-retail.md` |
+| **Customer service counters and call centers** | `decisions-customerservice.md` |
 | Transport, taxi, fleets | `decisions-logistics.md` |
 | Hospitality and lodging | `decisions-hotel.md` |
 | Restaurants and food service | `decisions-restaurant.md` |
