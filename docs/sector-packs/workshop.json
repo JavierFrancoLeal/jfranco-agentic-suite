@@ -1,0 +1,73 @@
+{
+  "id": "workshop",
+  "tableLabel": {
+    "en": "Vehicle",
+    "es": "Vehículo",
+    "fr": "Véhicule",
+    "de": "Fahrzeug",
+    "it": "Veicolo",
+    "pt": "Veículo",
+    "zh": "车辆",
+    "ja": "車両",
+    "ko": "차량",
+    "ar": "المركبة"
+  },
+  "ordersTarget": {
+    "en": "Jobs — workshop & invoice",
+    "es": "Trabajos — taller y factura",
+    "fr": "Travaux — atelier et facture",
+    "de": "Aufträge — Werkstatt & Rechnung",
+    "it": "Lavori — officina e fattura",
+    "pt": "Trabalhos — oficina e fatura",
+    "zh": "工单 — 车间与发票",
+    "ja": "作業 — 工場と請求書",
+    "ko": "작업 — 정비소 및 청구서",
+    "ar": "الأعمال — الورشة والفاتورة"
+  },
+  "entity": {
+    "en": "customer",
+    "es": "cliente",
+    "fr": "client",
+    "de": "Kunde",
+    "it": "cliente",
+    "pt": "cliente",
+    "zh": "顾客",
+    "ja": "顧客",
+    "ko": "고객",
+    "ar": "العميل"
+  },
+  "fields": [
+    {
+      "id": "plate",
+      "type": "text",
+      "label": {
+        "en": "Plate",
+        "es": "Matrícula",
+        "fr": "Plaque",
+        "de": "Kennzeichen",
+        "it": "Targa",
+        "pt": "Matrícula",
+        "zh": "车牌",
+        "ja": "ナンバー",
+        "ko": "번호판",
+        "ar": "اللوحة"
+      }
+    },
+    {
+      "id": "service",
+      "type": "text",
+      "label": {
+        "en": "Service",
+        "es": "Servicio",
+        "fr": "Service",
+        "de": "Service",
+        "it": "Servizio",
+        "pt": "Serviço",
+        "zh": "服务",
+        "ja": "サービス",
+        "ko": "서비스",
+        "ar": "الخدمة"
+      }
+    }
+  ]
+}

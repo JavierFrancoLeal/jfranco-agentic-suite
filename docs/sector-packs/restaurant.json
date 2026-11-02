@@ -1,6 +1,57 @@
 {
   "id": "restaurant",
-  "tableLabel": {"en": "Table", "es": "Mesa"},
-  "ordersTarget": {"en": "Orders — kitchen & bill", "es": "Pedidos — cocina y cuenta"},
-  "entity": {"en": "person", "es": "persona"}
+  "tableLabel": {
+    "en": "Table",
+    "es": "Mesa",
+    "fr": "Table",
+    "de": "Tisch",
+    "it": "Tavolo",
+    "pt": "Mesa",
+    "zh": "桌号",
+    "ja": "テーブル",
+    "ko": "테이블",
+    "ar": "الطاولة"
+  },
+  "ordersTarget": {
+    "en": "Orders — kitchen & bill",
+    "es": "Pedidos — cocina y cuenta",
+    "fr": "Commandes — cuisine et addition",
+    "de": "Bestellungen — Küche & Rechnung",
+    "it": "Ordini — cucina e conto",
+    "pt": "Pedidos — cozinha e conta",
+    "zh": "订单 — 厨房与账单",
+    "ja": "注文 — 厨房と会計",
+    "ko": "주문 — 주방 및 계산",
+    "ar": "الطلبات — المطبخ والحساب"
+  },
+  "entity": {
+    "en": "person",
+    "es": "persona",
+    "fr": "personne",
+    "de": "Person",
+    "it": "persona",
+    "pt": "pessoa",
+    "zh": "人",
+    "ja": "人",
+    "ko": "사람",
+    "ar": "شخص"
+  },
+  "fields": [
+    {
+      "id": "covers",
+      "type": "number",
+      "label": {
+        "en": "Diners",
+        "es": "Comensales",
+        "fr": "Couverts",
+        "de": "Gedecke",
+        "it": "Coperti",
+        "pt": "Comensais",
+        "zh": "用餐人数",
+        "ja": "人数",
+        "ko": "식사 인원",
+        "ar": "عدد الأشخاص"
+      }
+    }
+  ]
 }

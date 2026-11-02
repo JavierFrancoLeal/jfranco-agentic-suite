@@ -1,0 +1,73 @@
+{
+  "id": "school",
+  "tableLabel": {
+    "en": "Student",
+    "es": "Estudiante",
+    "fr": "Élève",
+    "de": "Schüler",
+    "it": "Studente",
+    "pt": "Aluno",
+    "zh": "学生",
+    "ja": "生徒",
+    "ko": "학생",
+    "ar": "الطالب"
+  },
+  "ordersTarget": {
+    "en": "Requests — office & record",
+    "es": "Solicitudes — oficina y expediente",
+    "fr": "Demandes — bureau et dossier",
+    "de": "Anfragen — Büro & Akte",
+    "it": "Richieste — ufficio e registro",
+    "pt": "Pedidos — escritório e registo",
+    "zh": "请求 — 办公室与记录",
+    "ja": "依頼 — 事務所と記録",
+    "ko": "요청 — 사무실 및 기록",
+    "ar": "الطلبات — المكتب والسجل"
+  },
+  "entity": {
+    "en": "student",
+    "es": "estudiante",
+    "fr": "élève",
+    "de": "Schüler",
+    "it": "studente",
+    "pt": "aluno",
+    "zh": "学生",
+    "ja": "生徒",
+    "ko": "학생",
+    "ar": "طالب"
+  },
+  "fields": [
+    {
+      "id": "grade",
+      "type": "text",
+      "label": {
+        "en": "Grade",
+        "es": "Grado",
+        "fr": "Niveau",
+        "de": "Klasse",
+        "it": "Classe",
+        "pt": "Ano",
+        "zh": "年级",
+        "ja": "学年",
+        "ko": "학년",
+        "ar": "الصف"
+      }
+    },
+    {
+      "id": "course",
+      "type": "text",
+      "label": {
+        "en": "Course",
+        "es": "Curso",
+        "fr": "Cours",
+        "de": "Kurs",
+        "it": "Corso",
+        "pt": "Curso",
+        "zh": "课程",
+        "ja": "コース",
+        "ko": "과정",
+        "ar": "المقرر"
+      }
+    }
+  ]
+}

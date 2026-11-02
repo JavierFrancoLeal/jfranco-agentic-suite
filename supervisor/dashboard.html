@@ -92,6 +92,7 @@ body.wall pre{max-height:40vh}
       <button data-tab="overview" class="active" id="tabOverview">Overview</button>
       <button data-tab="field" id="tabField">Field</button>
       <button data-tab="rules" id="tabRules">Rules</button>
+      <button data-tab="sector" id="tabSector">Sector</button>
     </div>
     <div id="tab-overview">
       <div class="card"><h2 id="workersTitle">Workers</h2>
@@ -119,6 +120,19 @@ body.wall pre{max-height:40vh}
         <p class="hint" id="feedbackHint">The agent reads this queue and resolves errors and improvements.</p>
       </div>
     </div>
+    <div id="tab-sector" class="hidden">
+      <div class="card"><h2 id="sectorPresetsTitle">Sector presets</h2><div id="presetGrid" class="row"></div></div>
+      <div class="card">
+        <h2 id="customSectorTitle">Custom sector</h2>
+        <input id="csId" placeholder="id (e.g. bakery)">
+        <input id="csLabelEn" placeholder="Label (EN)"><input id="csLabelFr" placeholder="Label (FR)">
+        <input id="csOrdersEn" placeholder="Orders title (EN)"><input id="csOrdersFr" placeholder="Orders title (FR)">
+        <input id="csF1Id" placeholder="Field 1 id (e.g. orderNo)"><input id="csF1Label" placeholder="Field 1 label (EN)">
+        <input id="csF2Id" placeholder="Field 2 id (optional)"><input id="csF2Label" placeholder="Field 2 label (EN)">
+        <button class="btn" id="saveSectorBtn">Save sector</button>
+        <button class="btn gray" id="aiSectorBtn" style="margin-top:6px">Suggest with AI (copy prompt)</button>
+      </div>
+    </div>
     <div id="tab-rules" class="hidden">
       <div class="card"><h2 id="rulesTitle">Business rules</h2><p class="hint" id="rulesHint">These rules train the traffic light.</p>
         <textarea id="decisions" rows="14"></textarea>
@@ -139,6 +153,7 @@ body.wall pre{max-height:40vh}
     <div id="wHome">
       <div class="card" style="text-align:center;padding:8px"><h2 id="workerHi" style="margin:0"></h2></div>
       <input id="tableInput" placeholder="Table #" style="margin:8px 0">
+      <div id="packFields" class="row"></div>
       <button class="listen" id="startBtn">▶ START</button>
       <div class="card"><h2 id="reportTitle">Field report</h2><textarea id="reportText" rows="4" placeholder="What happened on your shift?"></textarea><button class="btn" id="reportBtn">Send report</button></div>
       <div class="card"><h2 id="fbTitle">Field feedback</h2>
@@ -217,6 +232,7 @@ function applyLang(){
   $("reportTitle").textContent=t("reportTitle");$("reportText").placeholder=t("reportPh");$("reportBtn").textContent=t("sendReport");
   $("fbTitle").textContent=t("fbTitle");$("empFbText").placeholder=t("fbPh");$("empFbBtn").textContent=t("sendFeedback");$("switchBtn").textContent=t("switchUser");
   $("wallHead").textContent=t("wallHead");$("wallPulseTitle").textContent=t("wallPulse");
+  $("tabSector").textContent=t("sectorTab");$("sectorPresetsTitle").textContent=t("sectorPresets");$("customSectorTitle").textContent=t("customSector");$("saveSectorBtn").textContent=t("saveSector");$("aiSectorBtn").textContent=t("aiSuggest");
   $("trailTitle").textContent=t("conversationTrail");$("trailHint").textContent=t("trailHint");
   $("sayText").placeholder=t("sayPh");$("sayBtn").textContent=t("sendPhrase");$("aiHint").textContent=t("aiHint");if(!recording)$("micBtn").textContent=t("dictate");
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
@@ -267,13 +283,14 @@ if(SR){$("micBtn").onclick=()=>{
   rec.onend=()=>{recording=false;$("micBtn").textContent=t("dictate");rec=null;};
   rec.start();
 };}else{$("micBtn").disabled=true;$("micBtn").textContent=t("micUnsupported");}
+function packFieldsHTML(){if(!PACK||!PACK.fields||!PACK.fields.length)return "";return PACK.fields.map(f=>'<input class="packField" data-fid="'+f.id+'" placeholder="'+(f.label&&f.label[cur]?f.label[cur]:f.id)+'">').join("");}
 async function workerFlow(){
   const live=await api("/api/live");
   const wv=$("employeeView");
   if(!me){return;}
   $("wHome").classList.add("hidden");$("wListen").classList.add("hidden");$("wSummary").classList.add("hidden");
-  if(live.status==="listening"){$("wListen").classList.remove("hidden");$("listeningBtn").textContent="🎙️ "+ (live.worker||"");}
-  else if(live.status==="summary"){$("wSummary").classList.remove("hidden");$("summaryTitle").textContent=t("summaryTitle")+(live.table?(" — "+(PACK&&PACK.tableLabel&&PACK.tableLabel[cur]?PACK.tableLabel[cur]:"Table")+" "+live.table):"");renderSummary(live);}
+  if(live.status==="listening"){$("wListen").classList.remove("hidden");$("listeningBtn").textContent="🎙️ "+ (live.worker||"");$("packFields").innerHTML=packFieldsHTML();$("tableInput").value=live.table||"";}
+  else if(live.status==="summary"){$("wSummary").classList.remove("hidden");$("summaryTitle").textContent=t("summaryTitle")+(live.table?(" — "+(PACK&&PACK.tableLabel&&PACK.tableLabel[cur]?PACK.tableLabel[cur]:"Table")+" "+live.table):"")+Object.entries(live.fields||{}).filter(([k,v])=>v).map(([k,v])=>" · "+v).join("");renderSummary(live);}
   else{$("wHome").classList.remove("hidden");}
   renderOrders();
 }
@@ -297,13 +314,13 @@ function renderSummary(live){
     body.appendChild(d);
   }
 }
-$("startBtn").onclick=async()=>{await api("/api/live/start",{worker:me.name,table:$("tableInput").value.trim()||null});workerFlow();};
+$("startBtn").onclick=async()=>{const fields={};document.querySelectorAll(".packField").forEach(i=>{fields[i.dataset.fid]=i.value.trim();});await api("/api/live/start",{worker:me.name,table:$("tableInput").value.trim()||null,fields});workerFlow();};
 $("stopBtn").onclick=async()=>{const live=await api("/api/live");if((live.speakers||[]).length){live.status="summary";await api("/api/live/summary",{speakers:live.speakers});}else{await api("/api/live/close",{});}workerFlow();};
 $("newConvBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 $("toHomeBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 async function enter(){
   setWho();
-  if(me.role==="owner"){show("ownerView");loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();}
+  if(me.role==="owner"){show("ownerView");loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
   else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();}
   else{show("employeeView");$("workerHi").textContent=t("hi")+me.name;workerFlow();if(livePoll)clearInterval(livePoll);livePoll=setInterval(()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
@@ -324,9 +341,29 @@ async function loadLead(){$("leadReports").textContent=(await api("/api/reports"
 $("refreshReports").onclick=loadField;$("leadRefresh").onclick=loadLead;
 const ar=$("autoRefresh");
 if(ar)ar.onclick=()=>{auto=!auto;ar.textContent=auto?t("autoOn"):t("autoOff");if(auto){const iv=setInterval(()=>{if(!auto){clearInterval(iv);return;}if(me&&me.role==="owner"){loadField();renderOrders();}},30000);}};
+async function loadPresets(){
+  const r=await api("/api/sector-presets");
+  const g=$("presetGrid");if(!g)return;g.innerHTML="";
+  (r.presets||[]).forEach(p=>{const b=document.createElement("button");b.className="btn small gray";b.textContent=p.id;b.onclick=async()=>{await api("/api/sector",p);PACK=p;applyPack();showMsg(t("sectorSaved"));};g.appendChild(b);});
+}
+$("saveSectorBtn").onclick=async()=>{
+  const pack={id:$("csId").value.trim()||"custom",
+    tableLabel:{en:$("csLabelEn").value.trim()||"Table",fr:$("csLabelFr").value.trim(),es:$("csLabelEn").value.trim()||"Table"},
+    ordersTarget:{en:$("csOrdersEn").value.trim()||"Orders",fr:$("csOrdersFr").value.trim()},
+    entity:{en:"person",fr:"personne"},
+    fields:[]};
+  if($("csF1Id").value.trim())pack.fields.push({id:$("csF1Id").value.trim(),type:"text",label:{en:$("csF1Label").value.trim()||$("csF1Id").value.trim()}});
+  if($("csF2Id").value.trim())pack.fields.push({id:$("csF2Id").value.trim(),type:"text",label:{en:$("csF2Label").value.trim()||$("csF2Id").value.trim()}});
+  const r=await api("/api/sector",pack);showMsg(r.error?"Error":t("sectorSaved"));PACK=pack;applyPack();
+};
+$("aiSectorBtn").onclick=async()=>{
+  const prompt="Live mirror mode (workflow-master). Design a sector pack JSON for this business, in this exact shape: {\"id\":\"<sector-id>\",\"tableLabel\":{\"en\":\"<entity label>\",\"es\":\"…\",\"fr\":\"…\"},\"ordersTarget\":{\"en\":\"<orders title>\",\"fr\":\"…\"},\"entity\":{\"en\":\"<entity>\",\"fr\":\"…\"},\"fields\":[{\"id\":\"<field>\",\"type\":\"number|text\",\"label\":{\"en\":\"<label>\",\"fr\":\"…\"}}]}. Describe your business here: "+($("csLabelEn").value||"(your business)")+". Reply ONLY with the JSON.";
+  try{await navigator.clipboard.writeText(prompt);}catch(e){}
+  showMsg(t("aiSectorCopied"));
+};
 async function loadRules(){$("decisions").value=(await api("/api/decisions")).content||"";}
 $("saveDecisions").onclick=async()=>{await api("/api/decisions",{content:$("decisions").value});$("decisionsSaved").textContent=t("saved");setTimeout(()=>$("decisionsSaved").textContent="",2000);};
-document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules"].forEach(x=>$("tab-"+x).classList.add("hidden"));$("tab-"+b.dataset.tab).classList.remove("hidden");});
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector"].forEach(x=>$("tab-"+x).classList.add("hidden"));$("tab-"+b.dataset.tab).classList.remove("hidden");});
 $("reportBtn").onclick=async()=>{const r=await api("/api/report",{text:$("reportText").value});if(r.error){showMsg("Error: "+r.error);return;}$("reportText").value="";showMsg(t("reportSent"));};
 $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.name,role:me.role,category:$("empFbCat").value,text:$("empFbText").value});if(r.error){showMsg("Error: "+r.error);return;}$("empFbText").value="";showMsg(t("feedbackSent"));};
 const st=sessionStorage.getItem("dsh-sup-token");

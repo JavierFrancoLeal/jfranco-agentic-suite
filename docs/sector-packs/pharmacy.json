@@ -1,0 +1,73 @@
+{
+  "id": "pharmacy",
+  "tableLabel": {
+    "en": "Counter",
+    "es": "Mostrador",
+    "fr": "Comptoir",
+    "de": "Tresen",
+    "it": "Bancone",
+    "pt": "Balcão",
+    "zh": "柜台",
+    "ja": "カウンター",
+    "ko": "카운터",
+    "ar": "المنضدة"
+  },
+  "ordersTarget": {
+    "en": "Dispensing — counter & register",
+    "es": "Dispensación — mostrador y caja",
+    "fr": "Délivrance — comptoir et caisse",
+    "de": "Abgabe — Tresen & Kasse",
+    "it": "Dispensazione — banco e cassa",
+    "pt": "Dispensação — balcão e caixa",
+    "zh": "配药 — 柜台与收银",
+    "ja": "調剤 — カウンターとレジ",
+    "ko": "조제 — 카운터 및 금전등록기",
+    "ar": "الصرف — المنضدة والصندوق"
+  },
+  "entity": {
+    "en": "customer",
+    "es": "cliente",
+    "fr": "client",
+    "de": "Kunde",
+    "it": "cliente",
+    "pt": "cliente",
+    "zh": "顾客",
+    "ja": "顧客",
+    "ko": "고객",
+    "ar": "العميل"
+  },
+  "fields": [
+    {
+      "id": "prescription",
+      "type": "text",
+      "label": {
+        "en": "Prescription",
+        "es": "Receta",
+        "fr": "Ordonnance",
+        "de": "Rezept",
+        "it": "Ricetta",
+        "pt": "Receita",
+        "zh": "处方",
+        "ja": "処方箋",
+        "ko": "처방전",
+        "ar": "الوصفة"
+      }
+    },
+    {
+      "id": "insurance",
+      "type": "text",
+      "label": {
+        "en": "Insurance",
+        "es": "Seguro",
+        "fr": "Assurance",
+        "de": "Versicherung",
+        "it": "Assicurazione",
+        "pt": "Seguro",
+        "zh": "保险",
+        "ja": "保険",
+        "ko": "보험",
+        "ar": "التأمين"
+      }
+    }
+  ]
+}

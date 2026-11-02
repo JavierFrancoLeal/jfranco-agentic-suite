@@ -1,0 +1,73 @@
+{
+  "id": "realestate",
+  "tableLabel": {
+    "en": "Property",
+    "es": "Propiedad",
+    "fr": "Bien",
+    "de": "Immobilie",
+    "it": "Immobile",
+    "pt": "Imóvel",
+    "zh": "房产",
+    "ja": "物件",
+    "ko": "부동산",
+    "ar": "العقار"
+  },
+  "ordersTarget": {
+    "en": "Viewings — office & file",
+    "es": "Visitas — oficina y expediente",
+    "fr": "Visites — agence et dossier",
+    "de": "Besichtigungen — Büro & Akte",
+    "it": "Visite — ufficio e fascicolo",
+    "pt": "Visitas — escritório e processo",
+    "zh": "看房 — 办公室与档案",
+    "ja": "内見 — オフィスとファイル",
+    "ko": "방문 — 사무소 및 기록",
+    "ar": "المعاينات — المكتب والملف"
+  },
+  "entity": {
+    "en": "client",
+    "es": "cliente",
+    "fr": "client",
+    "de": "Kunde",
+    "it": "cliente",
+    "pt": "cliente",
+    "zh": "客户",
+    "ja": "顧客",
+    "ko": "고객",
+    "ar": "العميل"
+  },
+  "fields": [
+    {
+      "id": "budget",
+      "type": "number",
+      "label": {
+        "en": "Budget",
+        "es": "Presupuesto",
+        "fr": "Budget",
+        "de": "Budget",
+        "it": "Budget",
+        "pt": "Orçamento",
+        "zh": "预算",
+        "ja": "予算",
+        "ko": "예산",
+        "ar": "الميزانية"
+      }
+    },
+    {
+      "id": "propertyType",
+      "type": "text",
+      "label": {
+        "en": "Type",
+        "es": "Tipo",
+        "fr": "Type",
+        "de": "Typ",
+        "it": "Tipo",
+        "pt": "Tipo",
+        "zh": "类型",
+        "ja": "タイプ",
+        "ko": "유형",
+        "ar": "النوع"
+      }
+    }
+  ]
+}

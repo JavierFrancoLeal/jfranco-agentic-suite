@@ -1,6 +1,57 @@
 {
   "id": "hotel",
-  "tableLabel": {"en": "Room", "es": "Habitación"},
-  "ordersTarget": {"en": "Requests — front desk & folio", "es": "Solicitudes — recepción y cuenta"},
-  "entity": {"en": "guest", "es": "huésped"}
+  "tableLabel": {
+    "en": "Room",
+    "es": "Habitación",
+    "fr": "Chambre",
+    "de": "Zimmer",
+    "it": "Camera",
+    "pt": "Quarto",
+    "zh": "房间",
+    "ja": "部屋",
+    "ko": "객실",
+    "ar": "الغرفة"
+  },
+  "ordersTarget": {
+    "en": "Requests — front desk & folio",
+    "es": "Solicitudes — recepción y cuenta",
+    "fr": "Demandes — réception et folio",
+    "de": "Anfragen — Rezeption & Rechnung",
+    "it": "Richieste — reception e conto",
+    "pt": "Pedidos — receção e conta",
+    "zh": "请求 — 前台与账单",
+    "ja": "依頼 — フロントと会計",
+    "ko": "요청 — 프런트 및 계산",
+    "ar": "الطلبات — الاستقبال والحساب"
+  },
+  "entity": {
+    "en": "guest",
+    "es": "huésped",
+    "fr": "client",
+    "de": "Gast",
+    "it": "ospite",
+    "pt": "hóspede",
+    "zh": "客人",
+    "ja": "ゲスト",
+    "ko": "손님",
+    "ar": "ضيف"
+  },
+  "fields": [
+    {
+      "id": "nights",
+      "type": "number",
+      "label": {
+        "en": "Nights",
+        "es": "Noches",
+        "fr": "Nuits",
+        "de": "Nächte",
+        "it": "Notti",
+        "pt": "Noites",
+        "zh": "晚数",
+        "ja": "泊数",
+        "ko": "박 수",
+        "ar": "عدد الليالي"
+      }
+    }
+  ]
 }

@@ -291,11 +291,28 @@ async function api(req, res, pathname) {
   // The active sector pack: one dashboard skeleton, many business skins.
   if (pathname === "/api/sector" && req.method === "GET") {
     try { return send(res, 200, JSON.parse(fs.readFileSync(SECTOR_FILE, "utf8"))); }
-    catch { return send(res, 200, { id: "generic", tableLabel: { en: "Table", es: "Mesa" }, ordersTarget: { en: "Orders", es: "Pedidos" }, entity: { en: "person", es: "persona" } }); }
+    catch { return send(res, 200, { id: "generic", tableLabel: { en: "Table", es: "Mesa" }, ordersTarget: { en: "Orders", es: "Pedidos" }, entity: { en: "person", es: "persona" }, fields: [] }); }
+  }
+  if (pathname === "/api/sector" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    fs.writeFileSync(SECTOR_FILE, JSON.stringify(b, null, 2));
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/sector-presets" && req.method === "GET") {
+    const dir = path.join(ROOT, "docs", "sector-packs");
+    const out = [];
+    try {
+      for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".json")).sort()) {
+        try { out.push(JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"))); } catch {}
+      }
+    } catch {}
+    return send(res, 200, { presets: out });
   }
   if (pathname === "/api/live/start" && req.method === "POST") {
     const b = await json(req);
-    liveWrite({ status: "listening", worker: b.worker || "worker", table: b.table || null, startedAt: ts(), speakers: [], orders: [], inbox: [] });
+    liveWrite({ status: "listening", worker: b.worker || "worker", table: b.table || null, fields: b.fields || {}, startedAt: ts(), speakers: [], orders: [], inbox: [] });
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/live/summary" && req.method === "POST") {
