@@ -1,6 +1,6 @@
 {
-  "name": "Veilleux",
-  "short_name": "Veilleux",
+  "name": "Le Veilleux",
+  "short_name": "Le Veilleux",
   "description": "One-button listening for the J.Franco Agentic Workflow Suite on DeepSeek Harness. The AI listens, works, proposes, and reports — you verify and decide.",
   "start_url": "./panel.html",
   "scope": "./",
