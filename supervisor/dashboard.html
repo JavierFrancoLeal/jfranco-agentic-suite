@@ -114,6 +114,7 @@ body.wall pre{max-height:40vh}
         <div class="row" style="margin-bottom:8px"><button class="btn small gray" id="refreshReports">Refresh</button><button class="btn small gray" id="autoRefresh">Auto-refresh: OFF</button></div>
         <pre id="reports"></pre>
       </div>
+      <div class="card"><h2 id="trailTitle">Conversation trail</h2><p class="hint" id="trailHint">The raw phrases captured from the field, in order.</p><pre id="trail"></pre></div>
       <div class="card"><h2 id="feedbackTitle">Feedback queue</h2><pre id="feedback"></pre>
         <p class="hint" id="feedbackHint">The agent reads this queue and resolves errors and improvements.</p>
       </div>
@@ -215,6 +216,7 @@ function applyLang(){
   $("reportTitle").textContent=t("reportTitle");$("reportText").placeholder=t("reportPh");$("reportBtn").textContent=t("sendReport");
   $("fbTitle").textContent=t("fbTitle");$("empFbText").placeholder=t("fbPh");$("empFbBtn").textContent=t("sendFeedback");$("switchBtn").textContent=t("switchUser");
   $("wallHead").textContent=t("wallHead");$("wallPulseTitle").textContent=t("wallPulse");
+  $("trailTitle").textContent=t("conversationTrail");$("trailHint").textContent=t("trailHint");
   $("sayText").placeholder=t("sayPh");$("sayBtn").textContent=t("sendPhrase");$("aiHint").textContent=t("aiHint");if(!recording)$("micBtn").textContent=t("dictate");
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
 }
@@ -314,7 +316,7 @@ $("logoutBtn").onclick=logout;
 const sb=$("switchBtn");if(sb)sb.onclick=logout;
 async function loadUsers(){const r=await api("/api/users");const tb=$("usersTable").querySelector("tbody");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+u.name+"</td><td>"+u.role+"</td>";tb.appendChild(tr);});}
 $("addUserBtn").onclick=async()=>{const r=await api("/api/users",{name:$("newUser").value,password:$("newPass").value,role:$("newRole").value});showMsg(r.error?"Error: "+r.error:t("workerAdded"));if(!r.error){loadUsers();$("newUser").value=$("newPass").value="";}};
-async function loadField(){$("reports").textContent=(await api("/api/reports")).content||"(empty)";$("feedback").textContent=(await api("/api/feedback")).content||"(empty)";}
+async function loadField(){$("reports").textContent=(await api("/api/reports")).content||"(empty)";$("feedback").textContent=(await api("/api/feedback")).content||"(empty)";const live=await api("/api/live");const ib=(live.inbox||[]).map(x=>"[•] "+x.worker+": "+x.text).join("\n");$("trail").textContent=ib||"(no phrases yet)";}
 async function loadLead(){$("leadReports").textContent=(await api("/api/reports")).content||"(empty)";$("leadFeedback").textContent=(await api("/api/feedback")).content||"(empty)";}
 $("refreshReports").onclick=loadField;$("leadRefresh").onclick=loadLead;
 const ar=$("autoRefresh");
