@@ -12,7 +12,5 @@
   <rect width="1024" height="1024" fill="url(#appg)"/>
   <rect width="1024" height="1024" fill="url(#sheen)"/>
   <g transform="translate(62,92) scale(14.06)">
-    <path d="M2 32 C2 21 9 12 32 12 C55 12 62 21 62 32 C62 43 55 52 32 52 C17 52 6.5 48 3.5 40 C8 44 16 42 23 35.8 A7.8 7.8 0 0 1 41 35.8 C41 31.8 38.6 28 32 21.5 C25.4 28 23 31.8 23 35.8" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <circle cx="32" cy="35.8" r="3.6" fill="#FACC15"/>
-  </g>
+    <path d="M2 32 C2 21 9 12 32 12 C55 12 62 21 62 32 C62 43 55 52 32 52 C17 52 6.5 48 3.5 40 C8 44 16 42 23 35.8 A7.8 7.8 0 0 1 41 35.8 C41 31.8 38.6 28 32 21.5 C25.4 28 23 31.8 23 35.8" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>
 </svg>
