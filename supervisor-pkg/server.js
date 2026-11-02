@@ -283,7 +283,8 @@ async function api(req, res, pathname) {
   // Public wallboard feed: aggregated numbers only, no secrets.
   if (pathname === "/api/wall" && req.method === "GET") {
     const m = metrics();
-    return send(res, 200, { ...m, feedbackTail: readFeedback(60) });
+    const lv = liveRead();
+    return send(res, 200, { ...m, orders: (lv.orders || []).length, ordersTail: (lv.orders || []).slice(-3).map((o) => (o.table ? "M" + o.table + " · " : "") + o.person + " — " + o.request), feedbackTail: readFeedback(60) });
   }
   // Live conversation flow: worker screens, per-person summary, orders to
   // the kitchen and the central system (the supervisor itself).
