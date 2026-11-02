@@ -1,12 +1,14 @@
 #!/bin/sh
-# J.Franco suite — npm publisher. Created by J.Franco. MIT.
-# Publishes the six @jfranco/* packages to the npm registry (scope @jfranco).
+# J.Franco suite — npm publisher (token path). Created by J.Franco. MIT.
 #
-# ONE-TIME prerequisite (run in your Terminal, with YOUR token — the token
-# never needs to be shared with anyone):
+# PREFERRED: Trusted Publishing via GitHub Actions (no tokens at all):
+#   1. On npmjs.com, add the GitHub repo as a Trusted Publisher (one click).
+#   2. Trigger .github/workflows/publish.yml from the GitHub Actions tab.
+#
+# This script is the manual alternative, used when you have an npm token
+# with publish rights (granular tokens must include the @jfranco scope):
 #   pnpm config set //registry.npmjs.org/:_authToken=npm_YOUR_TOKEN
-#
-# Then run: sh tools/publish.sh
+#   sh tools/publish.sh
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"

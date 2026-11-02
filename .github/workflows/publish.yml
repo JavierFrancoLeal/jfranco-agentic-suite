@@ -1,0 +1,25 @@
+name: Publish to npm
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+      - name: Run the suite quality gate
+        run: sh tools/check.sh
+      - name: Publish the six @jfranco packages (Trusted Publishing, no token)
+        run: |
+          for p in jfranco-workflow-master jfranco-input-detector jfranco-decision-router \
+                   jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader; do
+            (cd "$p" && npm publish --provenance --access public)
+          done
