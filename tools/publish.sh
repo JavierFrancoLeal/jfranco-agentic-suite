@@ -25,8 +25,8 @@ PNPM="${DSH_PNPM:-$HOME/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/pnpm/
 echo "Running the quality gate first…"
 sh tools/check.sh
 
-for p in jfranco-workflow-master jfranco-input-detector jfranco-decision-router \
-         jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader jfranco-usage-auditor; do
+for p in jfranco-workflow-master jfranco-decision-router \
+         jfranco-accountability-auditor jfranco-autonomy-grader jfranco-audit; do
   echo ""
   echo "Publishing $p…"
   (cd "$p" && "$NODE" "$PNPM" publish --access public --no-git-checks)
