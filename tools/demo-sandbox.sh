@@ -74,7 +74,7 @@ DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" "$NODE" "$ROOT/superviso
 } > "$DEMO/decisions.md"
 
 # Start the isolated server on the local network
-DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" "$NODE" "$ROOT/supervisor/server.js" --lan \
+DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" caffeinate -i "$NODE" "$ROOT/supervisor/server.js" --lan \
   > /tmp/dsh-demo.log 2>&1 &
 echo $! > "$PID"
 sleep 1.2
