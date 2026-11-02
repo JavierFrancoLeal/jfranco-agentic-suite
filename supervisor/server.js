@@ -174,7 +174,7 @@ function usageRows() {
   return [...rows.values()].map((r) => ({ ...r, cost: Math.round((r.tokens / 1e6) * PRICE_PER_MILLION * 100) / 100 })).sort((a, b) => b.tokens - a.tokens);
 }
 function readTail(f, n = 200) { try { const t = fs.readFileSync(f, "utf8"); return t.split("\n").slice(-n).join("\n"); } catch { return ""; } }
-function liveRead() { try { const s = JSON.parse(fs.readFileSync(LIVE_FILE, "utf8")); s.inbox = s.inbox || []; return s; } catch { return { status: "idle", worker: null, startedAt: null, speakers: [], orders: [], inbox: [] }; } }
+function liveRead() { try { const s = JSON.parse(fs.readFileSync(LIVE_FILE, "utf8")); s.inbox = s.inbox || []; s.deep = s.deep || []; return s; } catch { return { status: "idle", worker: null, startedAt: null, speakers: [], orders: [], inbox: [], deep: [] }; } }
 function liveWrite(s) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(LIVE_FILE, JSON.stringify(s, null, 2)); }
 function metrics() {
   if (db) {
@@ -401,6 +401,27 @@ async function api(req, res, pathname) {
     return send(res, 200, { ok: true });
   }
   // Speech/text from the worker's device → the always-connected AI agent.
+  // Deep-queue: questions for the Reasoner brain (the second brain, by default).
+  if (pathname === "/api/deep" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const s2 = liveRead();
+    s2.deep = s2.deep || [];
+    s2.deep.push({ id: "d" + (s2.deep.length + 1), ts: ts(), worker: b.worker || "owner", text: String(b.text || "").trim() });
+    liveWrite(s2);
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/deep/inbox" && req.method === "GET") {
+    const s2 = liveRead();
+    const items = (s2.deep || []).filter((x) => !x.acked);
+    if (items.length) { s2.deep.forEach((x) => { x.acked = true; }); liveWrite(s2); }
+    return send(res, 200, { items });
+  }
+  if (pathname === "/api/deep/result" && req.method === "POST") {
+    const b = await json(req);
+    appendReport("Reasoner", String(b.text || ""));
+    return send(res, 200, { ok: true }, true);
+  }
   if (pathname === "/api/live/transcript" && req.method === "POST") {
     const b = await json(req);
     const s = liveRead();

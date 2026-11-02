@@ -1,19 +1,21 @@
 #!/bin/sh
-# J.Franco suite — always-connected AI standby agent. Created by J.Franco. MIT.
+# J.Franco suite — always-connected AI standby agent (dual brain).
+# Created by J.Franco. MIT.
 #
 # The bridge that keeps the AI permanently connected to the field:
 #   1. Workers send speech/text to the supervisor inbox (/api/live/transcript).
 #   2. This loop polls the inbox every few seconds.
-#   3. On new transcripts, it runs the DeepSeek Harness agent (campo profile),
-#      which decodes, splits by person, tiers, and posts the summary back to
-#      /api/live/summary — the worker's screen updates automatically.
+#   3. Field transcripts → the FAST brain (deepseek-chat, V4-Pro Max).
+#   4. Deep questions (/api/deep) → the DEEP brain (deepseek-reasoner),
+#      which thinks at length and posts its answer to /api/deep/result.
 #
 # Requirements (one-time):
-#   export DSH_DEEPSEEK_API_KEY=sk-...      (the campo profile uses it)
-#   sh install.sh                            (installs the seven plugins)
+#   export DEEPSEEK_API_KEY=sk-...   (the campo profile uses it)
+#   sh install.sh                    (installs the plugins)
 #
 # Usage:
 #   sh tools/agent-standby.sh                # run forever (Ctrl+C to stop)
+#   sh tools/agent-standby.sh once           # process one batch, then exit
 #   DSH_STANDBY_POLL=4 sh tools/agent-standby.sh   # poll every 4s (default)
 #   DSH_STANDBY_DRYRUN=1 sh tools/agent-standby.sh # show commands, run nothing
 set -e
@@ -36,29 +38,59 @@ DSH="${DSH_BIN:-}"
 done
 [ -z "$DSH" ] && { echo "dsh not found. Install DeepSeek Harness first."; exit 1; }
 
-echo "Standby agent connected to $SUP (poll every ${POLL}s)."
+# The Reasoner patch: the second brain for deep analysis.
+cat > /tmp/dsh-reasoner-patch.yml <<'YML'
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: deepseek-official
+    model: deepseek-reasoner
+    reasoningEffort: max
+YML
+
+echo "Standby agent connected to $SUP (poll every ${POLL}s). Dual brain: field→chat, deep→reasoner."
 [ -n "$DRY" ] && echo "DRY RUN — commands are printed, not executed."
 echo "Ctrl+C to stop."
 
+items_json() {
+  curl -s --max-time 5 "$1" || echo '{}'
+}
+count_of() {
+  echo "$1" | "$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log((JSON.parse(s).items||[]).length)}catch(e){console.log(0)}})'
+}
+texts_of() {
+  echo "$1" | "$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);console.log(j.items.map(x=>x.text).join("\n"))}catch(e){console.log("")}})'
+}
+
 while true; do
-  ITEMS="$(curl -s --max-time 5 "$SUP/api/live/inbox" || echo '{}')"
-  N="$("$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log((JSON.parse(s).items||[]).length)}catch(e){console.log(0)}})' <<EOF
-$ITEMS
-EOF
-)"
+  # ---- FAST brain: field transcripts ----
+  ITEMS="$(items_json "$SUP/api/live/inbox")"
+  N="$(count_of "$ITEMS")"
   if [ "$N" != "0" ]; then
-    TXT="$("$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);console.log(j.items.map(x=>x.text).join("\n"))}catch(e){console.log("")}})' <<EOF
-$ITEMS
-EOF
-)"
+    TXT="$(texts_of "$ITEMS")"
     PROMPT="Live mirror mode (workflow-master skill). A worker captured this conversation from the field: $TXT Decode it, split it by person (Person 1, Person 2…), assign each request its tier (GREEN/SEMI/YELLOW/RED per decision-router), then POST the summary as JSON to $SUP/api/live/summary with this shape: {\"worker\":\"<worker>\",\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}. Keep texts short. Then answer with one line: summary posted."
     echo "[$(date +%H:%M:%S)] $N transcript(s) received → AI processing…"
     if [ -n "$DRY" ]; then
       echo "   would run: $DSH --profile campo headless \"$PROMPT\""
     else
-      "$DSH" --profile campo headless "$PROMPT" >/dev/null 2>&1 || echo "   (agent run failed — check DSH_DEEPSEEK_API_KEY)"
+      "$DSH" --profile campo headless "$PROMPT" >/dev/null 2>&1 || echo "   (field run failed — check DEEPSEEK_API_KEY)"
     fi
   fi
+
+  # ---- DEEP brain: questions for the Reasoner ----
+  DITEMS="$(items_json "$SUP/api/deep/inbox")"
+  DN="$(count_of "$DITEMS")"
+  if [ "$DN" != "0" ]; then
+    DTXT="$(texts_of "$DITEMS")"
+    DPROMPT="Deep analysis (Reasoner brain). Question: $DTXT Think deeply and answer thoroughly. Then POST your answer as JSON to $SUP/api/deep/result with this shape: {\"text\":\"<your answer>\"}. Finally reply with one line: deep answer posted."
+    echo "[$(date +%H:%M:%S)] $DN deep question(s) received → Reasoner thinking…"
+    if [ -n "$DRY" ]; then
+      echo "   would run: $DSH --profile campo --patch /tmp/dsh-reasoner-patch.yml headless \"$DPROMPT\""
+    else
+      "$DSH" --profile campo --patch /tmp/dsh-reasoner-patch.yml headless "$DPROMPT" >/dev/null 2>&1 || echo "   (deep run failed — check the key/model)"
+    fi
+  fi
+
   [ -n "$ONCE" ] && exit 0
   sleep "$POLL"
 done
