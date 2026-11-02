@@ -61,6 +61,7 @@ sh -n tools/demo-sandbox.sh
 sh -n tools/make-cert.sh
 sh -n tools/letsencrypt.sh
 sh -n tools/agent-standby.sh
+sh -n tools/activate-ai.sh
 echo "OK demo tools"
 
 echo "== installers =="

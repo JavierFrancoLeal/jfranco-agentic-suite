@@ -17,6 +17,8 @@
 #   DSH_STANDBY_POLL=4 sh tools/agent-standby.sh   # poll every 4s (default)
 #   DSH_STANDBY_DRYRUN=1 sh tools/agent-standby.sh # show commands, run nothing
 set -e
+ONCE=""
+[ "${1:-loop}" = "once" ] && ONCE=1
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 NODE="${DSH_NODE:-}"
 if [ -z "$NODE" ]; then
@@ -57,5 +59,6 @@ EOF
       "$DSH" --profile campo headless "$PROMPT" >/dev/null 2>&1 || echo "   (agent run failed — check DSH_DEEPSEEK_API_KEY)"
     fi
   fi
+  [ -n "$ONCE" ] && exit 0
   sleep "$POLL"
 done

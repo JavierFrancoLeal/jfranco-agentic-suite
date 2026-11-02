@@ -93,11 +93,11 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
   <p class="note" id="legend"></p>
 
   <div class="fbcard">
-    <h3>Field Feedback</h3>
+    <h3 id="fbTitle">Field Feedback</h3>
     <select id="fbCat">
-      <option value="error">Error</option>
-      <option value="improvement">Improvement</option>
-      <option value="idea">Idea</option>
+      <option id="catError" value="error">Error</option>
+      <option id="catImprovement" value="improvement">Improvement</option>
+      <option id="catIdea" value="idea">Idea</option>
     </select>
     <textarea id="fbText" rows="3" placeholder="What happened? What should improve?"></textarea>
     <button id="fbSend">Send feedback</button>
@@ -123,7 +123,7 @@ const S={
   placeholder:"Pulsa ESCUCHAR y habla tu conversación…",
   clue:(w)=>`DSH, ${w} — comienzo a escuchar. Dime la conversación o las peticiones. Si aparecen varios idiomas, activa la interpretación cuando lo pida; el flujo principal (anotar, escribir, abrir aplicaciones…) sigue el análisis del input.`,
   note:(end)=>`Pulsa ESCUCHAR, habla la conversación y di «${end}». Luego copia y pega la instrucción en una nueva sesión de DeepSeek Harness — o usa la app «DSH Asistente» para ejecución autónoma.`,
-  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifícalo) · 🟡 propuesta (tú decides) · 🔴 pregunta."},
+  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifícalo) · 🟡 propuesta (tú decides) · 🔴 pregunta.",fbTitle:"Feedback de campo",fbPh:"¿Qué pasó? ¿Qué debe mejorar?",fbSent:"Enviado — el agente lo leerá",fbOffline:"Supervisor sin conexión — prompt copiado para DSH",catError:"Error",catImprovement:"Mejora",catIdea:"Idea"},
  en:{worker:"User",role:"Role",title:"🎙️ DSH Assistant — Action Panel",subtitle:"J.Franco Suite · DeepSeek Harness",
   listen:"🎙️ LISTEN / DICTATE",stop:"⏹️ STOP",copy:"📋 Copy for DSH",copied:"✅ Copied!",
   speak:"🔊 Read aloud",nospeech:"🎙️ Dictation not supported",
@@ -133,7 +133,7 @@ const S={
   placeholder:"Tap LISTEN and speak your conversation…",
   clue:(w)=>`DSH, ${w} — I'm starting to listen. Tell me the conversation or the requests. If several languages appear, activate interpretation when asked; the main flow (noting, writing, opening apps…) follows the input analysis.`,
   note:(end)=>`Tap LISTEN, speak the conversation and say "${end}". Then copy and paste the instruction into a new DeepSeek Harness session — or use the "DSH Assistant" app for autonomous runs.`,
-  legend:"Traffic light: 🟢 automatic · ⚑ semi-automatic (verify it) · 🟡 proposal (you decide) · 🔴 ask."},
+  legend:"Traffic light: 🟢 automatic · ⚑ semi-automatic (verify it) · 🟡 proposal (you decide) · 🔴 ask.",fbTitle:"Field Feedback",fbPh:"What happened? What should improve?",fbSent:"Sent — the agent will read it",fbOffline:"Supervisor offline — prompt copied for DSH",catError:"Error",catImprovement:"Improvement",catIdea:"Idea"},
  fr:{worker:"Utilisateur",role:"Fonction",title:"🎙️ DSH Assistant — Panneau d'Action",subtitle:"Suite J.Franco · DeepSeek Harness",
   listen:"🎙️ ÉCOUTER / DICTER",stop:"⏹️ ARRÊTER",copy:"📋 Copier pour DSH",copied:"✅ Copié !",
   speak:"🔊 Lire à voix haute",nospeech:"🎙️ Dictée non prise en charge",
@@ -143,7 +143,7 @@ const S={
   placeholder:"Touchez ÉCOUTER et parlez…",
   clue:(w)=>`DSH, ${w} — je commence à écouter. Racontez-moi la conversation ou les demandes. Si plusieurs langues apparaissent, activez l'interprétation à la demande ; le flux principal (noter, écrire, ouvrir des applications…) suit l'analyse.`,
   note:(end)=>`Touchez ÉCOUTER, parlez et dites « ${end} ». Copiez ensuite l'instruction dans une nouvelle session DeepSeek Harness — ou utilisez l'app « DSH Assistant » pour l'exécution autonome.`,
-  legend:"Feux : 🟢 automatique · ⚑ semi-automatique (vérifiez) · 🟡 proposition (vous décidez) · 🔴 demandez."},
+  legend:"Feux : 🟢 automatique · ⚑ semi-automatique (vérifiez) · 🟡 proposition (vous décidez) · 🔴 demandez.",fbTitle:"Feedback terrain",fbPh:"Que s'est-il passé ? Que faut-il améliorer ?",fbSent:"Envoyé — l'agent le lira",fbOffline:"Superviseur hors ligne — invite copiée pour DSH",catError:"Erreur",catImprovement:"Amélioration",catIdea:"Idée"},
  de:{worker:"Benutzer",role:"Rolle",title:"🎙️ DSH Assistent — Aktionspanel",subtitle:"J.Franco-Suite · DeepSeek Harness",
   listen:"🎙️ ZUHÖREN / DIKTIEREN",stop:"⏹️ STOPP",copy:"📋 Für DSH kopieren",copied:"✅ Kopiert!",
   speak:"🔊 Vorlesen",nospeech:"🎙️ Diktat nicht unterstützt",
@@ -153,7 +153,7 @@ const S={
   placeholder:"Tippen Sie auf ZUHÖREN und sprechen Sie…",
   clue:(w)=>`DSH, ${w} — ich beginne zuzuhören. Erzählen Sie mir das Gespräch oder die Anfragen. Bei mehreren Sprachen aktivieren Sie das Dolmetschen auf Zuruf; der Hauptablauf folgt der Analyse.`,
   note:(end)=>`Tippen Sie auf ZUHÖREN, sprechen Sie und sagen Sie «${end}». Kopieren Sie die Anweisung in eine neue Sitzung — oder nutzen Sie die App „DSH Assistent“.`,
-  legend:"Ampel: 🟢 automatisch · ⚑ halbautomatisch (prüfen) · 🟡 Vorschlag (Sie entscheiden) · 🔴 fragen."},
+  legend:"Ampel: 🟢 automatisch · ⚑ halbautomatisch (prüfen) · 🟡 Vorschlag (Sie entscheiden) · 🔴 fragen.",fbTitle:"Feld-Feedback",fbPh:"Was ist passiert? Was soll besser werden?",fbSent:"Gesendet — der Agent liest es",fbOffline:"Supervisor offline — Prompt für DSH kopiert",catError:"Fehler",catImprovement:"Verbesserung",catIdea:"Idee"},
  it:{worker:"Utente",role:"Ruolo",title:"🎙️ DSH Assistente — Pannello Azioni",subtitle:"Suite J.Franco · DeepSeek Harness",
   listen:"🎙️ ASCOLTA / DETTA",stop:"⏹️ FERMA",copy:"📋 Copia per DSH",copied:"✅ Copiato!",
   speak:"🔊 Leggi ad alta voce",nospeech:"🎙️ Dettatura non supportata",
@@ -163,7 +163,7 @@ const S={
   placeholder:"Tocca ASCOLTA e parla…",
   clue:(w)=>`DSH, ${w} — comincio ad ascoltare. Raccontami la conversazione o le richieste. Se compaiono più lingue, attiva l'interpretazione quando richiesto; il flusso principale segue l'analisi.`,
   note:(end)=>`Tocca ASCOLTA, parla e di' «${end}». Poi copia e incolla l'istruzione in una nuova sessione — oppure usa l'app «DSH Assistente».`,
-  legend:"Semaforo: 🟢 automatico · ⚑ semi-automatico (verificalo) · 🟡 proposta (decidi tu) · 🔴 chiedi."},
+  legend:"Semaforo: 🟢 automatico · ⚑ semi-automatico (verificalo) · 🟡 proposta (decidi tu) · 🔴 chiedi.",fbTitle:"Feedback di campo",fbPh:"Cosa è successo? Cosa va migliorato?",fbSent:"Inviato — l'agente lo leggerà",fbOffline:"Supervisore offline — prompt copiato per DSH",catError:"Errore",catImprovement:"Miglioria",catIdea:"Idea"},
  pt:{worker:"Usuário",role:"Função",title:"🎙️ DSH Assistente — Painel de Ação",subtitle:"Suite J.Franco · DeepSeek Harness",
   listen:"🎙️ OUVIR / DITAR",stop:"⏹️ PARAR",copy:"📋 Copiar para o DSH",copied:"✅ Copiado!",
   speak:"🔊 Ler em voz alta",nospeech:"🎙️ Ditado não suportado",
@@ -173,7 +173,7 @@ const S={
   placeholder:"Toque em OUVIR e fale…",
   clue:(w)=>`DSH, ${w} — começo a ouvir. Conte-me a conversa ou os pedidos. Se aparecerem várias línguas, ative a interpretação quando pedido; o fluxo principal segue a análise.`,
   note:(end)=>`Toque em OUVIR, fale e diga «${end}». Depois copie e cole a instrução numa nova sessão — ou use a app «DSH Assistente».`,
-  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifique) · 🟡 proposta (você decide) · 🔴 pergunte."},
+  legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifique) · 🟡 proposta (você decide) · 🔴 pergunte.",fbTitle:"Feedback de campo",fbPh:"O que aconteceu? O que deve melhorar?",fbSent:"Enviado — o agente vai ler",fbOffline:"Supervisor offline — prompt copiado para o DSH",catError:"Erro",catImprovement:"Melhoria",catIdea:"Ideia"},
  zh:{worker:"用户",role:"职位",title:"🎙️ DSH 助手 — 操作面板",subtitle:"J.Franco 套件 · DeepSeek Harness",
   listen:"🎙️ 聆听 / 听写",stop:"⏹️ 停止",copy:"📋 复制到 DSH",copied:"✅ 已复制！",
   speak:"🔊 朗读",nospeech:"🎙️ 不支持听写",
@@ -183,7 +183,7 @@ const S={
   placeholder:"点击「聆听」并说出对话…",
   clue:(w)=>`DSH，${w} — 我开始聆听。请告诉我对话或请求。若出现多种语言，按需启用口译；主流程跟随输入分析。`,
   note:(end)=>`点击「聆听」，说出对话并说「${end}」。然后将指令复制粘贴到新的会话 — 或使用「DSH 助手」应用。`,
-  legend:"红绿灯：🟢 自动 · ⚑ 半自动（请核实）· 🟡 提议（你决定）· 🔴 询问。"},
+  legend:"红绿灯：🟢 自动 · ⚑ 半自动（请核实）· 🟡 提议（你决定）· 🔴 询问。",fbTitle:"现场反馈",fbPh:"发生了什么？什么需要改进？",fbSent:"已发送 — 智能体会读取",fbOffline:"主管离线 — 提示已复制到 DSH",catError:"错误",catImprovement:"改进",catIdea:"想法"},
  ja:{worker:"ユーザー",role:"役割",title:"🎙️ DSH アシスタント — アクションパネル",subtitle:"J.Franco スイート · DeepSeek Harness",
   listen:"🎙️ 聞く / 音声入力",stop:"⏹️ 停止",copy:"📋 DSHへコピー",copied:"✅ コピー済み！",
   speak:"🔊 読み上げ",nospeech:"🎙️ 音声入力非対応",
@@ -193,7 +193,7 @@ const S={
   placeholder:"「聞く」をタップして会話を話してください…",
   clue:(w)=>`DSH、${w} — 聞き始めます。会話や依頼を教えてください。複数の言語が出たら、求めに応じて通訳を有効化；主フローは入力分析に従います。`,
   note:(end)=>`「聞く」をタップし、会話を話して「${end}」と言います。その後、指示を新しいセッションに貼り付け — または「DSH アシスタント」アプリで自律実行。`,
-  legend:"信号：🟢 自動 · ⚑ 半自動（確認）· 🟡 提案（あなたが決定）· 🔴 質問。"},
+  legend:"信号：🟢 自動 · ⚑ 半自動（確認）· 🟡 提案（あなたが決定）· 🔴 質問。",fbTitle:"現場フィードバック",fbPh:"何が起きましたか？何を改善すべき？",fbSent:"送信済み — エージェントが読みます",fbOffline:"スーパーバイザーオフライン — プロンプトをDSH用にコピー",catError:"エラー",catImprovement:"改善",catIdea:"アイデア"},
  ko:{worker:"사용자",role:"역할",title:"🎙️ DSH 어시스턴트 — 액션 패널",subtitle:"J.Franco 스위트 · DeepSeek Harness",
   listen:"🎙️ 듣기 / 받아쓰기",stop:"⏹️ 중지",copy:"📋 DSH로 복사",copied:"✅ 복사됨!",
   speak:"🔊 소리내어 읽기",nospeech:"🎙️ 받아쓰기 미지원",
@@ -203,7 +203,7 @@ const S={
   placeholder:"「듣기」를 누르고 대화를 말하세요…",
   clue:(w)=>`DSH, ${w} — 듣기 시작합니다. 대화나 요청을 말씀해 주세요. 여러 언어가 나오면 요청 시 통역을 활성화합니다. 주 흐름은 입력 분석을 따릅니다.`,
   note:(end)=>`「듣기」를 누르고 대화를 말한 뒤 「${end}」라고 하세요. 그런 다음 지시를 새 세션에 붙여넣기 — 또는 「DSH 어시스턴트」 앱으로 자율 실행.`,
-  legend:"신호등: 🟢 자동 · ⚑ 반자동(확인) · 🟡 제안(당신이 결정) · 🔴 질문."},
+  legend:"신호등: 🟢 자동 · ⚑ 반자동(확인) · 🟡 제안(당신이 결정) · 🔴 질문.",fbTitle:"현장 피드백",fbPh:"무슨 일이 있었나요? 무엇을 개선할까요?",fbSent:"전송됨 — 에이전트가 읽습니다",fbOffline:"감독자 오프라인 — DSH용 프롬프트 복사됨",catError:"오류",catImprovement:"개선",catIdea:"아이디어"},
  ar:{worker:"المستخدم",role:"الدور",title:"🎙️ مساعد DSH — لوحة الإجراءات",subtitle:"مجموعة J.Franco · DeepSeek Harness",
   listen:"🎙️ استمع / أملي",stop:"⏹️ إيقاف",copy:"📋 نسخ إلى DSH",copied:"✅ تم النسخ!",
   speak:"🔊 قراءة بصوت عالٍ",nospeech:"🎙️ الإملاء غير مدعوم",
@@ -213,11 +213,11 @@ const S={
   placeholder:"اضغط «استمع» وتحدث…",
   clue:(w)=>`DSH، ${w} — أبدأ الاستماع. أخبرني بالمحادثة أو الطلبات. عند ظهور عدة لغات فعّل الترجمة عند الطلب؛ التدفق الرئيسي يتبع تحليل المدخلات.`,
   note:(end)=>`اضغط «استمع»، وتحدث ثم قل «${end}». بعدها انسخ التعليمات والصقها في جلسة جديدة — أو استخدم تطبيق «مساعد DSH».`,
-  legend:"الإشارة: 🟢 تلقائي · ⚑ شبه تلقائي (تحقق) · 🟡 مقترح (أنت تقرر) · 🔴 اسأل."}
+  legend:"الإشارة: 🟢 تلقائي · ⚑ شبه تلقائي (تحقق) · 🟡 مقترح (أنت تقرر) · 🔴 اسأل.",fbTitle:"ملاحظات ميدانية",fbPh:"ماذا حدث؟ ما الذي يجب تحسينه؟",fbSent:"أُرسل — سيقرأه الوكيل",fbOffline:"المشرف غير متصل — تم نسخ الموجه إلى DSH",catError:"خطأ",catImprovement:"تحسين",catIdea:"فكرة"}
 };
 const $=id=>document.getElementById(id);
 const promptEl=$("prompt"),langsEl=$("langs"),workerInput=$("workerInput"),roleInput=$("roleInput");
-let cur="en",darkOn=false,recording=false,armed=false,rec=null,interim="";
+let cur="en",darkOn=false,recording=false,armed=false,rec=null,interim="",finalText="";
 // Session continuity: the dashboard sends ?user=…&role=…&lang=…
 const q=new URLSearchParams(location.search);
 try{
@@ -258,7 +258,12 @@ function applyLang(){
   $("gateTitle").textContent=s.notIdentified;
   $("gateHint").textContent=s.gateHint;
   $("gateLink").textContent=s.loginLink;
-  promptEl.textContent=identity()+s.clue(LANG[cur]);
+  $("fbTitle").textContent=s.fbTitle;
+  $("fbText").placeholder=s.fbPh;
+  $("catError").textContent=s.catError;
+  $("catImprovement").textContent=s.catImprovement;
+  $("catIdea").textContent=s.catIdea;
+  promptEl.textContent=identity()+s.clue(LANG[cur])+(finalText?(" "+finalText):"");
   updateIdentity();
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
 }
@@ -306,6 +311,7 @@ function startRec(){
     rec.continuous=true;
     rec.interimResults=true;
     let finalAcc="";
+    finalText="";
     rec.onresult=(e)=>{
       let interimTxt="";
       for(let i=e.resultIndex;i<e.results.length;i++){
@@ -313,6 +319,7 @@ function startRec(){
         if(r.isFinal){finalAcc+=(finalAcc?" ":"")+r[0].transcript;}
         else interimTxt+=r[0].transcript;
       }
+      finalText=finalAcc;
       const base=identity()+S[cur].clue(LANG[cur]);
       promptEl.textContent=base+(finalAcc?(" "+finalAcc):"")+(interimTxt?(" …"+interimTxt+"…"):"");
       interim=finalAcc;
@@ -357,15 +364,15 @@ $("fbSend").onclick=async()=>{
     sent=res.ok;
   }catch(e){}
   if(sent){
-    $("fbSend").textContent="Sent — the agent will read it";
+    $("fbSend").textContent=S[cur].fbSent;
     $("fbText").value="";
-    setTimeout(()=>$("fbSend").textContent="Send feedback",2500);
+    setTimeout(()=>$("fbSend").textContent=S[cur].fbSent,2500);
   }else{
     const prompt="Feedback ("+$("fbCat").value+")"+(w?" from "+w+(r?" ("+r+")":""):"")+": "+text;
     try{await navigator.clipboard.writeText(prompt);}catch(e){}
-    $("fbSend").textContent="Supervisor offline — prompt copied for DSH";
+    $("fbSend").textContent=S[cur].fbOffline;
     $("fbText").value="";
-    setTimeout(()=>$("fbSend").textContent="Send feedback",3000);
+    setTimeout(()=>$("fbSend").textContent=S[cur].fbSent,3000);
   }
 };
 if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
