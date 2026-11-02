@@ -97,7 +97,7 @@ EOF
 - id: agent-default-model
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
-    provider: deepseek-api-key
+    provider: deepseek-official
     model: deepseek-chat
     reasoningEffort: max
 EOF

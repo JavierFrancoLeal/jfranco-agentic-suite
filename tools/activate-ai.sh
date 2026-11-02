@@ -10,7 +10,7 @@
 #   2. The campo profile with the seven plugins:  sh install.sh
 #
 # Usage:
-#   export DSH_DEEPSEEK_API_KEY=sk-...   (or put the export in ~/.zshrc)
+#   export DEEPSEEK_API_KEY=sk-...   (or put the export in ~/.zshrc)
 #   sh tools/activate-ai.sh              # verifies + starts the standby agent
 #   sh tools/activate-ai.sh status       # shows whether the agent is running
 #   sh tools/activate-ai.sh stop         # stops the standby agent
@@ -34,12 +34,12 @@ if [ "${1:-start}" = "status" ]; then
   exit 0
 fi
 
-if [ -z "$DSH_DEEPSEEK_API_KEY" ]; then
-  echo "❌ Missing DSH_DEEPSEEK_API_KEY."
+if [ -z "$DEEPSEEK_API_KEY" ] && [ -z "$DSH_DEEPSEEK_API_KEY" ]; then
+  echo "❌ Missing DEEPSEEK_API_KEY."
   echo ""
   echo "1) Get a key at  https://platform.deepseek.com/  →  API keys"
   echo "2) Put it in your shell profile so it is always available:"
-  echo '   echo '\''export DSH_DEEPSEEK_API_KEY=sk-TU_CLAVE'\'' >> ~/.zshrc'
+  echo '   echo '\''export DEEPSEEK_API_KEY=sk-TU_CLAVE'\'' >> ~/.zshrc'
   echo "3) Open a new terminal and run:  sh tools/activate-ai.sh"
   exit 1
 fi
