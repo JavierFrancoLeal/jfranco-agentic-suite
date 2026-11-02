@@ -53,5 +53,31 @@
         "ar": "عدد الليالي"
       }
     }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Receptionist",
+        "es": "Recepcionista",
+        "fr": "Réceptionniste"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Housekeeping lead",
+        "es": "Gobernanta",
+        "fr": "Gouvernante"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Manager",
+        "es": "Gerente",
+        "fr": "Gérant"
+      },
+      "level": "owner"
+    }
   ]
 }

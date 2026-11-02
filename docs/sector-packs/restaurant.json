@@ -53,5 +53,31 @@
         "ar": "عدد الأشخاص"
       }
     }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Waitress",
+        "es": "Mesera",
+        "fr": "Serveuse"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Cook",
+        "es": "Cocinero",
+        "fr": "Cuisinier"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Manager",
+        "es": "Gerente",
+        "fr": "Gérant"
+      },
+      "level": "owner"
+    }
   ]
 }

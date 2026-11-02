@@ -69,5 +69,31 @@
         "ar": "المقرر"
       }
     }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Teacher",
+        "es": "Maestro",
+        "fr": "Enseignant"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Coordinator",
+        "es": "Coordinador",
+        "fr": "Coordinateur"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Principal",
+        "es": "Director",
+        "fr": "Directeur"
+      },
+      "level": "owner"
+    }
   ]
 }

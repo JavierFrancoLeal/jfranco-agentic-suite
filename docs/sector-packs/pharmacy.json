@@ -69,5 +69,31 @@
         "ar": "التأمين"
       }
     }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Clerk",
+        "es": "Dependiente",
+        "fr": "Commis"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Pharmacist",
+        "es": "Farmacéutico",
+        "fr": "Pharmacien"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Owner",
+        "es": "Dueño",
+        "fr": "Propriétaire"
+      },
+      "level": "owner"
+    }
   ]
 }

@@ -224,8 +224,9 @@ try{
   const savedUser=localStorage.getItem("dsh-worker"),savedRole=localStorage.getItem("dsh-role");
   if(q.get("user"))localStorage.setItem("dsh-worker",q.get("user"));
   if(q.get("role"))localStorage.setItem("dsh-role",q.get("role"));
+  if(q.get("label"))localStorage.setItem("dsh-role",q.get("label"));
   workerInput.value=q.get("user")||savedUser||"";
-  roleInput.value=q.get("role")||savedRole||"";
+  roleInput.value=q.get("label")||q.get("role")||savedRole||"";
   if(q.get("lang")&&S[q.get("lang")]){cur=q.get("lang");localStorage.setItem("dsh-lang",cur);}
   else if(localStorage.getItem("dsh-lang")&&S[localStorage.getItem("dsh-lang")])cur=localStorage.getItem("dsh-lang");
 }catch(e){}

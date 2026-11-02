@@ -81,7 +81,7 @@ mkdir -p "$DEMO"
 
 # Demo users (nothing personal)
 DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" "$NODE" "$ROOT/supervisor/server.js" \
-  init --owner DemoOwner --password demo-owner --employee DemoWaiter --employee-password demo123 >/dev/null
+  init --owner DemoOwner --password demo-owner --owner-label "Directora" --employee DemoWaiter --employee-password demo123 --employee-label "Mesera" --lead DemoKitchen --lead-password demo123 --lead-label "Cocinero" >/dev/null
 
 # Starter rules: restaurant sector, isolated in the demo data dir
 {

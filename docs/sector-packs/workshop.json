@@ -69,5 +69,31 @@
         "ar": "الخدمة"
       }
     }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Mechanic",
+        "es": "Mecánico",
+        "fr": "Mécanicien"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Workshop lead",
+        "es": "Jefe de taller",
+        "fr": "Chef d'atelier"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Owner",
+        "es": "Dueño",
+        "fr": "Propriétaire"
+      },
+      "level": "owner"
+    }
   ]
 }

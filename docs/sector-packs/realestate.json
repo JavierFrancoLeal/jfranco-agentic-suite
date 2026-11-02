@@ -69,5 +69,31 @@
         "ar": "النوع"
       }
     }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Agent",
+        "es": "Agente",
+        "fr": "Agent"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Coordinator",
+        "es": "Coordinador",
+        "fr": "Coordinateur"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Broker",
+        "es": "Corredor",
+        "fr": "Courtier"
+      },
+      "level": "owner"
+    }
   ]
 }

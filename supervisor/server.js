@@ -67,21 +67,23 @@ if (ARGS[0] === "init") {
   const get = (k) => { const i = ARGS.indexOf(k); return i >= 0 && ARGS[i + 1] ? ARGS[i + 1] : undefined; };
   const owner = get("--owner"), opw = get("--password");
   if (!owner || !opw) {
-    console.error("usage: node server.js init --owner <name> --password <pw> [--employee <name> --employee-password <pw>] [--db]");
+    console.error("usage: node server.js init --owner <name> --password <pw> [--owner-label <label>] [--employee <name> --employee-password <pw> --employee-label <label>] [--lead <name> --lead-password <pw> --lead-label <label>] [--db]");
     process.exit(1);
   }
   fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (db) db.exec("CREATE TABLE IF NOT EXISTS users (name TEXT PRIMARY KEY, salt TEXT, hash TEXT, role TEXT, created TEXT)");
-  const add = (name, pw, role) => {
+  if (db) { db.exec("CREATE TABLE IF NOT EXISTS users (name TEXT PRIMARY KEY, salt TEXT, hash TEXT, role TEXT, label TEXT, created TEXT)"); try { db.exec("ALTER TABLE users ADD COLUMN label TEXT"); } catch {} }
+  const add = (name, pw, role, label) => {
     const salt = crypto.randomBytes(16).toString("hex");
     const hash = crypto.scryptSync(pw, salt, 64).toString("hex");
-    if (db) db.prepare("INSERT OR REPLACE INTO users (name,salt,hash,role,created) VALUES (?,?,?,?,?)").run(name, salt, hash, role, new Date().toISOString());
-    else { const u = loadUsers(); u[name] = { salt, hash, role }; saveUsers(u); }
+    if (db) db.prepare("INSERT OR REPLACE INTO users (name,salt,hash,role,label,created) VALUES (?,?,?,?,?,?)").run(name, salt, hash, role, label || name, new Date().toISOString());
+    else { const u = loadUsers(); u[name] = { salt, hash, role, label: label || name }; saveUsers(u); }
   };
-  add(owner, opw, "owner");
+  add(owner, opw, "owner", get("--owner-label"));
   const ename = get("--employee"), epw = get("--employee-password");
-  if (ename && epw) add(ename, epw, "employee");
-  console.log("Users created (" + (db ? "sqlite" : "json") + "): " + owner + " (owner)" + (ename && epw ? ", " + ename + " (employee)" : ""));
+  if (ename && epw) add(ename, epw, "employee", get("--employee-label"));
+  const lname = get("--lead"), lpw = get("--lead-password");
+  if (lname && lpw) add(lname, lpw, "lead", get("--lead-label"));
+  console.log("Users created (" + (db ? "sqlite" : "json") + "): " + owner + " (owner)" + (ename && epw ? ", " + ename + " (employee)" : "") + (lname && lpw ? ", " + lname + " (lead)" : ""));
   console.log("Now run: node server.js" + (USE_DB ? " --db" : "") + (LAN ? " --lan" : ""));
   process.exit(0);
 }
@@ -90,7 +92,7 @@ if (ARGS[0] === "init") {
 function loadUsers() {
   if (db) {
     const out = {};
-    for (const r of db.prepare("SELECT name,salt,hash,role FROM users").all()) out[r.name] = { salt: r.salt, hash: r.hash, role: r.role };
+    for (const r of db.prepare("SELECT name,salt,hash,role,label FROM users").all()) out[r.name] = { salt: r.salt, hash: r.hash, role: r.role, label: r.label };
     return out;
   }
   try { return JSON.parse(fs.readFileSync(USERS_FILE, "utf8")); } catch { return {}; }
@@ -201,7 +203,7 @@ function metrics() {
 
 // ---------- sessions ----------
 const sessions = new Map();
-function issue(name, role) { const token = crypto.randomBytes(24).toString("hex"); sessions.set(token, { name, role, expires: Date.now() + SESSION_TTL }); return token; }
+function issue(name, role, label) { const token = crypto.randomBytes(24).toString("hex"); sessions.set(token, { name, role, label: label || name, expires: Date.now() + SESSION_TTL }); return token; }
 function auth(req) {
   const h = req.headers.authorization || "";
   const m = /^Bearer (.+)$/.exec(h);
@@ -248,12 +250,12 @@ async function api(req, res, pathname) {
     const users = loadUsers();
     const u = users[b.user];
     if (!u || hashPw(String(b.password || ""), u.salt) !== u.hash) return send(res, 401, { error: "bad credentials" });
-    const token = issue(b.user, u.role);
+    const token = issue(b.user, u.role, u.label);
     res.setHeader("Set-Cookie", "dsh_sup=" + token + "; Path=/; HttpOnly; SameSite=Lax");
     return send(res, 200, { token, name: b.user, role: u.role });
   }
   if (pathname === "/api/logout" && req.method === "POST") { const s = auth(req); if (s) for (const [t, v] of sessions) if (v.name === s.name) sessions.delete(t); return send(res, 200, { ok: true }); }
-  if (pathname === "/api/me") { const s = auth(req); return send(res, 200, s ? { name: s.name, role: s.role } : { error: "unauthorized" }); }
+  if (pathname === "/api/me") { const s = auth(req); return send(res, 200, s ? { name: s.name, role: s.role, label: s.label || s.name } : { error: "unauthorized" }); }
   if (pathname === "/api/feedback" && req.method === "POST") {
     const b = await json(req);
     appendFeedback(b.worker, b.role, b.category, b.text);
@@ -375,7 +377,7 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/decisions" && req.method === "GET") { if (!ownerOnly(res, req)) return; return send(res, 200, { content: readDecisions() }); }
   if (pathname === "/api/decisions" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); writeDecisions(b.content); return send(res, 200, { ok: true }); }
-  if (pathname === "/api/users" && req.method === "GET") { if (!ownerOnly(res, req)) return; const u = loadUsers(); return send(res, 200, { users: Object.entries(u).map(([name, v]) => ({ name, role: v.role })) }); }
+  if (pathname === "/api/users" && req.method === "GET") { if (!ownerOnly(res, req)) return; const u = loadUsers(); return send(res, 200, { users: Object.entries(u).map(([name, v]) => ({ name, role: v.role, label: v.label || name })) }); }
   if (pathname === "/api/users" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
@@ -384,8 +386,9 @@ async function api(req, res, pathname) {
     if (u[b.name]) return send(res, 409, { error: "user exists" });
     const salt = crypto.randomBytes(16).toString("hex");
     const role = b.role === "owner" ? "owner" : (b.role === "lead" ? "lead" : "employee");
-    if (db) db.prepare("INSERT INTO users (name,salt,hash,role,created) VALUES (?,?,?,?,?)").run(b.name, salt, hashPw(String(b.password), salt), role, ts());
-    else { u[b.name] = { salt, hash: hashPw(String(b.password), salt), role }; saveUsers(u); }
+    const label = String(b.label || b.name);
+    if (db) db.prepare("INSERT INTO users (name,salt,hash,role,label,created) VALUES (?,?,?,?,?,?)").run(b.name, salt, hashPw(String(b.password), salt), role, label, ts());
+    else { u[b.name] = { salt, hash: hashPw(String(b.password), salt), role, label }; saveUsers(u); }
     return send(res, 200, { ok: true });
   }
   return send(res, 404, { error: "not found" });

@@ -53,5 +53,31 @@
         "ar": "الوصفة"
       }
     }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Receptionist",
+        "es": "Recepcionista",
+        "fr": "Réceptionniste"
+      },
+      "level": "employee"
+    },
+    {
+      "label": {
+        "en": "Head nurse",
+        "es": "Enfermera jefe",
+        "fr": "Infirmière en chef"
+      },
+      "level": "lead"
+    },
+    {
+      "label": {
+        "en": "Medical director",
+        "es": "Director médico",
+        "fr": "Directeur médical"
+      },
+      "level": "owner"
+    }
   ]
 }
