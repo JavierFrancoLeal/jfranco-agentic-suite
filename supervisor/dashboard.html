@@ -164,8 +164,8 @@ body.dark .langreel{background:rgba(124,92,255,.35)}
 .wall-clock span{font-size:12px;opacity:.75}
 .live-dot{display:flex;align-items:center;gap:7px;color:#4ade80;font-weight:800;font-size:13px;letter-spacing:.08em}
 .live-dot::before{content:"";width:9px;height:9px;border-radius:50%;background:#4ade80;animation:pulse 1.6s infinite}
-.tick{background:#1b2436;color:#d7e3f4;border-radius:10px;padding:8px 12px;font-size:13.5px;margin:6px 0}
-.tick.dim{color:#64748b;background:none;border:1px dashed #334155}
+.wtick{background:#1b2436;color:#d7e3f4;border-radius:10px;padding:8px 12px;font-size:13.5px;margin:6px 0}
+.wtick.dim{color:#64748b;background:none;border:1px dashed #334155}
 .wall-note{color:#64748b;font-size:12px;text-align:center;margin-top:10px}
 .welcome{position:relative;border-left:4px solid var(--blue);animation:rise .4s ease}
 .welcome .wclose{position:absolute;top:10px;right:10px;background:none;border:none;font-size:16px;color:var(--muted);cursor:pointer}
@@ -418,7 +418,8 @@ document.body.classList.add("loginpage");
 const firstRun=(()=>{try{return !localStorage.getItem("dsh-lang");}catch(e){return true;}})();
 if(firstRun){
   $("splash").style.display="none";
-  setTimeout(()=>{$("langStep").style.display="flex";},150);
+  $("loginView").style.display="none";
+  $("langStep").style.display="flex";
 }else{
   setTimeout(()=>{$("splash").classList.add("done");},1300);
 }
@@ -550,7 +551,7 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{sp.classList.add("done");},2600);};
+    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{$("loginView").style.display="";},2100);setTimeout(()=>{sp.classList.add("done");},2600);};
     rows.appendChild(r);
   }
 }
@@ -752,7 +753,7 @@ api("/api/setup-status").then((st)=>{if(st&&st.users===0){$("setupSection").clas
 const st=sessionStorage.getItem("dsh-sup-token");
 if(st){token=st;me=JSON.parse(sessionStorage.getItem("dsh-sup-me")||"null");(async()=>{const r=await api("/api/me");if(!r||!r.name){logout();return;}enter();})();}
 else setWho();
-async function wallTick(){try{const r=await (await fetch("/api/wall")).json();const cards=[[t("week"),r.reportsWeek],[t("ordersTitle"),r.orders],[t("feedback"),r.feedback],[t("workersActive"),r.workers],[t("reportsTotal"),r.reports]];$("wallCards").innerHTML=cards.map(c=>'<div class="wall-card"><div class="v">'+(c[1]===undefined?"–":c[1])+'</div><div class="l">'+c[0]+'</div></div>').join("");const ticks=[...(r.ordersTail||[]).map(x=>"🔔 "+esc(x)),...(r.feedbackTail||"").split("\n").filter(Boolean).slice(-4).map(esc)];$("wallFeed").innerHTML=ticks.length?ticks.map(x=>'<div class="tick">'+x+'</div>').join(""):'<div class="tick dim">'+t("noActivity")+'</div>';try{const s=await (await fetch("/api/sector")).json();$("wallSector").textContent=(s&&s.id)?s.id:"";}catch(e){}}catch(e){$("wallFeed").innerHTML='<div class="tick dim">'+t("cannotReach")+'</div>';}}
+async function wallTick(){try{const r=await (await fetch("/api/wall")).json();const cards=[[t("week"),r.reportsWeek],[t("ordersTitle"),r.orders],[t("feedback"),r.feedback],[t("workersActive"),r.workers],[t("reportsTotal"),r.reports]];$("wallCards").innerHTML=cards.map(c=>'<div class="wall-card"><div class="v">'+(c[1]===undefined?"–":c[1])+'</div><div class="l">'+c[0]+'</div></div>').join("");const ticks=[...(r.ordersTail||[]).map(x=>"🔔 "+esc(x)),...(r.feedbackTail||"").split("\n").filter(Boolean).slice(-4).map(esc)];$("wallFeed").innerHTML=ticks.length?ticks.map(x=>'<div class="wtick">'+x+'</div>').join(""):'<div class="wtick dim">'+t("noActivity")+'</div>';try{const s=await (await fetch("/api/sector")).json();$("wallSector").textContent=(s&&s.id)?s.id:"";}catch(e){}}catch(e){$("wallFeed").innerHTML='<div class="wtick dim">'+t("cannotReach")+'</div>';}}
 function clockTick(){const d=new Date();$("wallClock").textContent=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});$("wallDate").textContent=d.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});}
 if(location.search.indexOf("wall=1")>=0){
   document.body.classList.add("wall");show("wallView");
