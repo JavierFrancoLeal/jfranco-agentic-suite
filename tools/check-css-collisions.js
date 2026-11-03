@@ -20,7 +20,18 @@ if (!styleBlocks.length) {
 
 const seen = new Map();
 for (const m of styleBlocks) {
-  const css = m[1];
+  // strip @media blocks first: media-query variants of the same component
+  // are legitimate refinements, not collisions
+  let css = m[1].replace(/@media[^{]*\{/g, "\u0000");
+  while (css.includes("\u0000")) {
+    const i = css.indexOf("\u0000");
+    let depth = 1, j = i + 1;
+    for (; j < css.length && depth > 0; j++) {
+      if (css[j] === "{") depth++;
+      else if (css[j] === "}") depth--;
+    }
+    css = css.slice(0, i) + css.slice(j);
+  }
   // capture complete selectors, then keep ONLY plain ".name" selectors
   for (const s of css.matchAll(/(^|[;}{])\s*([^{};]+)\{/g)) {
     const sel = s[2].trim();

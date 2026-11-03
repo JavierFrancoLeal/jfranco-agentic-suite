@@ -178,6 +178,26 @@ body.wall{background:linear-gradient(165deg,#0b1220 0%,#131c30 60%,#1e1b4b 100%)
 body.firstboot header,body.firstboot main,body.firstboot footer{display:none}
 body.wall pre{max-height:40vh}
 @media (max-width:560px){header h1{font-size:15px}.listen{font-size:24px;padding:26px 12px}input,select,textarea,button{font-size:16px}}
+
+/* ── Mobile-first pass (2026-11-03) — the owner's dashboard on phones ── */
+@media(max-width:560px){
+  .card{padding:12px;margin:8px 0;border-radius:16px}
+  header{padding:10px 12px;gap:6px}
+  header h1{font-size:15px}
+  .metrics{grid-template-columns:repeat(2,1fr);gap:8px}
+  .metric{padding:10px 8px}
+  .metric .v{font-size:20px}
+  .row{flex-direction:column;align-items:stretch}
+  .row>*{margin:0 0 6px}
+  input,select,textarea{font-size:16px}
+  table{display:block;overflow-x:auto;white-space:nowrap}
+  .order{flex-wrap:wrap;gap:4px}
+  .wall-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .langstep-inner svg{width:120px;height:120px}
+  #loginView{margin:16px auto;padding:14px}
+  .langov .orow{padding:12px 16px;font-size:17px}
+  .orow.center{font-size:20px}
+}
 </style>
 </head>
 <body>
