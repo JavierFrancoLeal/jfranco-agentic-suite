@@ -69,3 +69,33 @@ engineering plan.
 
 The web code is the single source of truth. Every wrapper reuses it — so
 the 10 languages, the sectors, and the live flow stay identical everywhere.
+
+## 2026-11-03 — The multiplatform truth: one web brain, many skins
+
+The entire product is ONE web application (supervisor server + HTML/JS/CSS).
+The Electron app is a thin shell (~120 lines) around the same page; the
+PWA (manifest + service worker) is already in the repo; the panel is
+already mobile-first. Platforms are SKINS over one brain.
+
+| Platform | Web link | PWA (install) | Desktop shell | Native |
+|---|---|---|---|---|
+| macOS | ✔ | ✔ | ✔ dmg (today) | — |
+| Windows | ✔ | ✔ | Electron (CI build + signing) | — |
+| Linux | ✔ | ✔ | Electron (AppImage/deb) | — |
+| Android | ✔ | ✔ (Chrome: Add to Home) | — | Capacitor later |
+| iOS | ✔ | ✔ (Safari: Add to Home) | — | Capacitor later ($99/yr) |
+
+What works everywhere (web-native): the whole dashboard, register, orders,
+wallboard, roles, 10 languages, dark mode, audio, notifications (desktop +
+Android + iOS 16.4+ PWAs), dictation (Chrome/Safari/Edge/Electron).
+
+Platform-specific notes: the BRAIN (server) runs on the owner's computer
+(macOS/Win/Linux — pure zero-dependency Node, already portable); phones
+and tablets are always CLIENTS. Desktop Windows/Linux builds move to
+GitHub Actions (one config → 4 artifacts). The duo app+web is already
+real: the same supervisor serves the Electron shell, any browser, and the
+PWA — and the public tunnel already gives the web link.
+
+Realpolitik staging: (1) NOW — duo + PWA; verify on a real phone browser,
+fix responsive issues (zero cost). (2) Windows/Linux via CI builds.
+(3) Capacitor native only when a client demands the store presence.
