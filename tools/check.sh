@@ -55,6 +55,9 @@ echo "== supervisor =="
 '
 echo "OK supervisor"
 
+echo "== viaje completo de API =="
+NODE="$NODE" sh tools/api-smoke.sh
+
 echo "== demo tools =="
 sh -n tools/demo-reset.sh
 sh -n tools/demo-sandbox.sh

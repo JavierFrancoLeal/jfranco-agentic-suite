@@ -83,6 +83,7 @@ for d in "$ROOT"/jfranco-*; do
   elif [ "$cur" != "$prev" ]; then
     nv="$(bump "$d/package.json")"
     echo "$base: archivos cambiaron → v$nv"
+    if [ "$base" = "supervisor-pkg" ]; then sed -i "" "s|const VERSION = \".*\"|const VERSION = \"$nv\"|" "$ROOT/supervisor/server.js"; cp "$ROOT/supervisor/server.js" "$ROOT/supervisor-pkg/server.js"; fi
     pub "$name" "$d"
     echo "$cur" > "$marker"
   else
