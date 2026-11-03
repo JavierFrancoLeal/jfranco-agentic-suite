@@ -179,6 +179,10 @@ body.wall pre{max-height:40vh}
 </style>
 </head>
 <body>
+  <div id="langOverlay" class="langov hidden" style="display:none">
+    <div class="top"><button class="close" id="closeOverlay">✕</button></div>
+    <div id="langRows"></div>
+  </div>
 <div id="langStep" class="hidden" style="display:none">
     <div class="langstep-inner">
       <svg width="110" height="110" viewBox="0 0 64 64" aria-hidden="true"><path class="draw" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -198,10 +202,6 @@ body.wall pre{max-height:40vh}
   <button class="btn small gray" id="logoutBtn" style="display:none">Log out</button>
 </header>
 <main>
-  <div id="langOverlay" class="langov hidden" style="display:none">
-    <div class="top"><button class="close" id="closeOverlay">✕</button></div>
-    <div id="langRows"></div>
-  </div>
   <div id="loginView" class="card" style="max-width:440px;margin:26px auto">
     <div class="loginbrand">
       <div class="mark" style="background:none;box-shadow:none"><svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="osgd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4D6BFE"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><path pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="url(#osgd)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>

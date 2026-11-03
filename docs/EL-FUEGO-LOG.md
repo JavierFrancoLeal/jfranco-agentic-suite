@@ -108,3 +108,10 @@ for whoever arrives later.*
 - lesson: when gating a flow, hide the WHOLE stage (header, main, footer), not just one actor — an empty layout re-arranges itself and leaks pieces of the next scene.
 - correct-order: "Lock the entire page during the boot sequence (body.firstboot hides header/main/footer); release it exactly when the next screen is revealed."
 - evidence: supervisor/dashboard.html (body.firstboot rule + classList add/remove), commit next.
+
+## 2026-11-03 — A lock on the stage can swallow a door it must not lock
+- concept: layers
+- friction: clicking the language rectangle did nothing — the firstboot lock hid <main>, and the language overlay lived INSIDE <main>; it "opened" into an invisible container.
+- lesson: overlay layers belong at the TOP level of the document, beside the other fixed stages — a lock on one region must never hold a layer that belongs to another stage.
+- correct-order: "Move the overlay outside main; keep locks scoped to what they must hide."
+- evidence: supervisor/dashboard.html (#langOverlay moved next to #langStep, outside <main>), commit next.
