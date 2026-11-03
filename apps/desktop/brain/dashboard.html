@@ -173,6 +173,7 @@ button{transition:transform .12s ease}
 button:active{transform:scale(.97)}
 button:focus-visible,.pill:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 body.wall{background:linear-gradient(165deg,#0b1220 0%,#131c30 60%,#1e1b4b 100%);background-attachment:fixed}
+body.firstboot header,body.firstboot main,body.firstboot footer{display:none}
 body.wall pre{max-height:40vh}
 @media (max-width:560px){header h1{font-size:15px}.listen{font-size:24px;padding:26px 12px}input,select,textarea,button{font-size:16px}}
 </style>
@@ -419,6 +420,7 @@ const firstRun=(()=>{try{return !localStorage.getItem("dsh-lang");}catch(e){retu
 if(firstRun){
   $("splash").style.display="none";
   $("loginView").style.display="none";
+  document.body.classList.add("firstboot");
   $("langStep").style.display="flex";
 }else{
   setTimeout(()=>{$("splash").classList.add("done");},1300);
@@ -551,7 +553,7 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{$("loginView").style.display="";},2100);setTimeout(()=>{sp.classList.add("done");},2600);};
+    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{$("loginView").style.display="";document.body.classList.remove("firstboot");},2100);setTimeout(()=>{sp.classList.add("done");},2600);};
     rows.appendChild(r);
   }
 }

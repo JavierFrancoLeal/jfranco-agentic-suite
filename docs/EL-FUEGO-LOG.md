@@ -101,3 +101,10 @@ for whoever arrives later.*
 - lesson: on a gated flow, the next screen stays hidden (display none) until its turn — revealed only during the transition into it.
 - correct-order: "Hide the login while the language screen is pending; reveal it as the transition fades."
 - evidence: supervisor/dashboard.html (loginView display none on firstRun; restored at 2100ms of the 2600ms transition), commit 5ad7303.
+
+## 2026-11-03 — Hiding one screen orphaned the footer (the salt that ruined the dish)
+- concept: timeline
+- friction: at first boot, the language pills flashed at the TOP for an instant — hiding only the login left the footer orphaned, and the empty layout pulled it upward.
+- lesson: when gating a flow, hide the WHOLE stage (header, main, footer), not just one actor — an empty layout re-arranges itself and leaks pieces of the next scene.
+- correct-order: "Lock the entire page during the boot sequence (body.firstboot hides header/main/footer); release it exactly when the next screen is revealed."
+- evidence: supervisor/dashboard.html (body.firstboot rule + classList add/remove), commit next.
