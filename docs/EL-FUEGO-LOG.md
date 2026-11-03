@@ -45,3 +45,24 @@ recupera para quien llegue después.*
 - lección: la página de inicio es el ADN estético; toda pantalla lo hereda.
 - orden-correcta: "Misma estética que la página de idiomas: degradado, cristal, mismo rectángulo."
 - evidencia: supervisor/dashboard.html (#loginView transparente sobre degradado), commit 197f5a6.
+
+## 2026-11-03 — Una sola puerta: el primer arranque ES el login
+- concepto: flujo
+- fricción: "hay dos inicios de sesión… se repite un proceso" — la bienvenida y el login convivían.
+- lección: el usuario no debe distinguir entre instalar, crear y entrar: un solo momento de bienvenida, y la creación vive DENTRO del login (solo si no hay usuarios).
+- orden-correcta: "Elimina la segunda etapa; si no hay dueño, muestra los campos de creación dentro de la misma tarjeta."
+- evidencia: supervisor/server.js (/api/setup, /api/setup-status), supervisor/dashboard.html (#setupSection), commit a4aea04.
+
+## 2026-11-03 — Texto blanco sobre fondo claro (y tokens de diseño corruptos)
+- concepto: color
+- fricción: "hiciste todo mal, no sé ni por dónde comenzar" — el login transparente tenía texto blanco, pero el degradado saturado solo se aplicaba al CAMBIAR de vista; al cargar, quedaba sobre el degradado claro.
+- lección: el estado visual inicial debe ser correcto por defecto (el fondo correcto desde la carga), y los tokens de diseño nunca deben auto-referenciarse (--card2:var(--card2)).
+- orden-correcta: "Aplica el fondo correcto desde la carga inicial y verifica que las variables de diseño tengan valores reales."
+- evidencia: supervisor/dashboard.html (document.body.classList.add("loginpage") en el arranque; :root restaurado), commit be69ae1.
+
+## 2026-11-03 — No toda idea es un órgano: el conductor fue absorbido
+- concepto: sistema de diseño
+- fricción: se creó un órgano nuevo (conductor) para enseñar, cuando el organismo YA tenía quién revisa la fricción (audit).
+- lección: antes de crear un órgano nuevo, pregunta si uno existente ya respira esa función — la lente industrial se aplica también a las propias ideas.
+- orden-correcta: "Absorbe la pedagogía en el audit; depreca el conductor con su historia honesta."
+- evidencia: jfranco-audit/assets/audit.md ("Teach, not only report"), conductor deprecado en npm, commit 636aa23.
