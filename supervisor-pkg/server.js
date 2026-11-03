@@ -44,7 +44,7 @@ const LIVE_FILE = path.join(DATA_DIR, "live.json");
 const SECTOR_FILE = path.join(DATA_DIR, "sector.json");
 const REG_FILE = path.join(DATA_DIR, "register.json");
 const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
-const VERSION = "1.0.39";
+const VERSION = "1.0.40";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
