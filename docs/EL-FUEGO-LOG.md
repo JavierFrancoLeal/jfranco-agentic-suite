@@ -150,3 +150,10 @@ for whoever arrives later.*
 - lesson: !important is a hammer that breaks the CSS-vs-JS contract (inline styles must be able to win). When a rule seems to need !important, the real bug is elsewhere: remove the CONFLICTING rule (here: display:block in .loginerr), never force the utility.
 - correct-order: "Restore the plain utility; delete the conflicting property; add a regression guard that fails CI if .hidden ever carries !important."
 - evidence: supervisor/dashboard.html (.hidden restored, .loginerr display removed), tools/check-css-collisions.js (regression guard), commit next.
+
+## 2026-11-03 — Iatrogenesis has a name in engineering: regressions — and the cure is contracts
+- concept: flow
+- friction: two consecutive "catastrophic" fixes (the revert that swallowed a fix, the !important that froze the boot) — the medicine worse than the disease.
+- lesson: every fix that touches shared CSS/JS must be a SURGERY (remove the conflicting rule), not a hammer (!important, broad reverts). And every healed bug must leave a CONTRACT CHECK in the gate, so the same regression is impossible in silence. This is how professional engineering tames iatrogenesis — not with smarter authors, but with guards that fail before the user sees the wound.
+- correct-order: "Write the contract checker (tools/bootflow-check.js) BEFORE the next fix; the six boot contracts now fail CI when broken."
+- evidence: tools/bootflow-check.js (contracts 1-7), commit next.
