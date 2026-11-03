@@ -60,6 +60,10 @@ archaeologist can read it centuries later:
 2. **Not every idea is an organ.** Before creating a new plugin, ask
    whether an existing organ already breathes that function (the industrial
    lens applied to our own ideas).
+3. **A scene change is never a gap — it is the boot screen.** Whenever
+   the app needs time for a transition (language choice, login, logout,
+   scene switches), it shows the animated logo with the phrase. No screen
+   may ever appear empty while the system works.
 
 ## Language policy of the standard
 
