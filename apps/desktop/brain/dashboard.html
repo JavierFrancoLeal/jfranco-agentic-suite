@@ -577,7 +577,9 @@ $("langStepReel").onclick=()=>{$("langOverlay").style.display="flex";const en=do
 $("closeOverlay").onclick=()=>{$("langOverlay").style.display="none";};
 // The Apple flow: after the splash, the language menu opens once (until chosen).
 setTimeout(()=>{
-  $("langStep").style.display="flex";
+  try{
+    if(!localStorage.getItem("dsh-lang")){$("langStep").style.display="flex";}
+  }catch(e){}
 },1900);
 function pill(l){for(const host of ["footLangs"]){const el=$(host);if(!el)continue;const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$(host).appendChild(b);}}
 for(const l of Object.keys(LANG))pill(l);

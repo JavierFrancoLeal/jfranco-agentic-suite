@@ -1,79 +1,90 @@
-# 🔥 EL FUEGO — el estándar J.Franco de transferencia de conocimiento humano-IA
+# 🔥 EL FUEGO — the J.Franco standard for human-AI knowledge transfer
 
-*Versión 1.1 · 2026-11-03 · Autor: J.Franco*
+*Version 1.2 · 2026-11-03 · Author: J.Franco*
 
-**El propósito:** transmitir el conocimiento de la rueda y el fuego a las
-siguientes generaciones — para que nadie vuelva a perder tiempo
-investigando lo que ya se resolvió.
+**The purpose:** to pass on the knowledge of the wheel and the fire to the
+next generations — so nobody wastes time investigating what was already
+solved.
 
-**El problema que resuelve:** el ser humano dirige con palabras planas
-(vibe coding); la IA ejecuta. Cuando falta vocabulario, aparece la
-fricción: revisiones repetidas, "no funciona", frustración, muros.
-Este estándar convierte CADA fricción en una lección permanente — y hace
-que la lección se transmita sola.
+**The problem it solves:** the human directs with plain words (vibe
+coding); the AI executes. When vocabulary is missing, friction appears:
+repeated revisions, "it doesn't work", frustration, walls. This standard
+turns EVERY friction event into a permanent lesson — and makes the lesson
+transmit itself.
 
-## Los tres pilares
+## The three pillars
 
-| Pilar | Qué es | Artefacto |
+| Pillar | What it is | Artifact |
 |---|---|---|
-| 📖 **El Manual** | Los 7 conceptos básicos para dar órdenes (capas, flujo, línea de tiempo, componentes, color, animación, sistema de diseño) + la plantilla maestra de prompt | `docs/CONDUCTOR-GUIDE.md` |
-| 🎻 **El Maestro** | El órgano `audit` — al revisar la fricción, ENSEÑA la palabra que falta y registra la lección en el formato canónico | comportamiento del órgano `audit` (`/audit`) |
-| 🦴 **El Arqueólogo** | Reconstruye cómo y por qué se hizo el código: estratos → rastreo → registro fósil → dossier en lenguaje llano | órgano `forensics` (`/forensics`) |
+| 📖 **The Manual** | The 7 basic concepts for giving orders (layers, flow, timeline, components, color, animation, design system) + the master prompt template | `docs/CONDUCTOR-GUIDE.md` (in the creator's language) |
+| 🎻 **The Teacher** | The `audit` organ — when it reviews friction, it TEACHES the missing word and records the lesson in the canonical format | behavior of the `audit` organ (`/audit`) |
+| 🦴 **The Archaeologist** | Reconstructs how and why the code was made: strata → trace → fossil record → plain-language dossier | organ `forensics` (`/forensics`) |
 
-## El lazo (cómo fluye el fuego)
-
-```
-El usuario se atora (fricción)
-   ↓
-El Maestro detecta y enseña UN concepto (micro-lección ≤150 palabras)
-   ↓
-El usuario da la orden correcta (plantilla maestra)
-   ↓
-La lección se REGISTRA (append-only: LEARNINGS.md · triage.md · audit.md)
-   ↓
-El Arqueólogo la recupera para cualquiera que llegue después
-   ↓
-Nadie vuelve a descubrir la rueda. 🔄
-```
-
-## El registro — el formato canónico del fuego
-
-Toda lección debe anexarse (nunca editarse) con este formato, para que el
-Arqueólogo pueda leerla siglos después:
+## The loop (how the fire flows)
 
 ```
-## <AAAA-MM-DD> — <título en una línea>
-- concepto: <capas | flujo | línea de tiempo | componentes | color | animación | sistema de diseño>
-- fricción: <qué pidió el usuario y qué no lograba>
-- lección: <la idea en una frase, en lenguaje llano>
-- orden-correcta: <la plantilla que SÍ funcionó>
-- evidencia: <archivo/línea/commit que lo demuestra>
+The user hits a wall (friction)
+   ↓
+The audit organ detects it and teaches ONE concept (≤150 words)
+   ↓
+The user gives the correct order (master template)
+   ↓
+The lesson is RECORDED (append-only: LEARNINGS.md · triage.md · audit.md · EL-FUEGO-LOG.md)
+   ↓
+The archaeologist retrieves it for whoever arrives later
+   ↓
+Nobody re-discovers the wheel. 🔄
 ```
 
-## El referente es el SISTEMA, no el documento
+## The record — the canonical fire format
 
-Los documentos describen; el referente ES: los órganos vivos (audit enseña,
-forensics excava), el registro que acumulan (EL-FUEGO-LOG.md en formato
-canónico) y el lazo que los une. Quien herede el sistema hereda el fuego
-sin leer ni una línea — porque el fuego le habla cuando lo necesita.
+Every lesson must be appended (never edited) in this format, so the
+archaeologist can read it centuries later:
 
-## Cómo aplicar EL FUEGO en CUALQUIER proyecto (checklist)
+```
+## <YYYY-MM-DD> — <one-line title>
+- concept: <layers | flow | timeline | components | color | animation | design system>
+- friction: <what the user asked for and could not achieve>
+- lesson: <the idea in one sentence, in plain language>
+- correct-order: <the template that DID work>
+- evidence: <file/line/commit that proves it>
+```
 
-1. Crea `LEARNINGS.md` (append-only) — el yacimiento arqueológico.
-2. Instala los órganos (`audit` enseña; `forensics` excava) en el perfil DSH.
-3. Entrega el Manual al director humano (7 conceptos, una página).
-4. Ante cada fricción: micro-lección + registro en el formato canónico.
-5. Ante cada "¿cómo se hizo esto?": `/forensics <función>` — el dossier
-   convierte el código ajeno en activo propio.
+## The two principles of inspiration
 
-## La promesa del estándar
+1. **Adopt the FULL logic of the idea you borrow, not its surface.** When
+   we borrowed Apple's language flow, we adopted its whole objective: the
+   language is declared ONCE, and from then on EVERYTHING — text, voice,
+   speech recognition — works in that language. The only exception is when
+   the user says otherwise.
+2. **Not every idea is an organ.** Before creating a new plugin, ask
+   whether an existing organ already breathes that function (the industrial
+   lens applied to our own ideas).
 
-> **Quien llegue después de nosotros encontrará: el manual (cómo pedir),
-> el maestro (quién enseña), el arqueólogo (quién explica) y el registro
-> (la memoria). No tendrá que empezar de cero — heredará el fuego.** 🔥
+## Language policy of the standard
 
-## El linaje (por qué funciona)
+Everything shared with the internet, the community, and the world is
+written in **English** — for readability and adoption. Content used only
+locally by the creator stays in the creator's language.
 
-Este estándar no es teoría: nació de UNA sesión real donde cada error se
-registró, cada lección se aprendió y cada solución se convirtió en código.
-La primera generación que lo aplica es también su prueba de fuego.
+## How to apply EL FUEGO in ANY project (checklist)
+
+1. Create `LEARNINGS.md` (append-only) — the archaeological site.
+2. Install the organs (`audit` teaches; `forensics` excavates) in the DSH profile.
+3. Hand the Manual to the human director (7 concepts, one page).
+4. At every friction event: micro-lesson + record in the canonical format.
+5. At every "how was this made?": `/forensics <feature>` — the dossier
+   turns foreign code into an owned asset.
+
+## The promise of the standard
+
+> **Whoever arrives after us will find: the manual (how to ask), the
+> teacher (who teaches), the archaeologist (who explains), and the record
+> (the memory). They will not start from zero — they will inherit the
+> fire.** 🔥
+
+## The lineage (why it works)
+
+This standard is not theory: it was born from ONE real session where every
+error was recorded, every lesson was learned, and every solution became
+code. The first generation to apply it is also its proof of fire.

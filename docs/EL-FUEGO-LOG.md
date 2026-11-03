@@ -1,68 +1,82 @@
-# 🔥 EL FUEGO-LOG — el registro canónico del fuego (append-only)
+# 🔥 EL FUEGO-LOG — the canonical fire record (append-only)
 
-*Formato canónico del estándar EL FUEGO. Nunca editar — solo anexar. El
-órgano `audit` escribe aquí cada lección, y el órgano `forensics` la
-recupera para quien llegue después.*
+*Canonical format of the EL FUEGO standard. Never edit — only append. The
+`audit` organ writes every lesson here; the `forensics` organ retrieves it
+for whoever arrives later.*
 
-## 2026-11-02 — El menú impreso: el arreglo que no llegaba al probador
-- concepto: flujo
-- fricción: el usuario reportaba "persiste" tras arreglos correctos; probaba una app instalada que no se reemplazaba.
-- lección: un "persiste" puede ser un build obsoleto — el arreglo no existe hasta que el artefacto llega a la pantalla correcta.
-- orden-correcta: "Reconstruye el .dmg y REEMPLAZA la app en Aplicaciones antes de probar; añade la versión visible en el footer."
-- evidencia: triage.md 2026-11-02 (carrete), footer verBadge en supervisor/dashboard.html.
+## 2026-11-02 — The printed menu: the fix that never reached the tester
+- concept: flow
+- friction: the user kept reporting "it persists" after correct fixes; they were testing an installed app that was never replaced.
+- lesson: "it persists" can mean a stale build — a fix does not exist until the artifact reaches the right screen.
+- correct-order: "Rebuild the .dmg and REPLACE the app in Applications before testing; show the version in the footer."
+- evidence: triage.md 2026-11-02 (reel), verBadge footer in supervisor/dashboard.html.
 
-## 2026-11-02 — La referencia muerta que mató la página entera
-- concepto: componentes
-- fricción: "hiciste todo mal": la página quedó muerta — un contenedor borrado seguía referenciado dentro de un arreglo dinámico.
-- lección: una referencia a un elemento inexistente mata TODO el script, no solo un botón; las pruebas indulgentes lo ocultan.
-- orden-correcta: "Ejecuta el smoke ESTRICTO (ids ausentes = fallo) antes de publicar."
-- evidencia: tools/smoke-dashboard.js (STRICT), commit be69ae1.
+## 2026-11-02 — The dead reference that killed the whole page
+- concept: components
+- friction: "you did everything wrong": the page went dead — a removed container was still referenced inside a dynamic array.
+- lesson: a reference to a missing element kills the ENTIRE script, not one button; lenient tests hide it.
+- correct-order: "Run the STRICT smoke test (missing ids = failure) before publishing."
+- evidence: tools/smoke-dashboard.js (STRICT), commit be69ae1.
 
-## 2026-11-02 — El menú invisible (z-index)
-- concepto: capas
-- fricción: "al presionar el botón no pasa nada" — el menú se abría DETRÁS de la pantalla (z-index 90 < 95).
-- lección: "no pasa nada" casi siempre es una capa: verifica qué está encima de qué.
-- orden-correcta: "El menú debe abrirse ENCIMA de todas las capas (z-index superior)."
-- evidencia: supervisor/dashboard.html (.langov z-index 110), LEARNINGS.md (z-index ledger).
+## 2026-11-02 — The invisible menu (z-index)
+- concept: layers
+- friction: "clicking does nothing" — the menu was opening BEHIND the screen (z-index 90 < 95).
+- lesson: "nothing happens" is almost always a layer: check what is on top of what.
+- correct-order: "The menu must open ABOVE all layers (higher z-index)."
+- evidence: supervisor/dashboard.html (.langov z-index 110), LEARNINGS.md (z-index ledger).
 
-## 2026-11-02 — El logo invisible y el contenido que dependía de la animación
-- concepto: animación
-- fricción: el logo no se veía — nacía con stroke oculto esperando una animación que el usuario tenía desactivada (reducir movimiento).
-- lección: el contenido nunca debe depender de la animación para existir; la animación es decoración, la visibilidad es un derecho.
-- orden-correcta: "Visible por defecto; la animación solo si el usuario permite movimiento."
-- evidencia: supervisor/dashboard.html (prefers-reduced-motion: no-preference), commit 07396f2.
+## 2026-11-02 — The invisible logo and content that depended on animation
+- concept: animation
+- friction: the logo was invisible — it was born hidden waiting for an animation the user had disabled (reduce motion).
+- lesson: content must never depend on animation to exist; animation is decoration, visibility is a right.
+- correct-order: "Visible by default; animate only when the user allows motion."
+- evidence: supervisor/dashboard.html (prefers-reduced-motion: no-preference), commit 07396f2.
 
-## 2026-11-02 — El solapamiento de pantallas
-- concepto: línea de tiempo
-- fricción: "bug en la transición" — el splash se desvanecía mientras la pantalla siguiente ya aparecía.
-- lección: secuencia explícita: la pantalla anterior termina de desvanecerse ANTES de que entre la siguiente.
-- orden-correcta: "Splash sale (0.5s de fade), DESPUÉS entra la siguiente con su propio fade."
-- evidencia: supervisor/dashboard.html (1300ms → 1900ms), LEARNINGS.md (timeline explícita).
+## 2026-11-02 — The screen overlap
+- concept: timeline
+- friction: "bug in the transition" — the splash was fading while the next screen had already appeared.
+- lesson: explicit sequence: the previous screen finishes fading BEFORE the next one enters.
+- correct-order: "Splash out (0.5s fade), THEN the next screen enters with its own fade."
+- evidence: supervisor/dashboard.html (1300ms → 1900ms), LEARNINGS.md (explicit timeline).
 
-## 2026-11-02 — La caja blanca que rompía la familia visual
-- concepto: sistema de diseño
-- fricción: "incongruencia entre el diseño" — el login era una tarjeta blanca en un mundo de degradados y cristal.
-- lección: la página de inicio es el ADN estético; toda pantalla lo hereda.
-- orden-correcta: "Misma estética que la página de idiomas: degradado, cristal, mismo rectángulo."
-- evidencia: supervisor/dashboard.html (#loginView transparente sobre degradado), commit 197f5a6.
+## 2026-11-02 — The white box that broke the visual family
+- concept: design system
+- friction: "inconsistency in the design" — the login was a white card in a world of gradients and glass.
+- lesson: the home page is the aesthetic DNA; every screen inherits it.
+- correct-order: "Same aesthetic as the language page: gradient, glass, same rectangle."
+- evidence: supervisor/dashboard.html (#loginView transparent over gradient), commit 197f5a6.
 
-## 2026-11-03 — Una sola puerta: el primer arranque ES el login
-- concepto: flujo
-- fricción: "hay dos inicios de sesión… se repite un proceso" — la bienvenida y el login convivían.
-- lección: el usuario no debe distinguir entre instalar, crear y entrar: un solo momento de bienvenida, y la creación vive DENTRO del login (solo si no hay usuarios).
-- orden-correcta: "Elimina la segunda etapa; si no hay dueño, muestra los campos de creación dentro de la misma tarjeta."
-- evidencia: supervisor/server.js (/api/setup, /api/setup-status), supervisor/dashboard.html (#setupSection), commit a4aea04.
+## 2026-11-03 — One door: the first run IS the login
+- concept: flow
+- friction: "there are two logins… the process repeats" — the welcome and the login coexisted.
+- lesson: the user must not distinguish between installing, creating, and entering: one welcome moment, and creation lives INSIDE the login (only when no users exist).
+- correct-order: "Remove the second stage; if no owner exists, show the creation fields inside the same card."
+- evidence: supervisor/server.js (/api/setup, /api/setup-status), supervisor/dashboard.html (#setupSection), commit a4aea04.
 
-## 2026-11-03 — Texto blanco sobre fondo claro (y tokens de diseño corruptos)
-- concepto: color
-- fricción: "hiciste todo mal, no sé ni por dónde comenzar" — el login transparente tenía texto blanco, pero el degradado saturado solo se aplicaba al CAMBIAR de vista; al cargar, quedaba sobre el degradado claro.
-- lección: el estado visual inicial debe ser correcto por defecto (el fondo correcto desde la carga), y los tokens de diseño nunca deben auto-referenciarse (--card2:var(--card2)).
-- orden-correcta: "Aplica el fondo correcto desde la carga inicial y verifica que las variables de diseño tengan valores reales."
-- evidencia: supervisor/dashboard.html (document.body.classList.add("loginpage") en el arranque; :root restaurado), commit be69ae1.
+## 2026-11-03 — White text on a light background (and corrupted design tokens)
+- concept: color
+- friction: "you did everything wrong, I don't know where to start" — the transparent login had white text, but the saturated gradient only applied on VIEW CHANGE; at load it sat on the light gradient.
+- lesson: the initial visual state must be correct by default (the right background from load), and design tokens must never self-reference (--card2:var(--card2)).
+- correct-order: "Apply the right background from initial load and verify design variables have real values."
+- evidence: supervisor/dashboard.html (document.body.classList.add("loginpage") at startup; :root restored), commit be69ae1.
 
-## 2026-11-03 — No toda idea es un órgano: el conductor fue absorbido
-- concepto: sistema de diseño
-- fricción: se creó un órgano nuevo (conductor) para enseñar, cuando el organismo YA tenía quién revisa la fricción (audit).
-- lección: antes de crear un órgano nuevo, pregunta si uno existente ya respira esa función — la lente industrial se aplica también a las propias ideas.
-- orden-correcta: "Absorbe la pedagogía en el audit; depreca el conductor con su historia honesta."
-- evidencia: jfranco-audit/assets/audit.md ("Teach, not only report"), conductor deprecado en npm, commit 636aa23.
+## 2026-11-03 — Not every idea is an organ: the conductor was absorbed
+- concept: design system
+- friction: a new organ (conductor) was created to teach, when the organism ALREADY had an organ that reviews friction (audit).
+- lesson: before creating a new organ, ask whether an existing one already breathes that function — the industrial lens applies to our own ideas too.
+- correct-order: "Absorb the pedagogy into the audit; deprecate the conductor with its honest story."
+- evidence: jfranco-audit/assets/audit.md ("Teach, not only report"), conductor deprecated on npm, commit 636aa23.
+
+## 2026-11-03 — The register that does not process, only remembers
+- concept: flow
+- friction: the wish to integrate a payment processor (Stripe/Lightspeed) before having clients.
+- lesson: the immediate value is not processing the payment but RECORDING it — the counter-register saves capital (reconciliation) without fees or risk.
+- correct-order: "Add a virtual register: record sales with method, close against the terminal, show the variance."
+- evidence: supervisor/server.js (366-370), docs/PAYMENTS-STRATEGY.md, commit 53c306d.
+
+## 2026-11-03 — Adopt the FULL logic of the inspiration (Apple's language flow)
+- concept: flow
+- friction: the language menu was about to be shown on EVERY launch, forgetting why Apple built it.
+- lesson: when borrowing an idea, borrow its whole objective: Apple's language choice exists for a globalized world — once declared, EVERYTHING (text, voice, speech recognition) works in that language, forever. The only exception is when the user says otherwise.
+- correct-order: "Language menu once, on first run; the declared language governs all text, voice and recognition everywhere."
+- evidence: supervisor/dashboard.html (langStep gated by localStorage dsh-lang), ui/panel.html (VOICE[cur]), supervisor/dashboard.html (rec.lang = f(cur)), EL FUEGO v1.2 principle 1.
