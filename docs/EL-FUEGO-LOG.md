@@ -115,3 +115,17 @@ for whoever arrives later.*
 - lesson: overlay layers belong at the TOP level of the document, beside the other fixed stages — a lock on one region must never hold a layer that belongs to another stage.
 - correct-order: "Move the overlay outside main; keep locks scoped to what they must hide."
 - evidence: supervisor/dashboard.html (#langOverlay moved next to #langStep, outside <main>), commit next.
+
+## 2026-11-03 — The split page and the server that never learned the split (the dropped dish)
+- concept: flow
+- friction: the structural refactor (CSS/JS/i18n extracted) broke the whole app — the dashboard asked for three files that the app bundle's server did not serve (404) → raw unstyled page.
+- lesson: a page and its assets must TRAVEL TOGETHER through every delivery chain. The app bundle's server.js was never in the sync loop — the split files reached the bundle, the routes did not. Before splitting anything, map EVERY chain (browser, demo, npm package, app bundle) and update them all in the same change — or don't split.
+- correct-order: "Revert (Ctrl+Z via git). If we ever split again: update all four serving chains in ONE commit and test the app bundle first."
+- evidence: apps/desktop/brain/server.js (0 routes) vs brain/dashboard.html (3 references), commits c3c40ed→778991d, revert 8a4f2c5 + supervisor v1.0.41.
+
+## 2026-11-03 — Git history is the Ctrl+Z that saves the kitchen
+- concept: flow
+- friction: a bad structural change wrecked the working app; the recovery was needed fast.
+- lesson: committing every working state turns disaster into a one-command revert. The cost of a revert is minutes when history is clean; it is a rewrite when history is dirty.
+- correct-order: "Keep small, frequent, pushed commits; revert with git checkout <last-good> -- <paths>."
+- evidence: revert of the refactor via 9f336a3, minutes from complaint to rebuilt DMG.
