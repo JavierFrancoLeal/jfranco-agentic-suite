@@ -157,3 +157,10 @@ for whoever arrives later.*
 - lesson: every fix that touches shared CSS/JS must be a SURGERY (remove the conflicting rule), not a hammer (!important, broad reverts). And every healed bug must leave a CONTRACT CHECK in the gate, so the same regression is impossible in silence. This is how professional engineering tames iatrogenesis — not with smarter authors, but with guards that fail before the user sees the wound.
 - correct-order: "Write the contract checker (tools/bootflow-check.js) BEFORE the next fix; the six boot contracts now fail CI when broken."
 - evidence: tools/bootflow-check.js (contracts 1-7), commit next.
+
+## 2026-11-03 — The boot screen is the transition: a scene change never shows emptiness
+- concept: timeline
+- friction: after choosing a language, a BLANK gradient appeared — the splash had been hidden with inline display:none and that was never cleared, so the transition screen stayed invisible.
+- lesson: every scene change that takes time shows the boot screen (animated logo + the phrase). The scene change is not a gap to fill — the boot screen IS the scene. Made it a reusable component (bootFlash) so no future transition can forget it.
+- correct-order: "Wrap every scene-change transition in bootFlash(ms, then) — language choice, login, setup, logout."
+- evidence: supervisor/dashboard.html (bootFlash + 4 call sites), EL FUEGO principle 3 (pending), commit next.

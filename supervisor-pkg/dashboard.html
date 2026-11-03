@@ -557,7 +557,7 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector("svg path");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}const tag=$("splashTag");if(tag){tag.textContent=t("tagline");}setTimeout(()=>{$("loginView").style.display="";document.body.classList.remove("firstboot");},2100);setTimeout(()=>{sp.classList.add("done");},2600);};
+    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";bootFlash(2600,()=>{$("loginView").style.display="";document.body.classList.remove("firstboot");});};
     rows.appendChild(r);
   }
 }
@@ -587,6 +587,15 @@ $("langStepReel").onclick=()=>{$("langOverlay").style.display="flex";const en=do
 $("closeOverlay").onclick=()=>{$("langOverlay").style.display="none";};
 // The Apple flow: after the splash, the language menu opens once (until chosen).
 
+function bootFlash(ms,then){
+  const sp=$("splash");
+  sp.style.display="flex";
+  sp.classList.remove("done");
+  const p=sp.querySelector("svg path");
+  if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}
+  const tag=$("splashTag");if(tag){tag.textContent=t("tagline");}
+  setTimeout(()=>{sp.classList.add("done");if(then)then();},ms);
+}
 function pill(l){for(const host of ["footLangs"]){const el=$(host);if(!el)continue;const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();};$(host).appendChild(b);}}
 for(const l of Object.keys(LANG))pill(l);
 try{const q=new URLSearchParams(location.search);const ql=q.get("lang");if(ql&&S[ql])cur=ql;}catch(e){}
@@ -702,7 +711,7 @@ $("setupBtn").onclick=async()=>{
   if(r.error){$("setupBtn").disabled=false;$("setupBtn").textContent=t("setupBtn");toast(String(r.error).indexOf("already")>=0?t("loginFailed"):r.error);return;}
   token=r.token;me={name:r.name,role:r.role,label:r.label||r.name};
   sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));
-  enter();
+  bootFlash(1400,()=>enter());
 };
 $("loginBtn").onclick=async()=>{
   const err=$("loginError");
@@ -716,9 +725,9 @@ $("loginBtn").onclick=async()=>{
   err.classList.add("hidden");
   token=r.token;me={name:r.name,role:r.role,label:r.label||r.name};
   sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));
-  $("loginPass").value="";enter();
+  $("loginPass").value="";bootFlash(1400,()=>enter());
 };
-function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);setWho();show("loginView");}
+function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);setWho();bootFlash(1200,()=>show("loginView"));}
 $("logoutBtn").onclick=logout;
 const sb=$("switchBtn");if(sb)sb.onclick=logout;
 async function loadUsers(){const tb=$("usersTable").querySelector("tbody");tb.innerHTML='<tr><td colspan="2">'+skel(2)+'</td></tr>';const r=await api("/api/users");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+esc(u.name)+"</td><td>"+esc(u.label||u.name)+" · "+t(LVL[u.role]||"lvlEmployee")+"</td>";tb.appendChild(tr);});}
