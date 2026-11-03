@@ -49,6 +49,21 @@ no rule moves here (the grader owns those).
 Append the report to audit.md (append-only). The next audit compares
 against it for trends.
 
+## Teach, not only report (absorbed from the conductor organ)
+
+When the friction section shows the SAME feature was revised repeatedly,
+or the human's words were vague, the audit also teaches: name the missing
+concept (from docs/CONDUCTOR-GUIDE.md), explain it in one analogy, give
+the prompt template, and ask ONE clarifying question. Then record the
+lesson in the canonical EL FUEGO format (docs/EL-FUEGO-LOG.md):
+
+    ## <date> — <title>
+    - concepto: <capas|flujo|línea de tiempo|componentes|color|animación|sistema de diseño>
+    - fricción: <qué pidió y no lograba>
+    - lección: <la idea en una frase>
+    - orden-correcta: <la plantilla que SÍ funcionó>
+    - evidencia: <archivo/línea/commit>
+
 ## Rules
 
 - One pass, all outputs: never re-read the same log twice in one audit.

@@ -1,6 +1,6 @@
 # 🔥 EL FUEGO — el estándar J.Franco de transferencia de conocimiento humano-IA
 
-*Versión 1.0 · 2026-11-03 · Autor: J.Franco*
+*Versión 1.1 · 2026-11-03 · Autor: J.Franco*
 
 **El propósito:** transmitir el conocimiento de la rueda y el fuego a las
 siguientes generaciones — para que nadie vuelva a perder tiempo
@@ -17,7 +17,7 @@ que la lección se transmita sola.
 | Pilar | Qué es | Artefacto |
 |---|---|---|
 | 📖 **El Manual** | Los 7 conceptos básicos para dar órdenes (capas, flujo, línea de tiempo, componentes, color, animación, sistema de diseño) + la plantilla maestra de prompt | `docs/CONDUCTOR-GUIDE.md` |
-| 🎻 **El Maestro** | Detecta la fricción EN EL MOMENTO y entrega UNA micro-lección con la palabra exacta y una pregunta aclaratoria | órgano `conductor` (`/conductor`) |
+| 🎻 **El Maestro** | El órgano `audit` — al revisar la fricción, ENSEÑA la palabra que falta y registra la lección en el formato canónico | comportamiento del órgano `audit` (`/audit`) |
 | 🦴 **El Arqueólogo** | Reconstruye cómo y por qué se hizo el código: estratos → rastreo → registro fósil → dossier en lenguaje llano | órgano `forensics` (`/forensics`) |
 
 ## El lazo (cómo fluye el fuego)
@@ -50,10 +50,17 @@ Arqueólogo pueda leerla siglos después:
 - evidencia: <archivo/línea/commit que lo demuestra>
 ```
 
+## El referente es el SISTEMA, no el documento
+
+Los documentos describen; el referente ES: los órganos vivos (audit enseña,
+forensics excava), el registro que acumulan (EL-FUEGO-LOG.md en formato
+canónico) y el lazo que los une. Quien herede el sistema hereda el fuego
+sin leer ni una línea — porque el fuego le habla cuando lo necesita.
+
 ## Cómo aplicar EL FUEGO en CUALQUIER proyecto (checklist)
 
 1. Crea `LEARNINGS.md` (append-only) — el yacimiento arqueológico.
-2. Instala los dos órganos (`conductor`, `forensics`) en el perfil DSH.
+2. Instala los órganos (`audit` enseña; `forensics` excava) en el perfil DSH.
 3. Entrega el Manual al director humano (7 conceptos, una página).
 4. Ante cada fricción: micro-lección + registro en el formato canónico.
 5. Ante cada "¿cómo se hizo esto?": `/forensics <función>` — el dossier
