@@ -87,3 +87,17 @@ for whoever arrives later.*
 - lesson: when a screen "appears once", its purpose is to CONFIGURE something — it must repeat on every launch until the human actually configures it. A boot sequence only counts as booted when it completes.
 - correct-order: "Show the language screen on every launch until a language is EXPLICITLY chosen; persist only on the human's choice, never on load."
 - evidence: supervisor/dashboard.html (localStorage.setItem moved from applyLang to the choice handlers), EL FUEGO principle 1 (Apple's full logic).
+
+## 2026-11-03 — Two components, one class name: the dark boxes that were never black
+- concept: components
+- friction: the language names showed dark/black boxes although the container was light purple — "investigate what I am telling you" was right: the darkness came from elsewhere.
+- lesson: CSS class names are global. Two components sharing a class name collide silently — the LATER rule wins, wherever it lives. Namespace every component (the wallboard's tick became .wtick).
+- correct-order: "Rename the colliding class; never let two components share one class name."
+- evidence: supervisor/dashboard.html (.tick → .wtick for the wallboard, lines 167-168), commit 5ad7303.
+
+## 2026-11-03 — Never flash a screen that is not part of the flow yet
+- concept: timeline
+- friction: reopening without a chosen language briefly showed the login before the language screen returned.
+- lesson: on a gated flow, the next screen stays hidden (display none) until its turn — revealed only during the transition into it.
+- correct-order: "Hide the login while the language screen is pending; reveal it as the transition fades."
+- evidence: supervisor/dashboard.html (loginView display none on firstRun; restored at 2100ms of the 2600ms transition), commit 5ad7303.
