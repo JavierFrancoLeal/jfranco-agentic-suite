@@ -58,6 +58,8 @@ done
 if [ "$CHANGED" = 1 ]; then
   nv="$(bump "$ROOT/supervisor-pkg/package.json")"
   echo "supervisor: fuentes cambiaron → v$nv"
+  sed -i "" "s|const VERSION = \".*\"|const VERSION = \"$nv\"|" "$ROOT/supervisor/server.js"
+  cp "$ROOT/supervisor/server.js" "$ROOT/supervisor-pkg/server.js"
   pub "$sname" "$ROOT/supervisor-pkg"
 else
   echo "supervisor: sin cambios ✔"
