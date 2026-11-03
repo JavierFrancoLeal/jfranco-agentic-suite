@@ -46,9 +46,9 @@ step "Z-report export"
 curl -sf -o /dev/null "$BASE/api/export?type=register" -H "$AUTH" || { echo "FAIL"; exit 1; }; echo "ok"
 
 step "orders + paid flag"
-curl -sf -X POST "$BASE/api/live/summary" -H "$AUTH" -H "Content-Type: application/json" -d '{"summary":"Mesa 3: dos cafés","items":[{"person":"Mesa 3","request":"dos cafés"}]}' >/dev/null
-curl -sf -X POST "$BASE/api/live/confirm" -H "$AUTH" -H "Content-Type: application/json" -d '{"idx":0}' >/dev/null
-curl -sf -X POST "$BASE/api/live/order" -H "$AUTH" -H "Content-Type: application/json" -d '{"orderId":0,"status":"paid"}' >/dev/null
+curl -sf -X POST "$BASE/api/live/summary" -H "$AUTH" -H "Content-Type: application/json" -d '{"speakers":[{"name":"Mesa 3","requests":[{"text":"dos cafés","tier":"GREEN"}]}]}' >/dev/null
+curl -sf -X POST "$BASE/api/live/confirm" -H "$AUTH" -H "Content-Type: application/json" -d '{"requestId":"p1-r1"}' >/dev/null
+curl -sf -X POST "$BASE/api/live/order" -H "$AUTH" -H "Content-Type: application/json" -d '{"orderId":"o1","status":"paid"}' >/dev/null
 curl -sf "$BASE/api/live" -H "$AUTH" | grep -q '"paid":true' || { echo "FAIL"; exit 1; }; echo "ok"
 
 echo "API SMOKE PASSED: journey completa"

@@ -418,6 +418,8 @@ $("soundBtn").onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("dsh-sound"
 try{darkOn=localStorage.getItem("dsh-dark")==="1";soundOn=localStorage.getItem("dsh-sound")!=="0";}catch(e){}
 applyToggles();
 document.body.classList.add("loginpage");
+// ?reset clears the local memory and reloads — instant first-run for testing
+if(/[?&]reset/.test(location.search)){try{["dsh-lang","dsh-theme","dsh-sup-token","dsh-sup-me"].forEach(k=>localStorage.removeItem(k));}catch(e){}}
 const firstRun=(()=>{try{return !localStorage.getItem("dsh-lang");}catch(e){return true;}})();
 if(firstRun){
   $("splash").style.display="none";
