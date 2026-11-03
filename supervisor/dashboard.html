@@ -39,6 +39,8 @@ body.dark .toast{background:#e6ecf7;color:#0b1220}
 body.loginpage{background:linear-gradient(135deg,#4D6BFE 0%,#7c5cff 55%,#a78bfa 100%);min-height:100vh}
 body.loginpage.dark{background:linear-gradient(135deg,#0b1220 0%,#1e1b4b 100%)}
 body.loginpage header{background:transparent;box-shadow:none}
+body.loginpage header .btn{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 4px 12px rgba(15,23,42,.15)}
+#loginBtn,#setupBtn{background:linear-gradient(135deg,rgba(77,107,254,.55),rgba(124,92,255,.55));backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1.5px solid rgba(255,255,255,.6);box-shadow:0 8px 22px rgba(15,23,42,.28)}
 #loginView{backdrop-filter:blur(14px);background:rgba(255,255,255,.93);border:1px solid rgba(255,255,255,.55);box-shadow:0 24px 60px rgba(15,23,42,.28);max-width:420px;margin:6vh auto 0;padding:26px 22px;animation:rise .5s ease backwards;animation-delay:.12s}
 body.dark #loginView{background:rgba(20,31,49,.93)}
 .loginbrand{text-align:center;margin-bottom:16px;animation:rise .5s ease backwards;animation-delay:.02s}
@@ -82,7 +84,7 @@ td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 .splash-inner span{font-size:12.5px;opacity:.85}
 @media (prefers-reduced-motion: no-preference){.splash-inner svg path{stroke-dasharray:100;stroke-dashoffset:100;animation:drawStroke 1.2s cubic-bezier(.4,0,.2,1) forwards}}
 @media (prefers-reduced-motion: reduce){#splash{display:none}}
-.hidden{display:none}
+.hidden{display:none!important}
 .kban{background:#fef3c7;border:1px solid #f59e0b;color:#92400e;border-radius:12px;padding:12px 14px;margin:10px 0;font-weight:700;font-size:15px}
 .chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:600}
 .foot{text-align:center;padding:6px 16px 16px}
@@ -208,7 +210,7 @@ body.wall pre{max-height:40vh}
       <h2>Le Veilleux</h2>
       <p id="tagline">The AI works. The human decides.</p>
     </div>
-    <h2 id="loginTitle" style="font-size:14px;color:var(--muted);text-align:center">Log in</h2>
+    <h2 id="loginTitle" style="font-size:14px;color:#fff;text-align:center">Log in</h2>
     <input id="loginUser" placeholder="User" autocomplete="username">
     <div class="passwrap">
       <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
@@ -553,7 +555,7 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{$("loginView").style.display="";document.body.classList.remove("firstboot");},2100);setTimeout(()=>{sp.classList.add("done");},2600);};
+    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector("svg path");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}const tag=$("splashTag");if(tag){tag.textContent=t("tagline");}setTimeout(()=>{$("loginView").style.display="";document.body.classList.remove("firstboot");},2100);setTimeout(()=>{sp.classList.add("done");},2600);};
     rows.appendChild(r);
   }
 }
