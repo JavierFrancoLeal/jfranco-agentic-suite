@@ -129,3 +129,17 @@ for whoever arrives later.*
 - lesson: committing every working state turns disaster into a one-command revert. The cost of a revert is minutes when history is clean; it is a rewrite when history is dirty.
 - correct-order: "Keep small, frequent, pushed commits; revert with git checkout <last-good> -- <paths>."
 - evidence: revert of the refactor via 9f336a3, minutes from complaint to rebuilt DMG.
+
+## 2026-11-03 — A revert must be surgical: the window swallowed the fix
+- concept: flow
+- friction: after the refactor revert, the language click was dead again — the fix (overlay outside <main>) lived in a commit BETWEEN the chosen snapshot and the refactor, and the whole window was rolled back.
+- lesson: revert the CHANGE, not the WINDOW. Before reverting, list what lives in the window (git log) and rescue anything that is not part of the change. And: a solved lesson that has no machine guard will be re-solved forever.
+- correct-order: "git revert <the specific commits>; never 'checkout the last good snapshot' blindly. Install a regression guard for every re-solved bug."
+- evidence: dashboard.html (#langOverlay back inside <main> after revert), the new smoke regression guard, commits 13247b9 → this fix.
+
+## 2026-11-03 — Stumbling once is natural; stumbling twice on a solved error is the problem
+- concept: flow
+- friction: the user re-reported a bug already fixed (lesson #16), after a revert silently undid the fix.
+- lesson: every lesson must end as a GUARD, not a memory. Guards are the only part of the system that survives reverts, refactors, and forgetfulness.
+- correct-order: "For each fixed bug: add a machine check that fails CI when the bug returns."
+- evidence: tools/smoke-dashboard.js (the langOverlay-inside-main regression guard), EL FUEGO standard.
