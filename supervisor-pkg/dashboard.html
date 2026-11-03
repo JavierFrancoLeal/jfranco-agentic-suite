@@ -117,6 +117,7 @@ td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 .langstep-inner{text-align:center}
 .langstep-hint{color:rgba(255,255,255,.9);font-size:14px;margin:18px 0 4px}
 .langstep-inner .langreel{width:min(340px,86vw)}
+.langstep-inner svg{width:150px;height:150px}
 .langstep-inner svg path.draw{stroke-dasharray:100;animation:drawStroke 1.2s cubic-bezier(.4,0,.2,1) forwards}
 @media (prefers-reduced-motion: reduce){.langstep-inner svg path.draw{animation:none}}
 #loginView{background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;border:none;box-shadow:none;text-align:center}
@@ -127,7 +128,7 @@ td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 #loginView .loginerr{background:rgba(239,68,68,.25);color:#fff;border:1px solid rgba(255,255,255,.3)}
 #loginView .eye{color:#fff}
 #loginView .btn.gray{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.3)}
-.langreel{width:min(340px,86vw);height:58px;margin:10px auto;background:rgba(124,92,255,.30);border:1px solid rgba(255,255,255,.40);border-radius:10px;backdrop-filter:blur(10px);overflow:hidden;cursor:pointer;position:relative;box-shadow:0 10px 30px rgba(76,29,149,.25)}
+.langreel{width:min(340px,86vw);height:58px;margin:10px auto;background:rgba(167,139,250,.45);border:1px solid rgba(255,255,255,.55);border-radius:10px;backdrop-filter:blur(14px);overflow:hidden;cursor:pointer;position:relative;box-shadow:0 10px 30px rgba(76,29,149,.20)}
 body.dark .langreel{background:rgba(124,92,255,.35)}
 .ticks{display:flex;flex-direction:column;will-change:transform}
 .tick{height:58px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:600;opacity:.85;color:#fff}
@@ -180,7 +181,6 @@ body.wall pre{max-height:40vh}
 <div id="langStep" class="hidden" style="display:none">
     <div class="langstep-inner">
       <svg width="110" height="110" viewBox="0 0 64 64" aria-hidden="true"><path class="draw" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <p id="langStepHint" class="langstep-hint">Choose your language</p>
       <div class="langreel" id="langStepReel"><div class="ticks" id="langStepTicks"></div></div>
     </div>
   </div>
@@ -208,7 +208,6 @@ body.wall pre{max-height:40vh}
       <p id="tagline">The AI works. The human decides.</p>
     </div>
     <h2 id="loginTitle" style="font-size:14px;color:var(--muted);text-align:center">Log in</h2>
-    <div class="langreel" id="langReel"><div class="ticks" id="langTicks"></div></div>
     <input id="loginUser" placeholder="User" autocomplete="username">
     <div class="passwrap">
       <input id="loginPass" type="password" placeholder="Password" autocomplete="current-password">
@@ -416,7 +415,13 @@ $("soundBtn").onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("dsh-sound"
 try{darkOn=localStorage.getItem("dsh-dark")==="1";soundOn=localStorage.getItem("dsh-sound")!=="0";}catch(e){}
 applyToggles();
 document.body.classList.add("loginpage");
-setTimeout(()=>{$("splash").classList.add("done");},1300);
+const firstRun=(()=>{try{return !localStorage.getItem("dsh-lang");}catch(e){return true;}})();
+if(firstRun){
+  $("splash").classList.add("done");
+  setTimeout(()=>{$("langStep").style.display="flex";},300);
+}else{
+  setTimeout(()=>{$("splash").classList.add("done");},1300);
+}
 async function reRenderDynamic(){
   if(!me)return;
   if(me.role==="owner"){loadMetrics($("ownerMetrics"));loadUsers();loadUsage();loadField();renderOrders();renderSuggest();}
@@ -545,12 +550,12 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");};
+    r.onclick=()=>{cur=l;applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{sp.classList.add("done");},2600);};
     rows.appendChild(r);
   }
 }
 function markReel(){
-  document.querySelectorAll("#langTicks .tick,#langStepTicks .tick").forEach(t=>t.classList.toggle("active",t.dataset.l===cur));
+  document.querySelectorAll("#langStepTicks .tick").forEach(t=>t.classList.toggle("active",t.dataset.l===cur));
 }
 function buildReel(ticksId){
   for(let pass=0;pass<2;pass++){
@@ -569,18 +574,12 @@ function buildReel(ticksId){
   })(t0);
 }
 buildLangMenu();
-buildReel("langTicks");
 buildReel("langStepTicks");
 markReel();
-$("langReel").onclick=()=>{$("langOverlay").style.display="flex";const en=document.querySelector("#langRows .center");if(en)en.scrollIntoView({block:"center"});};
 $("langStepReel").onclick=()=>{$("langOverlay").style.display="flex";const en=document.querySelector("#langRows .center");if(en)en.scrollIntoView({block:"center"});};
 $("closeOverlay").onclick=()=>{$("langOverlay").style.display="none";};
 // The Apple flow: after the splash, the language menu opens once (until chosen).
-setTimeout(()=>{
-  try{
-    if(!localStorage.getItem("dsh-lang")){$("langStep").style.display="flex";}
-  }catch(e){}
-},1900);
+
 function pill(l){for(const host of ["footLangs"]){const el=$(host);if(!el)continue;const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$(host).appendChild(b);}}
 for(const l of Object.keys(LANG))pill(l);
 try{const q=new URLSearchParams(location.search);const ql=q.get("lang");if(ql&&S[ql])cur=ql;}catch(e){}
