@@ -32,6 +32,13 @@ for (const m of styleBlocks) {
   }
 }
 
+// Regression guard (lesson #21): the .hidden utility must never use
+// !important — it would beat the JS inline style.display that reveals
+// the language screens (the catastrophic "gradient only" bug).
+if (styleBlocks.some((m) => /\.hidden\{[^}]*!important/.test(m[1]))) {
+  console.log("CSS GUARD FAILED: .hidden must not use !important (it freezes style.display)");
+  process.exit(1);
+}
 const dupes = [...seen.entries()].filter(([, n]) => n > 1).map(([n]) => n);
 if (dupes.length) {
   console.log("CSS GUARD FAILED: duplicate plain class selectors: " + dupes.join(", "));

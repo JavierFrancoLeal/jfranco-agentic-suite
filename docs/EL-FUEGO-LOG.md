@@ -143,3 +143,10 @@ for whoever arrives later.*
 - lesson: every lesson must end as a GUARD, not a memory. Guards are the only part of the system that survives reverts, refactors, and forgetfulness.
 - correct-order: "For each fixed bug: add a machine check that fails CI when the bug returns."
 - evidence: tools/smoke-dashboard.js (the langOverlay-inside-main regression guard), EL FUEGO standard.
+
+## 2026-11-03 — The !important hammer: one forced rule froze the whole boot
+- concept: components
+- friction: first launch showed ONLY the gradient — the language screen never appeared. The previous "fix" had added !important to the .hidden utility; !important beats the JS inline style.display, so every screen revealed by JavaScript stayed hidden forever.
+- lesson: !important is a hammer that breaks the CSS-vs-JS contract (inline styles must be able to win). When a rule seems to need !important, the real bug is elsewhere: remove the CONFLICTING rule (here: display:block in .loginerr), never force the utility.
+- correct-order: "Restore the plain utility; delete the conflicting property; add a regression guard that fails CI if .hidden ever carries !important."
+- evidence: supervisor/dashboard.html (.hidden restored, .loginerr display removed), tools/check-css-collisions.js (regression guard), commit next.
