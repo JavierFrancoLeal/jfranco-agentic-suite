@@ -80,3 +80,10 @@ for whoever arrives later.*
 - lesson: when borrowing an idea, borrow its whole objective: Apple's language choice exists for a globalized world — once declared, EVERYTHING (text, voice, speech recognition) works in that language, forever. The only exception is when the user says otherwise.
 - correct-order: "Language menu once, on first run; the declared language governs all text, voice and recognition everywhere."
 - evidence: supervisor/dashboard.html (langStep gated by localStorage dsh-lang), ui/panel.html (VOICE[cur]), supervisor/dashboard.html (rec.lang = f(cur)), EL FUEGO v1.2 principle 1.
+
+## 2026-11-03 — "Once" means configured once, not seen once (boot semantics)
+- concept: flow
+- friction: closing the app without choosing a language marked it as configured (the default was persisted at load), so the one-time screen never returned.
+- lesson: when a screen "appears once", its purpose is to CONFIGURE something — it must repeat on every launch until the human actually configures it. A boot sequence only counts as booted when it completes.
+- correct-order: "Show the language screen on every launch until a language is EXPLICITLY chosen; persist only on the human's choice, never on load."
+- evidence: supervisor/dashboard.html (localStorage.setItem moved from applyLang to the choice handlers), EL FUEGO principle 1 (Apple's full logic).

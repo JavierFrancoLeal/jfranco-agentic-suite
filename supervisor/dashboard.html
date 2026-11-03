@@ -116,7 +116,7 @@ td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 #langStep.done{opacity:0;visibility:hidden}
 .langstep-inner{text-align:center}
 .langstep-hint{color:rgba(255,255,255,.9);font-size:14px;margin:18px 0 4px}
-.langstep-inner .langreel{width:min(340px,86vw)}
+.langstep-inner .langreel{width:min(340px,86vw);background:rgba(167,139,250,.55)!important;border:1px solid rgba(255,255,255,.6)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .langstep-inner svg{width:150px;height:150px}
 .langstep-inner svg path.draw{stroke-dasharray:100;animation:drawStroke 1.2s cubic-bezier(.4,0,.2,1) forwards}
 @media (prefers-reduced-motion: reduce){.langstep-inner svg path.draw{animation:none}}
@@ -417,8 +417,8 @@ applyToggles();
 document.body.classList.add("loginpage");
 const firstRun=(()=>{try{return !localStorage.getItem("dsh-lang");}catch(e){return true;}})();
 if(firstRun){
-  $("splash").classList.add("done");
-  setTimeout(()=>{$("langStep").style.display="flex";},300);
+  $("splash").style.display="none";
+  setTimeout(()=>{$("langStep").style.display="flex";},150);
 }else{
   setTimeout(()=>{$("splash").classList.add("done");},1300);
 }
@@ -506,7 +506,7 @@ $("exportBtn").onclick=()=>doExport("reports");
 $("exportOrdersBtn").onclick=()=>doExport("orders");
 function panelLinks(){const u=me?encodeURIComponent(me.name):"",r=me?encodeURIComponent(me.role):"",lb=me?encodeURIComponent(me.label||me.name):"";$("openPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);$("leadOpenPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);}
 function applyLang(){
-  try{localStorage.setItem("dsh-lang",cur);}catch(e){}
+  // (the language is persisted only on an explicit human choice)
   $("welcomeClose").onclick=()=>{$("welcomeCard").style.display="none";try{localStorage.setItem("lv-welcome","1");}catch(e){}};
   $("splashTag").textContent=t("tagline");
   $("welcomeTitle").textContent=t("welcomeTitle");$("welcomeBody").textContent=t("welcomeBody");$("wallNote").textContent=t("wallNote");
@@ -550,7 +550,7 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{sp.classList.add("done");},2600);};
+    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").classList.add("done");const sp=$("splash");sp.classList.remove("done");const p=sp.querySelector(".draw");if(p){p.style.animation="none";void p.offsetWidth;p.style.animation="";}setTimeout(()=>{sp.classList.add("done");},2600);};
     rows.appendChild(r);
   }
 }
@@ -580,7 +580,7 @@ $("langStepReel").onclick=()=>{$("langOverlay").style.display="flex";const en=do
 $("closeOverlay").onclick=()=>{$("langOverlay").style.display="none";};
 // The Apple flow: after the splash, the language menu opens once (until chosen).
 
-function pill(l){for(const host of ["footLangs"]){const el=$(host);if(!el)continue;const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;applyLang();};$(host).appendChild(b);}}
+function pill(l){for(const host of ["footLangs"]){const el=$(host);if(!el)continue;const b=document.createElement("button");b.className="pill";b.dataset.l=l;b.textContent=LANG[l];b.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();};$(host).appendChild(b);}}
 for(const l of Object.keys(LANG))pill(l);
 try{const q=new URLSearchParams(location.search);const ql=q.get("lang");if(ql&&S[ql])cur=ql;}catch(e){}
 try{const saved=localStorage.getItem("dsh-lang");if(saved&&S[saved])cur=saved;}catch(e){}
