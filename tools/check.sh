@@ -49,9 +49,9 @@ echo "== supervisor =="
 "$NODE" -e '
   const fs=require("fs");
   const h=fs.readFileSync("supervisor/dashboard.html","utf8");
-  const tags=(h.match(/<script src/g)||[]).length;
-  if(tags<2) throw new Error("dashboard: expected i18n.js + dashboard.js script tags");
-  ["dashboard.js","i18n.js"].forEach(f=>new Function(fs.readFileSync("supervisor/"+f,"utf8")));
+  const m=h.match(/<script>([\s\S]*?)<\/script>/);
+  if(!m) throw new Error("dashboard: script block missing");
+  new Function(m[1]);
 '
 echo "OK supervisor"
 

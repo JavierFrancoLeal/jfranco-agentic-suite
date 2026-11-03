@@ -7,8 +7,9 @@ const path = require("path");
 
 const htmlPath = path.join(__dirname, "..", "supervisor", "dashboard.html");
 const html = fs.readFileSync(htmlPath, "utf8");
-const src = fs.readFileSync(path.join(__dirname, "..", "supervisor", "dashboard.js"), "utf8");
-const i18nSrc = fs.readFileSync(path.join(__dirname, "..", "supervisor", "i18n.js"), "utf8");
+const m = html.match(/<script>([\s\S]*?)<\/script>/);
+if (!m) { console.log("SMOKE FAILED: no <script> found"); process.exit(1); }
+const src = m[1];
 
 const allIds = new Set();
 for (const x of html.matchAll(/id="([A-Za-z0-9_-]+)"/g)) allIds.add(x[1]);
@@ -46,9 +47,8 @@ global.requestAnimationFrame = () => 0;
 
 process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e.message); process.exit(1); });
 try {
-  const S = new Function(i18nSrc + "\n; return S;")();
-  new Function("document", "localStorage", "sessionStorage", "navigator", "fetch", "location", "window", "Notification", "S", src)(
-    document, localStorage, sessionStorage, navigator, fetch, location, window, Notification, S
+  new Function("document", "localStorage", "sessionStorage", "navigator", "fetch", "location", "window", "Notification", src)(
+    document, localStorage, sessionStorage, navigator, fetch, location, window, Notification
   );
   console.log("SMOKE TEST PASSED: sin errores runtime — botones vivos");
 } catch (e) {
