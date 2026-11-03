@@ -1,47 +1,47 @@
-# 🦴 Dossier forense — La caja virtual (contra-registro)
+# 🦴 Forensics dossier — The virtual register (counter-register)
 
-*Dig ejecutado con el órgano `forensics` el 2026-11-03. Una función, cuatro capas.*
+*Dig executed with the `forensics` organ on 2026-11-03. One feature, four layers.*
 
-## 1. Los estratos
+## 1. The strata
 
-- **UI**: `supervisor/dashboard.html` — la tarjeta "🪙 Virtual register" (mesero) y "🪙 Day register" (dueño).
-- **API**: `supervisor/server.js` — cinco endpoints `/api/register*` (líneas 366-370).
-- **Estado**: `register.json` en el directorio de datos — un solo archivo, no una base.
-- **Registros**: el Z-report exportable (`/api/export?type=register`) — la memoria auditable.
+- **UI**: `supervisor/dashboard.html` — the "🪙 Virtual register" card (worker) and "🪙 Day register" card (owner).
+- **API**: `supervisor/server.js` — five `/api/register*` endpoints (lines 366-370).
+- **State**: `register.json` in the data directory — a single file, not a database.
+- **Records**: the exportable Z-report (`/api/export?type=register`) — the auditable memory.
 
-## 2. El rastreo (de punta a punta)
+## 2. The trace (end to end)
 
-1. El mesero toca **"Open register"** → `POST /api/register/open` → escribe `{status:"open", items:[], sales:[]}` en `register.json`.
-2. Añade artículos → `POST /api/register/add` → cada artículo entra a `items` con nombre y precio.
-3. Toca **"💳 Record sale"** (elige método) → `POST /api/register/charge` → suma los `items`, crea una `sale` (con trabajador y método), y vacía `items`.
-4. Cierra → `POST /api/register/close` con el total DECLARADO del terminal físico.
-5. El servidor calcula: **registrado** (sus ventas) vs **declarado** (el terminal) → **varianza**.
-6. El dueño ve la diferencia en ámbar y exporta el **Z-report**.
+1. The worker taps **"Open register"** → `POST /api/register/open` → writes `{status:"open", items:[], sales:[]}` to `register.json`.
+2. Adds items → `POST /api/register/add` → each item enters `items` with name and price.
+3. Taps **"💳 Record sale"** (chooses a method) → `POST /api/register/charge` → sums the `items`, creates a `sale` (with worker and method), and empties `items`.
+4. Closes → `POST /api/register/close` with the DECLARED total from the physical terminal.
+5. The server computes: **recorded** (its sales) vs **declared** (the terminal) → **variance**.
+6. The owner sees the difference in amber and exports the **Z-report**.
 
-*Cada paso exige sesión (401 sin token) — el registro es un documento de dinero.*
+*Every step requires a session (401 without a token) — the register is a money document.*
 
-## 3. El registro fósil (por qué existe así)
+## 3. The fossil record (why it exists this way)
 
-- El registro nació de la decisión **cash-first** ([docs/PAYMENTS-STRATEGY.md](PAYMENTS-STRATEGY.md)): *"no procesamos dinero; damos al dueño lo que paga a otros: la conciliación."*
-- Evidencia de la intención: el endpoint `charge` guarda `worker` y `method` (commit del turno 135) — para que la varianza se atribuya a QUIÉN y CÓMO.
-- El bug cazado al nacer: `saveUsers` no creaba el directorio en un arranque sin `init` → la lección está en EL-FUEGO-LOG (formato canónico).
+- The register was born from the **cash-first** decision ([docs/PAYMENTS-STRATEGY.md](PAYMENTS-STRATEGY.md)): *"we do not process money; we give the owner what they pay others for: reconciliation."*
+- Evidence of intent: the `charge` endpoint stores `worker` and `method` (turn-135 commit) — so the variance is attributed to WHO and HOW.
+- The bug caught at birth: `saveUsers` did not create the directory on a start without `init` — the lesson lives in EL-FUEGO-LOG (canonical format).
 
-## 4. El dossier (lenguaje llano)
+## 4. The dossier (plain language)
 
-**Qué hace:** una caja registradora paralela que NO cobra — anota lo que se vendió, quién y cómo, y al cierre compara contra el terminal físico. La diferencia es la señal: error, fuga o robo.
+**What it does:** a parallel cash register that does NOT charge — it records what was sold, by whom and how, and at close compares against the physical terminal. The difference is the signal: error, leak, or theft.
 
-**Cómo fluye:** mesero (añade/registra) → archivo `register.json` → dueño (varianza + Z-report).
+**How it flows:** worker (adds/records) → `register.json` → owner (variance + Z-report).
 
-**Por qué cada pieza existe:** el archivo único (simplicidad, cero dependencias); la sesión obligatoria (es dinero); el Z-report (la prueba imprimible para contabilidad).
+**Why each piece exists:** the single file (simplicity, zero dependencies); the mandatory session (it is money); the Z-report (the printable proof for accounting).
 
-**Riesgos/gaps:** un solo archivo por día (la historia se sobrescribe al abrir de nuevo — conviene archivar el Z-report); la varianza no distingue error humano de robo (es señal, no veredicto — lo decide el dueño).
+**Risks/gaps:** one file per day (history is overwritten when reopening — archive the Z-report); the variance does not distinguish human error from theft (it is a signal, not a verdict — the owner decides).
 
-**Vocabulario para ordenar cambios:** *"en la caja: [abrir|añadir|registrar|cerrar|varianza|Z-report] — cambia [el método|el total|el filtro] a [valor]"*.
+**Vocabulary for ordering changes:** *"in the register: [open|add|record|close|variance|Z-report] — change [the method|the total|the filter] to [value]"*.
 
 ---
-## 2026-11-03 — La caja que no procesa, solo recuerda
-- concepto: flujo
-- fricción: se quería integrar un procesador de pagos (Stripe/Lightspeed) antes de tener clientes.
-- lección: el valor inmediato no es procesar el pago sino REGISTRARLO — el contra-registro ahorra capital (conciliación) sin comisiones ni riesgo.
-- orden-correcta: "Añade una caja virtual: registrar ventas con método, cerrar contra el terminal, y mostrar la varianza."
-- evidencia: supervisor/server.js (366-370), docs/PAYMENTS-STRATEGY.md, commit 53c306d.
+## 2026-11-03 — The register that does not process, only remembers
+- concept: flow
+- friction: the wish to integrate a payment processor (Stripe/Lightspeed) before having clients.
+- lesson: the immediate value is not processing the payment but RECORDING it — the counter-register saves capital (reconciliation) without fees or risk.
+- correct-order: "Add a virtual register: record sales with method, close against the terminal, show the variance."
+- evidence: supervisor/server.js (366-370), docs/PAYMENTS-STRATEGY.md, commit 53c306d.
