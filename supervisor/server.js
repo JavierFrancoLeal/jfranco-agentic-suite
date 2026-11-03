@@ -519,6 +519,7 @@ const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; cha
 function serveStatic(req, res, pathname) {
   let p;
   if (pathname === "/" || pathname === "/dashboard" || pathname === "/dashboard.html") p = path.join(__dirname, "dashboard.html");
+  else if (pathname === "/dashboard.css" || pathname === "/dashboard.js" || pathname === "/i18n.js") p = path.join(__dirname, pathname.replace(/^\//, ""));
   else if (pathname === "/panel" || pathname === "/panel.html") p = path.join(UI_DIR, "panel.html");
   else { const rel = pathname.replace(/^\/+/, ""); p = path.join(UI_DIR, rel); if (!p.startsWith(UI_DIR)) { res.writeHead(403); return res.end(); } }
   fs.readFile(p, (err, data) => {

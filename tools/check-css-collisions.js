@@ -9,18 +9,12 @@ const path = require("path");
 // Any NEW duplicate must be added here consciously or the gate fails.
 const WHITELIST = new Set([".bnav", ".person", ".tabs", ".listen"]);
 
-const htmlPath = path.join(__dirname, "..", "supervisor", "dashboard.html");
-const html = fs.readFileSync(htmlPath, "utf8");
-
-const styleBlocks = [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)];
-if (!styleBlocks.length) {
-  console.log("CSS GUARD: no <style> block found");
-  process.exit(1);
-}
+const cssPath = path.join(__dirname, "..", "supervisor", "dashboard.css");
+const cssText = fs.readFileSync(cssPath, "utf8");
 
 const seen = new Map();
-for (const m of styleBlocks) {
-  const css = m[1];
+{
+  const css = cssText;
   // capture complete selectors, then keep ONLY plain ".name" selectors
   for (const s of css.matchAll(/(^|[;}{])\s*([^{};]+)\{/g)) {
     const sel = s[2].trim();
