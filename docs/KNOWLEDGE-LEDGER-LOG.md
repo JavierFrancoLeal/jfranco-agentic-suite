@@ -192,3 +192,10 @@ for whoever arrives later.*
 - lesson: a product is worth nothing without a customer who buys it. The sequence is: validate the interest of beta companies + complete the application → only then H1. The demand-first principle is not pessimism — it is the realpolitik that protects every other step from being built on air.
 - correct-order: "Phase 0 — validate demand (beta conversations, letters of interest) before the legal node; the plan now says so."
 - evidence: tools/make-bible.py (Phase 0 row in the roadmap), this entry.
+
+## 2026-11-04 — macOS code-signing vs native bindings (the node-nohr fix)
+- concept: flow
+- friction: building dsh-superagent failed: rolldown/yuku native .node bindings refused to load under the DSH runtime node ("different Team IDs" = the hardened runtime's library validation; after stripping signatures it became "unsigned library" = also refused; a fully unsigned node copy is killed at launch).
+- lesson: never strip the signature of a .node — it poisons the install. The sustainable fix on this Mac: keep a copy of the runtime node re-signed ad-hoc WITHOUT the hardened-runtime flag (codesign -f -s - node-copy, flags=0x2, runs fine) and do fresh pnpm installs (original signatures intact) under it.
+- correct-order: "node-nohr (ad-hoc, no hardened runtime) + fresh install with intact signatures → Build complete in 1586ms."
+- evidence: ~/bin/node-nohr, /tmp/dsh-superagent/dist/ (11 files), this entry.

@@ -27,10 +27,12 @@ and pass the house gates.*
 
 ## B. WITH the super-agent (dsh-superagent)
 
-Status: **setup in progress** (cloned `deepseek-ai/dsh-superagent`, SETUP.md
-read, probe run, gh CLI 2.74.1 installed, tmux building). Pending: the
-operator's 9 setup answers, then a GitHub issue with this same task for
-the agent, then its PR reviewed against the baseline above.
+Status: **bundle built** (dist/, 11 files — after solving the macOS
+code-signing wall: node-nohr, an ad-hoc re-signed copy of the runtime
+node without the hardened-runtime flag, plus a fresh pnpm install with
+intact signatures). Pending: the operator's 9 setup answers, then a
+GitHub issue with this same task for the agent, then its PR reviewed
+against the baseline above.
 
 | Criterion | Result |
 |---|---|
