@@ -229,6 +229,10 @@ body.wall pre{max-height:40vh}
 .noSendTxt{position:relative;z-index:2}
 .noSendFill{position:absolute;inset:0;z-index:1;background:rgba(107,114,128,.38);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);transform-origin:left;animation:noFill 10s linear forwards}
 @media(prefers-reduced-motion:reduce){.noSendFill{animation:none;transform:scaleX(0)}}
+#notifBell.bell-pulse{animation:bellPulse 1.1s ease-in-out infinite}
+@keyframes bellPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
+@media(prefers-reduced-motion:reduce){#notifBell.bell-pulse{animation:none}}
+.inbox-item .when{font-size:11px;color:#9CA3AF}
 </style>
 </head>
 <body>
@@ -585,7 +589,7 @@ function renderInbox(items){
   const pend=items.filter(x=>x.status==="done");
   $("inboxList").innerHTML=pend.length?pend.map(x=>{
     const name=STUDIO_TYPES[x.type]||x.type;
-    return "<div class=\"inbox-item\" data-id=\""+esc(x.id)+"\"><b>🔔 "+esc(name)+"</b><br><span class=\"hint\">"+esc((x.text||"").slice(0,90))+"</span></div>";
+    return "<div class=\"inbox-item\" data-id=\""+esc(x.id)+"\"><b>🔔 "+esc(name)+"</b> <span class=\"when\">"+esc((x.ts||"").slice(11,16))+"</span><br><span class=\"hint\">"+esc((x.text||"").slice(0,90))+"</span></div>";
   }).join(""):empty("🔕",t("inboxEmpty"));
   $("inboxList").querySelectorAll(".inbox-item").forEach(el=>el.onclick=()=>openDecision(items.find(x=>x.id===el.dataset.id)));
 }
@@ -619,7 +623,7 @@ async function refreshNotifBadge(){
     if(!r||r.error)return;
     const n=(r.tasks||[]).filter(x=>x.status==="done").length;
     const b=$("notifBadge");
-    if(n>0){b.textContent=n;b.classList.remove("hidden");}else b.classList.add("hidden");
+    if(n>0){b.textContent=n;b.classList.remove("hidden");$("notifBell").classList.add("bell-pulse");}else{b.classList.add("hidden");$("notifBell").classList.remove("bell-pulse");}
   }catch(e){}
 }
 $("notifBell").onclick=()=>{$("inboxView").style.display="flex";loadStudio();};
