@@ -213,13 +213,17 @@ bullet(doc, "Les canaux : ", "SDLE de la MRC de Charlevoix · Mission développe
 bullet(doc, "Après le pilote : ", "conseil consultatif de 3 à 5 personnes (propriétaire de PME, comptable, expert IA, ex-SADC).")
 
 # ── 9. ORGANISME ─────────────────────────────────────────────
-section(doc, "9", "L'organisme technologique", "Délégable : directeur technique — l'entrepreneur n'a pas besoin de lire ceci")
+section(doc, "9", "L'organisme technologique — déjà réel, pas une idée", "Délégable : directeur technique — l'entrepreneur n'a pas besoin de lire ceci")
+para(doc, "Cet organisme n'est pas un projet sur papier : il existe déjà, en version bêta, sur plusieurs plateformes. Il a été construit par l'intelligence artificielle agéntique et son fondateur — l'IA a écrit le code, l'humain a décidé, vérifié et signé chaque étape. Les registres publics en font foi.")
 table3(doc, [
-    ("Le Veilleux", "Dashboard, caisse virtuelle + contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes « la IA informe, l'humain décide », centre de notifications, pont Facebook/Messenger", "Produit"),
+    ("Registres publics", "GitHub : github.com/JavierFrancoLeal/jfranco-agentic-suite — 150+ commits documentés · npm : @javierfrancoleal — les 7 organes et le superviseur publiés et installables", "Preuve tangible"),
+    ("Le Veilleux (bêta)", "Application de bureau (macOS, DMG), navigateur, PWA installable (Android/iOS), wallboard — la même application sur cinq plateformes ; caisse, journée, alertes, centre de notifications, pont Facebook", "Produit"),
     ("Les 7 organes", "workflow-master, decision-router, accountability-auditor, autonomy-grader, audit (qui enseigne), forensics (qui explique) + le cerveau double (rapide + raisonneur)", "Moteur DSH"),
     ("Knowledge Ledger", "Le standard de transfert de savoir humain-IA : 26 leçons réelles, format canonique — la mémoire de l'entreprise", "Mémoire"),
     ("Les gardes", "Tests automatiques du flux complet (smoke, contrats d'amorçage, garde CSS, parcours API, synchronisation du bundle)", "Qualité"),
 ], header=("Actif", "Ce que c'est", "Rôle"))
+cite(doc, "GitHub — JavierFrancoLeal/jfranco-agentic-suite", "https://github.com/JavierFrancoLeal/jfranco-agentic-suite")
+cite(doc, "npm — @javierfrancoleal", "https://www.npmjs.com/search?q=%40javierfrancoleal")
 
 # ── 10. SOURCES ──────────────────────────────────────────────
 section(doc, "10", "Sources et références (liens vérifiables)", "Délégable : analystes")
