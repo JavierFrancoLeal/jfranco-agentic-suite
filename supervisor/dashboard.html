@@ -638,7 +638,7 @@ $("inboxClose").onclick=()=>{$("inboxView").style.display="none";};
 // (tasks arrive from the kitchen — the inbox shows them for decision)
 async function loadShift(){
   const r=await api("/api/shift");
-  if(!r||r.error||me.role!=="owner")return;
+  if(!r||r.error||(me.role!=="owner"&&me.role!=="lead"))return;
   const b=$("shiftBody");let html="";
   if(r.phase==="done"){
     $("shiftTitle").textContent=t("shiftTitle");
@@ -891,7 +891,7 @@ async function enter(){
   if(!PACK){PACK=await api("/api/sector");applyPack();}
   setWho();
   if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}loadShift();pollAlerts();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done"))$("inboxView").style.display="flex";});});loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
-  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();if(kitchenPoll)clearInterval(kitchenPoll);kitchenPoll=setInterval(kitchenWatch,4000);}
+  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done"))$("inboxView").style.display="flex";});});if(kitchenPoll)clearInterval(kitchenPoll);kitchenPoll=setInterval(kitchenWatch,4000);}
   else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();if(livePoll)clearInterval(livePoll);livePoll=setInterval(()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
 let pwVisible=false;
