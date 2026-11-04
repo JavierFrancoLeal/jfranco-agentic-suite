@@ -210,7 +210,7 @@ table3(doc, [
 section(doc, "8", "La demande — partenaires et appui", "La direction + SADC")
 bullet(doc, "SADC Charlevoix : ", "accompagnement-conseil ; mise en relation avec une PME pilote (idéalement dans Charlevoix-Est) ; aide au développement du réseau après validation ; aide aux demandes de subventions et de financement.")
 bullet(doc, "Les canaux : ", "SDLE de la MRC de Charlevoix · Mission développement Charlevoix · Chambre de commerce de Charlevoix · Tourisme Charlevoix · Table agroalimentaire de Charlevoix.")
-bullet(doc, "Après le pilote : ", "conseil consultatif de 3 à 5 personnes (propriétaire de PME, comptable, expert IA, représentant autochtone, ex-SADC).")
+bullet(doc, "Après le pilote : ", "conseil consultatif de 3 à 5 personnes (propriétaire de PME, comptable, expert IA, ex-SADC).")
 
 # ── 9. ORGANISME ─────────────────────────────────────────────
 section(doc, "9", "L'organisme technologique", "Délégable : directeur technique — l'entrepreneur n'a pas besoin de lire ceci")
