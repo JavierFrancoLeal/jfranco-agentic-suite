@@ -1,0 +1,4 @@
+# @javierfrancoleal/plugin-authoring — authoring skill for new DSH plugins.
+- insert:
+    - id: plugin-authoring
+      name: '@javierfrancoleal/plugin-authoring'
