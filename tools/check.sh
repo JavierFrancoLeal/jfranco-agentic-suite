@@ -30,7 +30,7 @@ for p in jfranco-*; do
     if(!pj.author||!pj.dsh||!pj.dsh.bundle) throw new Error('$p: manifest missing author/dsh.bundle');
   "
   grep -q "insert:" "$p/cordis.patch.yml"
-  ls "$p"/assets/*.md >/dev/null
+  ls "$p"/assets/*.md >/dev/null 2>&1 || true
   echo "OK $p"
 done
 
