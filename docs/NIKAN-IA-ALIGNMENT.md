@@ -63,3 +63,54 @@ lacks the product. The next artifact — the SADC one-pager — should be
 written as the plan's annex 13.2, and the pilot agreement as its
 operational annex. The 100 hours were not wasted: they built the
 business; this repository built the proof.
+
+## 2026-11-03 — Deep re-read: the nuggets, the traps, and the future
+
+### ADOPT — the plan is BETTER than our dev here (5 gold nuggets)
+
+1. **The subsidy arsenal (4.4)** — CRIC: refundable 30% tax credit on the
+   first $1M of eligible spending; PARI-CNRC non-repayable funding for IA
+   adoption; FRCN regional calls. This is a SALES argument: the client
+   rarely pays everything from their pocket. Add to the grille/one-pager.
+2. **The HITL decision map (6.3)** — the plan's "carte de décision HITL
+   (où s'arrête l'IA, où commence l'humain)" is EXACTLY our
+   decision-router tiers (GREEN/YELLOW/RED) in consulting language. Use
+   the plan's vocabulary when talking to clients.
+3. **The lead magnet (5.4)** — the free guide "10 façons simples
+   d'utiliser l'IA dans votre PME, sans perdre le contrôle". We have all
+   the content; produce it — it is the funnel's second step.
+4. **Internal policies (6.4)** — Loi 25 (Québec) compliance, Canada-hosted
+   data (Hydro-Québec sovereignty), fixed-price transparency, the HITL
+   clause in every mandate. Adopt verbatim as our policy page.
+5. **Pilot KPIs + public case study (9.2)** — heures économisées,
+   productivité, satisfaction, and a case study VALIDATED by the pilot
+   owner. Our register/Z-report gives us the evidence feed.
+
+### AVOID — the plan is WORSE than our dev here
+
+1. Consulting hours as the core business — the product (subscription) is
+   the core; the five services become the onboarding ladder.
+2. "En personne obligatoire" for discovery — keep in-person as a regional
+   asset, not a rule (hybrid for non-Charlevoix).
+3. All-out vagueness (no durations/percentages anywhere) — right for the
+   SADC document, wrong for internal execution: the blueprint's exit
+   conditions are the measurable version.
+4. Serving zero-tech clients with the product directly — they need the
+   implantation service first; do not promise self-serve to them.
+5. The name Nikan — already resolved with Franco Vision (also removes the
+   Indigenous-name validation step).
+
+### FUTURE — ideas to adopt later, demand-led
+
+1. **GEO — visibility in consumer AI** (Source 2 emerging): structure the
+   client's public info so AI assistants recommend them. Very 2026, adopt
+   when a client asks.
+2. RAG / data curation & hygiene service (Service 4) — the company
+   knowledge base; pairs naturally with forensics later.
+3. Advisory board after the pilot: PME owner, accountant, IA expert,
+   Indigenous representative, ex-SADC.
+4. One free mandate per year to an Indigenous entrepreneurial project
+   (11.1) — after viability, honored as stated.
+5. Workshops with the Chambre de commerce de Charlevoix + SADC (channel 1).
+6. Gaussian splatting 3D tours (Source 3) — the tourism flagship
+   integration when the sector asks.
