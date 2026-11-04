@@ -100,7 +100,7 @@ r4 = p1.add_run("PLAN D'AFFAIRES · v3.0"); r4.font.size = Pt(8); r4.bold = True
 rule(doc)
 para(doc, "FRANCO VISION — Plan d'affaires", size=21, bold=True, space_after=4)
 para(doc, "L'IA travaille. L'humain veille, décide, révise.", size=13, bold=True, color=V, space_after=4)
-para(doc, "Franco Vision est le maillon humain entre l'intelligence artificielle et les entreprises de Charlevoix — celles qui n'ont ni le temps ni les ressources techniques pour l'implanter elles-mêmes. Notre discipline : ne jamais surpromettre ni sous-livrer. Le pilote de 6 mois valide chaque promesse avant qu'elle ne devienne un engagement.", size=10, color=MUTED, space_after=10)
+para(doc, "Franco Vision est le maillon humain entre l'intelligence artificielle et les entreprises de Charlevoix — celles qui n'ont ni le temps ni les ressources techniques pour l'implanter elles-mêmes.", size=10, color=MUTED, space_after=10)
 
 # ── Sommaire ─────────────────────────────────────────────────
 section(doc, "SOMMAIRE", "Sommaire et guide de lecture", "Tout le monde — 2 minutes")
@@ -127,7 +127,6 @@ bullet(doc, "La méthode : ", "un pilote de 6 mois à tarif opérationnel comme 
 
 # ── 2. MARCHÉ ────────────────────────────────────────────────
 section(doc, "2", "Le marché — les indicateurs, pas des promesses", "L'entrepreneur + le conseiller")
-para(doc, "Les indicateurs suivants proviennent de sources publiques vérifiables. Ils décrivent le contexte ; ils ne constituent pas une promesse de revenus.", size=8.5, color=GRAY, space_after=4)
 bullet(doc, "Adoption de l'IA au Canada et au Québec : ", "l'adoption progresse, mais une étude de la BDC révèle que 27 % des entreprises canadiennes ignorent qu'elles utilisent déjà de l'IA — un manque d'accompagnement structuré, qui est précisément notre marché.")
 cite(doc, "BDC — Étude sur l'adoption de l'IA par les entreprises canadiennes", "https://www.bdc.ca/fr/a-propos/recherche-analyses")
 cite(doc, "Statistique Canada — Analyse de l'utilisation de l'IA par les entreprises au Canada", "https://www150.statcan.gc.ca/n1/fr/type/donnees?MM=1")
@@ -214,7 +213,6 @@ table3(doc, [
 
 # ── 10. SOURCES ──────────────────────────────────────────────
 section(doc, "10", "Sources et références (liens vérifiables)", "Délégable : analystes")
-para(doc, "Les indicateurs de ce plan proviennent des sources publiques suivantes. Aucune source interne n'est citée comme preuve : chaque affirmation se rattache à un organisme vérifiable.", size=8.5, color=GRAY, space_after=4)
 cite(doc, "Statistique Canada — Enquête sur l'utilisation de l'IA par les entreprises", "https://www150.statcan.gc.ca/n1/fr/type/donnees?MM=1")
 cite(doc, "Institut de la statistique du Québec — Adoption de l'IA au Québec", "https://statistique.quebec.ca/fr")
 cite(doc, "BDC — Recherches et analyses (dont l'étude sur les 27 %)", "https://www.bdc.ca/fr/a-propos/recherche-analyses")
