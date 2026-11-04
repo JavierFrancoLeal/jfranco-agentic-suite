@@ -80,7 +80,7 @@ cite(doc, "MRC de Charlevoix-Est — Portrait et services", "https://www.mrcchar
 cite(doc, "Tourisme Charlevoix — Bilans et données touristiques", "https://www.tourisme-charlevoix.com/")
 bullet(doc, "L'écosystème d'appui : ", "SADC, Chambre de commerce, SDLE, Mission développement Charlevoix et Tourisme Charlevoix accompagnent déjà les entreprises — nous arrivons comme le maillon technologique local.")
 cite(doc, "SADC Charlevoix — Services aux entreprises", "https://www.sadc-cae.ca/")
-bullet(doc, "Les travailleurs autonomes : ", "14 % des actifs de Charlevoix travaillent à leur compte — comptables, juristes, notaires, thérapeutes, créateurs. Leur charge administrative (courriels, relances, classement, dossiers) gruge de 30 à 40 % de leurs heures ; c'est à eux que s'adresse le premier niveau de l'offre (\u00ab L'employé no 2 \u00bb), avec la garantie que la responsabilité demeure humaine.")
+bullet(doc, "Les travailleurs autonomes : ", "14 % des actifs de Charlevoix travaillent à leur compte — comptables, juristes, notaires, thérapeutes, créateurs. Le travailleur autonome est la pyramide entière en une seule personne : il travaille sur le terrain, il dirige et il est propriétaire. Il vit au quotidien les avantages et les risques de l\u2019IA agéntique, et sa charge administrative gruge de 30 à 40 % de ses heures. Notre offre lui rend les trois niveaux de l\u2019entreprise en un seul abonnement, avec la garantie que la responsabilité demeure humaine.")
 cite(doc, "Chambre de commerce de Charlevoix", "https://www.creezdesliens.com/")
 
 # ── 3. OFFRE ─────────────────────────────────────────────────
@@ -164,7 +164,7 @@ table3(doc, [
 cite(doc, "GitHub — JavierFrancoLeal/jfranco-agentic-suite", "https://github.com/JavierFrancoLeal/jfranco-agentic-suite")
 cite(doc, "npm — @javierfrancoleal", "https://www.npmjs.com/search?q=%40javierfrancoleal")
 
-# ── 10. SOURCES ──────────────────────────────────────────────
+# ── 11. SOURCES ──────────────────────────────────────────────
 section(doc, "11", "Sources et références (liens vérifiables)", "Délégable : analystes")
 cite(doc, "Nassim Nicholas Taleb — Antifragile : les bienfaits du désordre (2012)", "https://www.penguinrandomhouse.com/books/176227/antifragile-by-nassim-nicholas-taleb/")
 cite(doc, "Statistique Canada — Enquête sur l'utilisation de l'IA par les entreprises", "https://www150.statcan.gc.ca/n1/fr/type/donnees?MM=1")
@@ -175,7 +175,7 @@ cite(doc, "MRC de Charlevoix — Mission et portrait", "https://www.mrccharlevoi
 cite(doc, "MRC de Charlevoix-Est — Portrait et services", "https://www.mrccharlevoixest.ca/")
 cite(doc, "Tourisme Charlevoix — Site officiel et bilans", "https://www.tourisme-charlevoix.com/")
 cite(doc, "SADC Charlevoix – Côte-de-Beaupré – Île d'Orléans", "https://www.sadc-cae.ca/")
-bullet(doc, "Les travailleurs autonomes : ", "14 % des actifs de Charlevoix travaillent à leur compte — comptables, juristes, notaires, thérapeutes, créateurs. Leur charge administrative (courriels, relances, classement, dossiers) gruge de 30 à 40 % de leurs heures ; c'est à eux que s'adresse le premier niveau de l'offre (\u00ab L'employé no 2 \u00bb), avec la garantie que la responsabilité demeure humaine.")
+
 cite(doc, "Chambre de commerce de Charlevoix", "https://www.creezdesliens.com/")
 cite(doc, "Investissement Québec — ESSOR", "https://www.investquebec.com/quebec/fr/produits-et-services/programmes-financiers")
 cite(doc, "CNRC — PARI (aide à la recherche industrielle)", "https://nrc.canada.ca/fr/soutien-linnovation-technologique/programme-daide-recherche-industrielle")
