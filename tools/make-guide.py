@@ -144,7 +144,7 @@ lang = OxmlElement("w:lang"); lang.set(qn("w:val"), "fr-CA"); rPr.append(lang)
 header(doc, "GUIDE GRATUIT")
 rule(doc)
 para(doc, "10 façons simples d'utiliser l'IA dans votre PME, sans perdre le contrôle", size=16, bold=True, space_after=4)
-para(doc, "Chaque façon suit la même règle : l'IA prépare, VOUS décidez. Voici dix gestes concrets qui font gagner des heures chaque semaine — sans jargon, sans risque, sans remplacer ce qui marche.",
+para(doc, "Chaque façon suit la même règle : l'IA prépare, VOUS décidez. L'IA potentialise votre savoir-faire ; elle ne le remplace jamais. Voici dix gestes concrets qui font gagner des heures chaque semaine — sans jargon, sans remplacer ce qui marche.",
      size=9.5, color=MUTED, space_after=10)
 for i, (t_, w_, k_, tag_) in enumerate(WAYS, 1):
     way(doc, i, t_, w_, k_, tag_)

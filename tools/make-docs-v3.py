@@ -151,7 +151,7 @@ def gain_rows(doc, items):
 # ── ONE-PAGER v4 — business-first, for SADC and busy owners ──
 def one_pager(out):
     doc = new_doc("ONE-PAGER · SADC & ENTREPRISES", "Franco Vision · One-pager v1.1")
-    heading(doc, "Votre entreprise mérite l'IA — sans jargon, sans risques, sans remplacer ce qui marche.")
+    heading(doc, "Votre entreprise mérite l'IA — sans jargon, sans remplacer ce qui marche, sans perdre le contrôle.")
     para(doc, "Un service clé en main qui vous fait gagner du temps et de l'argent — et qui vous laisse toujours aux commandes.",
          size=10, color=MUTED, space_after=10)
 
@@ -168,7 +168,7 @@ def one_pager(out):
     ])
 
     label(doc, "Comment ça vous touche")
-    para(doc, "Vous gardez vos habitudes : vos outils, votre terminal de paiement, votre façon de travailler. On installe, on forme votre équipe, et vous continuez comme avant — avec un deuxième regard qui ne dort jamais.", space_after=8)
+    para(doc, "Vous gardez vos habitudes : vos outils, votre terminal de paiement, votre façon de travailler. On installe, on forme votre équipe, et vous continuez comme avant — avec un deuxième regard qui ne dort jamais. L'IA potentialise votre savoir-faire ; elle ne le remplace jamais. Vous restez maître de vos outils.", space_after=8)
 
     label(doc, "Ce que vous y gagnez")
     gain_rows(doc, [
