@@ -131,7 +131,12 @@ def header_repeats(t):
     if trPr.find(qn("w:tblHeader")) is None:
         trPr.append(OxmlElement("w:tblHeader"))
 
-def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", "")):
+def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", ""), keep=None):
+    # SUSTAINABLE RULE: small boxes (<=4 rows) stay whole; tall tables FLOW
+    # across pages with a repeating header — forcing a tall box whole is what
+    # creates the giant white gaps. Never both.
+    if keep is None:
+        keep = len(rows) <= 4
     t = doc.add_table(rows=1, cols=3); t.autofit = False
     no_split(t.rows[0])
     for i, htxt in enumerate(header):
@@ -147,7 +152,9 @@ def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", "")):
             if i == 0: r.bold = True; r.font.color.rgb = V
             elif i == 2: r.bold = True; r.font.color.rgb = INK
             else: r.font.color.rgb = INK
-    keep_together(t); header_repeats(t)
+    if keep:
+        keep_together(t)
+    header_repeats(t)
     return t
 
 def header_block(doc, doctype, lockup_width=4.2):

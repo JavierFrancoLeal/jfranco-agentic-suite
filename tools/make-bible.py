@@ -80,6 +80,7 @@ cite(doc, "MRC de Charlevoix-Est — Portrait et services", "https://www.mrcchar
 cite(doc, "Tourisme Charlevoix — Bilans et données touristiques", "https://www.tourisme-charlevoix.com/")
 bullet(doc, "L'écosystème d'appui : ", "SADC, Chambre de commerce, SDLE, Mission développement Charlevoix et Tourisme Charlevoix accompagnent déjà les entreprises — nous arrivons comme le maillon technologique local.")
 cite(doc, "SADC Charlevoix — Services aux entreprises", "https://www.sadc-cae.ca/")
+bullet(doc, "Les travailleurs autonomes : ", "14 % des actifs de Charlevoix travaillent à leur compte — comptables, juristes, notaires, thérapeutes, créateurs. Leur charge administrative (courriels, relances, classement, dossiers) gruge de 30 à 40 % de leurs heures ; c'est à eux que s'adresse le premier niveau de l'offre (\u00ab L'employé no 2 \u00bb), avec la garantie que la responsabilité demeure humaine.")
 cite(doc, "Chambre de commerce de Charlevoix", "https://www.creezdesliens.com/")
 
 # ── 3. OFFRE ─────────────────────────────────────────────────
@@ -93,6 +94,7 @@ table3(doc, [
     ("Service 4", "Accompagnement continu — le cœur du modèle : le client reste maître de ses outils, avec un partenaire stable", "249–449 $/mois"),
     ("Service 5", "Ateliers, conférences et formations — avec la Chambre de commerce, la SADC et les associations sectorielles", "750–1 200 $"),
     ("Le produit", "Le Veilleux : l'assistant de travail installé chez le client — caisse, contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes et centre de notifications « la IA informe, l'humain décide »", "SaaS"),
+    ("Travailleurs autonomes", "Niveau 1 dédié : activation 1 500 $ + 199–349 $/mois — l'IA prépare, le professionnel signe ; compatible avec les ordres professionnels", "Micro-entreprises"),
 ], header=("Offre", "Ce que c'est", "Tarif"))
 
 # ── 4. MODÈLE + VIABILITÉ ───────────────────────────────────
@@ -173,6 +175,7 @@ cite(doc, "MRC de Charlevoix — Mission et portrait", "https://www.mrccharlevoi
 cite(doc, "MRC de Charlevoix-Est — Portrait et services", "https://www.mrccharlevoixest.ca/")
 cite(doc, "Tourisme Charlevoix — Site officiel et bilans", "https://www.tourisme-charlevoix.com/")
 cite(doc, "SADC Charlevoix – Côte-de-Beaupré – Île d'Orléans", "https://www.sadc-cae.ca/")
+bullet(doc, "Les travailleurs autonomes : ", "14 % des actifs de Charlevoix travaillent à leur compte — comptables, juristes, notaires, thérapeutes, créateurs. Leur charge administrative (courriels, relances, classement, dossiers) gruge de 30 à 40 % de leurs heures ; c'est à eux que s'adresse le premier niveau de l'offre (\u00ab L'employé no 2 \u00bb), avec la garantie que la responsabilité demeure humaine.")
 cite(doc, "Chambre de commerce de Charlevoix", "https://www.creezdesliens.com/")
 cite(doc, "Investissement Québec — ESSOR", "https://www.investquebec.com/quebec/fr/produits-et-services/programmes-financiers")
 cite(doc, "CNRC — PARI (aide à la recherche industrielle)", "https://nrc.canada.ca/fr/soutien-linnovation-technologique/programme-daide-recherche-industrielle")

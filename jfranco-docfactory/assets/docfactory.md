@@ -7,10 +7,14 @@ real documents and are implemented in a reusable library.
 
 ## Pillar 1 — The consulting techniques (layout)
 
-1. **Boxes never straddle pages** — two mechanisms together:
-   `cantSplit` on every table row (a row never breaks) AND a keep-next
-   chain across rows (every row sticks to the next), so the WHOLE box
-   moves together or not at all.
+1. **Boxes never straddle pages — the sustainable balance** —
+   `cantSplit` on every table row (a row never breaks). SMALL boxes
+   (≤4 rows) also get the keep-next chain, so the whole box moves
+   together. TALL tables do NOT get the chain: they flow across pages
+   with a repeating header (`tblHeader`). Forcing a tall box whole is
+   the mistake that creates giant white gaps — and an orphaned section
+   title means the header chain ends before the table: chain the title
+   AND let tall content flow.
 2. **Table headers repeat** — `tblHeader` on the first row: if a table
    continues on another page, its header reappears.
 3. **No orphan/widow lines** — `widowControl` on the Normal style and
