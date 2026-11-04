@@ -83,7 +83,7 @@ r4 = p1.add_run("PLAN D'AFFAIRES · v2.0"); r4.font.size = Pt(8); r4.bold = True
 rule(doc)
 para(doc, "FRANCO VISION — Plan d'affaires", size=21, bold=True, space_after=4)
 para(doc, "L'IA travaille. L'humain veille, décide, révise.", size=13, bold=True, color=V, space_after=4)
-para(doc, "Le lien humain entre l'intelligence artificielle et le territoire de Charlevoix. Ce document réunit trois études fondatrices et tout ce que l'organisme a construit. Chaque section indique à qui la confier : l'entrepreneur lit le potentiel, délègue le technique, et décide.", size=10, color=MUTED, space_after=10)
+para(doc, "Franco Vision est le maillon humain entre l'intelligence artificielle et les entreprises de Charlevoix — celles qui n'ont ni le temps ni les ressources techniques pour l'implanter elles-mêmes. Ce plan présente des faits mesurés et le potentiel qui en découle : 328,4 M$ de fardeau administratif municipal, 1,9 % d'adoption de l'IA dans l'hébergement, 172,4 M$ de tourisme en un été — et ce que le propriétaire cesse de payer.", size=10, color=MUTED, space_after=10)
 
 # ── Sommaire (delegable) ─────────────────────────────────────
 section(doc, "SOMMAIRE", "Sommaire et guide de lecture", "Tout le monde — 2 minutes")
@@ -99,7 +99,7 @@ table3(doc, [
     ("9", "La demande — partenaires et appui", "La direction + SADC"),
     ("10", "L'organisme technologique", "Délégable : directeur technique"),
     ("11", "Le système d'exploitation de l'entreprise", "Délégable : directeur technique"),
-    ("12", "Annexe — les trois documents fondateurs", "Délégable : analystes"),
+    ("12", "Annexe — sources et références", "Délégable : analystes"),
 ], header=("No", "Section", "À lire par"))
 
 # ── 1. LE POTENTIEL (first!) ─────────────────────────────────
@@ -191,11 +191,10 @@ section(doc, "11", "Le système d'exploitation de l'entreprise", "Délégable : 
 para(doc, "L'entreprise fonctionne comme le produit : agir → vérifier → noter → consolider → archiver. L'organe audit fait la revue hebdomadaire et enseigne ; le forensics explique le passé ; le feu-log conserve chaque leçon ; les gardes empêchent la régression. Une intégration = une demande client ; un poste = un revenu confirmé.")
 
 # ── 12. ANNEXE ───────────────────────────────────────────────
-section(doc, "12", "Annexe — les trois documents fondateurs", "Délégable : analystes")
-bullet(doc, "Le plan Nikan (v5.2, 100 heures du fondateur) : ", "les 5 services HITL, le pilote antifragile de 6 mois, la viabilité, les politiques Loi 25, la pétition SADC en 5 volets.")
-bullet(doc, "L'étude municipale (34 pages) : ", "le fardeau de 328,4 M$, le quasi-monopole PG Solutions, les 4 moteurs agéntiques, la LCOM 2026, la souveraineté.")
-bullet(doc, "L'étude sectorielle (47 pages) : ", "le tourisme record (172,4 M$), la méthode des 8 semaines, les 3 niveaux de prix, l'arsenal de subventions, les canaux nommés.")
-bullet(doc, "L'imbrication : ", "les deux études partagent la métaphore fondatrice du plan Nikan (« écrire à la main pour retranscrire ») — les trois documents disent la même thèse avec les mêmes mots. Ce plan d'affaires est leur fusion.")
+section(doc, "12", "Annexe — sources et références", "Délégable : analystes")
+bullet(doc, "Le plan du fondateur (v5.2) : ", "les cinq services, le pilote antifragile de 6 mois, la viabilité, les politiques de protection des données, la demande d'appui.")
+bullet(doc, "L'étude du secteur municipal québécois : ", "le fardeau administratif, le quasi-monopole logiciel, les moteurs d'automatisation, le cadre des contrats publics.")
+bullet(doc, "L'étude des secteurs économiques de Charlevoix : ", "le tourisme record, la méthode de déploiement en 8 semaines, la grille de prix, les programmes de subventions, les canaux régionaux.")
 
 rule(doc, color="E5E7EB", sz=4, space_after=4)
 para(doc, "Franco Vision inc. · Charlevoix, Québec · Plan d'affaires v2.0 · Novembre 2026", size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
