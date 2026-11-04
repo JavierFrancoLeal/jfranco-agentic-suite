@@ -11,14 +11,14 @@ from docx.oxml import OxmlElement
 INK = RGBColor(0x11, 0x18, 0x27)
 MUTED = RGBColor(0x6B, 0x72, 0x80)
 FAINT = RGBColor(0x9C, 0xA3, 0xAF)
-V = RGBColor(0x7C, 0x5C, 0xFF)
-VLIGHT = RGBColor(0xC9, 0xC2, 0xF5)
+V = RGBColor(0x4D, 0x6B, 0xFE)
+VLIGHT = RGBColor(0xD3, 0xDB, 0xFF)
 HAIR = "E5E7EB"
 HEADFILL = "F3F4F6"
 TINT = "F8F7FF"
-ICON = "apps/desktop/assets/icon.png"
+LOCKUP = "tools/logo-suite/franco-vision-lockup.png"
 
-def rule(doc, color="7C5CFF", sz=6, space_after=8):
+def rule(doc, color="4D6BFE", sz=6, space_after=8):
     p = doc.add_paragraph()
     pPr = p._p.get_or_add_pPr()
     pBdr = OxmlElement("w:pBdr")
@@ -43,7 +43,7 @@ def para(doc, text="", size=9.5, color=INK, bold=False, align=None, space_after=
 
 def label(doc, text, space_before=10, space_after=4):
     p = doc.add_paragraph(); r = p.add_run(text.upper())
-    r.font.size = Pt(8); r.bold = True; r.font.color.rgb = V
+    r.font.size = Pt(8); r.bold = True; r.font.color.rgb = RGBColor(0x4B, 0x55, 0x63)
     letter(r, 30)
     p.paragraph_format.space_before = Pt(space_before); p.paragraph_format.space_after = Pt(space_after)
     return p
@@ -79,27 +79,23 @@ def pad(cell, top=3, bottom=3):
         p.paragraph_format.space_after = Pt(bottom)
 
 def header(doc, doctype):
-    t = doc.add_table(rows=1, cols=3)
+    t = doc.add_table(rows=1, cols=2)
     t.alignment = WD_TABLE_ALIGNMENT.CENTER; t.autofit = False
-    t.columns[0].width = Cm(1.1); t.columns[1].width = Cm(10.4); t.columns[2].width = Cm(6.3)
-    c0, c1, c2 = t.rows[0].cells
+    t.columns[0].width = Cm(11.0); t.columns[1].width = Cm(6.8)
+    c0, c1 = t.rows[0].cells
     p0 = c0.paragraphs[0]
-    p0.add_run().add_picture(ICON, width=Cm(0.75))
+    p0.add_run().add_picture(LOCKUP, width=Cm(4.2))
     pad(c0, 0, 0)
-    p1 = c1.paragraphs[0]
-    r2 = p1.add_run("FRANCO VISION"); r2.bold = True; r2.font.size = Pt(12); r2.font.color.rgb = INK
-    r3 = p1.add_run("   Le Veilleux"); r3.font.size = Pt(8.5); r3.font.color.rgb = FAINT
-    pad(c1, 0, 0)
-    p2 = c2.paragraphs[0]; p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    r4 = p2.add_run(doctype); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
+    p1 = c1.paragraphs[0]; p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    r4 = p1.add_run(doctype); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
     letter(r4, 26)
-    pad(c2, 0, 0)
+    pad(c1, 0, 0)
     return t
 
 def footer(doc, docid):
     rule(doc, color="E5E7EB", sz=4, space_after=4)
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run("Franco Vision inc. · Charlevoix, Québec · github.com/JavierFrancoLeal/jfranco-agentic-suite")
+    r = p.add_run("Franco Vision inc. · Charlevoix, Québec")
     r.font.size = Pt(7.5); r.font.color.rgb = FAINT
     p.paragraph_format.space_after = Pt(1)
     p2 = doc.add_paragraph(); p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -118,12 +114,12 @@ def new_doc(doctype, docid):
 
 def bullets(doc, items, size=9.5):
     for lead, rest in items:
-        lead_body(doc, "·  " + lead, rest, size=size, space_after=3)
+        lead_body(doc, "· " + lead, rest, size=size, space_after=3)
 
 def ask_box(doc, text):
     t = doc.add_table(rows=1, cols=1)
     c = t.rows[0].cells[0]
-    cell_borders(c, ["left"], color="7C5CFF", sz=12)
+    cell_borders(c, ["left"], color="4D6BFE", sz=12)
     p = c.paragraphs[0]
     r = p.add_run(text); r.font.size = Pt(9); r.font.color.rgb = INK
     p.paragraph_format.space_before = Pt(4); p.paragraph_format.space_after = Pt(4)
