@@ -109,7 +109,7 @@ while true; do
     SPROMPT="Decision center kitchen (Trasunto). The owner asked these tasks (each line: id ::: type :: request): $STXT For EACH: draft a short professional French response AND write in one sentence your reasoning (the motivation: why this reply, based on what). Then POST as JSON to $SUP/api/studio/result with this shape: {\"id\":\"<the task id>\",\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}. Finally reply one line: drafts posted."
     echo "[$(date +%H:%M:%S)] $SN studio task(s) → drafting…"
     if [ -n "$DRY" ]; then
-      echo "   would run: $DSH --profile campo headless "$SPROMPT""
+      echo "   would run: $DSH --profile campo --patch /tmp/dsh-fast-patch.yml headless \"$SPROMPT\""
     else
       "$DSH" --profile campo --patch /tmp/dsh-fast-patch.yml headless "$SPROMPT" >/dev/null 2>&1 || echo "   (studio run failed — check DEEPSEEK_API_KEY)"
     fi
