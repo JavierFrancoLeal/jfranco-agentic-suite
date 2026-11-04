@@ -82,6 +82,7 @@ p1 = c1.paragraphs[0]; p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 r4 = p1.add_run("PLAN D'AFFAIRES · v2.0"); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
 rule(doc)
 para(doc, "FRANCO VISION — Plan d'affaires", size=21, bold=True, space_after=4)
+para(doc, "L'IA travaille. L'humain veille, décide, révise.", size=13, bold=True, color=V, space_after=4)
 para(doc, "Le lien humain entre l'intelligence artificielle et le territoire de Charlevoix. Ce document réunit trois études fondatrices et tout ce que l'organisme a construit. Chaque section indique à qui la confier : l'entrepreneur lit le potentiel, délègue le technique, et décide.", size=10, color=MUTED, space_after=10)
 
 # ── Sommaire (delegable) ─────────────────────────────────────
