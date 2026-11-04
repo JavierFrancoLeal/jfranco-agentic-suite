@@ -343,7 +343,7 @@ async function apply(ctx) {
 
 ---
 
-## 10. Checklist de validación
+## 11. Checklist de validación
 
 ```bash
 node --check lib/index.js && node --check lib/client.js          # 1. sintaxis
