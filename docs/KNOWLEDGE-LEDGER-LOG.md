@@ -185,3 +185,10 @@ for whoever arrives later.*
 - lesson: external technology is an EVIDENCE LAYER: real data in (traffic now, weather now, events now), the owner interprets. The AI never forecasts outcomes; alerts knowledge on measured facts, never on predictions. The pyramid applies to data too: data in, human at the top.
 - correct-order: "Show current facts per sector; let the owner decide what they mean; alerts only on measured thresholds."
 - evidence: docs/SECTOR-TECH.md (corrected prototype: Région card with facts + owner-set alerts), commit next.
+
+## 2026-11-04 — Demand validates everything: the node waits for the first buyer
+- concept: flow
+- friction: the temptation to start H1 (incorporation, SADC presentation) before knowing whether anyone will buy.
+- lesson: a product is worth nothing without a customer who buys it. The sequence is: validate the interest of beta companies + complete the application → only then H1. The demand-first principle is not pessimism — it is the realpolitik that protects every other step from being built on air.
+- correct-order: "Phase 0 — validate demand (beta conversations, letters of interest) before the legal node; the plan now says so."
+- evidence: tools/make-bible.py (Phase 0 row in the roadmap), this entry.

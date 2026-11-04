@@ -121,6 +121,7 @@ cite(doc, "Gouvernement du Québec — Loi 25 (protection des renseignements per
 # ── 6. FEUILLE DE ROUTE ─────────────────────────────────────
 section(doc, "6", "La feuille de route — le pilote d'abord", "La direction")
 table3(doc, [
+    ("Phase 0", "Valider la demande d'abord : premières conversations avec les entreprises bêta et lettres d'intérêt ; compléter le développement de l'application. Le nœud H1 ne démarre qu'une fois l'intérêt confirmé — un produit sans acheteur ne vaut rien", "Demande d'abord"),
     ("Trimestre 1", "Structuration interne : incorporation (Franco Vision inc.), comptabilité, assurances ; dépôt du plan à la SADC ; signature de l'entente de phase pilote avec une PME locale", "Préparation"),
     ("Trimestres 2-3", "Phase pilote de 6 mois sur le premier secteur économique : diagnostic complet, implantations ciblées, mesure systématique (heures économisées, productivité, satisfaction), cas d'étude chiffré validé par le dirigeant", "Données réelles"),
     ("Trimestre 4", "Premier client commercial au tarif de la grille ; lancement public ; demande d'appui conditionnelle aux résultats du pilote", "Validation"),
