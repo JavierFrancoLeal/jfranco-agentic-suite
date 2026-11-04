@@ -3,14 +3,14 @@
 # distribution). Created by J.Franco. MIT.
 #
 # Copies the DeepSeek Harness runtime, the eight J.Franco plugins, and the
-# license notices into dist/le-veilleux-runtime, ready to be included as
+# license notices into dist/trasunto-runtime, ready to be included as
 # extraResources in the Fanal desktop installer. Result: the client
 # installs ONE app and only pastes their DeepSeek key.
 #
 # Usage: sh tools/build-runtime-pack.sh
 set -e
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/dist/le-veilleux-runtime"
+OUT="$ROOT/dist/trasunto-runtime"
 DSH_APP="/Applications/DeepSeek Harness.app/Contents/Resources/runtime"
 
 if [ ! -x "$DSH_APP/cli/bin/dsh" ]; then
