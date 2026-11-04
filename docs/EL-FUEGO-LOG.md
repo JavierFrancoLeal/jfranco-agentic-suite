@@ -164,3 +164,10 @@ for whoever arrives later.*
 - lesson: every scene change that takes time shows the boot screen (animated logo + the phrase). The scene change is not a gap to fill — the boot screen IS the scene. Made it a reusable component (bootFlash) so no future transition can forget it.
 - correct-order: "Wrap every scene-change transition in bootFlash(ms, then) — language choice, login, setup, logout."
 - evidence: supervisor/dashboard.html (bootFlash + 4 call sites), EL FUEGO principle 3 (pending), commit next.
+
+## 2026-11-03 — The Chinese font that ate the French accents
+- concept: color
+- friction: copying text from the exported PDF lost French accents and the é looked bold everywhere — LibreOffice, given runs with NO explicit font, substituted LiSung (a Chinese font) + Times; its Latin glyphs have no proper Unicode maps, so copy-paste broke.
+- lesson: never export text without an explicit font. Set the Normal style font (Arial) + the document language (fr-CA) — the exporter then embeds a clean subset and accents survive. Verify by checking WHICH fonts the PDF embeds, not just that it renders.
+- correct-order: "Set Normal style font + language in the generator; after export, grep the PDF for /BaseFont and demand Arial/Liberation — a CJK font in a French document is the smoking gun."
+- evidence: tools/make-docs-v3.py (Arial + fr-CA), PDF /BaseFont before: LiSungLight/TimesNewRomanPS → after: ArialMT/Arial-BoldMT, commit 85c23c6.
