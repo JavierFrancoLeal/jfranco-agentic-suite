@@ -199,3 +199,10 @@ for whoever arrives later.*
 - lesson: never strip the signature of a .node — it poisons the install. The sustainable fix on this Mac: keep a copy of the runtime node re-signed ad-hoc WITHOUT the hardened-runtime flag (codesign -f -s - node-copy, flags=0x2, runs fine) and do fresh pnpm installs (original signatures intact) under it.
 - correct-order: "node-nohr (ad-hoc, no hardened runtime) + fresh install with intact signatures → Build complete in 1586ms."
 - evidence: ~/bin/node-nohr, /tmp/dsh-superagent/dist/ (11 files), this entry.
+
+## 2026-11-04 — GitHub silences brand-new accounts (super-agent intake)
+- concept: flow
+- friction: dsh-superagent's GitHub Source reads the notifications API only; a brand-new agent account receives ZERO notifications even with cross-user mentions, a repo subscription, verified email and the notifications scope on its token. Verified on both the API and the web inbox.
+- lesson: identity infrastructure has a waiting cost: GitHub suppresses notifications for accounts hours old (anti-abuse, ~24-48 h). Plan the agent account creation ahead of the test, or the test waits.
+- correct-order: "Create the machine account ≥48 h before the first test; keep the trigger comment fresh after the account warms up; the source's cursor only reads notifications after it started."
+- evidence: /tmp/dsh-superagent (setup complete), issues #1-#2 on jfranco-agentic-suite, this entry.

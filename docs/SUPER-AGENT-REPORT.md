@@ -27,12 +27,25 @@ and pass the house gates.*
 
 ## B. WITH the super-agent (dsh-superagent)
 
-Status: **bundle built** (lib/, 11 files — after solving the macOS
-code-signing wall: node-nohr, an ad-hoc re-signed copy of the runtime
-node without the hardened-runtime flag, plus a fresh pnpm install with
-intact signatures). Pending: the operator's 9 setup answers, then a
-GitHub issue with this same task for the agent, then its PR reviewed
-against the baseline above.
+Status: **installed, configured and running** (profile `superagent`,
+port 3082, source GitHub, policy [JavierFrancoLeal], executor with
+worktrees, prompts with trasunto-agent identity, setup clean). The
+ticket trigger is BLOCKED by a GitHub platform restriction: the
+brand-new agent account receives zero notifications — verified on the
+API (with the `notifications` scope) AND on the web inbox, despite
+cross-user mentions, a repo subscription and a verified email. New
+accounts have their notifications suppressed until GitHub establishes
+trust (typically 24-48 h). The first notification will fire the Ticket
+automatically; a daily re-trigger is scheduled.
+
+| Criterion | Result |
+|---|---|
+| Setup | ✔ complete (macOS code-signing wall solved: node-nohr + intact signatures) |
+| Ticket → PR | ⏳ blocked by GitHub's new-account notification suppression |
+| Quality vs baseline | ⏳ |
+| Gates | ⏳ |
+| Human attention | High so far: 9 answers + 3 operator steps + 2 device authorizations + diagnostics (this IS a measured cost of column B) |
+| Time | ⏳ |
 
 | Criterion | Result |
 |---|---|
