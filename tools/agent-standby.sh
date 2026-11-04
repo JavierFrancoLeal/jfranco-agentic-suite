@@ -78,7 +78,7 @@ while true; do
   N="$(count_of "$ITEMS")"
   if [ "$N" != "0" ]; then
     TXT="$(texts_of "$ITEMS")"
-    PROMPT="Live mirror mode (workflow-master skill). A worker captured this conversation from the field: $TXT Decode it, split it by person (Person 1, Person 2…), assign each request its tier (GREEN/SEMI/YELLOW/RED per decision-router), then POST the summary as JSON to $SUP/api/live/summary with this shape: {\"worker\":\"<worker>\",\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}. Keep texts short. Then answer with one line: summary posted."
+    PROMPT="Live mirror mode (workflow-master skill). A worker captured this conversation from the field: $TXT Decode it, split it by person (Person 1, Person 2…), assign each request its tier (GREEN/SEMI/YELLOW/RED per decision-router). If any speech is not in French, translate it into French inside the summary (the house language of the business), then POST the summary as JSON to $SUP/api/live/summary with this shape: {\"worker\":\"<worker>\",\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}. Keep texts short. Then answer with one line: summary posted."
     echo "[$(date +%H:%M:%S)] $N transcript(s) received → AI processing…"
     if [ -n "$DRY" ]; then
       echo "   would run: $DSH --profile campo --patch /tmp/dsh-fast-patch.yml headless \"$PROMPT\""
