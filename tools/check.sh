@@ -24,7 +24,7 @@ for p in jfranco-*; do
     const l=fs.readFileSync('$p/lib/index.js','utf8');
     const isHost=l.includes('host half');
     if(!isHost && (!l.includes('const CANDIDATE')||!l.includes('description:')||!l.includes('registerProvider'))) throw new Error('$p: provider pattern missing');
-    if(isHost) return;
+    if(isHost) process.exit(0);
     for(const f of fs.readdirSync('$p/locale')) JSON.parse(fs.readFileSync('$p/locale/'+f,'utf8'));
     const pj=JSON.parse(fs.readFileSync('$p/package.json','utf8'));
     if(!pj.author||!pj.dsh||!pj.dsh.bundle) throw new Error('$p: manifest missing author/dsh.bundle');
