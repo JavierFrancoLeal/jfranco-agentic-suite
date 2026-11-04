@@ -171,3 +171,10 @@ for whoever arrives later.*
 - lesson: never export text without an explicit font. Set the Normal style font (Arial) + the document language (fr-CA) — the exporter then embeds a clean subset and accents survive. Verify by checking WHICH fonts the PDF embeds, not just that it renders.
 - correct-order: "Set Normal style font + language in the generator; after export, grep the PDF for /BaseFont and demand Arial/Liberation — a CJK font in a French document is the smoking gun."
 - evidence: tools/make-docs-v3.py (Arial + fr-CA), PDF /BaseFont before: LiSungLight/TimesNewRomanPS → after: ArialMT/Arial-BoldMT, commit 85c23c6.
+
+## 2026-11-03 — Update mechanics are a cost center: batch them
+- concept: flow
+- friction: 153 commits and ~28 supervisor publishes + ~15 DMG rebuilds in one session — a large share of tokens and turns spent on delivering, not creating.
+- lesson: publishing is non-value work. Develop → verify locally (check.sh) → ONE sync-all + ONE commit per milestone (end of day, or before a demo/client moment). Rebuild the DMG only before delivery. The browser/?reset/LE_VEILLEUX_URL loop already makes most rebuilds unnecessary.
+- correct-order: "Batch: one publish per milestone, one DMG per delivery, one commit per feature."
+- evidence: git count (153 commits / 48 today), supervisor v1.0.19→v1.0.47.
