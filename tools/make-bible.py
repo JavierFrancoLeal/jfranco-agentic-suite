@@ -69,6 +69,12 @@ def no_split(row):
     cant = OxmlElement("w:cantSplit")
     trPr.append(cant)
 
+def keep_together(t):
+    for r in t.rows[:-1]:
+        for c in r.cells:
+            for p in c.paragraphs:
+                p.paragraph_format.keep_with_next = True
+
 def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", "")):
     t = doc.add_table(rows=1, cols=3); t.autofit = False
     no_split(t.rows[0])
@@ -85,6 +91,7 @@ def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", "")):
             if i == 0: r.bold = True; r.font.color.rgb = V
             elif i == 2: r.bold = True; r.font.color.rgb = INK
             else: r.font.color.rgb = INK
+    keep_together(t)
     return t
 
 doc = Document()
@@ -118,10 +125,11 @@ table3(doc, [
     ("4", "Le modèle d'affaires et la viabilité", "L'entrepreneur + comptable"),
     ("5", "L'aide financière disponible (clients et entreprise)", "Délégable : comptable"),
     ("6", "La feuille de route — le pilote d'abord", "La direction"),
-    ("7", "Les risques et leur mitigation", "La direction + conseil"),
-    ("8", "La demande — partenaires et appui", "La direction + SADC"),
-    ("9", "L'organisme technologique", "Délégable : directeur technique"),
-    ("10", "Sources et références (liens vérifiables)", "Délégable : analystes"),
+    ("7", "L'échelle — des entreprises au gouvernement", "La direction"),
+    ("8", "Les risques et leur mitigation", "La direction + conseil"),
+    ("9", "La demande — partenaires et appui", "La direction + SADC"),
+    ("10", "L'organisme technologique", "Délégable : directeur technique"),
+    ("11", "Sources et références (liens vérifiables)", "Délégable : analystes"),
 ], header=("No", "Section", "À lire par"))
 
 # ── 1. POURQUOI MAINTENANT ───────────────────────────────────
@@ -196,8 +204,13 @@ table3(doc, [
     ("Au-delà", "Accords intermunicipaux et secteur public — seulement après validation sur le terrain, avec la même discipline de pilote", "Échelle"),
 ], header=("Période", "Les actions", "Le résultat"))
 
-# ── 7. RISQUES ───────────────────────────────────────────────
-section(doc, "7", "Les risques et leur mitigation", "La direction + le conseil consultatif")
+# ── 7. L'ÉCHELLE ────────────────────────────────────────────
+section(doc, "7", "L'échelle — des entreprises au gouvernement", "La direction")
+para(doc, "Les possibilités de l'IA agéntique dépassent largement le cadre des entreprises : le potentiel d'implantation s'étend au secteur gouvernemental et municipal, où la même friction — des processus de l'ère du papier — coûte 328,4 M$ par an aux municipalités québécoises. La même thèse, le même maillon humain, deux marchés : accompagner les PME aujourd'hui, accompagner les administrations demain, toujours avec la même discipline — un pilote par secteur, aucune promesse non validée.")
+para(doc, "Le cadre légal accompagne cette échelle : la Loi sur les contrats des organismes municipaux (2026) permet une entrée progressive par adjudication directe, et les programmes régionaux (FRR, Volets 2-3 des MRC) financent la coopération intermunicipale. L'échelle se fera secteur par secteur, organisme par organisme — jamais par promesse.", size=9.5, color=MUTED)
+
+# ── 8. RISQUES ───────────────────────────────────────────────
+section(doc, "8", "Les risques et leur mitigation", "La direction + le conseil consultatif")
 table3(doc, [
     ("Surestimation / sous-livraison", "La discipline antifragile : le pilote valide chaque promesse avant tout engagement public", "Structurel"),
     ("Adoption lente", "Résultats rapides sur les données existantes du client + formation pratique (MFOR)", "Contrôlé"),
@@ -207,13 +220,13 @@ table3(doc, [
 ], header=("Risque", "Mitigation", "Statut"))
 
 # ── 8. DEMANDE ──────────────────────────────────────────────
-section(doc, "8", "La demande — partenaires et appui", "La direction + SADC")
+section(doc, "9", "La demande — partenaires et appui", "La direction + SADC")
 bullet(doc, "SADC Charlevoix : ", "accompagnement-conseil ; mise en relation avec une PME pilote (idéalement dans Charlevoix-Est) ; aide au développement du réseau après validation ; aide aux demandes de subventions et de financement.")
 bullet(doc, "Les canaux : ", "SDLE de la MRC de Charlevoix · Mission développement Charlevoix · Chambre de commerce de Charlevoix · Tourisme Charlevoix · Table agroalimentaire de Charlevoix.")
 bullet(doc, "Après le pilote : ", "conseil consultatif de 3 à 5 personnes (propriétaire de PME, comptable, expert IA, ex-SADC).")
 
 # ── 9. ORGANISME ─────────────────────────────────────────────
-section(doc, "9", "L'organisme technologique — déjà réel, pas une idée", "Délégable : directeur technique — l'entrepreneur n'a pas besoin de lire ceci")
+section(doc, "10", "L'organisme technologique — déjà réel, pas une idée", "Délégable : directeur technique — l'entrepreneur n'a pas besoin de lire ceci")
 para(doc, "Cet organisme n'est pas un projet sur papier : il existe déjà, en version bêta, sur plusieurs plateformes. Il a été construit par l'intelligence artificielle agéntique et son fondateur — l'IA a écrit le code, l'humain a décidé, vérifié et signé chaque étape. Les registres publics en font foi.")
 table3(doc, [
     ("Registres publics", "GitHub : github.com/JavierFrancoLeal/jfranco-agentic-suite — 150+ commits documentés · npm : @javierfrancoleal — les 7 organes et le superviseur publiés et installables", "Preuve tangible"),
@@ -226,7 +239,7 @@ cite(doc, "GitHub — JavierFrancoLeal/jfranco-agentic-suite", "https://github.c
 cite(doc, "npm — @javierfrancoleal", "https://www.npmjs.com/search?q=%40javierfrancoleal")
 
 # ── 10. SOURCES ──────────────────────────────────────────────
-section(doc, "10", "Sources et références (liens vérifiables)", "Délégable : analystes")
+section(doc, "11", "Sources et références (liens vérifiables)", "Délégable : analystes")
 cite(doc, "Nassim Nicholas Taleb — Antifragile : les bienfaits du désordre (2012)", "https://www.penguinrandomhouse.com/books/176227/antifragile-by-nassim-nicholas-taleb/")
 cite(doc, "Statistique Canada — Enquête sur l'utilisation de l'IA par les entreprises", "https://www150.statcan.gc.ca/n1/fr/type/donnees?MM=1")
 cite(doc, "Institut de la statistique du Québec — Adoption de l'IA au Québec", "https://statistique.quebec.ca/fr")
