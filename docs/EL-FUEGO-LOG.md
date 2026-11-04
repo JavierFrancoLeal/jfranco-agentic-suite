@@ -178,3 +178,10 @@ for whoever arrives later.*
 - lesson: publishing is non-value work. Develop → verify locally (check.sh) → ONE sync-all + ONE commit per milestone (end of day, or before a demo/client moment). Rebuild the DMG only before delivery. The browser/?reset/LE_VEILLEUX_URL loop already makes most rebuilds unnecessary.
 - correct-order: "Batch: one publish per milestone, one DMG per delivery, one commit per feature."
 - evidence: git count (153 commits / 48 today), supervisor v1.0.19→v1.0.47.
+
+## 2026-11-03 — Integrations show reality, never predictions (the crystal ball trap)
+- concept: flow
+- friction: the tourism traffic card was designed to ADVISE the receptionist ("avise 40 minutes") — guessing what will happen instead of showing what is happening.
+- lesson: external technology is an EVIDENCE LAYER: real data in (traffic now, weather now, events now), the owner interprets. The AI never forecasts outcomes; alerts fire on measured facts, never on predictions. The pyramid applies to data too: data in, human at the top.
+- correct-order: "Show current facts per sector; let the owner decide what they mean; alerts only on measured thresholds."
+- evidence: docs/SECTOR-TECH.md (corrected prototype: Région card with facts + owner-set alerts), commit next.

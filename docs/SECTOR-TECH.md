@@ -25,11 +25,28 @@ touches a key, a console, or a technical decision.*
 | TomTom / HERE | ✔ traffic, routing | commercial tiers | Alternative if Google is rejected |
 | OpenStreetMap + OSRM/Valhalla | Routing free, **traffic no** (community data) | free | Backup for basic maps |
 
-**Prototype for a hotel/attraction:** the receptionist's screen shows a
-"Traffic" card — congestion on the main routes to the establishment with
-ETA, so guests are advised before departure ("route 138 works, route 362
-blocked — allow 40 minutes"). The owner stops paying: reception minutes
-per guest, complaints, and missed arrivals.
+**The principle (corrected by the creator): the integration is an
+EVIDENCE LAYER, not a crystal ball.** The external technology brings
+REAL data to the owner's screen — current traffic, current weather,
+current events — and the owner interprets it. The AI never guesses what
+will happen ("possible increase of clientele"); it shows what IS
+happening, and the human decides. The same pyramid as always: data in,
+human at the top.
+
+**Prototype for a hotel:** the owner's screen shows a "Région" card with
+FACTS, in real time:
+
+- Traffic NOW on the main corridors (Montréal → Charlevoix, Québec →
+  Charlevoix): congestion level and ETA, hour by hour.
+- Weather NOW and the next 48 h (Open-Meteo).
+- Local events this week (public data).
+
+No predictions, no suggestions. The owner SEES that the 138 is heavy at
+14:00 and decides — staffing, promotions, opening hours. If the owner
+wants, they set an ALERT on a fact ("tell me when the ETA from Québec
+exceeds 90 minutes") — the alert fires on the measured fact, never on a
+forecast. What the owner stops paying: the hours spent searching for
+this information by phone and by hand.
 
 ## The matrix — one external technology per sector
 
