@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Le Veilleux — Bienvenue</title>
+<title>Fanal — Bienvenue</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff 55%,#a78bfa);min-height:100vh;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
@@ -50,7 +50,7 @@ button:disabled{opacity:.6;cursor:wait}
 
 <!-- STEP 2: one compact form, in the chosen language -->
 <div class="card hidden" id="step2" style="display:none">
-  <h1 id="wTitle">Welcome to Le Veilleux</h1>
+  <h1 id="wTitle">Welcome to Fanal</h1>
   <p class="tag" id="tagline">The AI works. The human watches, decides, reviews.</p>
   <input id="owner" placeholder="Your name (the owner)">
   <input id="password" type="password" placeholder="Password (min. 8 characters)" minlength="8">
@@ -68,7 +68,7 @@ button:disabled{opacity:.6;cursor:wait}
     <option value="realestate">🏠 Real estate</option>
     <option value="school">🎓 School</option>
   </select>
-  <button id="go">Create my Le Veilleux</button>
+  <button id="go">Create my Fanal</button>
   <p class="hint" id="hint">This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.</p>
   <button class="back" id="back">← Change language</button>
 </div>
@@ -79,16 +79,16 @@ const GREET=["Bonjour","Hola","Hello","你好","مرحبا","안녕하세요","�
 const LANGS={fr:"Français",en:"English",es:"Español",de:"Deutsch",it:"Italiano",pt:"Português",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
 const TAGS={en:"The AI works. The human watches, decides, reviews.",es:"La IA trabaja. El humano vela, decide, revisa.",fr:"L'IA travaille. L'humain veille, décide, revoit.",de:"Die KI arbeitet. Der Mensch wacht, entscheidet, prüft.",it:"L'IA lavora. L'umano veglia, decide, rivede.",pt:"A IA trabalha. O humano vela, decide, revê.",zh:"AI 工作，人来守护、决定、复核。",ja:"AIが働き、人間が見守り、決め、見直す。",ko:"AI가 일하고 사람이 지키고, 결정하고, 검토합니다.",ar:"الذكاء الاصطناعي يعمل، والإنسان يراقب ويقرر ويراجع."};
 const S={
-en:{title:"Welcome to Le Veilleux",name:"Your name (the owner)",pass:"Password (min. 8 characters)",btn:"Create my Le Veilleux",hint:"This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.",back:"← Change language",key:"DeepSeek API key (optional — paste now or later)",model:"Model"},
-es:{title:"Bienvenido a Le Veilleux",name:"Tu nombre (el dueño)",pass:"Contraseña (mín. 8 caracteres)",btn:"Crear mi Le Veilleux",hint:"Esto crea el cerebro en esta computadora: tu cuenta, tu sector, tus reglas. Nada sale de la máquina.",back:"← Cambiar idioma",key:"Clave API de DeepSeek (opcional — pégala ahora o después)",model:"Modelo"},
-fr:{title:"Bienvenue chez Le Veilleux",name:"Votre nom (le propriétaire)",pass:"Mot de passe (min. 8 caractères)",btn:"Créer mon Le Veilleux",hint:"Cela crée le cerveau sur cet ordinateur : votre compte, votre secteur, vos règles. Rien ne quitte la machine.",back:"← Changer de langue",key:"Clé API DeepSeek (facultatif — collez-la maintenant ou plus tard)",model:"Modèle"},
-de:{title:"Willkommen bei Le Veilleux",name:"Ihr Name (der Inhaber)",pass:"Passwort (min. 8 Zeichen)",btn:"Mein Le Veilleux erstellen",hint:"Das erstellt das Gehirn auf diesem Computer: Ihr Konto, Ihre Branche, Ihre Regeln. Nichts verlässt den Rechner.",back:"← Sprache ändern",key:"DeepSeek-API-Schlüssel (optional — jetzt oder später einfügen)",model:"Modell"},
-it:{title:"Benvenuto in Le Veilleux",name:"Il tuo nome (il proprietario)",pass:"Password (min. 8 caratteri)",btn:"Crea il mio Le Veilleux",hint:"Crea il cervello su questo computer: il tuo account, il tuo settore, le tue regole. Nulla esce dalla macchina.",back:"← Cambia lingua",key:"Chiave API DeepSeek (facoltativa — incollala ora o dopo)",model:"Modello"},
-pt:{title:"Bem-vindo ao Le Veilleux",name:"O seu nome (o dono)",pass:"Senha (mín. 8 caracteres)",btn:"Criar o meu Le Veilleux",hint:"Isto cria o cérebro neste computador: a sua conta, o seu setor, as suas regras. Nada sai da máquina.",back:"← Mudar idioma",key:"Chave API DeepSeek (opcional — cole agora ou depois)",model:"Modelo"},
-zh:{title:"欢迎使用 Le Veilleux",name:"您的姓名（所有者）",pass:"密码（至少8个字符）",btn:"创建我的 Le Veilleux",hint:"这将在此计算机上创建大脑：您的账户、行业和规则。一切都不离开机器。",back:"← 更改语言",key:"DeepSeek API 密钥（可选 — 现在或稍后粘贴）",model:"模型"},
-ja:{title:"Le Veilleux へようこそ",name:"お名前（オーナー）",pass:"パスワード（8文字以上）",btn:"Le Veilleux を作成",hint:"このコンピュータ上に頭脳を作成します：アカウント、セクター、ルール。すべてマシン内に留まります。",back:"← 言語を変更",key:"DeepSeek APIキー（任意 — 今または後で貼り付け）",model:"モデル"},
-ko:{title:"Le Veilleux에 오신 것을 환영합니다",name:"이름(소유자)",pass:"비밀번호(8자 이상)",btn:"내 Le Veilleux 만들기",hint:"이 컴퓨터에 두뇌를 만듭니다: 계정, 업종, 규칙. 모든 것이 기기 안에 머무릅니다.",back:"← 언어 변경",key:"DeepSeek API 키(선택 — 지금 또는 나중에 붙여넣기)",model:"모델"},
-ar:{title:"مرحبًا بك في Le Veilleux",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Le Veilleux الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة",key:"مفتاح DeepSeek API (اختياري — الصقه الآن أو لاحقًا)",model:"النموذج"}
+en:{title:"Welcome to Fanal",name:"Your name (the owner)",pass:"Password (min. 8 characters)",btn:"Create my Fanal",hint:"This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.",back:"← Change language",key:"DeepSeek API key (optional — paste now or later)",model:"Model"},
+es:{title:"Bienvenido a Fanal",name:"Tu nombre (el dueño)",pass:"Contraseña (mín. 8 caracteres)",btn:"Crear mi Fanal",hint:"Esto crea el cerebro en esta computadora: tu cuenta, tu sector, tus reglas. Nada sale de la máquina.",back:"← Cambiar idioma",key:"Clave API de DeepSeek (opcional — pégala ahora o después)",model:"Modelo"},
+fr:{title:"Bienvenue chez Fanal",name:"Votre nom (le propriétaire)",pass:"Mot de passe (min. 8 caractères)",btn:"Créer mon Fanal",hint:"Cela crée le cerveau sur cet ordinateur : votre compte, votre secteur, vos règles. Rien ne quitte la machine.",back:"← Changer de langue",key:"Clé API DeepSeek (facultatif — collez-la maintenant ou plus tard)",model:"Modèle"},
+de:{title:"Willkommen bei Fanal",name:"Ihr Name (der Inhaber)",pass:"Passwort (min. 8 Zeichen)",btn:"Mein Fanal erstellen",hint:"Das erstellt das Gehirn auf diesem Computer: Ihr Konto, Ihre Branche, Ihre Regeln. Nichts verlässt den Rechner.",back:"← Sprache ändern",key:"DeepSeek-API-Schlüssel (optional — jetzt oder später einfügen)",model:"Modell"},
+it:{title:"Benvenuto in Fanal",name:"Il tuo nome (il proprietario)",pass:"Password (min. 8 caratteri)",btn:"Crea il mio Fanal",hint:"Crea il cervello su questo computer: il tuo account, il tuo settore, le tue regole. Nulla esce dalla macchina.",back:"← Cambia lingua",key:"Chiave API DeepSeek (facoltativa — incollala ora o dopo)",model:"Modello"},
+pt:{title:"Bem-vindo ao Fanal",name:"O seu nome (o dono)",pass:"Senha (mín. 8 caracteres)",btn:"Criar o meu Fanal",hint:"Isto cria o cérebro neste computador: a sua conta, o seu setor, as suas regras. Nada sai da máquina.",back:"← Mudar idioma",key:"Chave API DeepSeek (opcional — cole agora ou depois)",model:"Modelo"},
+zh:{title:"欢迎使用 Fanal",name:"您的姓名（所有者）",pass:"密码（至少8个字符）",btn:"创建我的 Fanal",hint:"这将在此计算机上创建大脑：您的账户、行业和规则。一切都不离开机器。",back:"← 更改语言",key:"DeepSeek API 密钥（可选 — 现在或稍后粘贴）",model:"模型"},
+ja:{title:"Fanal へようこそ",name:"お名前（オーナー）",pass:"パスワード（8文字以上）",btn:"Fanal を作成",hint:"このコンピュータ上に頭脳を作成します：アカウント、セクター、ルール。すべてマシン内に留まります。",back:"← 言語を変更",key:"DeepSeek APIキー（任意 — 今または後で貼り付け）",model:"モデル"},
+ko:{title:"Fanal에 오신 것을 환영합니다",name:"이름(소유자)",pass:"비밀번호(8자 이상)",btn:"내 Fanal 만들기",hint:"이 컴퓨터에 두뇌를 만듭니다: 계정, 업종, 규칙. 모든 것이 기기 안에 머무릅니다.",back:"← 언어 변경",key:"DeepSeek API 키(선택 — 지금 또는 나중에 붙여넣기)",model:"모델"},
+ar:{title:"مرحبًا بك في Fanal",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Fanal الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة",key:"مفتاح DeepSeek API (اختياري — الصقه الآن أو لاحقًا)",model:"النموذج"}
 };
 let cur="en";
 // The glass reel: language names passing through, semi-transparent.

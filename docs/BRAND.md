@@ -1,4 +1,4 @@
-# Le Veilleux — brand system (antifragile)
+# Fanal — brand system (antifragile)
 
 *The AI works. The human watches, decides, reviews.* 🍁
 

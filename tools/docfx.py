@@ -1,4 +1,4 @@
-# docfx — the Franco Vision document factory.
+# docfx — the Trasunto document factory.
 # Professional consulting techniques, one reusable library:
 #   · cantSplit + keepNext chains (boxes never straddle pages)
 #   · tblHeader (table headers repeat when a table continues)

@@ -3,7 +3,7 @@
 *2026-11-03 · J.Franco · The founder's rule: our keys, our API, our tools,
 our property — never mixed with the client's business or workflow. Two
 sources, two independent ways of working. And one promise: the manager
-directs; Franco Vision handles everything behind. One app to learn, not
+directs; Trasunto handles everything behind. One app to learn, not
 two.*
 
 ## 1. The Day 0–14 flow, explained piece by piece
@@ -15,7 +15,7 @@ two.*
 | **The brain computer** | The owner's computer (or a dedicated one) running: the supervisor server (the app's API + dashboard), the DSH runtime with the profile of the 7 organs, and a local agent that talks to the AI | The whole business runs on ONE machine the owner already owns — the data never leaves the building |
 | **Workers' tablets/phones** | Existing devices, NOTHING installed: they open a URL or add the PWA to the home screen | Zero hardware cost, zero app-store friction |
 | **Kitchen/back-office tablet (optional)** | One extra device on the wall or the counter, wallboard mode | The live board for orders and notices |
-| **The API key** | The client's OWN DeepSeek key (their account, their billing), stored in the client-side config — never Franco Vision's key | Separation: our consumption is ours; theirs is theirs |
+| **The API key** | The client's OWN DeepSeek key (their account, their billing), stored in the client-side config — never Trasunto's key | Separation: our consumption is ours; theirs is theirs |
 | **The check** | The 3-screen first run + owner account creation | Proves the brain is alive before training |
 
 ### Day 1 — Training by role (90 min)
@@ -43,8 +43,8 @@ the knowledge ledger (anonymized lessons)         their wallboard, their workers
 ```
 
 - **Keys never mix:** the client's brain runs with the CLIENT's keys from
-  day one. Franco Vision's keys exist only in Franco Vision's demo and in
-  Franco Vision's own kitchen. The pilot does NOT lend our key: the client
+  day one. Trasunto's keys exist only in Trasunto's demo and in
+  Trasunto's own kitchen. The pilot does NOT lend our key: the client
   creates their own (one onboarding step, worth the boundary).
 - **Data never mixes:** client data stays in the client's DATA_DIR. The
   only bridge is the Knowledge Ledger discipline — anonymized lessons and the
@@ -56,11 +56,11 @@ the knowledge ledger (anonymized lessons)         their wallboard, their workers
 
 ## 3. The dilemma — one app or two systems? (the Studio layer)
 
-The promise: "the manager directs; Franco Vision handles everything
+The promise: "the manager directs; Trasunto handles everything
 behind." Two trainings in two systems would break it. The solution is
 ONE app with an INVISIBLE kitchen:
 
-### The Studio — a "Demandes" tab inside Le Veilleux
+### The Studio — a "Demandes" tab inside Fanal
 
 The owner (or lead) opens the Studio, picks a task type — publication,
 courriel, devis, offre d'emploi, agenda, réseaux sociaux — describes it
@@ -71,7 +71,7 @@ in one sentence, and submits. Nothing else to learn.
 | Queue | Who drafts | Whose key | For what |
 |---|---|---|---|
 | **Simple** (templates + one-shot AI) | The client's own brain (dual-brain queue) | The CLIENT's key | Regular drafts the app can produce instantly |
-| **Managed** (complex mandates) | Franco Vision's kitchen, remotely (our DSH + our organs) | OUR key, our side | Custom work — the result returns to the app for the human's approval |
+| **Managed** (complex mandates) | Trasunto's kitchen, remotely (our DSH + our organs) | OUR key, our side | Custom work — the result returns to the app for the human's approval |
 
 The human reviews and approves EVERYTHING in the app — one place, one
 training, one pyramid (data in, human at the top).
@@ -82,7 +82,7 @@ training, one pyramid (data in, human at the top).
   Studio is a new TAB and a tasks queue, not a new organ (industrial
   lens: the organs already draft; the server already routes).
 - **Efficient:** yes — the 6 "service" façons become menu items in the
-  same app; the client never opens DSH; DSH is the kitchen Franco Vision
+  same app; the client never opens DSH; DSH is the kitchen Trasunto
   wears behind the counter.
 - **Phased:** Stage 1 — the Studio tab + simple queue (client key).
   Stage 2 — the managed queue (our key, remote kitchen) for the pilot's

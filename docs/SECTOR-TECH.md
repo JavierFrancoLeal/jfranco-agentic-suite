@@ -1,4 +1,4 @@
-# Sector technology matrix — external tech inside Le Veilleux
+# Sector technology matrix — external tech inside Fanal
 
 *2026-11-03 · J.Franco · Source 3 of the business plan, engineered: every
 sector of the economy gets the external technology that makes the owner

@@ -7,7 +7,7 @@ spending (time, money, resources).*
 
 ## 0. The thesis (the commercial lens)
 
-Le Veilleux does not sell technology. It sells **the difference the
+Fanal does not sell technology. It sells **the difference the
 owner feels on the ledger**: the reconciliation hours not billed, the
 lost payments recovered, the double-entry errors avoided, the second
 pair of eyes always present. Every feature we ship must answer one

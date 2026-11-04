@@ -1,7 +1,7 @@
 # DOC-FACTORY — the professional document techniques kit
 
 *The reusable artifact for every future document. A Python library
-(`tools/docfx.py`) plus this technique list. All Franco Vision documents
+(`tools/docfx.py`) plus this technique list. All Trasunto documents
 are generated with it.*
 
 ## The library

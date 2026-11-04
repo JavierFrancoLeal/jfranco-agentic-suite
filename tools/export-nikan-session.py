@@ -70,7 +70,7 @@ for session_dir in glob.glob(os.path.join(SRC, "*", "*")):
 readme = """# Sesión Nikan — exportada de Claude Cowork (local)
 
 Esta carpeta contiene TODAS las sesiones de Claude Cowork relacionadas con
-el plan de negocios (Nikan / Franco Vision), recuperadas de los archivos
+el plan de negocios (Nikan / Trasunto), recuperadas de los archivos
 locales de tu Mac — sin suscripción, sin la app.
 
 - `sessions/<id>/conversation.txt` — la conversación completa:

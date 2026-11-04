@@ -1,4 +1,4 @@
-# Generates the FRANCO IA one-pager (SADC-ready) with subtle Le Veilleux branding.
+# Generates the FRANCO IA one-pager (SADC-ready) with subtle Fanal branding.
 import sys
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
@@ -63,7 +63,7 @@ run2 = p.add_run("  FRANCO VISION")
 run2.bold = True; run2.font.size = Pt(20); run2.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 p.alignment = WD_ALIGN_PARAGRAPH.LEFT
 p2 = c1.paragraphs[0]
-r = p2.add_run("Franco Vision inc.\nL'humain au sommet · L'IA en soutien · Produit : Le Veilleux")
+r = p2.add_run("Trasunto\nL'humain au sommet · L'IA en soutien · Produit : Fanal")
 r.font.size = Pt(9); r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 

@@ -1,6 +1,6 @@
-# Third-party licenses — Le Veilleux distribution
+# Third-party licenses — Fanal distribution
 
-Le Veilleux bundles the DeepSeek Harness runtime. The following open-source
+Fanal bundles the DeepSeek Harness runtime. The following open-source
 licenses apply and are redistributed with attribution, as both require:
 
 ## MIT
@@ -50,6 +50,6 @@ met:
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
 AND ANY EXPRESS OR IMPLIED WARRANTIES ARE DISCLAIMED.
 
-## Le Veilleux itself
+## Fanal itself
 
 MIT — Copyright (c) 2026 J.Franco.

@@ -23,8 +23,8 @@ patch("supervisor/server.js", [
 
 // ── AGENT: the kitchen returns rationale + draft ────────────
 patch("tools/agent-standby.sh", [
-  ['SPROMPT="Drafts kitchen (Studio, Franco Vision). The owner asked these tasks (each line: id ::: type :: request): \\$STXT Draft each one in professional French, short and ready to publish/send. Then for EACH task POST the draft as JSON to \\$SUP/api/studio/result with this shape: {\\"id\\":\\"<the task id>\\",\\"result\\":\\"<your draft>\\"}. Finally reply one line: drafts posted."',
-   'SPROMPT="Decision center kitchen (Franco Vision). The owner asked these tasks (each line: id ::: type :: request): \\$STXT For EACH: draft a short professional French response AND write in one sentence your reasoning (the motivation: why this reply, based on what). Then POST as JSON to \\$SUP/api/studio/result with this shape: {\\"id\\":\\"<the task id>\\",\\"result\\":\\"<your draft>\\",\\"rationale\\":\\"<your reasoning>\\"}. Finally reply one line: drafts posted."'],
+  ['SPROMPT="Drafts kitchen (Studio, Trasunto). The owner asked these tasks (each line: id ::: type :: request): \\$STXT Draft each one in professional French, short and ready to publish/send. Then for EACH task POST the draft as JSON to \\$SUP/api/studio/result with this shape: {\\"id\\":\\"<the task id>\\",\\"result\\":\\"<your draft>\\"}. Finally reply one line: drafts posted."',
+   'SPROMPT="Decision center kitchen (Trasunto). The owner asked these tasks (each line: id ::: type :: request): \\$STXT For EACH: draft a short professional French response AND write in one sentence your reasoning (the motivation: why this reply, based on what). Then POST as JSON to \\$SUP/api/studio/result with this shape: {\\"id\\":\\"<the task id>\\",\\"result\\":\\"<your draft>\\",\\"rationale\\":\\"<your reasoning>\\"}. Finally reply one line: drafts posted."'],
 ]);
 
 // ── DASHBOARD: rename the tab + full-screen inbox/decision UI ─

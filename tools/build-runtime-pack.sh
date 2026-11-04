@@ -4,7 +4,7 @@
 #
 # Copies the DeepSeek Harness runtime, the eight J.Franco plugins, and the
 # license notices into dist/le-veilleux-runtime, ready to be included as
-# extraResources in the Le Veilleux desktop installer. Result: the client
+# extraResources in the Fanal desktop installer. Result: the client
 # installs ONE app and only pastes their DeepSeek key.
 #
 # Usage: sh tools/build-runtime-pack.sh

@@ -1,4 +1,4 @@
-# Franco Vision one-pager v2 — brand-grade visual design (Apple/Google style).
+# Trasunto one-pager v2 — brand-grade visual design (Apple/Google style).
 # Generates the hero/footer gradient art with Pillow, then composes the DOCX.
 import sys, os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -52,9 +52,9 @@ def hero_art():
     d = ImageDraw.Draw(img)
     icon = Image.open(ICON).convert("RGBA").resize((300, 300), Image.LANCZOS)
     img.alpha_composite(icon, (90, 170))
-    d.text((450, 190), "Franco Vision", font=F(140, True), fill=(255, 255, 255), stroke_width=3, stroke_fill=(255, 255, 255))
+    d.text((450, 190), "Trasunto", font=F(140, True), fill=(255, 255, 255), stroke_width=3, stroke_fill=(255, 255, 255))
     d.text((458, 380), "L'humain au sommet · L'IA en soutien", font=F(58), fill=(240, 244, 255))
-    d.text((460, 490), "Produit : Le Veilleux — distribution DeepSeek Harness · Québec", font=F(44), fill=(224, 231, 255))
+    d.text((460, 490), "Produit : Fanal — distribution DeepSeek Harness · Québec", font=F(44), fill=(224, 231, 255))
     img.convert("RGB").save(f"{ASSDIR}/hero.png", quality=95)
     return f"{ASSDIR}/hero.png"
 
@@ -62,8 +62,8 @@ def footer_art():
     w, h = 2480, 220
     img = gradient(w, h, [VIOLET, BLUE, BLUE])
     d = ImageDraw.Draw(img)
-    d.text((90, 60), "Le Veilleux", font=F(64, True), fill=(255, 255, 255))
-    tw = d.textlength("Le Veilleux", font=F(64, True))
+    d.text((90, 60), "Fanal", font=F(64, True), fill=(255, 255, 255))
+    tw = d.textlength("Fanal", font=F(64, True))
     d.text((w - 90 - 700, 78), "francovision.quebec  ·  Charlevoix", font=F(44), fill=(230, 235, 255), anchor="ra")
     img.save(f"{ASSDIR}/footer.png", quality=95)
     return f"{ASSDIR}/footer.png"

@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#4D6BFE">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Le Veilleux">
+<meta name="apple-mobile-web-app-title" content="Fanal">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-icon-180.png">
-<title>Le Veilleux — Action Panel</title>
+<title>Fanal — Action Panel</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234D6BFE'/%3E%3Cstop offset='1' stop-color='%237c5cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8' fill='none' stroke='url(%23f)' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
 :root{--blue:#4D6BFE;--ink:#101828;--muted:#667085;--bg:#f6f7fb;--card:#fff;--line:#e3e6ee;--line2:#eef0f7;--ok:#22c55e;--bad:#ef4444}
@@ -115,7 +115,7 @@ const LANG={es:"escucha",en:"listen",fr:"écoute",de:"hör zu",it:"ascolta",pt:"
 const VOICE={es:"es-ES",en:"en-US",fr:"fr-FR",de:"de-DE",it:"it-IT",pt:"pt-PT",zh:"zh-CN",ja:"ja-JP",ko:"ko-KR",ar:"ar-SA"};
 const END={es:"eso es todo",en:"that's all",fr:"c'est tout",de:"das ist alles",it:"è tutto",pt:"é tudo",zh:"说完了",ja:"以上です",ko:"이상입니다",ar:"هذا كل شيء"};
 const S={
- es:{worker:"Usuario",role:"Puesto",title:"🎙️ Le Veilleux — Panel de Acción",subtitle:"Suite J.Franco · DeepSeek Harness",
+ es:{worker:"Usuario",role:"Puesto",title:"🎙️ Fanal — Panel de Acción",subtitle:"Suite J.Franco · DeepSeek Harness",
   listen:"🎙️ ESCUCHAR / DICTAR",stop:"⏹️ DETENER",copy:"📋 Copiar para DSH",copied:"✅ ¡Copiado!",
   speak:"🔊 Leer en voz alta",nospeech:"🎙️ Dictado no soportado",
   recording:"🔴 Grabando — toca DETENER al terminar",micError:"Micrófono no disponible — revisa los permisos del navegador.",
@@ -125,7 +125,7 @@ const S={
   clue:(w)=>`DSH, ${w} — comienzo a escuchar. Dime la conversación o las peticiones. Si aparecen varios idiomas, activa la interpretación cuando lo pida; el flujo principal (anotar, escribir, abrir aplicaciones…) sigue el análisis del input.`,
   note:(end)=>`Pulsa ESCUCHAR, habla la conversación y di «${end}». Luego copia y pega la instrucción en una nueva sesión de DeepSeek Harness — o usa la app «DSH Asistente» para ejecución autónoma.`,
   legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifícalo) · 🟡 propuesta (tú decides) · 🔴 pregunta.",fbTitle:"Feedback de campo",fbPh:"¿Qué pasó? ¿Qué debe mejorar?",fbSent:"Enviado — el agente lo leerá",fbOffline:"Supervisor sin conexión — prompt copiado para DSH",catError:"Error",catImprovement:"Mejora",catIdea:"Idea"},
- en:{worker:"User",role:"Role",title:"🎙️ Le Veilleux — Action Panel",subtitle:"J.Franco Suite · DeepSeek Harness",
+ en:{worker:"User",role:"Role",title:"🎙️ Fanal — Action Panel",subtitle:"J.Franco Suite · DeepSeek Harness",
   listen:"🎙️ LISTEN / DICTATE",stop:"⏹️ STOP",copy:"📋 Copy for DSH",copied:"✅ Copied!",
   speak:"🔊 Read aloud",nospeech:"🎙️ Dictation not supported",
   recording:"🔴 Recording — tap STOP when done",micError:"Microphone unavailable — check browser permissions.",
@@ -135,7 +135,7 @@ const S={
   clue:(w)=>`DSH, ${w} — I'm starting to listen. Tell me the conversation or the requests. If several languages appear, activate interpretation when asked; the main flow (noting, writing, opening apps…) follows the input analysis.`,
   note:(end)=>`Tap LISTEN, speak the conversation and say "${end}". Then copy and paste the instruction into a new DeepSeek Harness session — or use the "DSH Assistant" app for autonomous runs.`,
   legend:"Traffic light: 🟢 automatic · ⚑ semi-automatic (verify it) · 🟡 proposal (you decide) · 🔴 ask.",fbTitle:"Field Feedback",fbPh:"What happened? What should improve?",fbSent:"Sent — the agent will read it",fbOffline:"Supervisor offline — prompt copied for DSH",catError:"Error",catImprovement:"Improvement",catIdea:"Idea"},
- fr:{worker:"Utilisateur",role:"Fonction",title:"🎙️ Le Veilleux — Panneau d'Action",subtitle:"Suite J.Franco · DeepSeek Harness",
+ fr:{worker:"Utilisateur",role:"Fonction",title:"🎙️ Fanal — Panneau d'Action",subtitle:"Suite J.Franco · DeepSeek Harness",
   listen:"🎙️ ÉCOUTER / DICTER",stop:"⏹️ ARRÊTER",copy:"📋 Copier pour DSH",copied:"✅ Copié !",
   speak:"🔊 Lire à voix haute",nospeech:"🎙️ Dictée non prise en charge",
   recording:"🔴 Enregistrement — touchez ARRÊTER à la fin",micError:"Micro indisponible — vérifiez les autorisations du navigateur.",
@@ -145,7 +145,7 @@ const S={
   clue:(w)=>`DSH, ${w} — je commence à écouter. Racontez-moi la conversation ou les demandes. Si plusieurs langues apparaissent, activez l'interprétation à la demande ; le flux principal (noter, écrire, ouvrir des applications…) suit l'analyse.`,
   note:(end)=>`Touchez ÉCOUTER, parlez et dites « ${end} ». Copiez ensuite l'instruction dans une nouvelle session DeepSeek Harness — ou utilisez l'app « DSH Assistant » pour l'exécution autonome.`,
   legend:"Feux : 🟢 automatique · ⚑ semi-automatique (vérifiez) · 🟡 proposition (vous décidez) · 🔴 demandez.",fbTitle:"Feedback terrain",fbPh:"Que s'est-il passé ? Que faut-il améliorer ?",fbSent:"Envoyé — l'agent le lira",fbOffline:"Superviseur hors ligne — invite copiée pour DSH",catError:"Erreur",catImprovement:"Amélioration",catIdea:"Idée"},
- de:{worker:"Benutzer",role:"Rolle",title:"🎙️ Le Veilleux — Aktionspanel",subtitle:"J.Franco-Suite · DeepSeek Harness",
+ de:{worker:"Benutzer",role:"Rolle",title:"🎙️ Fanal — Aktionspanel",subtitle:"J.Franco-Suite · DeepSeek Harness",
   listen:"🎙️ ZUHÖREN / DIKTIEREN",stop:"⏹️ STOPP",copy:"📋 Für DSH kopieren",copied:"✅ Kopiert!",
   speak:"🔊 Vorlesen",nospeech:"🎙️ Diktat nicht unterstützt",
   recording:"🔴 Aufnahme — tippen Sie STOPP am Ende",micError:"Mikrofon nicht verfügbar — Browser-Berechtigungen prüfen.",
@@ -155,7 +155,7 @@ const S={
   clue:(w)=>`DSH, ${w} — ich beginne zuzuhören. Erzählen Sie mir das Gespräch oder die Anfragen. Bei mehreren Sprachen aktivieren Sie das Dolmetschen auf Zuruf; der Hauptablauf folgt der Analyse.`,
   note:(end)=>`Tippen Sie auf ZUHÖREN, sprechen Sie und sagen Sie «${end}». Kopieren Sie die Anweisung in eine neue Sitzung — oder nutzen Sie die App „DSH Assistent“.`,
   legend:"Ampel: 🟢 automatisch · ⚑ halbautomatisch (prüfen) · 🟡 Vorschlag (Sie entscheiden) · 🔴 fragen.",fbTitle:"Feld-Feedback",fbPh:"Was ist passiert? Was soll besser werden?",fbSent:"Gesendet — der Agent liest es",fbOffline:"Supervisor offline — Prompt für DSH kopiert",catError:"Fehler",catImprovement:"Verbesserung",catIdea:"Idee"},
- it:{worker:"Utente",role:"Ruolo",title:"🎙️ Le Veilleux — Pannello Azioni",subtitle:"Suite J.Franco · DeepSeek Harness",
+ it:{worker:"Utente",role:"Ruolo",title:"🎙️ Fanal — Pannello Azioni",subtitle:"Suite J.Franco · DeepSeek Harness",
   listen:"🎙️ ASCOLTA / DETTA",stop:"⏹️ FERMA",copy:"📋 Copia per DSH",copied:"✅ Copiato!",
   speak:"🔊 Leggi ad alta voce",nospeech:"🎙️ Dettatura non supportata",
   recording:"🔴 Registrazione — tocca FERMA alla fine",micError:"Microfono non disponibile — controlla i permessi.",
@@ -165,7 +165,7 @@ const S={
   clue:(w)=>`DSH, ${w} — comincio ad ascoltare. Raccontami la conversazione o le richieste. Se compaiono più lingue, attiva l'interpretazione quando richiesto; il flusso principale segue l'analisi.`,
   note:(end)=>`Tocca ASCOLTA, parla e di' «${end}». Poi copia e incolla l'istruzione in una nuova sessione — oppure usa l'app «DSH Assistente».`,
   legend:"Semaforo: 🟢 automatico · ⚑ semi-automatico (verificalo) · 🟡 proposta (decidi tu) · 🔴 chiedi.",fbTitle:"Feedback di campo",fbPh:"Cosa è successo? Cosa va migliorato?",fbSent:"Inviato — l'agente lo leggerà",fbOffline:"Supervisore offline — prompt copiato per DSH",catError:"Errore",catImprovement:"Miglioria",catIdea:"Idea"},
- pt:{worker:"Usuário",role:"Função",title:"🎙️ Le Veilleux — Painel de Ação",subtitle:"Suite J.Franco · DeepSeek Harness",
+ pt:{worker:"Usuário",role:"Função",title:"🎙️ Fanal — Painel de Ação",subtitle:"Suite J.Franco · DeepSeek Harness",
   listen:"🎙️ OUVIR / DITAR",stop:"⏹️ PARAR",copy:"📋 Copiar para o DSH",copied:"✅ Copiado!",
   speak:"🔊 Ler em voz alta",nospeech:"🎙️ Ditado não suportado",
   recording:"🔴 A gravar — toque PARAR no fim",micError:"Microfone indisponível — verifique as permissões.",
@@ -175,7 +175,7 @@ const S={
   clue:(w)=>`DSH, ${w} — começo a ouvir. Conte-me a conversa ou os pedidos. Se aparecerem várias línguas, ative a interpretação quando pedido; o fluxo principal segue a análise.`,
   note:(end)=>`Toque em OUVIR, fale e diga «${end}». Depois copie e cole a instrução numa nova sessão — ou use a app «DSH Assistente».`,
   legend:"Semáforo: 🟢 automático · ⚑ semi-automático (verifique) · 🟡 proposta (você decide) · 🔴 pergunte.",fbTitle:"Feedback de campo",fbPh:"O que aconteceu? O que deve melhorar?",fbSent:"Enviado — o agente vai ler",fbOffline:"Supervisor offline — prompt copiado para o DSH",catError:"Erro",catImprovement:"Melhoria",catIdea:"Ideia"},
- zh:{worker:"用户",role:"职位",title:"🎙️ Le Veilleux — 操作面板",subtitle:"J.Franco 套件 · DeepSeek Harness",
+ zh:{worker:"用户",role:"职位",title:"🎙️ Fanal — 操作面板",subtitle:"J.Franco 套件 · DeepSeek Harness",
   listen:"🎙️ 聆听 / 听写",stop:"⏹️ 停止",copy:"📋 复制到 DSH",copied:"✅ 已复制！",
   speak:"🔊 朗读",nospeech:"🎙️ 不支持听写",
   recording:"🔴 录音中 — 完成后点击停止",micError:"麦克风不可用 — 请检查浏览器权限。",
@@ -185,7 +185,7 @@ const S={
   clue:(w)=>`DSH，${w} — 我开始聆听。请告诉我对话或请求。若出现多种语言，按需启用口译；主流程跟随输入分析。`,
   note:(end)=>`点击「聆听」，说出对话并说「${end}」。然后将指令复制粘贴到新的会话 — 或使用「DSH 助手」应用。`,
   legend:"红绿灯：🟢 自动 · ⚑ 半自动（请核实）· 🟡 提议（你决定）· 🔴 询问。",fbTitle:"现场反馈",fbPh:"发生了什么？什么需要改进？",fbSent:"已发送 — 智能体会读取",fbOffline:"主管离线 — 提示已复制到 DSH",catError:"错误",catImprovement:"改进",catIdea:"想法"},
- ja:{worker:"ユーザー",role:"役割",title:"🎙️ Le Veilleux — アクションパネル",subtitle:"J.Franco スイート · DeepSeek Harness",
+ ja:{worker:"ユーザー",role:"役割",title:"🎙️ Fanal — アクションパネル",subtitle:"J.Franco スイート · DeepSeek Harness",
   listen:"🎙️ 聞く / 音声入力",stop:"⏹️ 停止",copy:"📋 DSHへコピー",copied:"✅ コピー済み！",
   speak:"🔊 読み上げ",nospeech:"🎙️ 音声入力非対応",
   recording:"🔴 録音中 — 終わったら停止をタップ",micError:"マイクが使えません — ブラウザの権限を確認してください。",
@@ -195,7 +195,7 @@ const S={
   clue:(w)=>`DSH、${w} — 聞き始めます。会話や依頼を教えてください。複数の言語が出たら、求めに応じて通訳を有効化；主フローは入力分析に従います。`,
   note:(end)=>`「聞く」をタップし、会話を話して「${end}」と言います。その後、指示を新しいセッションに貼り付け — または「DSH アシスタント」アプリで自律実行。`,
   legend:"信号：🟢 自動 · ⚑ 半自動（確認）· 🟡 提案（あなたが決定）· 🔴 質問。",fbTitle:"現場フィードバック",fbPh:"何が起きましたか？何を改善すべき？",fbSent:"送信済み — エージェントが読みます",fbOffline:"スーパーバイザーオフライン — プロンプトをDSH用にコピー",catError:"エラー",catImprovement:"改善",catIdea:"アイデア"},
- ko:{worker:"사용자",role:"역할",title:"🎙️ Le Veilleux — 액션 패널",subtitle:"J.Franco 스위트 · DeepSeek Harness",
+ ko:{worker:"사용자",role:"역할",title:"🎙️ Fanal — 액션 패널",subtitle:"J.Franco 스위트 · DeepSeek Harness",
   listen:"🎙️ 듣기 / 받아쓰기",stop:"⏹️ 중지",copy:"📋 DSH로 복사",copied:"✅ 복사됨!",
   speak:"🔊 소리내어 읽기",nospeech:"🎙️ 받아쓰기 미지원",
   recording:"🔴 녹음 중 — 끝나면 중지를 누르세요",micError:"마이크를 사용할 수 없습니다 — 브라우저 권한을 확인하세요.",
@@ -205,7 +205,7 @@ const S={
   clue:(w)=>`DSH, ${w} — 듣기 시작합니다. 대화나 요청을 말씀해 주세요. 여러 언어가 나오면 요청 시 통역을 활성화합니다. 주 흐름은 입력 분석을 따릅니다.`,
   note:(end)=>`「듣기」를 누르고 대화를 말한 뒤 「${end}」라고 하세요. 그런 다음 지시를 새 세션에 붙여넣기 — 또는 「DSH 어시스턴트」 앱으로 자율 실행.`,
   legend:"신호등: 🟢 자동 · ⚑ 반자동(확인) · 🟡 제안(당신이 결정) · 🔴 질문.",fbTitle:"현장 피드백",fbPh:"무슨 일이 있었나요? 무엇을 개선할까요?",fbSent:"전송됨 — 에이전트가 읽습니다",fbOffline:"감독자 오프라인 — DSH용 프롬프트 복사됨",catError:"오류",catImprovement:"개선",catIdea:"아이디어"},
- ar:{worker:"المستخدم",role:"الدور",title:"🎙️ Le Veilleux — لوحة الإجراءات",subtitle:"مجموعة J.Franco · DeepSeek Harness",
+ ar:{worker:"المستخدم",role:"الدور",title:"🎙️ Fanal — لوحة الإجراءات",subtitle:"مجموعة J.Franco · DeepSeek Harness",
   listen:"🎙️ استمع / أملي",stop:"⏹️ إيقاف",copy:"📋 نسخ إلى DSH",copied:"✅ تم النسخ!",
   speak:"🔊 قراءة بصوت عالٍ",nospeech:"🎙️ الإملاء غير مدعوم",
   recording:"🔴 جارٍ التسجيل — اضغط إيقاف عند الانتهاء",micError:"الميكروفون غير متاح — تحقق من أذونات المتصفح.",

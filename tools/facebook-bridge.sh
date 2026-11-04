@@ -1,7 +1,7 @@
 #!/bin/sh
 # Facebook/Messenger bridge — the client's own machine polls THEIR page
 # (their token, their property — the separation rule) and feeds incoming
-# messages into Le Veilleux's decision center. The kitchen drafts; the
+# messages into Fanal's decision center. The kitchen drafts; the
 # owner decides. We never touch their account beyond their own token.
 #
 # Setup (Meta, once, by the client — 5 min, dev mode):

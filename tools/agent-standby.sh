@@ -96,7 +96,7 @@ while true; do
   SN="$(count_of "$SITEMS")"
   if [ "$SN" != "0" ]; then
     STXT="$(echo "$SITEMS" | "$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);console.log(j.items.map(x=>x.id+" ::: "+x.text).join("\n"))}catch(e){console.log("")}})')"
-    SPROMPT="Decision center kitchen (Franco Vision). The owner asked these tasks (each line: id ::: type :: request): $STXT For EACH: draft a short professional French response AND write in one sentence your reasoning (the motivation: why this reply, based on what). Then POST as JSON to $SUP/api/studio/result with this shape: {\"id\":\"<the task id>\",\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}. Finally reply one line: drafts posted."
+    SPROMPT="Decision center kitchen (Trasunto). The owner asked these tasks (each line: id ::: type :: request): $STXT For EACH: draft a short professional French response AND write in one sentence your reasoning (the motivation: why this reply, based on what). Then POST as JSON to $SUP/api/studio/result with this shape: {\"id\":\"<the task id>\",\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}. Finally reply one line: drafts posted."
     echo "[$(date +%H:%M:%S)] $SN studio task(s) → drafting…"
     if [ -n "$DRY" ]; then
       echo "   would run: $DSH --profile campo headless "$SPROMPT""

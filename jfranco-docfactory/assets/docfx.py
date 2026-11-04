@@ -1,4 +1,4 @@
-# docfx — the Franco Vision document factory.
+# docfx — the Trasunto document factory.
 # Professional consulting techniques, one reusable library:
 #   · cantSplit + keepNext chains (boxes never straddle pages)
 #   · tblHeader (table headers repeat when a table continues)
@@ -43,7 +43,7 @@ def new_doc(title, subject, margins=(1.4, 1.2, 1.6, 1.6)):
     cp.title = title
     cp.author = "Javier Alejandro FRANCO LEAL"
     cp.subject = subject
-    cp.company = "Franco Vision inc."
+    cp.company = "Trasunto"
     return doc
 
 def add_hyperlink(paragraph, text, url, size=9):

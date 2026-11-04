@@ -1,6 +1,6 @@
-# Architecture — Le Veilleux, a DeepSeek Harness distribution
+# Architecture — Fanal, a DeepSeek Harness distribution
 
-**Formal definition:** Le Veilleux is a **distribution of DeepSeek
+**Formal definition:** Fanal is a **distribution of DeepSeek
 Harness** — a customized layer that adds the J.Franco agentic workflow
 plugins, the supervisor control plane, the universal sector dashboard, and
 the desktop app, on top of the DeepSeek Harness runtime and the
@@ -13,11 +13,11 @@ it a product.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ Layer 4 · Presentation — Le Veilleux                         │
+│ Layer 4 · Presentation — Fanal                         │
 │   Desktop app (Electron) · Dashboard · Panel · Wallboard     │
 │   (10 languages, sector skins, dark mode, PWA)               │
 ├─────────────────────────────────────────────────────────────┤
-│ Layer 3 · Control plane — Le Veilleux Supervisor             │
+│ Layer 3 · Control plane — Fanal Supervisor             │
 │   Accounts (RBAC + role labels) · live flow (listen→summary  │
 │   →confirm→orders) · telemetry · triage · exports            │
 ├─────────────────────────────────────────────────────────────┤
@@ -46,7 +46,7 @@ it a product.
 ## The brain contract
 
 "Choosing the brain" means: **Layer 0 + Layer 1** — the model and the
-harness. Everything above is Le Veilleux and is always the same.
+harness. Everything above is Fanal and is always the same.
 
 - The brain is identified by: `provider: deepseek-official` ·
   `model: deepseek-chat` (DeepSeek-V4-Pro Max) · `DEEPSEEK_API_KEY`.
@@ -68,10 +68,10 @@ The organism now breathes: it knows its pulse and stops eating when full.
 
 ## Installation models (mise en place)
 
-### Model A — today (install DSH, then Le Veilleux)
+### Model A — today (install DSH, then Fanal)
 
 1. Install DeepSeek Harness (desktop app or npm).
-2. Install the Le Veilleux desktop app (double click).
+2. Install the Fanal desktop app (double click).
 3. First-run wizard: language → owner → sector → **brain key**.
 4. The app detects the installed harness, wires the profile, and starts
    the always-connected agent.
@@ -81,7 +81,7 @@ use DeepSeek Harness.
 
 ### Model B — target (one installer = the distribution)
 
-The Le Veilleux installer **bundles the DeepSeek Harness runtime** (as a
+The Fanal installer **bundles the DeepSeek Harness runtime** (as a
 distribution bundles its kernel), so a client installs ONE file and the
 first-run wizard only asks: language, owner, sector, **and the DeepSeek
 key** ("choose your DeepSeek brain"). No terminal, no second install.
@@ -95,10 +95,10 @@ Windows) for public distribution.
 
 ## Version matrix (the distribution release)
 
-| Le Veilleux | DeepSeek Harness | Plugins | Supervisor |
+| Fanal | DeepSeek Harness | Plugins | Supervisor |
 |---|---|---|---|
 | 0.1.0 | ≥ 0.2.1-rc.x | 8 × 1.x | 1.0.x |
 
-A release is formalized as: **Le Veilleux `<version>` = DSH `<version>` +
+A release is formalized as: **Fanal `<version>` = DSH `<version>` +
 J.Franco plugins `<versions>` + supervisor `<version>`** — the same way a
 Linux distribution pins its kernel and packages.

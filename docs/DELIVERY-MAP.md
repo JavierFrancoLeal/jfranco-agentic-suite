@@ -1,8 +1,8 @@
 # Delivery map — how each of the 10 façons reaches the client
 
 *2026-11-03 · J.Franco · Two layers, one promise: what gets INSTALLED
-(Le Veilleux, the product) and what gets DELIVERED (the DSH-powered
-service by Franco Vision). The guide now shows the tag under each item.*
+(Fanal, the product) and what gets DELIVERED (the DSH-powered
+service by Trasunto). The guide now shows the tag under each item.*
 
 ## The mapping
 
@@ -12,12 +12,12 @@ service by Franco Vision). The guide now shows the tag under each item.*
 | 02 | Email replies | **Service** (DSH) | Drafting + the client's mail tools |
 | 03 | Quotes & bids | **Service** (DSH + templates) | Client's own documents |
 | 04 | Invoice/receipt filing | **Service** (DSH; feeds the register later) | Accounting validation stays human |
-| 05 | Meeting summaries | **Le Veilleux** | The LISTEN flow already captures and summarizes conversations |
-| 06 | Two-language communication | **Le Veilleux** | 10 languages built into every screen, voice and recognition |
+| 05 | Meeting summaries | **Fanal** | The LISTEN flow already captures and summarizes conversations |
+| 06 | Two-language communication | **Fanal** | 10 languages built into every screen, voice and recognition |
 | 07 | Job postings | **Service** (DSH) | One-off documents |
 | 08 | Agenda & follow-ups | **Service** (DSH) today; agenda card future | Orders/inbox exist; calendar does not |
-| 09 | Customer reviews | **Le Veilleux + Service** | Feedback queue is built; response drafting is the service |
-| 10 | Register & daily report | **Le Veilleux** | The register + Z-report are built |
+| 09 | Customer reviews | **Fanal + Service** | Feedback queue is built; response drafting is the service |
+| 10 | Register & daily report | **Fanal** | The register + Z-report are built |
 
 **Count:** 4 product (05, 06, 09-partial, 10) · 6 service. The guide is
 honest: the installed product covers the DAILY OPERATIONS loop; the
@@ -32,9 +32,9 @@ remotely, no client-side install.
   (supervisor server + DSH runtime + API key). Workers use their existing
   tablets/phones — nothing to install, just the URL or the installed PWA.
   Optional: a kitchen/back-office tablet.
-- **Software:** Le Veilleux Desktop (Electron) or the `jfranco-supervisor`
+- **Software:** Fanal Desktop (Electron) or the `jfranco-supervisor`
   npm package; the DSH profile with the 7 organs; the DeepSeek API key
-  (Franco Vision's during the pilot, the client's afterwards).
+  (Trasunto's during the pilot, the client's afterwards).
 - **Check:** the 3-screen first run (language once → brand transition →
   login) + the owner account creation.
 
@@ -54,6 +54,6 @@ remotely, no client-side install.
 
 ## The rule
 
-> Installed = the daily loop (Le Veilleux). Delivered = the custom
+> Installed = the daily loop (Fanal). Delivered = the custom
 > automations (DSH service). The guide labels each façon so the client
 > never confuses what they own from what they hire.

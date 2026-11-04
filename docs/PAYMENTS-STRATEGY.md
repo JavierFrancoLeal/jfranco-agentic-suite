@@ -7,11 +7,11 @@ next organ is payment integration.
 
 ## The realpolitik first
 
-- Le Veilleux must **never become a payment processor**: that is a
+- Fanal must **never become a payment processor**: that is a
   licensed, PCI-compliant business (realpolitik: stay the brain, not the
   bank).
 - The model is **symbiosis** (the microbiome insight): payment providers
-  are other organisms living inside Le Veilleux. They move the money; we
+  are other organisms living inside Fanal. They move the money; we
   create the moment that triggers the payment.
 
 ## The ecosystem (Canada, 2026)

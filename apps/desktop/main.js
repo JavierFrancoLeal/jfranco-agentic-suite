@@ -1,4 +1,4 @@
-// Le Veilleux Desktop — Electron shell for the universal dashboard.
+// Fanal Desktop — Electron shell for the universal dashboard.
 // Created by J.Franco. MIT.
 //
 //   LE_VEILLEUX_URL=http://127.0.0.1:8787/dashboard   (default)
@@ -65,11 +65,11 @@ async function ensureBrain() {
 function errorPage() {
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   return "data:text/html;charset=utf-8," + encodeURIComponent(`<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>Le Veilleux</title></head>
+<html><head><meta charset="utf-8"><title>Fanal</title></head>
 <body style="margin:0;font-family:-apple-system,'Segoe UI',sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center">
 <div style="max-width:420px;padding:24px">
 <svg width="96" height="96" viewBox="0 0 64 64"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>
-<h1 style="font-size:22px;margin:14px 0 6px">Le Veilleux</h1>
+<h1 style="font-size:22px;margin:14px 0 6px">Fanal</h1>
 <p style="opacity:.9;margin:0 0 22px;font-size:14px">Cannot reach the dashboard at<br><code>${esc(TARGET_URL)}</code></p>
 <p style="opacity:.85;font-size:13px;line-height:1.6">If this computer is the brain, the bundled supervisor could not start.<br>Open a terminal and run:<br><code style="background:rgba(255,255,255,.15);padding:3px 8px;border-radius:8px">node supervisor/server.js --lan</code></p>
 <button onclick="location.replace('${esc(TARGET_URL)}')" style="margin-top:18px;background:#fff;color:#4D6BFE;border:none;border-radius:999px;padding:13px 28px;font-size:16px;font-weight:800;cursor:pointer">Retry</button>
@@ -87,7 +87,7 @@ if (!app.requestSingleInstanceLock()) {
       height: 840,
       kiosk: KIOSK,
       frame: !KIOSK,
-      title: "Le Veilleux",
+      title: "Fanal",
       backgroundColor: "#4D6BFE",
       icon: path.join(__dirname, "assets", "icon.png"),
       webPreferences: {
@@ -170,9 +170,9 @@ if (!app.requestSingleInstanceLock()) {
     try {
       const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));
       tray = new Tray(icon.resize({ width: 18, height: 18 }));
-      tray.setToolTip("Le Veilleux — l'IA travaille, l'humain veille");
+      tray.setToolTip("Fanal — l'IA travaille, l'humain veille");
       tray.setContextMenu(Menu.buildFromTemplate([
-        { label: "Abrir Le Veilleux", click: () => { if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); } } },
+        { label: "Abrir Fanal", click: () => { if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); } } },
         { type: "separator" },
         { label: "Salir", click: () => app.quit() },
       ]));

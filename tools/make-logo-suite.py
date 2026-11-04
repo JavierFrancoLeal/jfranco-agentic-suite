@@ -1,4 +1,4 @@
-# Franco Vision logo suite — the designer's delivery pack.
+# Trasunto logo suite — the designer's delivery pack.
 # Draws the one-stroke eye from the SVG path data and composes the lockups.
 import os, math, sys
 from PIL import Image, ImageDraw, ImageFont
@@ -29,7 +29,7 @@ def draw_eye(draw, color, width=5, translate=(0, 0)):
     tx, ty = translate
     def P(x, y): return (x * SCALE + tx, y * SCALE + ty)
     w = width * SCALE
-    # outer almond + inner iris (the exact SVG path of Le Veilleux)
+    # outer almond + inner iris (the exact SVG path of Fanal)
     segs = [
         cubic_points(P(10, 32), P(10, 22), P(16, 14), P(32, 14)),
         cubic_points(P(32, 14), P(48, 14), P(54, 22), P(54, 32)),
@@ -95,7 +95,7 @@ def main(outdir):
     eye_image(INK, 512).save(f"{outdir}/franco-vision-icon-mono.png"); files["franco-vision-icon-mono.png"] = "franco-vision-icon-mono.png"
     eye_image(WHITE, 512).save(f"{outdir}/franco-vision-icon-white.png"); files["franco-vision-icon-white.png"] = "franco-vision-icon-white.png"
     eye_image(BLUE, 64).save(f"{outdir}/favicon.png"); files["favicon.png"] = "favicon.png"
-    readme = "# Franco Vision — logo suite (designer's delivery pack)\n\n" \
+    readme = "# Trasunto — logo suite (designer's delivery pack)\n\n" \
         "| Prototype | File | Use |\n|---|---|---|\n" \
         "| Primary lockup (horizontal) | franco-vision-lockup.png | documents, letterheads |\n" \
         "| Monochrome lockup | franco-vision-lockup-mono.png | fax, b/w print |\n" \
@@ -104,7 +104,7 @@ def main(outdir):
         "| Icon (mono) | franco-vision-icon-mono.png | stamps, b/w |\n" \
         "| Icon (inverted) | franco-vision-icon-white.png | dark UI |\n" \
         "| Favicon | favicon.png | browser tabs |\n\n" \
-        "Colors: blue #4D6BFE · ink #111827. One-stroke eye — the brand mark of Franco Vision / Le Veilleux.\n" \
+        "Colors: blue #4D6BFE · ink #111827. One-stroke eye — the brand mark of Trasunto / Fanal.\n" \
         "Source vectors: assets/le-veilleux-one-stroke.svg · assets/le-veilleux-mark.svg\n"
     with open(f"{outdir}/README.md", "w") as f:
         f.write(readme)

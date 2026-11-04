@@ -1,4 +1,4 @@
-# Neuro-anatomy of Le Veilleux — the human body as the blueprint
+# Neuro-anatomy of Fanal — the human body as the blueprint
 
 *The best software developer is nature.* This document maps the human
 body's systems to software engineering, shows which plugins exist, and
@@ -6,7 +6,7 @@ names the organs the suite still lacks.
 
 ## The mapping: body system → software concept → plugin
 
-| Body system | What it does in the body | Software equivalent | Le Veilleux plugin |
+| Body system | What it does in the body | Software equivalent | Fanal plugin |
 |---|---|---|---|
 | 👂 Ears + reticular activation | Wake on sound; filter what deserves attention | Event triggers, listening mode | `workflow-master` |
 | 🧠 Sensory cortex + thalamus | Route every input to the right region | Input routing, splitting, classification | `input-detector` |
@@ -19,7 +19,7 @@ names the organs the suite still lacks.
 | 🛡️ Immune prioritization | Classify threats, tolerate, remember | Bug classification, Beta acceptance | `triage` |
 | 🧬 Genome + epigenome | Fixed genes; context decides what expresses | Fixed rules; sector context decides behavior | decisions.md = genome · sector packs = epigenome |
 
-## The organs Le Veilleux is still missing
+## The organs Fanal is still missing
 
 ### 1. 🫁 `homeostasis` — the autonomic nervous system (HIGHEST priority)
 
@@ -57,7 +57,7 @@ that lets the product EVOLVE.
 
 The body hosts other organisms that digest and defend for it. The
 software equivalent: a **plugin marketplace** — third-party organs living
-inside Le Veilleux. The architecture already supports it (npm + Cordis
+inside Fanal. The architecture already supports it (npm + Cordis
 plugins).
 
 ## Epigenetics, explained as software

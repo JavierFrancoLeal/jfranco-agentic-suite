@@ -1,8 +1,8 @@
-# Le Veilleux Desktop
+# Fanal Desktop
 
 Created by **J.Franco** — the universal sector dashboard as a desktop
 application. An Electron shell (the same proven pattern as DeepSeek
-Harness) around the Le Veilleux dashboard, with kiosk mode for kitchen and
+Harness) around the Fanal dashboard, with kiosk mode for kitchen and
 back-office screens.
 
 ## Note for DeepSeek Harness sessions

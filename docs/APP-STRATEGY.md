@@ -1,4 +1,4 @@
-# App strategy — Le Veilleux as a real application
+# App strategy — Fanal as a real application
 
 Can the dashboard become an application for different systems, something
 like DeepSeek Harness? **Yes — and the path is already paved.** Here is the
@@ -41,11 +41,11 @@ engineering plan.
 - `jfranco-supervisor` already runs anywhere with Node ≥ 24.
 - Next step: a **one-command installer** per OS that sets up the server,
   the API key, the users, and the auto-start — turning any mini PC into a
-  "Le Veilleux appliance" (like a NAS or a POS terminal).
+  "Fanal appliance" (like a NAS or a POS terminal).
 
 ## The distribution story (mirroring DeepSeek Harness)
 
-| Layer | DeepSeek Harness | Le Veilleux |
+| Layer | DeepSeek Harness | Fanal |
 |---|---|---|
 | Desktop shell | Electron app | Tauri/Electron wrapper |
 | Engine | DSH core (Node) | Supervisor (Node ≥ 24) |
@@ -58,12 +58,12 @@ engineering plan.
 1. **Now — Phase 1:** PWA + `jfranco-supervisor` + `install.sh/ps1` (done).
    Enough for the first pilots: "open this URL, add it to the Home screen."
 2. **Phase 2 — desktop wrappers:** Tauri scaffold with kiosk mode and
-   auto-updater; ship `Le Veilleux.app`, `.exe`, `.AppImage`. Target: the
+   auto-updater; ship `Fanal.app`, `.exe`, `.AppImage`. Target: the
    kitchen tablet and the owner's computer.
 3. **Phase 3 — mobile stores:** Capacitor builds (APK/AAB + IPA) for MDM
    fleets. Target: chains with many tablets.
 4. **Phase 4 — appliance image:** a Raspberry Pi/mini-PC image that boots
-   straight into Le Veilleux (brain + dashboard preconfigured).
+   straight into Fanal (brain + dashboard preconfigured).
 
 ## What never changes
 

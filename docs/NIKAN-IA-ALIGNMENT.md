@@ -1,4 +1,4 @@
-# Franco Vision × Le Veilleux — alignment analysis
+# Trasunto × Fanal — alignment analysis
 
 *Analysis of the business plan "Plan_affaires_Nikan_IA.docx" (v5.2, July
 2026, SADC Charlevoix) against everything built in this repository.
@@ -7,7 +7,7 @@
 ## What the plan is
 
 A professional, complete consulting-services business plan in French for
-the Charlevoix region: **Franco Vision** — the human link between AI tools and
+the Charlevoix region: **Trasunto** — the human link between AI tools and
 PMEs. Positioning: "L'humain au sommet · L'IA en soutien". Three revenue
 sources (implantation · managed services · applied innovation), five
 services, a 6-month antifragile pilot, viability at ≈ $86–96k CAD/year,
@@ -17,7 +17,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
 
 > The plan is the BUSINESS CASE for the product we built, and the product
 > is the PROOF that makes the plan credible. They were written apart and
-> belong together: **Franco Vision = the company; Le Veilleux = the product.**
+> belong together: **Trasunto = the company; Fanal = the product.**
 
 ## Section-by-section alignment
 
@@ -25,7 +25,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
 |---|---|---|
 | Positioning "human at the top" | The 5 organs + human decides; the philosophy | ✔ identical — cite it |
 | Antifragile pilot as the basis | Knowledge Ledger (23 lessons), guard layers, forensics | Add our lived evidence to the plan |
-| Service 2 — managed services (the heart) | Le Veilleux IS this, productized: supervisor + register + dashboard | Name the product in the plan |
+| Service 2 — managed services (the heart) | Fanal IS this, productized: supervisor + register + dashboard | Name the product in the plan |
 | ROI = time/money saved | The counter-register, Z-report, reconciliation | Show the demo numbers |
 | Viability $86–96k | — (business side) | Adopt as the blueprint's M2 target |
 | Pilot 6 months, operational tariff | Demo data, onboarding docs, playbook | Draft the pilot agreement |
@@ -39,13 +39,13 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
    ≈ $36.4k, salary $50–60k, threshold $86–96k, three client scenarios.
 2. **The pilot is the engine** — the plan structures what the blueprint
    called M1: one business, 6 months, operational tariff, real data.
-3. **The name architecture** — company Franco Vision (inc.), product Le
+3. **The name architecture** — company Trasunto (inc.), product Le
    Veilleux, suite J.Franco. One organism, three names, each with a job:
    the company sells, the product delivers, the suite is the engine.
 
 ## Updates to make in the plan (5 edits, not a rewrite)
 
-1. Add the product: a section "La démonstration : Le Veilleux" — the
+1. Add the product: a section "La démonstration : Fanal" — the
    supervisor, the register, the organs — the pilot no longer starts
    from zero.
 2. Strengthen the antifragile section with lived proof: the five
@@ -53,7 +53,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
 3. Align Service 2 pricing with the product: per-worker / per-site
    monthly (the register's Z-report justifies the invoice).
 4. Add one persona per sector pack we already ship.
-5. Keep the name Franco Vision for the company and SADC — Le Veilleux stays
+5. Keep the name Trasunto for the company and SADC — Fanal stays
    the product brand.
 
 ## Conclusion
@@ -97,7 +97,7 @@ business; this repository built the proof.
    conditions are the measurable version.
 4. Serving zero-tech clients with the product directly — they need the
    implantation service first; do not promise self-serve to them.
-5. The name Nikan — already resolved with Franco Vision (also removes the
+5. The name Nikan — already resolved with Trasunto (also removes the
    Indigenous-name validation step).
 
 ### FUTURE — ideas to adopt later, demand-led

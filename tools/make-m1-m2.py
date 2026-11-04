@@ -1,4 +1,4 @@
-# Franco Vision — M1 (accord de pilote) + M2 (grille tarifaire) generator.
+# Trasunto — M1 (accord de pilote) + M2 (grille tarifaire) generator.
 import sys, os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 from docx import Document
@@ -79,11 +79,11 @@ def new_doc(band_img):
 
 # ── M1: Accord de pilote ────────────────────────────────────
 def m1(out):
-    img=band("Accord de pilote — 6 mois","Franco Vision inc. × [Entreprise cliente] · Le Veilleux",f"{ASSDIR}/band-m1.png")
+    img=band("Accord de pilote — 6 mois","Trasunto × [Entreprise cliente] · Fanal",f"{ASSDIR}/band-m1.png")
     doc=new_doc(img)
-    para(doc,"ENTRE : Franco Vision inc., Charlevoix (Québec), ci-après « Franco Vision » ; ET : [Nom de l'entreprise], [ville], ci-après « le Client ».",space_after=6)
+    para(doc,"ENTRE : Trasunto, Charlevoix (Québec), ci-après « Trasunto » ; ET : [Nom de l'entreprise], [ville], ci-après « le Client ».",space_after=6)
     title(doc,"Objet et durée",space_before=2)
-    para(doc,"Pilote de 6 mois — implantation de Le Veilleux (flux de travail agentique + caisse virtuelle + contre-registre), à tarif opérationnel (couvre uniquement les frais, sans marge) : 349 $/mois.")
+    para(doc,"Pilote de 6 mois — implantation de Fanal (flux de travail agentique + caisse virtuelle + contre-registre), à tarif opérationnel (couvre uniquement les frais, sans marge) : 349 $/mois.")
     title(doc,"Inclus")
     bullet(doc,"Implantation clé en main : ","diagnostic, installation, personnalisation, formation du personnel.")
     bullet(doc,"Accompagnement continu : ","support, itérations et ajustements pendant les 6 mois.")
@@ -98,7 +98,7 @@ def m1(out):
     para(doc,"30 jours de préavis, sans pénalité, par l'une ou l'autre partie.")
     para(doc,"Signé à _____________________, le ___________________________",space_before=10,space_after=10)
     t=doc.add_table(rows=1,cols=2); t.alignment=WD_TABLE_ALIGNMENT.CENTER
-    for i,who in enumerate(["Franco Vision inc.","Le Client"]):
+    for i,who in enumerate(["Trasunto","Le Client"]):
         c=t.rows[0].cells[i]
         p=c.paragraphs[0]; r=p.add_run(who+"\n\n\n\n_______________________"); r.font.size=Pt(9.5); r.font.color.rgb=INK
         p.alignment=WD_ALIGN_PARAGRAPH.CENTER
@@ -106,7 +106,7 @@ def m1(out):
 
 # ── M2: Grille tarifaire v1 ─────────────────────────────────
 def m2(out):
-    img=band("Grille tarifaire — version 1","Franco Vision inc. · tarifs post-pilote · Le Veilleux",f"{ASSDIR}/band-m2.png")
+    img=band("Grille tarifaire — version 1","Trasunto · tarifs post-pilote · Fanal",f"{ASSDIR}/band-m2.png")
     doc=new_doc(img)
     rows=[
         ("0","Rencontre et estimation écrite","Gratuit"),

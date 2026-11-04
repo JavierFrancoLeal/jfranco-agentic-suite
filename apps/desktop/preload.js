@@ -1,4 +1,4 @@
-// Le Veilleux Desktop — preload bridge. Created by J.Franco. MIT.
+// Fanal Desktop — preload bridge. Created by J.Franco. MIT.
 // Minimal, locked-down bridge: the page stays isolated; only the
 // first-run setup is exposed to the welcome screen.
 const { contextBridge, ipcRenderer } = require("electron");
