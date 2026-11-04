@@ -235,6 +235,16 @@ Tema-conscientes (claro/oscuro). No uses hex fijos.
 
 ## 8. Instalación en la app en ejecución
 
+**A) Desde npm** (recomendado para otra máquina/perfil sin el checkout local):
+
+```bash
+dsh plugin --profile <perfil> add @javierfrancoleal/mi-plugin
+```
+
+Añade la dependencia + el bundle y ejecuta `pnpm` por ti; luego reinicia la app.
+
+**B) Local (`link:`) — desarrollo en el monorepo:**
+
 1. En `~/.dsh/profiles/<perfil>/package.json`:
    - añade `"@scope/nombre": "link:/ruta/absoluta/al/plugin"` en `dependencies`,
    - añade `"@scope/nombre"` en `dsh.profile.bundles`.

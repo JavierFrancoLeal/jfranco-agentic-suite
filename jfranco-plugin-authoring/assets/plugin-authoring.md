@@ -149,6 +149,16 @@ Rules:
 
 ## Install into the running app
 
+**A) From npm** (another machine/profile without the local checkout):
+
+```bash
+dsh plugin --profile <perfil> add @javierfrancoleal/mi-plugin
+```
+
+This adds the dependency + bundle and runs pnpm for you; restart the app after.
+
+**B) Local (`link:`) — developing in the monorepo:**
+
 1. `~/.dsh/profiles/<perfil>/package.json`: add `"@scope/nombre": "link:/abs/path"` to
    `dependencies` and `"@scope/nombre"` to `dsh.profile.bundles`.
 2. `cd ~/.dsh/profiles/<perfil> && pnpm install`.
