@@ -70,7 +70,7 @@ p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 para(doc, "CE QUI N'EXISTE NULLE PART AILLEURS — la nouveauté en quatre preuves",
      size=11, color=BLUE, bold=True, space_before=6, space_after=5)
 
-rich(doc, "1. EL FUEGO — le premier standard documenté de transfert de savoir humain-IA. ",
+rich(doc, "1. Knowledge Ledger — le premier standard documenté de transfert de savoir humain-IA. ",
      "Chaque friction entre l'humain et l'IA devient une leçon permanente, enregistrée dans un registre canonique (23 leçons réelles issues du terrain). Le savoir ne se perd plus : il s'hérite. L'équivalent du feu transmis de génération en génération.")
 rich(doc, "2. Les 7 organes — un flux de travail agentique avec une constitution. ",
      "Écouter → détecter → l'IA propose → l'humain décide → vérification → notation → enseignement → archéologie du code. La pyramide décisionnelle inversée : l'humain au sommet, l'IA en soutien. Chaque décision est classée, vérifiée et traçable.")

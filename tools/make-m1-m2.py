@@ -91,7 +91,7 @@ def m1(out):
     title(doc,"Engagements du Client")
     bullet(doc,"1 heure de rétroaction honnête par semaine ","(test – rétroaction – ajustement).")
     bullet(doc,"Accès au terrain ","pour la collecte des données réelles du pilote.")
-    bullet(doc,"Autorisation d'enregistrer les leçons ","de façon anonymisée (standard EL FUEGO — aucun nom de client ni de personne).")
+    bullet(doc,"Autorisation d'enregistrer les leçons ","de façon anonymisée (standard Knowledge Ledger — aucun nom de client ni de personne).")
     title(doc,"Démarche antifragile")
     para(doc,"Aucune projection non validée : le pilote est le moteur de toute donnée future. À la fin des 6 mois : (a) reconduction au tarif commercial selon la grille tarifaire v1, ou (b) sortie sans frais cachés — le Client conserve ses Z-rapports exportés.")
     title(doc,"Résiliation")

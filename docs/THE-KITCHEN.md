@@ -39,7 +39,7 @@ the suite repo · the organs' code         the brain computer (supervisor)
 our demo (127.0.0.1:8790)                 THEIR data (register, orders,
 our DeepSeek key · our Google key         feedback, shift log — on disk)
 our dev loop (check.sh, sync-all)         THEIR DeepSeek key, THEIR Maps key
-the fire log (anonymized lessons)         their wallboard, their workers
+the knowledge ledger (anonymized lessons)         their wallboard, their workers
 ```
 
 - **Keys never mix:** the client's brain runs with the CLIENT's keys from
@@ -47,7 +47,7 @@ the fire log (anonymized lessons)         their wallboard, their workers
   Franco Vision's own kitchen. The pilot does NOT lend our key: the client
   creates their own (one onboarding step, worth the boundary).
 - **Data never mixes:** client data stays in the client's DATA_DIR. The
-  only bridge is the EL FUEGO discipline — anonymized lessons and the
+  only bridge is the Knowledge Ledger discipline — anonymized lessons and the
   agreed case study, with written consent (the pilot agreement already
   says so).
 - **Two ways of working:** our way (develop → gate → batch-publish) and

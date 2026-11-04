@@ -27,7 +27,7 @@ skill/prompt engineering, evals & quality guards, AI ops, trust.
 
 **We do not copy either model — we have already LIVED the third one.**
 Our product IS the proof: one director, agentic executors, seven organs,
-contract guards instead of QA armies, the fire log instead of tribal
+contract guards instead of QA armies, the knowledge ledger instead of tribal
 knowledge. The company will run on the SAME organism model as the
 product. That is the handwriting analogy resolved: we do not write by
 hand and retype into the computer — we write directly in the machine.
@@ -39,7 +39,7 @@ hand and retype into the computer — we write directly in the machine.
 | 🧠 **PRODUCT** — build | Engineering + QA + design | workflow-master, decision-router, accountability-auditor, the guard gates |
 | 🔥 **DEMAND** — sell | Marketing, sales, onboarding, pilots | realpolitik rule: consumption first; the demo, the tunnel, the one-pager |
 | 🛡️ **TRUST** — keep | Finance, accounting, legal, customer success | the virtual register + Z-report (accounting already built), audit organ |
-| 🌱 **FUEL** — grow | R&D, learning, people | autonomy-grader (selection), forensics (archaeology), EL FUEGO (memory) |
+| 🌱 **FUEL** — grow | R&D, learning, people | autonomy-grader (selection), forensics (archaeology), Knowledge Ledger (memory) |
 
 Every cluster runs the same loop: **act → verify → grade → consolidate →
 archive**. The organs are not just product features — they are the
@@ -51,7 +51,7 @@ company's operating system.
 |---|---|
 | Specs and tickets | Directives in plain language + the master prompt template |
 | QA team testing by hand | api-smoke + bootflow contracts + strict smoke (the 5 gate layers) |
-| Post-mortem meetings | EL FUEGO-LOG canonical lessons (append-only) |
+| Post-mortem meetings | Knowledge Ledger-LOG canonical lessons (append-only) |
 | Knowledge base docs nobody reads | forensics dossiers + the audit organ teaching in the moment |
 | Support triage spreadsheets | the audit organ (friction → teach → record) |
 | Accounting spreadsheets | the virtual register + Z-report (counter-audit) |
@@ -80,11 +80,11 @@ company's operating system.
 - ⏳ Client onboarding contract, support SLA, backup & restore policy.
 
 ### FUEL (grow) — 20% done
-- ✅ EL FUEGO standard (manual, teacher, archaeologist, log), 23 lessons.
+- ✅ Knowledge Ledger standard (manual, teacher, archaeologist, log), 23 lessons.
 - ⏳ R&D pipeline: new organs only via the industrial lens (no new organs
   without a proven gap).
 - ⏳ Learning cadence: weekly audit + monthly forensics pass.
-- ⏳ People: when the first collaborator arrives, they inherit the fire —
+- ⏳ People: when the first collaborator arrives, they inherit the knowledge —
   the standard is the onboarding.
 
 ## 5. The roadmap (realpolitik order — demand leads)

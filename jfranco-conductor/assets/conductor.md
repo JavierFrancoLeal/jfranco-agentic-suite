@@ -48,8 +48,8 @@ B], con [detalle], a [velocidad], [condición]. Misma estética que
 
 ## The standard
 
-This organ is Pillar 2 of EL FUEGO — the J.Franco standard
-for human-AI knowledge transfer (docs/EL-FUEGO.md in the suite repo).
+This organ is Pillar 2 of KNOWLEDGE LEDGER — the J.Franco standard
+for human-AI knowledge transfer (docs/KNOWLEDGE-LEDGER.md in the suite repo).
 Every lesson delivered here must be recorded in the canonical format.
 
 ## Rules

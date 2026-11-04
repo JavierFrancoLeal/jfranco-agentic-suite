@@ -6,7 +6,7 @@ our resources and current objectives.*
 
 ## 1. Archaeology of the last iterations (the entry-flow saga)
 
-Fifteen lessons were recorded in EL-FUEGO-LOG. Grouped by root cause,
+Fifteen lessons were recorded in KNOWLEDGE-LEDGER-LOG. Grouped by root cause,
 they reveal FIVE families of uncertainty — not fifteen random bugs:
 
 ### Family 1 — NAMING (global namespaces)
@@ -52,7 +52,7 @@ whole stage · persistence moved to explicit human choice.
 - The language flow borrowed from Apple without its full objective
   (one declared language governs everything).
 
-*Current management:* EL FUEGO principles 1-2 (full logic of the
+*Current management:* Knowledge Ledger principles 1-2 (full logic of the
 inspiration; not every idea is an organ) + lesson 12 (boot semantics).
 
 ### Family 5 — DELIVERY (the fix never reached the tester)
@@ -83,10 +83,10 @@ accountability-auditor     verify before output
     ↓
 autonomy-grader            grade the decisions (A-D) → select what survives
     ↓
-audit                      consolidate: friction → teach → record (EL FUEGO)
+audit                      consolidate: friction → teach → record (Knowledge Ledger)
     ↓
 forensics                  reconstruct the past for whoever comes later
-    ↑______________________ the fire log feeds the next cycle
+    ↑______________________ the knowledge ledger feeds the next cycle
 ```
 
 Antifragility lives in the fact that ERRORS ARE THE RAW MATERIAL:

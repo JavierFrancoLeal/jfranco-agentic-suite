@@ -41,9 +41,9 @@ change it. Aim: a non-programmer can give correct orders after reading it.
 
 ## The standard
 
-This organ is Pillar 3 of EL FUEGO — the J.Franco standard
-for human-AI knowledge transfer (docs/EL-FUEGO.md in the suite repo).
-Every dossier must end with the canonical lesson entry so the fire
+This organ is Pillar 3 of KNOWLEDGE LEDGER — the J.Franco standard
+for human-AI knowledge transfer (docs/KNOWLEDGE-LEDGER.md in the suite repo).
+Every dossier must end with the canonical lesson entry so the knowledge
 persists.
 
 ## Rules

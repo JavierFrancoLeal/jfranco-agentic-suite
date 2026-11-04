@@ -24,7 +24,7 @@
 
 - The register was born from the **cash-first** decision ([docs/PAYMENTS-STRATEGY.md](PAYMENTS-STRATEGY.md)): *"we do not process money; we give the owner what they pay others for: reconciliation."*
 - Evidence of intent: the `charge` endpoint stores `worker` and `method` (turn-135 commit) — so the variance is attributed to WHO and HOW.
-- The bug caught at birth: `saveUsers` did not create the directory on a start without `init` — the lesson lives in EL-FUEGO-LOG (canonical format).
+- The bug caught at birth: `saveUsers` did not create the directory on a start without `init` — the lesson lives in KNOWLEDGE-LEDGER-LOG (canonical format).
 
 ## 4. The dossier (plain language)
 

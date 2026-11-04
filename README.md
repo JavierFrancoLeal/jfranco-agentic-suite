@@ -196,7 +196,7 @@ The suite is also installable from this repository and from GitHub Pages.
 - [Demo playbook](docs/DEMO-PLAYBOOK.md) — from zero to a live demo for a
   customer-service business (SADC-ready), with the bilingual scenario, the
   one-command demo reset, and the follow-up plan.
-- [🔥 EL FUEGO](docs/EL-FUEGO.md) — the J.Franco standard for human-AI
+- [🔥 Knowledge Ledger](docs/KNOWLEDGE-LEDGER.md) — the J.Franco standard for human-AI
   knowledge transfer (manual + teacher organ + forensics organ).
 - [Recommended stack](docs/RECOMMENDED-STACK.md) — the standardized hardware
   and software to recommend to every client (brain, tablets, browsers, OS).

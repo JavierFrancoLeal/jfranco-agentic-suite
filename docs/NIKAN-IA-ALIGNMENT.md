@@ -24,7 +24,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
 | Plan section | What we already have | Gap to close |
 |---|---|---|
 | Positioning "human at the top" | The 5 organs + human decides; the philosophy | ✔ identical — cite it |
-| Antifragile pilot as the basis | EL FUEGO (23 lessons), guard layers, forensics | Add our lived evidence to the plan |
+| Antifragile pilot as the basis | Knowledge Ledger (23 lessons), guard layers, forensics | Add our lived evidence to the plan |
 | Service 2 — managed services (the heart) | Le Veilleux IS this, productized: supervisor + register + dashboard | Name the product in the plan |
 | ROI = time/money saved | The counter-register, Z-report, reconciliation | Show the demo numbers |
 | Viability $86–96k | — (business side) | Adopt as the blueprint's M2 target |
@@ -49,7 +49,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
    supervisor, the register, the organs — the pilot no longer starts
    from zero.
 2. Strengthen the antifragile section with lived proof: the five
-   uncertainty families, the 23 lessons, the guard layers (EL FUEGO).
+   uncertainty families, the 23 lessons, the guard layers (Knowledge Ledger).
 3. Align Service 2 pricing with the product: per-worker / per-site
    monthly (the register's Z-report justifies the invoice).
 4. Add one persona per sector pack we already ship.

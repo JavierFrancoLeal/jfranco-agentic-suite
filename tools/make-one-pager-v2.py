@@ -140,7 +140,7 @@ def build(out):
     p.add_run().add_picture(hero, width=Cm(18.2))
 
     title(doc, "Ce qui n'existe nulle part ailleurs — la nouveauté en quatre preuves", size=10.5, space_before=6)
-    numbered_block(doc, "01", "EL FUEGO — le premier standard documenté de transfert de savoir humain-IA. ",
+    numbered_block(doc, "01", "Knowledge Ledger — le premier standard documenté de transfert de savoir humain-IA. ",
         "Chaque friction entre l'humain et l'IA devient une leçon permanente dans un registre canonique (23 leçons réelles). Le savoir ne se perd plus : il s'hérite — le feu transmis de génération en génération.")
     numbered_block(doc, "02", "Les 7 organes — un flux de travail agentique avec une constitution. ",
         "Écouter → détecter → l'IA propose → l'humain décide → vérification → notation → enseignement → archéologie du code. La pyramide inversée : l'humain au sommet. Chaque décision est classée, vérifiée, traçable.")

@@ -1,6 +1,6 @@
-# 🔥 EL FUEGO-LOG — the canonical fire record (append-only)
+# 🔥 Knowledge Ledger-LOG — the canonical knowledge record (append-only)
 
-*Canonical format of the EL FUEGO standard. Never edit — only append. The
+*Canonical format of the Knowledge Ledger standard. Never edit — only append. The
 `audit` organ writes every lesson here; the `forensics` organ retrieves it
 for whoever arrives later.*
 
@@ -79,14 +79,14 @@ for whoever arrives later.*
 - friction: the language menu was about to be shown on EVERY launch, forgetting why Apple built it.
 - lesson: when borrowing an idea, borrow its whole objective: Apple's language choice exists for a globalized world — once declared, EVERYTHING (text, voice, speech recognition) works in that language, forever. The only exception is when the user says otherwise.
 - correct-order: "Language menu once, on first run; the declared language governs all text, voice and recognition everywhere."
-- evidence: supervisor/dashboard.html (langStep gated by localStorage dsh-lang), ui/panel.html (VOICE[cur]), supervisor/dashboard.html (rec.lang = f(cur)), EL FUEGO v1.2 principle 1.
+- evidence: supervisor/dashboard.html (langStep gated by localStorage dsh-lang), ui/panel.html (VOICE[cur]), supervisor/dashboard.html (rec.lang = f(cur)), Knowledge Ledger v1.2 principle 1.
 
 ## 2026-11-03 — "Once" means configured once, not seen once (boot semantics)
 - concept: flow
 - friction: closing the app without choosing a language marked it as configured (the default was persisted at load), so the one-time screen never returned.
 - lesson: when a screen "appears once", its purpose is to CONFIGURE something — it must repeat on every launch until the human actually configures it. A boot sequence only counts as booted when it completes.
 - correct-order: "Show the language screen on every launch until a language is EXPLICITLY chosen; persist only on the human's choice, never on load."
-- evidence: supervisor/dashboard.html (localStorage.setItem moved from applyLang to the choice handlers), EL FUEGO principle 1 (Apple's full logic).
+- evidence: supervisor/dashboard.html (localStorage.setItem moved from applyLang to the choice handlers), Knowledge Ledger principle 1 (Apple's full logic).
 
 ## 2026-11-03 — Two components, one class name: the dark boxes that were never black
 - concept: components
@@ -142,7 +142,7 @@ for whoever arrives later.*
 - friction: the user re-reported a bug already fixed (lesson #16), after a revert silently undid the fix.
 - lesson: every lesson must end as a GUARD, not a memory. Guards are the only part of the system that survives reverts, refactors, and forgetfulness.
 - correct-order: "For each fixed bug: add a machine check that fails CI when the bug returns."
-- evidence: tools/smoke-dashboard.js (the langOverlay-inside-main regression guard), EL FUEGO standard.
+- evidence: tools/smoke-dashboard.js (the langOverlay-inside-main regression guard), Knowledge Ledger standard.
 
 ## 2026-11-03 — The !important hammer: one forced rule froze the whole boot
 - concept: components
@@ -163,7 +163,7 @@ for whoever arrives later.*
 - friction: after choosing a language, a BLANK gradient appeared — the splash had been hidden with inline display:none and that was never cleared, so the transition screen stayed invisible.
 - lesson: every scene change that takes time shows the boot screen (animated logo + the phrase). The scene change is not a gap to fill — the boot screen IS the scene. Made it a reusable component (bootFlash) so no future transition can forget it.
 - correct-order: "Wrap every scene-change transition in bootFlash(ms, then) — language choice, login, setup, logout."
-- evidence: supervisor/dashboard.html (bootFlash + 4 call sites), EL FUEGO principle 3 (pending), commit next.
+- evidence: supervisor/dashboard.html (bootFlash + 4 call sites), Knowledge Ledger principle 3 (pending), commit next.
 
 ## 2026-11-03 — The Chinese font that ate the French accents
 - concept: color
@@ -182,6 +182,6 @@ for whoever arrives later.*
 ## 2026-11-03 — Integrations show reality, never predictions (the crystal ball trap)
 - concept: flow
 - friction: the tourism traffic card was designed to ADVISE the receptionist ("avise 40 minutes") — guessing what will happen instead of showing what is happening.
-- lesson: external technology is an EVIDENCE LAYER: real data in (traffic now, weather now, events now), the owner interprets. The AI never forecasts outcomes; alerts fire on measured facts, never on predictions. The pyramid applies to data too: data in, human at the top.
+- lesson: external technology is an EVIDENCE LAYER: real data in (traffic now, weather now, events now), the owner interprets. The AI never forecasts outcomes; alerts knowledge on measured facts, never on predictions. The pyramid applies to data too: data in, human at the top.
 - correct-order: "Show current facts per sector; let the owner decide what they mean; alerts only on measured thresholds."
 - evidence: docs/SECTOR-TECH.md (corrected prototype: Région card with facts + owner-set alerts), commit next.

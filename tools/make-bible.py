@@ -41,8 +41,8 @@ def cite(doc, text, url, size=9):
     p.paragraph_format.space_after = Pt(2); return p
 
 def section(doc, num, title, audience, size=14):
-    para(doc, "SECTION " + num, size=8, color=V, bold=True, space_before=12, space_after=1)
-    para(doc, title, size=size, bold=True, space_after=2)
+    para(doc, "SECTION " + num, size=8, color=V, bold=True, space_before=12, space_after=1).paragraph_format.keep_with_next = True
+    para(doc, title, size=size, bold=True, space_after=2).paragraph_format.keep_with_next = True
     p = doc.add_paragraph()
     r = p.add_run("À lire par : " + audience)
     r.font.size = Pt(8.5); r.font.color.rgb = GRAY; r.italic = True
@@ -64,14 +64,20 @@ def cell_borders(cell, edges, color="E5E7EB", sz=4):
         el = OxmlElement("w:" + side); el.set(qn("w:val"), "single"); el.set(qn("w:sz"), str(sz)); el.set(qn("w:color"), color); b.append(el)
     tcPr.append(b)
 
+def no_split(row):
+    trPr = row._tr.get_or_add_trPr()
+    cant = OxmlElement("w:cantSplit")
+    trPr.append(cant)
+
 def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", "")):
     t = doc.add_table(rows=1, cols=3); t.autofit = False
+    no_split(t.rows[0])
     for i, htxt in enumerate(header):
         c = t.rows[0].cells[i]; c.width = Cm(widths[i]); shade(c, "F3F4F6")
         p = c.paragraphs[0]; r = p.add_run(htxt); r.bold = True; r.font.size = Pt(8.5); r.font.color.rgb = MUTED
         p.paragraph_format.space_before = Pt(2); p.paragraph_format.space_after = Pt(2)
     for a, b, c3 in rows:
-        rw = t.add_row()
+        rw = t.add_row(); no_split(rw)
         for i, val in enumerate((a, b, c3)):
             c = rw.cells[i]; c.width = Cm(widths[i]); cell_borders(c, ["bottom"])
             p = c.paragraphs[0]; r = p.add_run(val); r.font.size = Pt(9)
@@ -126,7 +132,7 @@ para(doc, "L'histoire offre un précédent rassurant : la troisième révolution
 bullet(doc, "Le constat : ", "beaucoup d'entreprises savent que l'IA existe, peu savent quoi en faire — et une part surprenante l'utilise déjà sans le savoir.")
 bullet(doc, "Maîtres chez nous : ", "nos clients deviennent autonomes et propriétaires de leurs outils — personne ne connaît mieux une entreprise que celui qui la dirige et la vit. L'IA potentialise les qualités, les techniques et les connaissances de la personne qui l'utilise ; elle ne la remplace jamais.")
 bullet(doc, "La prudence assumée : ", "l'arrivée d'une technologie suscite toujours une surestimation et des attentes élevées ; les entreprises technologiques promettent souvent plus qu'elles ne peuvent livrer. Notre protection contre ce piège : l'antifragilité comme discipline — surpromettre et sous-livrer fait perdre la confiance des partenaires institutionnels et financiers, et nous ne le ferons pas.")
-bullet(doc, "La méthode : ", "un pilote de 6 mois à tarif opérationnel comme socle de toute projection. Aucune promesse non validée sur le terrain.")
+bullet(doc, "La méthode : ", "un pilote de 6 mois à tarif opérationnel, par secteur économique — un restaurant n'est pas un hôtel, ni une usine, ni une ferme : chaque nouveau secteur exige ses six mois d'implantation à prix opérationnel, et ce pilote est le socle de toute projection. Aucune promesse non validée sur le terrain.")
 para(doc, "C'est précisément de cette idée — tirer profit du chaos — que l'antifragilité est notre façon de penser et d'agir : nous n'évoluons pas seulement dans un monde instable, mais l'arrivée de l'IA entraînera des changements imprévisibles dans de multiples aspects de la vie quotidienne. C'est dans ce contexte d'incertitude imposée et technique que notre approche montre toute sa valeur.")
 
 # ── 2. MARCHÉ ────────────────────────────────────────────────
@@ -162,7 +168,7 @@ table3(doc, [
 section(doc, "4", "Le modèle d'affaires et la viabilité", "L'entrepreneur + le comptable")
 bullet(doc, "La viabilité : ", "86 000 – 96 000 $/an : charges annuelles ≈ 36 350 $ + salaire du fondateur de 50 000 à 60 000 $. Atteinte avec un nombre raisonnable de contrats — trois scénarios simples dans le plan du fondateur, à valider rigoureusement par le pilote.")
 bullet(doc, "La servitisation 5.0 : ", "à maturité, la majorité des revenus provient de l'accompagnement mensuel récurrent — le forfait devient l'actif.")
-bullet(doc, "Le pilote antifragile : ", "6 mois à tarif opérationnel (couvre uniquement les frais) ; mécanisme « test – rétroaction – ajustement » ; à la fin : reconduction au tarif commercial ou sortie sans frais cachés.")
+bullet(doc, "Le pilote antifragile : ", "6 mois par secteur économique, à tarif opérationnel (couvre uniquement les frais) ; mécanisme « test – rétroaction – ajustement » ; à la fin : reconduction au tarif commercial ou sortie sans frais cachés.")
 bullet(doc, "L'embauche conditionnelle : ", "un poste = un revenu confirmé. Aucun recrutement sur projection.")
 
 # ── 5. AIDE FINANCIÈRE ──────────────────────────────────────
@@ -185,7 +191,7 @@ cite(doc, "Gouvernement du Québec — Loi 25 (protection des renseignements per
 section(doc, "6", "La feuille de route — le pilote d'abord", "La direction")
 table3(doc, [
     ("Trimestre 1", "Structuration interne : incorporation (Franco Vision inc.), comptabilité, assurances ; dépôt du plan à la SADC ; signature de l'entente de phase pilote avec une PME locale", "Préparation"),
-    ("Trimestres 2-3", "Phase pilote de 6 mois : diagnostic complet, implantations ciblées, mesure systématique (heures économisées, productivité, satisfaction), cas d'étude chiffré validé par le dirigeant", "Données réelles"),
+    ("Trimestres 2-3", "Phase pilote de 6 mois sur le premier secteur économique : diagnostic complet, implantations ciblées, mesure systématique (heures économisées, productivité, satisfaction), cas d'étude chiffré validé par le dirigeant", "Données réelles"),
     ("Trimestre 4", "Premier client commercial au tarif de la grille ; lancement public ; demande d'appui conditionnelle aux résultats du pilote", "Validation"),
     ("Au-delà", "Accords intermunicipaux et secteur public — seulement après validation sur le terrain, avec la même discipline de pilote", "Échelle"),
 ], header=("Période", "Les actions", "Le résultat"))
@@ -197,7 +203,7 @@ table3(doc, [
     ("Adoption lente", "Résultats rapides sur les données existantes du client + formation pratique (MFOR)", "Contrôlé"),
     ("Concurrence", "Positionnement local et humain : le maillon entre l'IA et le propriétaire — la proximité et le français comme avantages", "Contrôlé"),
     ("Protection des données", "Conformité Loi 25 par conception ; données du client chez le client ; séparation stricte des mondes (nos clés, nos données — jamais mélangées)", "Éliminé"),
-    ("Dépendance au fondateur", "Documentation vivante (le standard EL FUEGO) : chaque leçon est enregistrée, chaque processus expliqué — le savoir s'hérite", "Atténué"),
+    ("Dépendance au fondateur", "Documentation vivante (le standard Knowledge Ledger) : chaque leçon est enregistrée, chaque processus expliqué — le savoir s'hérite", "Atténué"),
 ], header=("Risque", "Mitigation", "Statut"))
 
 # ── 8. DEMANDE ──────────────────────────────────────────────
@@ -211,7 +217,7 @@ section(doc, "9", "L'organisme technologique", "Délégable : directeur techniqu
 table3(doc, [
     ("Le Veilleux", "Dashboard, caisse virtuelle + contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes « la IA informe, l'humain décide », centre de notifications, pont Facebook/Messenger", "Produit"),
     ("Les 7 organes", "workflow-master, decision-router, accountability-auditor, autonomy-grader, audit (qui enseigne), forensics (qui explique) + le cerveau double (rapide + raisonneur)", "Moteur DSH"),
-    ("EL FUEGO", "Le standard de transfert de savoir humain-IA : 26 leçons réelles, format canonique — la mémoire de l'entreprise", "Mémoire"),
+    ("Knowledge Ledger", "Le standard de transfert de savoir humain-IA : 26 leçons réelles, format canonique — la mémoire de l'entreprise", "Mémoire"),
     ("Les gardes", "Tests automatiques du flux complet (smoke, contrats d'amorçage, garde CSS, parcours API, synchronisation du bundle)", "Qualité"),
 ], header=("Actif", "Ce que c'est", "Rôle"))
 
