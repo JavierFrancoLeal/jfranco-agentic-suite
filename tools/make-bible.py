@@ -101,6 +101,7 @@ rule(doc)
 para(doc, "FRANCO VISION — Plan d'affaires", size=21, bold=True, space_after=4)
 para(doc, "L'IA travaille. L'humain veille, décide, révise.", size=13, bold=True, color=V, space_after=4)
 para(doc, "Franco Vision est le maillon humain entre l'intelligence artificielle et les entreprises de Charlevoix — celles qui n'ont ni le temps ni les ressources techniques pour l'implanter elles-mêmes.", size=10, color=MUTED, space_after=10)
+para(doc, "Ce n'est pas une limite, c'est la source de la confiance : l'intelligence artificielle n'est jamais un substitut au jugement, à la responsabilité ni à l'imputabilité humaine. Cette garantie est ce qui rend l'IA admissible — dans l'entreprise comme dans l'administration.", size=10, color=INK, space_after=10)
 
 # ── Sommaire ─────────────────────────────────────────────────
 section(doc, "SOMMAIRE", "Sommaire et guide de lecture", "Tout le monde — 2 minutes")
