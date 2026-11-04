@@ -1,0 +1,4 @@
+# @javierfrancoleal/__NAME__ — plugin row.
+- insert:
+    - id: __NAME__
+      name: '@javierfrancoleal/__NAME__'

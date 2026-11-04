@@ -1,4 +1,4 @@
-# Franco Vision — LA BIBLE (le plan d'affaires maître). Design system v3.
+# Franco Vision — PLAN D'AFFAIRES (v2, entrepreneur-first, delegable sections).
 import sys
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
@@ -23,13 +23,14 @@ def para(doc, text="", size=9.5, color=INK, bold=False, align=None, space_after=
     pf = p.paragraph_format; pf.space_after = Pt(space_after); pf.space_before = Pt(space_before); pf.line_spacing = line
     return p
 
-def label(doc, text, space_before=10, space_after=4):
-    p = doc.add_paragraph(); r = p.add_run(text.upper())
-    r.font.size = Pt(8); r.bold = True; r.font.color.rgb = GRAY
-    p.paragraph_format.space_before = Pt(space_before); p.paragraph_format.space_after = Pt(space_after); return p
-
-def heading(doc, text, size=15, space_after=5):
-    return para(doc, text, size=size, bold=True, space_after=space_after)
+def section(doc, num, title, audience, size=14):
+    para(doc, "SECTION " + num, size=8, color=V, bold=True, space_before=12, space_after=1)
+    para(doc, title, size=size, bold=True, space_after=2)
+    p = doc.add_paragraph()
+    r = p.add_run("À lire par : " + audience)
+    r.font.size = Pt(8.5); r.font.color.rgb = GRAY; r.italic = True
+    p.paragraph_format.space_after = Pt(4)
+    rule(doc, color="E5E7EB", sz=4, space_after=6)
 
 def bullet(doc, lead, rest, size=9.5):
     p = doc.add_paragraph()
@@ -46,7 +47,7 @@ def cell_borders(cell, edges, color="E5E7EB", sz=4):
         el = OxmlElement("w:" + side); el.set(qn("w:val"), "single"); el.set(qn("w:sz"), str(sz)); el.set(qn("w:color"), color); b.append(el)
     tcPr.append(b)
 
-def table3(doc, rows, widths=(2.0, 10.2, 5.0), header=("", "", "")):
+def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", "")):
     t = doc.add_table(rows=1, cols=3); t.autofit = False
     for i, htxt in enumerate(header):
         c = t.rows[0].cells[i]; c.width = Cm(widths[i]); shade(c, "F3F4F6")
@@ -78,97 +79,126 @@ t.columns[0].width = Cm(11.0); t.columns[1].width = Cm(6.8)
 c0, c1 = t.rows[0].cells
 p0 = c0.paragraphs[0]; p0.add_run().add_picture(LOCKUP, width=Cm(4.2))
 p1 = c1.paragraphs[0]; p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-r4 = p1.add_run("PLAN D'AFFAIRES MAÎTRE · v1.0"); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
+r4 = p1.add_run("PLAN D'AFFAIRES · v2.0"); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
 rule(doc)
-heading(doc, "FRANCO VISION — La Bible", size=22, space_after=4)
-para(doc, "Le plan d'affaires maître de Franco Vision inc. — la société de logiciels née à Charlevoix pour la quatrième révolution industrielle. Ce document fusionne trois sources fondatrices (le plan Nikan, l'étude du secteur municipal québécois, l'étude des secteurs économiques de Charlevoix) avec tout ce que l'organisme a construit : le produit Le Veilleux, les sept organes, le standard EL FUEGO et la doctrine des deux mondes.", size=10, color=MUTED, space_after=8)
+para(doc, "FRANCO VISION — Plan d'affaires", size=21, bold=True, space_after=4)
+para(doc, "Le lien humain entre l'intelligence artificielle et le territoire de Charlevoix. Ce document réunit trois études fondatrices et tout ce que l'organisme a construit. Chaque section indique à qui la confier : l'entrepreneur lit le potentiel, délègue le technique, et décide.", size=10, color=MUTED, space_after=10)
 
-label(doc, "La vision", space_before=4)
-heading(doc, "Une grande entreprise de logiciels, née et développée à Charlevoix — le lien humain entre l'IA et le territoire", size=14)
-para(doc, "D'ici dix ans, Charlevoix accueillera un pôle régional d'intelligence artificielle : une entreprise qui dynamise l'économie locale, attire le talent, héberge une infrastructure souveraine (centres de données au Québec) et accueille des entreprises d'avant-garde en IA. Franco Vision est la graine de ce pôle — et chaque contrat d'aujourd'hui finance la racine de demain.")
-
-label(doc, "La mission et la thèse")
-bullet(doc, "La thèse (l'optique commerciale) : ", "la valeur n'est pas ce que l'IA génère, mais ce que le client CESSE de payer — les heures de conciliation, les amendes évitées, les 4 100 fonctionnaires québécois qui passent leur année à remplir des formulaires.")
-bullet(doc, "La mission : ", "éliminer la friction entre l'humain et la machine — « l'humain au sommet, l'IA en soutien » — pour les PME, les travailleurs autonomes ET les administrations municipales.")
-bullet(doc, "Les valeurs : ", "l'humain décide · la séparation des mondes (nos clés, nos données, jamais mélangées) · l'antifragilité (chaque erreur devient une leçon) · la souveraineté (Loi 25, données au Québec).")
-
-label(doc, "Le fil conducteur des trois documents")
-para(doc, "Les deux études indépendantes utilisent littéralement la MÊME métaphore que notre thèse fondatrice : « écrire un document à la main pour le retranscrire ensuite à l'ordinateur ». Le secteur municipal (328,4 M$ de fardeau annuel) et les PME (78 % ne voient pas l'utilité pratique de l'IA) souffrent du même mal : des processus de l'ère du papier numérisés en surface. Franco Vision vend la disparition de cette métaphore — l'agent qui exécute le flux de bout en bout, pendant que l'humain décide.")
-
-label(doc, "L'organisme technologique (l'inventaire de la session)")
+# ── Sommaire (delegable) ─────────────────────────────────────
+section(doc, "SOMMAIRE", "Sommaire et guide de lecture", "Tout le monde — 2 minutes")
 table3(doc, [
-    ("Le Veilleux", "L'application : dashboard, caisse virtuelle + contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes « la IA informe, le humain décide » (10 s, Non par défaut), centre de notifications à écran complet, pont Facebook/Messenger", "Produit"),
-    ("Les 7 organes", "workflow-master, decision-router, accountability-auditor, autonomy-grader, audit (qui enseigne), forensics (qui explique), + le cerveau double (chat + reasoner)", "Moteur DSH"),
-    ("EL FUEGO", "Le standard documenté de transfert de savoir humain-IA : 26 leçons réelles, le format canonique, le principe « adopter la logique complète des idées »", "Mémoire"),
-    ("Les gardes", "Smoke strict, contrats du flux d'amorçage, garde CSS, parcours API complet, synchronisation du bundle — la qualité comme machine", "Qualité"),
-    ("La doctrine des deux mondes", "Les clés et données du client ne se mélangent jamais avec les nôtres ; le Studio prépare, l'humain publie dans SES applications", "Souveraineté"),
-], header=("Actif", "Ce que c'est", "Rôle"))
+    ("1", "Le potentiel — pourquoi ceci est une affaire", "L'entrepreneur"),
+    ("2", "Le marché — les chiffres qui parlent", "L'entrepreneur + conseiller"),
+    ("3", "La stratégie à deux voies — PME et municipal", "La direction"),
+    ("4", "Le portefeuille de produits", "Délégable : direction technique"),
+    ("5", "Le modèle d'affaires et la viabilité", "L'entrepreneur + comptable"),
+    ("6", "L'ingénierie financière — subventions et crédits", "Délégable : comptable"),
+    ("7", "La feuille de route — trois horizons", "La direction"),
+    ("8", "Les risques et leur mitigation", "La direction + conseil"),
+    ("9", "La demande — partenaires et appui", "La direction + SADC"),
+    ("10", "L'organisme technologique", "Délégable : directeur technique"),
+    ("11", "Le système d'exploitation de l'entreprise", "Délégable : directeur technique"),
+    ("12", "Annexe — les trois documents fondateurs", "Délégable : analystes"),
+], header=("No", "Section", "À lire par"))
 
-label(doc, "Le marché — la synthèse chiffrée des trois documents")
+# ── 1. LE POTENTIEL (first!) ─────────────────────────────────
+section(doc, "1", "Le potentiel — pourquoi ceci est une affaire", "L'entrepreneur d'abord — c'est la section qui décide tout")
+para(doc, "Deux études indépendantes arrivent à la même conclusion avec la même image : les entreprises et les municipalités « écrivent à la main pour retranscrire à l'ordinateur ». La quatrième révolution industrielle n'a pas encore atteint le terrain — et c'est exactement là que se crée la fortune :", space_after=4)
+bullet(doc, "Le capital humain gaspillé : ", "4 100 fonctionnaires municipaux québécois travaillent à temps plein uniquement à remplir des formulaires — 328,4 M$ par an.")
+bullet(doc, "Le capital économique gaspillé : ", "78 % des PME ne voient pas l'utilité pratique de l'IA et paient des heures de conciliation, des amendes évitables (CCQ, MAPAQ, CITQ) et des double-saisies quotidiennes.")
+bullet(doc, "Le capital physique sous-utilisé : ", "1,9 % seulement d'adoption de l'IA dans l'hébergement et la restauration — pendant que le tourisme bat des records (172,4 M$ à l'été 2026).")
+bullet(doc, "La thèse de valeur : ", "nous ne vendons pas ce que l'IA génère — nous vendons ce que le client CESSE de payer. C'est la différence entre un gadget et un actif.")
+para(doc, "La vision à dix ans : un pôle régional d'IA à Charlevoix — centres de données souverains, talent local, entreprises d'avant-garde — avec Franco Vision comme noyau. Chaque contrat d'aujourd'hui finance la racine de demain.", bold=True)
+
+# ── 2. LE MARCHÉ ─────────────────────────────────────────────
+section(doc, "2", "Le marché — les chiffres qui parlent", "L'entrepreneur + le conseiller")
 table3(doc, [
-    ("Tourisme", "Été 2026 : 172,4 M$ de dépenses (+5,3 %), occupation 70,4 % ; Le Massif 72,6 M$ ; Club Med 21,8 M$ ; adoption IA : 1,9 % seulement", "Opportunité immense"),
-    ("Municipal", "328,4 M$/an de fardeau administratif provincial ; 4 100 ETP ; quasi-monopole PG Solutions contesté (Marieville, 2026) ; concurrence IA = copilotes sans connaissance du territoire", "Gouvernement"),
-    ("Tissu PME", "≈ 2 000 entreprises dans les deux MRC, 95 % de moins de 50 employés ; 14,1 % de travailleurs autonomes ; 32,8 % de la population a 65 ans et plus (relève d'entreprise)", "Base locale"),
+    ("Tourisme", "Été 2026 : 172,4 M$ (+5,3 %), occupation 70,4 % ; Le Massif 72,6 M$ ; Club Med 21,8 M$ ; adoption IA : 1,9 %", "Opportunité immense"),
+    ("Municipal", "328,4 M$/an de fardeau administratif ; quasi-monopole PG Solutions contesté ; concurrence IA = copilotes sans connaissance du territoire", "Gouvernement"),
+    ("Tissu PME", "≈ 2 000 entreprises, 95 % de moins de 50 employés ; 14,1 % de travailleurs autonomes ; 32,8 % de la population a 65 ans et plus (relève d'entreprise)", "Base locale"),
     ("Conjoncture", "Octobre 2026 : les deux MRC réclament un statut particulier — Charlevoix devient le laboratoire idéal de l'IA agéntique", "Fenêtre unique"),
 ], header=("Segment", "Le fait (documenté)", "Lecture"))
 
-label(doc, "La stratégie à deux voies (une thèse, deux marchés)")
-heading(doc, "Voie A — Les PME et les secteurs économiques (Le Veilleux)", size=12)
-bullet(doc, "Le produit : ", "l'assistant de travail installé chez le client (10 façons du guide : publications, courriels, devis, factures, actes, traduction, offres, agenda, avis, caisse) — une seule application, la cuisine invisible.")
-bullet(doc, "La méthode des 8 semaines : ", "résultats rapides sur les données existantes + formation MFOR + mode ombre avant production (l'étude sectorielle).")
-bullet(doc, "Les prix (3 niveaux) : ", "Niveau 1 « L'employé no 2 » 1 500 $ + 199–349 $/mois · Niveau 2 « Essaim sectoriel » 15 000–45 000 $ + 600–1 200 $/mois · Niveau 3 collectif/industriel.")
-heading(doc, "Voie B — Le secteur municipal et régional (la couche d'orchestration agéntique)", size=12)
-bullet(doc, "Le principe : ", "une couche agéntique souveraine PAR-DESSUS les systèmes existants (AccèsCité, GOnet, ePropriété) — on ne remplace pas le grand livre, on exécute les flux où le capital humain s'effondre.")
-table3(doc, [
-    ("Moteur 1", "Conformité géospatiale, hydrique et patrimoniale (urbanisme, CCU, ROPI) — l'enjambre de 3 sous-agents : vision CAD/BIM, géointelligence MELCCFP/SADR, compilateur normatif déterministe sans hallucinations", "Wedge Baie-Saint-Paul"),
-    ("Moteur 2", "Agent forensique de conciliation financière et reddition TECQ/MAMH/CMQ — réimputation automatique des décomptes, dossiers pré-audités (NCMC 3530)", "Wedge <1 000 hab."),
-    ("Moteur 3", "Orchestrateur de subventions et développement économique (SDLE, Mission développement, ESSOR 1A/1B/1C, patrimoine 218-26)", "Échelle MRC"),
-    ("Moteur 4", "Gouvernance des TNO (Sagard, Mont-Élie), perception automatisée (2 $/visiteur, 2 $/nuit), mobilité rurale (Mobilité Charlevoix)", "Territoires publics"),
-], header=("Produit", "Ce qu'il exécute", "Entrée"))
+# ── 3. STRATÉGIE ─────────────────────────────────────────────
+section(doc, "3", "La stratégie à deux voies — une thèse, deux marchés", "La direction")
+bullet(doc, "Voie A — PME et secteurs : ", "Le Veilleux, l'assistant de travail installé chez le client (les 10 façons du guide), avec la méthode des 8 semaines : résultats rapides sur les données existantes + formation MFOR.")
+bullet(doc, "Voie B — Municipal et régional : ", "une couche d'orchestration agéntique souveraine PAR-DESSUS les systèmes existants (AccèsCité, GOnet, ePropriété) — on ne remplace pas le grand livre, on exécute les flux où le capital humain s'effondre.")
 
-label(doc, "L'ingénierie financière (la règle d'or des subventions)")
-para(doc, "Règle d'or : AUCUN contrat signé ni dépense engagée avant l'accusé de réception officiel de la demande de subvention — sinon le dossier est rejeté. Processus en 4 pas : diagnostic gratuit → soumission détaillée → dépôt + accusé → contrat et déploiement.", bold=True, space_after=4)
+# ── 4. PRODUITS ──────────────────────────────────────────────
+section(doc, "4", "Le portefeuille de produits", "Délégable : direction technique")
 table3(doc, [
-    ("Pour les clients", "EPRTNT 2025-2027 (50 % OBL / 80 % OBNL / 90 % autochtones, jusqu'à 200 000 $) · FRR Volet 4 (50 000 $ intermunicipal) · ESSOR 1A/1B/1C · MFOR (75 % formation) · Microcrédit Charlevoix (2,5 %, 6 mois sans paiement) · Volets 2-3 MRC (80–100 %)", "Le client paie 50–80 % de moins"),
-    ("Pour Franco Vision", "C3i (25 %) · CDAE Volet IA (30 % des salaires, récurrent) · PARI-CNRC (jusqu'à 80 % des salaires internes) · CRIC (crédit remboursable 30 % sur le premier million)", "Le développement se finance"),
-    ("L'offre légale", "LCOM 2026 : contrat <25 000 $ en gré à gré ; 25 000–138 999 $ par invitation (2 fournisseurs, 8 jours) ; services (jamais « biens ») pour garder le seuil de 139 000 $ ; avis d'intention SEAO pour l'exclusivité", "Entrée sans appel d'offres de 18 mois"),
+    ("Le Veilleux", "Dashboard, caisse virtuelle + contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes « la IA informe, l'humain décide » (10 s, Non par défaut), centre de notifications à écran complet, pont Facebook/Messenger", "PME"),
+    ("Moteur 1", "Conformité géospatiale, hydrique et patrimoniale (urbanisme, CCU, ROPI) — 3 sous-agents : vision CAD/BIM, géointelligence MELCCFP/SADR, compilateur normatif sans hallucinations", "Municipal"),
+    ("Moteur 2", "Agent forensique de conciliation financière et reddition TECQ/MAMH/CMQ — dossiers pré-audités (NCMC 3530)", "Municipal"),
+    ("Moteur 3", "Orchestrateur de subventions et développement économique (SDLE, Mission développement, ESSOR, patrimoine 218-26)", "MRC"),
+    ("Moteur 4", "Gouvernance des TNO, perception automatisée (2 $/visiteur, 2 $/nuit), mobilité rurale (Mobilité Charlevoix)", "Territoires"),
+], header=("Produit", "Ce qu'il exécute", "Marché"))
+
+# ── 5. MODÈLE D'AFFAIRES ─────────────────────────────────────
+section(doc, "5", "Le modèle d'affaires et la viabilité", "L'entrepreneur + le comptable")
+table3(doc, [
+    ("PME — niveau 1", "« L'employé no 2 » : 1 500 $ d'activation + 199–349 $/mois (travailleurs autonomes, 1–4 employés)", "Microcrédit Charlevoix"),
+    ("PME — niveau 2", "« Essaim sectoriel » : 15 000–45 000 $ + 600–1 200 $/mois (restaurants, hôtels, chalets CITQ, CCQ, fermes)", "EPRTNT 50–80 %"),
+    ("Municipal — wedge", "19 500–24 500 $/an par municipalité (gr é à gré <25 000 $, LCOM) ; 85 000–135 000 $ par MRC", "FRR Volet 4"),
+    ("Viabilité", "86 000–96 000 $/an : charges ≈ 36 350 $ + salaire 50 000–60 000 $ ; 2–3 implantations + 3–4 accompagnements actifs ; la servitisation 5.0 (le récurrent est l'actif)", "Pilote antifragile"),
+], header=("Offre", "Le détail", "Le levier"))
+
+# ── 6. FINANCIÈRE ────────────────────────────────────────────
+section(doc, "6", "L'ingénierie financière — subventions et crédits", "Délégable : comptable / conseiller en financement")
+para(doc, "Règle d'or : AUCUN contrat signé ni dépense engagée avant l'accusé de réception officiel de la demande — sinon le dossier est rejeté. Processus : diagnostic gratuit → soumission détaillée → dépôt + accusé → contrat et déploiement.", bold=True, space_after=4)
+table3(doc, [
+    ("Pour les clients", "EPRTNT (50/80/90 %, jusqu'à 200 000 $) · FRR Volet 4 (50 000 $) · ESSOR 1A/1B/1C · MFOR (75 % formation) · Microcrédit (2,5 %, 6 mois sans paiement) · Volets 2-3 MRC (80–100 %)", "Le client paie 50–80 % de moins"),
+    ("Pour Franco Vision", "C3i (25 %) · CDAE Volet IA (30 % des salaires, récurrent) · PARI-CNRC (jusqu'à 80 %) · CRIC (30 % remboursable sur le premier million)", "Le développement se finance"),
+    ("Le cadre légal", "LCOM 2026 : gré à gré <25 000 $ ; invitation 25 000–138 999 $ ; toujours des SERVICES (jamais des biens) pour garder le seuil de 139 000 $ ; avis d'intention pour l'exclusivité", "Entrée sans appel d'offres"),
 ], header=("Instrument", "Le détail", "L'effet"))
 
-label(doc, "Le modèle d'affaires et la viabilité")
-bullet(doc, "Viabilité (plan Nikan) : ", "86 000 – 96 000 $/an — charges ≈ 36 350 $ + salaire du fondateur 50 000–60 000 $ ; atteinte avec 2–3 implantations + 3–4 accompagnements actifs.")
-bullet(doc, "La servitisation 5.0 : ", "la majorité des revenus à maturité vient de l'accompagnement mensuel récurrent (le forfait devient l'actif).")
-bullet(doc, "Le pilote antifragile : ", "6 mois à tarif opérationnel, aucune projection non validée — le pilote EST le moteur de toutes les données futures.")
-
-label(doc, "La feuille de route — trois horizons fusionnés")
+# ── 7. FEUILLE DE ROUTE ──────────────────────────────────────
+section(doc, "7", "La feuille de route — trois horizons fusionnés", "La direction")
 table3(doc, [
-    ("H1 · mois 1–6", "Nœud opérationnel à Charlevoix (crédits C3i/CDAE/PARI) · contrats wedge municipaux en gré à gré (<25 000 $) à Baie-Saint-Paul, La Malbaie, Petite-Rivière-Saint-François · pilote PME (8 semaines) · one-pager + guide + accord de pilote", "Premiers revenus réels"),
-    ("H2 · mois 6–18", "Accord intermunicipal FRR Volet 4 (50 000 $) · orchestration SDLE/Mission développement · essaims sectoriels (ESSOR 1B/1C) · embauche conditionnelle « un poste = un revenu confirmé »", "Échelle MRC"),
-    ("H3 · mois 18–36", "Validation sur les 13 municipalités et 3 TNO → escalade vers 86 MRC et 1 100 municipalités (FQM, UMQ, ADMQ) · connecteurs MAMH/MELCCFP (contrats de services <139 000 $)", "Standard québécois"),
+    ("H1 · mois 1–6", "Nœud opérationnel à Charlevoix (C3i/CDAE/PARI) · wedge municipaux en gré à gré à Baie-Saint-Paul, La Malbaie, Petite-Rivière-Saint-François · pilote PME (8 semaines) · les documents commerciaux (one-pager, guide, accord de pilote)", "Premiers revenus réels"),
+    ("H2 · mois 6–18", "Accord intermunicipal FRR Volet 4 · orchestration SDLE/Mission développement · essaims sectoriels ESSOR 1B/1C · « un poste = un revenu confirmé »", "Échelle MRC"),
+    ("H3 · mois 18–36", "13 municipalités + 3 TNO validées → 86 MRC et 1 100 municipalités (FQM, UMQ, ADMQ) · connecteurs MAMH/MELCCFP (services <139 000 $)", "Standard québécois"),
 ], header=("Horizon", "Les actions", "Le résultat"))
 
-label(doc, "La vision à dix ans — le pôle régional")
-para(doc, "Franco Vision devient le noyau d'un écosystème : l'infrastructure souveraine (centres de données au Québec, énergie Hydro-Québec, conformité Loi 25 par conception) attire les entreprises d'IA d'avant-garde qui cherchent une base canadienne fiable ; le talent local et le télétravail régional trouvent un employeur technologique sans quitter Charlevoix ; les jeunes de la région voient une carrière en IA née chez eux. Le Groupe Le Massif et le Club Med prouvent qu'un pôle d'excellence mondial peut vivre à Charlevoix — Franco Vision ajoute la couche technologique manquante.")
-
-label(doc, "Les risques et la mitigation")
+# ── 8. RISQUES ───────────────────────────────────────────────
+section(doc, "8", "Les risques et leur mitigation", "La direction + le conseil consultatif")
 table3(doc, [
-    ("Adoption lente", "78 % des PME ne voient pas l'utilité — mitigation : la méthode des 8 semaines, résultats sur leurs données, formation MFOR", "Contrôlé"),
-    ("Annulations (40 %, Gartner 2027)", "Mitigation : le pilote opérationnel + l'accompagnement continu comme cœur du modèle", "Contrôlé"),
-    ("Quasi-monopole PG Solutions", "On ne le remplace pas : on orchestre PAR-DESSUS — migration zéro pour le client", "Contourné"),
-    ("Hallucinations normatives", "Le compilateur déterministe (graphe juridique) au lieu de la mémoire LLM — la doctrine « la IA informe, l'humain décide »", "Éliminé"),
+    ("Adoption lente (78 %)", "La méthode des 8 semaines : résultats sur leurs données + formation MFOR", "Contrôlé"),
+    ("Annulations (40 %, Gartner)", "Le pilote opérationnel + l'accompagnement continu comme cœur du modèle", "Contrôlé"),
+    ("Quasi-monopole PG Solutions", "On ne le remplace pas : on orchestre PAR-DESSUS — migration zéro", "Contourné"),
+    ("Hallucinations normatives", "Le compilateur déterministe (graphe juridique) + « la IA informe, l'humain décide »", "Éliminé"),
     ("Loi 25 / deontologie OUQ", "Souveraineté par conception : données au Québec, AES-256, pseudonymisation en bordure, EFVP", "Barrière d'entrée"),
 ], header=("Risque", "Mitigation", "Statut"))
 
-label(doc, "La demande (les partenaires et l'appui)")
+# ── 9. DEMANDE ───────────────────────────────────────────────
+section(doc, "9", "La demande — partenaires et appui", "La direction + SADC")
 bullet(doc, "SADC Charlevoix : ", "accompagnement, mise en relation avec la PME pilote, aide aux demandes de subventions, prêt conditionnel (25 000 $).")
-bullet(doc, "Les canaux documentés : ", "SDLE de la MRC de Charlevoix (sdle@mrccharlevoix.ca) · Mission développement Charlevoix (infofinancement@mrccharlevoixest.ca) · Chambre de commerce (cohortes MFOR, 10 % de gestion pour l'organisme) · Tourisme Charlevoix (EPRTNT) · Table agroalimentaire.")
-bullet(doc, "Le futur proche : ", "le FRR Volet 4 pour l'accord intermunicipal ; C3i/CDAE/PARI pour l'équipe ; le conseil consultatif post-pilote (PME, comptable, expert IA, représentant autochtone, ex-SADC).")
+bullet(doc, "Les canaux documentés : ", "SDLE (sdle@mrccharlevoix.ca) · Mission développement (infofinancement@mrccharlevoixest.ca) · Chambre de commerce (cohortes MFOR, 10 % de gestion) · Tourisme Charlevoix (EPRTNT) · Table agroalimentaire.")
+bullet(doc, "Le futur proche : ", "FRR Volet 4 pour l'intermunicipal ; C3i/CDAE/PARI pour l'équipe ; conseil consultatif post-pilote.")
 
-label(doc, "Le système d'exploitation de l'entreprise")
-para(doc, "L'entreprise fonctionne comme le produit : le lazo « agir → vérifier → noter → consolider → archiver ». L'organe audit fait la revue hebdomadaire et enseigne ; le forensics explique le passé ; le feu-log conserve chaque leçon. Les gardes de qualité empêchent la régression. Une seule règle de gestion : un poste = un revenu confirmé ; une intégration = une demande client. La Bible est ce document — elle se met à jour à chaque horizon franchi.")
+# ── 10. ORGANISME (last) ─────────────────────────────────────
+section(doc, "10", "L'organisme technologique", "Délégable : directeur technique — l'entrepreneur n'a pas besoin de lire ceci")
+table3(doc, [
+    ("Les 7 organes", "workflow-master, decision-router, accountability-auditor, autonomy-grader, audit (qui enseigne), forensics (qui explique) + le cerveau double (chat + reasoner)", "Moteur DSH"),
+    ("EL FUEGO", "Le standard documenté de transfert de savoir humain-IA : 26 leçons réelles, format canonique, « adopter la logique complète des idées »", "Mémoire"),
+    ("Les gardes", "Smoke strict, contrats du flux d'amorçage, garde CSS, parcours API complet, synchronisation du bundle", "Qualité machine"),
+    ("La doctrine des deux mondes", "Les clés et données du client ne se mélangent jamais avec les nôtres ; le Studio prépare, l'humain publie dans SES applications", "Souveraineté"),
+], header=("Actif", "Ce que c'est", "Rôle"))
+
+# ── 11. OS ───────────────────────────────────────────────────
+section(doc, "11", "Le système d'exploitation de l'entreprise", "Délégable : directeur technique")
+para(doc, "L'entreprise fonctionne comme le produit : agir → vérifier → noter → consolider → archiver. L'organe audit fait la revue hebdomadaire et enseigne ; le forensics explique le passé ; le feu-log conserve chaque leçon ; les gardes empêchent la régression. Une intégration = une demande client ; un poste = un revenu confirmé.")
+
+# ── 12. ANNEXE ───────────────────────────────────────────────
+section(doc, "12", "Annexe — les trois documents fondateurs", "Délégable : analystes")
+bullet(doc, "Le plan Nikan (v5.2, 100 heures du fondateur) : ", "les 5 services HITL, le pilote antifragile de 6 mois, la viabilité, les politiques Loi 25, la pétition SADC en 5 volets.")
+bullet(doc, "L'étude municipale (34 pages) : ", "le fardeau de 328,4 M$, le quasi-monopole PG Solutions, les 4 moteurs agéntiques, la LCOM 2026, la souveraineté.")
+bullet(doc, "L'étude sectorielle (47 pages) : ", "le tourisme record (172,4 M$), la méthode des 8 semaines, les 3 niveaux de prix, l'arsenal de subventions, les canaux nommés.")
+bullet(doc, "L'imbrication : ", "les deux études partagent la métaphore fondatrice du plan Nikan (« écrire à la main pour retranscrire ») — les trois documents disent la même thèse avec les mêmes mots. Ce plan d'affaires est leur fusion.")
 
 rule(doc, color="E5E7EB", sz=4, space_after=4)
-para(doc, "Franco Vision inc. · Charlevoix, Québec · La Bible v1.0 · Novembre 2026 · Sources : plan Nikan v5.2, étude municipale (34 p.), étude sectorielle (47 p.), et la session de construction complète", size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
+para(doc, "Franco Vision inc. · Charlevoix, Québec · Plan d'affaires v2.0 · Novembre 2026", size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
 
-out = sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-BIBLE.docx"
+out = sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-PLAN-AFFAIRES.docx"
 doc.save(out)
 print("saved", out)

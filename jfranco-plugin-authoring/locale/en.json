@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Plugin Authoring",
+    "description": "Skill that teaches how to build and publish DeepSeek Harness plugins (host, client, or dual-face) without re-discovering the architecture."
+  }
+}

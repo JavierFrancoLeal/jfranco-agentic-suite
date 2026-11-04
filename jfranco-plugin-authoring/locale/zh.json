@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "插件编写",
+    "description": "教授如何构建和发布 DeepSeek Harness 插件（宿主、客户端或双面），无需重新发现架构。"
+  }
+}

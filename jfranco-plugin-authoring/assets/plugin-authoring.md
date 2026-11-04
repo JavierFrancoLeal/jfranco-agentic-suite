@@ -1,0 +1,176 @@
+# How to author a DeepSeek Harness plugin (distilled)
+
+DSH is a **Cordis** runtime. A plugin is an npm package with one or two halves:
+
+- **Host half** `lib/index.js` (Node): skills, commands, services, scheduled work.
+- **Browser half** `lib/client.js` (React): UI in the Web GUI.
+
+Activation is via `cordis.patch.yml`, which inserts the plugin's row into the Loader.
+
+## Three kinds
+
+| Kind | `dsh.bundle.patch` | `dsh.client` |
+|---|---|---|
+| Host-only (skill / command) | yes | no |
+| Client-only (UI) | no | yes |
+| Dual-face | yes | yes |
+
+## Files
+
+```
+mi-plugin/
+├── package.json        # exports + dsh.bundle.patch + dsh.client
+├── cordis.patch.yml    # - insert: - id: mi-plugin  name: '@scope/mi-plugin'
+├── lib/index.js        # host half — export apply(ctx)
+├── lib/client.js       # browser half — window.__ModuleLoader__.load(...)
+├── locale/*.json       # meta.title / meta.description
+├── icon.svg
+└── README.md
+```
+
+## package.json (dual-face minimum)
+
+```jsonc
+{
+  "name": "@javierfrancoleal/mi-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "engines": { "node": ">=24", "dsh": ">=0.2.1-rc.0" },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "inject": ["@deepseek-ai/dsh-client-locale", "@deepseek-ai/dsh-client-ui-layout"]
+    }
+  },
+  "peerDependencies": { "@deepseek-ai/cordis": "~4.0.5" }
+}
+```
+
+## Host half — register a skill (proven pattern)
+
+```js
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import { BUNDLED_SKILL_RANK } from "@deepseek-ai/dsh-skill";
+
+const PROVIDER_NAME = "javierfrancoleal-mi-plugin";
+const SKILL_BODY_URL = new URL("../assets/mi-skill.md", import.meta.url);
+const RESOURCE_BASE = { kind: "directory", path: fileURLToPath(new URL("../assets/", import.meta.url)) };
+const CANDIDATE = {
+  name: "mi-skill",
+  description: "…",
+  invocation: { modelInvocable: true, userInvocable: true },
+  provider: PROVIDER_NAME, source: "bundled",
+  resourceBase: RESOURCE_BASE, rank: BUNDLED_SKILL_RANK, locator: SKILL_BODY_URL,
+};
+const provider = {
+  name: PROVIDER_NAME,
+  list: () => Promise.resolve([CANDIDATE]),
+  async get() { return { ...CANDIDATE, content: await readFile(SKILL_BODY_URL, "utf8") }; },
+};
+const name = "mi-plugin";
+const inject = ["skills"];
+function apply(ctx) { ctx.skills.registerProvider(() => provider); }
+export { apply, inject, name };
+```
+
+Commands: `ctx.get("commands")?.register({ definitionId, name, description, input, handler })`.
+Timers: `ctx.effect(() => { const t = setTimeout(run, ms); return () => clearTimeout(t); }, "label")`.
+Log: `ctx.logger.info/warn(...)`.
+
+## Browser half — the recipe (the hard part)
+
+```js
+window.__ModuleLoader__.load({
+  id: "@javierfrancoleal/mi-plugin",
+  factory: (require) => {
+    var module = { exports: {} };
+    var exports = module.exports;
+    Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
+    const React = require("react");   // react + react/jsx-runtime are baseline
+
+    function MiComponente(_props) {
+      const t = _props && typeof _props.t === "function" ? _props.t : (k) => k;
+      return React.createElement("div", null, t("saludo"));
+    }
+
+    const inject = ["slots", "locale"];
+    function apply(ctx) {
+      ctx.effect(() => ctx.locale.register("miNs", { zh, en }), "mi-plugin: locale");
+      ctx.slots.inject("shell.bottom", () => ctx.slots.register({
+        name: "shell.bottom", id: "mi-plugin", order: 0, locale: "miNs"
+      }, MiComponente));
+    }
+
+    exports.MiComponente = MiComponente;
+    exports.apply = apply;
+    exports.inject = inject;
+    return module.exports;
+  }
+});
+```
+
+Rules:
+- `exports["./client"]` → `./lib/client.js`.
+- Write `lib/client.js` **already built** (this exact form); no build step for `link:` installs.
+- No JSX — use `React.createElement` or `require("react/jsx-runtime")`.
+- Inject CSS with a `<style data-plugin-css="…">` tag.
+- Client `inject` lists **services** (`slots`, `locale`, `theme`, `remote`, …).
+
+## Slots
+
+| Slot | Alcance | Para qué |
+|---|---|---|
+| `shell.bottom` | root | **global full-width bottom bar** (empty by default) |
+| `shell.overlay` / `shell.leading` | root | overlay / top-left corner |
+| `sidebar` / `rightbar` / `main` | root | columns / central panel |
+| `conversation.input.dock` | sesión | bar above the composer |
+
+`ctx.slots.inject(slot, () => ctx.slots.register(opts, Component))` is deferred.
+
+## Locale & theme
+
+- `ctx.locale.register(ns, { zh, en })` — **both** dictionaries required.
+- `locale: ns` in `register` → framework injects `t` as a prop.
+- Theme tokens (light/dark aware, no hardcoded hex): `--dsw-alias-label-primary/secondary/tertiary`,
+  `--dsw-alias-state-success-primary` (green), `-warn-primary` (amber), `-error-primary` (red),
+  `--dsw-specific-menu`, `--dsw-alias-border-l1`, `--dsw-radius-md`, `--dsw-elevation-panel`,
+  `--dsw-menu-backdrop-filter`.
+
+## Install into the running app
+
+1. `~/.dsh/profiles/<perfil>/package.json`: add `"@scope/nombre": "link:/abs/path"` to
+   `dependencies` and `"@scope/nombre"` to `dsh.profile.bundles`.
+2. `cd ~/.dsh/profiles/<perfil> && pnpm install`.
+3. **Restart the app** (a new bundle needs a host recomposition).
+
+## Gotchas
+
+1. The checkout lives inside `app.asar` — use `_dsh-inspect/asar-tool.mjs list|extract`.
+2. The `desktop` profile is Electron-managed: `dsh --profile desktop --dump-config` fails.
+   Validate with a throwaway profile.
+3. New bundles are NOT picked up by HMR on external edits — restart the app.
+4. `dsh.bundle.patch` + `dsh.client` can coexist (dual-face).
+5. React / slots / primitives are baseline; don't list them in `dsh.client.inject`.
+
+## Validation checklist
+
+```bash
+node --check lib/index.js && node --check lib/client.js
+node tools/check-client.mjs lib/client.js
+dsh --profile testprices --dump-config | grep mi-plugin     # throwaway profile, not desktop
+curl -sS http://127.0.0.1:<puerto>/plugins/@scope/mi-plugin/client.js   # 200 after restart
+```
+
+Full reference: `docs/PLUGIN-AUTHORING.md`. Template: `templates/dsh-plugin/`.
+Scaffold/validate: `tools/new-plugin.sh`, `tools/check-plugin.sh`.
