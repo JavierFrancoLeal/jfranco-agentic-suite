@@ -51,6 +51,7 @@ try {
     document, localStorage, sessionStorage, navigator, fetch, location, window, Notification
   );
   console.log("SMOKE TEST PASSED: sin errores runtime — botones vivos");
+  process.exit(0);
 } catch (e) {
   console.log("SMOKE FAILED:", e.message);
   process.exit(1);
