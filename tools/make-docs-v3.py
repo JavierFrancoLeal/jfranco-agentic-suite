@@ -1,5 +1,5 @@
-# Franco Vision — document design system v3 (Claude/Stripe/Linear style).
-# White canvas, text-only wordmark, hairline rules, one violet accent.
+# Franco Vision — document design system v3.1 (business-first content + format fixes).
+# White canvas, text wordmark, hairline rules, one violet accent.
 import sys
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
@@ -29,8 +29,8 @@ def rule(doc, color="7C5CFF", sz=6, space_after=8):
     p.paragraph_format.space_after = Pt(space_after)
     return p
 
-def letter(p_run, spacing=26):
-    rPr = p_run._r.get_or_add_rPr()
+def letter(run, spacing=26):
+    rPr = run._r.get_or_add_rPr()
     sp = OxmlElement("w:spacing"); sp.set(qn("w:val"), str(spacing)); rPr.append(sp)
 
 def para(doc, text="", size=9.5, color=INK, bold=False, align=None, space_after=4, space_before=0, line=1.18):
@@ -73,22 +73,27 @@ def cell_borders(cell, edges, color=HAIR, sz=4):
         b.append(el)
     tcPr.append(b)
 
+def pad(cell, top=3, bottom=3):
+    for p in cell.paragraphs:
+        p.paragraph_format.space_before = Pt(top)
+        p.paragraph_format.space_after = Pt(bottom)
+
 def header(doc, doctype):
-    t = doc.add_table(rows=1, cols=2)
+    t = doc.add_table(rows=1, cols=3)
     t.alignment = WD_TABLE_ALIGNMENT.CENTER; t.autofit = False
-    t.columns[0].width = Cm(11.0); t.columns[1].width = Cm(6.8)
-    c0, c1 = t.rows[0].cells
+    t.columns[0].width = Cm(1.1); t.columns[1].width = Cm(10.4); t.columns[2].width = Cm(6.3)
+    c0, c1, c2 = t.rows[0].cells
     p0 = c0.paragraphs[0]
-    r = p0.add_run()
-    r.add_picture(ICON, width=Cm(0.75))
-    r2 = p0.add_run("   FRANCO VISION")
-    r2.bold = True; r2.font.size = Pt(12); r2.font.color.rgb = INK
-    r3 = p0.add_run("   Le Veilleux")
-    r3.font.size = Pt(8.5); r3.font.color.rgb = FAINT
-    p1 = c1.paragraphs[0]; p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
-    r4 = p1.add_run(doctype)
-    r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
+    p0.add_run().add_picture(ICON, width=Cm(0.75))
+    pad(c0, 0, 0)
+    p1 = c1.paragraphs[0]
+    r2 = p1.add_run("FRANCO VISION"); r2.bold = True; r2.font.size = Pt(12); r2.font.color.rgb = INK
+    r3 = p1.add_run("   Le Veilleux"); r3.font.size = Pt(8.5); r3.font.color.rgb = FAINT
+    pad(c1, 0, 0)
+    p2 = c2.paragraphs[0]; p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+    r4 = p2.add_run(doctype); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
     letter(r4, 26)
+    pad(c2, 0, 0)
     return t
 
 def footer(doc, docid):
@@ -111,32 +116,9 @@ def new_doc(doctype, docid):
     rule(doc)
     return doc
 
-def numbered(doc, num, lead, rest):
-    t = doc.add_table(rows=1, cols=2)
-    t.autofit = False
-    t.columns[0].width = Cm(1.6); t.columns[1].width = Cm(15.6)
-    c0, c1 = t.rows[0].cells
-    p0 = c0.paragraphs[0]
-    r0 = p0.add_run(num)
-    r0.font.size = Pt(22); r0.bold = True; r0.font.color.rgb = VLIGHT
-    p1 = c1.paragraphs[0]
-    r1 = p1.add_run(lead); r1.bold = True; r1.font.size = Pt(10); r1.font.color.rgb = INK
-    r2 = p1.add_run(rest); r2.font.size = Pt(9.5); r2.font.color.rgb = MUTED
-    p1.paragraph_format.space_after = Pt(7); p1.paragraph_format.line_spacing = 1.18
-    return t
-
-def chips(doc, items):
-    t = doc.add_table(rows=1, cols=len(items))
-    t.autofit = False
-    w = 17.2 / len(items)
-    for i, (big, small) in enumerate(items):
-        c = t.rows[0].cells[i]; c.width = Cm(w)
-        if i < len(items) - 1: cell_borders(c, ["right"])
-        p = c.paragraphs[0]
-        r = p.add_run(big); r.bold = True; r.font.size = Pt(10.5); r.font.color.rgb = V
-        p2 = c.add_paragraph(); r2 = p2.add_run(small); r2.font.size = Pt(8); r2.font.color.rgb = MUTED
-        p2.paragraph_format.space_after = Pt(0)
-    return t
+def bullets(doc, items, size=9.5):
+    for lead, rest in items:
+        lead_body(doc, "·  " + lead, rest, size=size, space_after=3)
 
 def ask_box(doc, text):
     t = doc.add_table(rows=1, cols=1)
@@ -147,72 +129,93 @@ def ask_box(doc, text):
     p.paragraph_format.space_before = Pt(4); p.paragraph_format.space_after = Pt(4)
     return t
 
-# ── One-pager ───────────────────────────────────────────────
+def gain_rows(doc, items):
+    t = doc.add_table(rows=1, cols=len(items))
+    t.autofit = False
+    w = 17.2 / len(items)
+    for i, (big, small) in enumerate(items):
+        c = t.rows[0].cells[i]; c.width = Cm(w)
+        if i < len(items) - 1: cell_borders(c, ["right"])
+        p = c.paragraphs[0]
+        r = p.add_run(big); r.bold = True; r.font.size = Pt(10.5); r.font.color.rgb = V
+        p2 = c.add_paragraph(); r2 = p2.add_run(small); r2.font.size = Pt(8); r2.font.color.rgb = MUTED
+        p2.paragraph_format.space_after = Pt(0)
+        pad(c, 2, 2)
+    return t
+
+# ── ONE-PAGER v4 — business-first, for SADC and busy owners ──
 def one_pager(out):
-    doc = new_doc("ONE-PAGER · SADC & PARTENAIRES", "Franco Vision · One-pager v1.0")
-    heading(doc, "Ce qui n'existe nulle part ailleurs", size=17)
-    para(doc, "L'humain au sommet · L'IA en soutien — la démonstration en quatre preuves.",
-         size=9.5, color=MUTED, space_after=8)
-    numbered(doc, "01", "EL FUEGO — le premier standard documenté de transfert de savoir humain-IA. ",
-        "Chaque friction entre l'humain et l'IA devient une leçon permanente dans un registre canonique (23 leçons réelles issues du terrain). Le savoir ne se perd plus : il s'hérite.")
-    numbered(doc, "02", "Les 7 organes — un flux de travail agentique avec une constitution. ",
-        "Écouter → détecter → l'IA propose → l'humain décide → vérification → notation → enseignement → archéologie du code. Chaque décision est classée, vérifiée et traçable.")
-    numbered(doc, "03", "La caisse virtuelle et le contre-registre — la preuve comptable du ROI. ",
-        "Le système enregistre ce qui est vendu ; le terminal déclare ce qui est encaissé ; la variance détecte la fuite — un écart de −1,00 $ détecté automatiquement en test réel. Chaque facture est justifiée par le Z-rapport.")
-    numbered(doc, "04", "La preuve vivante — un produit réel, construit et testé. ",
-        "Démo publique en 10 langues, double cerveau (rapide + raisonneur), porte unique, caisse, tableau de bord en temps réel — sur macOS, Windows, Linux, Android et iOS.")
-    label(doc, "La valeur")
-    heading(doc, "Ce que le propriétaire cessera de payer", size=13)
-    chips(doc, [
-        ("Conciliation", "les heures du comptable, remplacées par le contre-registre"),
-        ("Pertes", "paiements perdus et double saisie, détectés automatiquement"),
-        ("Formation", "la mémoire du système enseigne elle-même"),
+    doc = new_doc("ONE-PAGER · SADC & ENTREPRISES", "Franco Vision · One-pager v1.1")
+    heading(doc, "Votre entreprise mérite l'IA — sans jargon, sans risques, sans remplacer ce qui marche.")
+    para(doc, "Un service clé en main qui vous fait gagner du temps et de l'argent — et qui vous laisse toujours aux commandes.",
+         size=10, color=MUTED, space_after=10)
+
+    label(doc, "Ce que c'est", space_before=2)
+    para(doc, "Le Veilleux est un assistant de travail pour votre entreprise : il écoute votre équipe, organise les commandes, tient la caisse et prépare vos rapports — chaque jour, en français, sans que vous ayez à apprendre l'informatique. Vous décidez ; lui, il exécute et il vérifie.", space_after=8)
+
+    label(doc, "Ce que ça fait")
+    bullets(doc, [
+        ("Pendant le service, il écrit tout : ", "qui a commandé quoi, pour quelle table, à quelle heure — sans papier ni double saisie."),
+        ("En fin de journée, la caisse se concilie toute seule : ", "ce qui a été vendu contre ce qui a été encaissé. Un écart apparaît immédiatement — erreur, oubli ou fuite."),
+        ("Le rapport du jour se prépare tout seul : ", "ventes, activité, coûts. Fini le tableur du dimanche soir."),
     ])
-    para(doc, "Seuil de viabilité : 86 000 $ – 96 000 $/an · Pilote de 6 mois à tarif opérationnel — aucune projection non validée sur le terrain.",
-         size=8.5, color=MUTED, space_before=6, space_after=6)
-    label(doc, "L'offre", space_before=4)
-    para(doc, "0 $ Rencontre et estimation → Implantation clé en main → Accompagnement continu (le cœur) → Ateliers. Cinq services, trois sources de revenus : implantation, services gérés, innovation sectorielle.",
-         size=9.5, space_after=6)
-    ask_box(doc, "L'appui recherché — SADC Charlevoix : accompagnement et prêt conditionnel (25 000 $) dédié à la phase pilote, remboursé à partir du 25ᵉ mois une fois la rentabilité confirmée. En complément : Futurpreneur Canada et programme LIFT de la BDC.")
-    footer(doc, "Franco Vision · One-pager v1.0")
+
+    label(doc, "Comment ça vous touche")
+    para(doc, "Vous gardez vos habitudes : votre terminal de paiement, votre caisse, votre menu. On installe, on forme votre équipe, et vous continuez comme avant — avec un deuxième regard qui ne dort jamais.", space_after=8)
+
+    label(doc, "Ce que vous y gagnez")
+    gain_rows(doc, [
+        ("Du temps", "30 minutes de papier par jour = 3 semaines récupérées par année"),
+        ("De l'argent", "les paiements oubliés et les erreurs de caisse, détectés le jour même"),
+        ("La tranquillité", "une mémoire parfaite : chaque vente, chaque écart, chaque rapport"),
+    ])
+    para(doc, "Une entreprise qui perd 30 minutes par jour en papiers récupère l'équivalent de 3 semaines de travail par année. C'est ce que Le Veilleux rend.",
+         size=9, color=INK, space_before=8, space_after=8)
+
+    label(doc, "L'offre", space_before=2)
+    para(doc, "Rencontre et estimation gratuites → Implantation clé en main → Abonnement simple à partir de 249 $/mois. Pilote de 6 mois à tarif réduit pour votre première expérience, sans engagement.", space_after=8)
+
+    ask_box(doc, "L'appui recherché — SADC Charlevoix : accompagnement et prêt conditionnel (25 000 $) dédié à la phase pilote, remboursé une fois la rentabilité confirmée. En complément : Futurpreneur Canada et programme LIFT de la BDC.")
+    footer(doc, "Franco Vision · One-pager v1.1")
     doc.save(out); print("saved", out)
 
-# ── Accord de pilote ────────────────────────────────────────
+# ── Accord de pilote (jargon neutralisé) ────────────────────
 def accord(out):
-    doc = new_doc("ACCORD DE PILOTE · 6 MOIS", "Franco Vision · Accord de pilote v1.0")
+    doc = new_doc("ACCORD DE PILOTE · 6 MOIS", "Franco Vision · Accord de pilote v1.1")
     heading(doc, "Accord de pilote — Le Veilleux", size=16)
     para(doc, "ENTRE : Franco Vision inc., Charlevoix (Québec) · ET : [Nom de l'entreprise], [ville], ci-après « le Client ».",
          size=9, color=MUTED, space_after=8)
     label(doc, "Objet et durée", space_before=2)
     para(doc, "Pilote de 6 mois — implantation de Le Veilleux à tarif opérationnel (couvre uniquement les frais, sans marge) : 349 $/mois.", size=9.5)
     label(doc, "Inclus")
-    for l, r_ in [
-        ("Implantation clé en main — ", "diagnostic, installation, personnalisation, formation."),
+    bullets(doc, [
+        ("Implantation clé en main — ", "installation, personnalisation et formation de votre équipe."),
         ("Accompagnement continu — ", "support, itérations et ajustements pendant les 6 mois."),
-        ("La preuve comptable — ", "caisse virtuelle et Z-rapport exportable chaque jour."),
-    ]:
-        lead_body(doc, "· " + l, r_, size=9.5, space_after=2)
+        ("La preuve comptable — ", "caisse et rapports quotidiens exportables."),
+    ])
     label(doc, "Engagements du Client")
-    for l, r_ in [
+    bullets(doc, [
         ("1 heure de rétroaction honnête par semaine — ", "test – rétroaction – ajustement."),
         ("Accès au terrain — ", "pour la collecte des données réelles du pilote."),
-        ("Leçons anonymisées — ", "enregistrées selon le standard EL FUEGO ; aucun nom de client ni de personne."),
-    ]:
-        lead_body(doc, "· " + l, r_, size=9.5, space_after=2)
+        ("Leçons anonymisées — ", "enregistrées dans un registre interne ; aucun nom de client ni de personne."),
+    ])
     label(doc, "Démarche antifragile")
-    para(doc, "Aucune projection non validée : le pilote est le moteur de toute donnée future. À la fin des 6 mois : (a) reconduction au tarif commercial (grille v1), ou (b) sortie sans frais cachés — le Client conserve ses Z-rapports exportés.", size=9.5)
+    para(doc, "Aucune projection non validée : le pilote est le moteur de toute donnée future. À la fin des 6 mois : (a) reconduction au tarif commercial (grille v1), ou (b) sortie sans frais cachés — le Client conserve ses rapports exportés.", size=9.5)
     label(doc, "Résiliation")
     para(doc, "30 jours de préavis, sans pénalité, par l'une ou l'autre partie.", size=9.5, space_after=10)
     para(doc, "Signé à ______________________, le ______________________", size=9.5, space_before=8, space_after=12)
     t = doc.add_table(rows=1, cols=2); t.alignment = WD_TABLE_ALIGNMENT.CENTER
+    t.autofit = False
+    t.columns[0].width = Cm(8.6); t.columns[1].width = Cm(8.6)
     for i, who in enumerate(["Franco Vision inc.", "Le Client"]):
         c = t.rows[0].cells[i]
         p = c.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         r = p.add_run(who + "\n\n\n\n_______________________"); r.font.size = Pt(9.5)
-    footer(doc, "Franco Vision · Accord de pilote v1.0")
+        pad(c, 2, 2)
+    footer(doc, "Franco Vision · Accord de pilote v1.1")
     doc.save(out); print("saved", out)
 
-# ── Grille tarifaire ────────────────────────────────────────
+# ── Grille tarifaire (jargon neutralisé) ────────────────────
 def grille(out):
     doc = new_doc("GRILLE TARIFAIRE · V1", "Franco Vision · Grille tarifaire v1.0")
     heading(doc, "Grille tarifaire — version 1", size=16)
@@ -223,7 +226,7 @@ def grille(out):
         ("2", "Implantation et automatisation — par problème à résoudre", "1 500 $ – 4 000 $", False),
         ("3", "Intégration d'outils existants et formation", "750 $/journée", False),
         ("4a", "Accompagnement continu — Essentiel : 1 site, jusqu'à 10 travailleurs, caisse + rapports + support", "249 $/mois", True),
-        ("4b", "Accompagnement continu — Pro : double cerveau, rapports avancés, support prioritaire", "449 $/mois", True),
+        ("4b", "Accompagnement continu — Pro : analyses approfondies, support prioritaire, révision mensuelle", "449 $/mois", True),
         ("4c", "Accompagnement continu — Sur mesure (multi-sites, kiosque, matériel)", "Sur devis", True),
         ("5", "Ateliers, conférences et formations", "750 $ / 1 200 $ par journée", False),
     ]
@@ -234,7 +237,7 @@ def grille(out):
         c = t.rows[0].cells[i]; c.width = widths[i]; shade(c, HEADFILL)
         p = c.paragraphs[0]; r = p.add_run(htxt); r.bold = True; r.font.size = Pt(8.5); r.font.color.rgb = MUTED
         letter(r, 20)
-        p.paragraph_format.space_after = Pt(2); p.paragraph_format.space_before = Pt(2)
+        pad(c, 2, 2)
     for num, name, price, tint in rows:
         rw = t.add_row()
         vals = [num, name, price]
@@ -243,7 +246,7 @@ def grille(out):
             if tint: shade(c, TINT)
             cell_borders(c, ["bottom"])
             p = c.paragraphs[0]; r = p.add_run(val); r.font.size = Pt(9)
-            p.paragraph_format.space_after = Pt(3); p.paragraph_format.space_before = Pt(3)
+            pad(c, 3, 3)
             if i == 0: r.bold = True; r.font.color.rgb = V
             elif i == 2: r.bold = True; r.font.color.rgb = INK; p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             else: r.font.color.rgb = INK
