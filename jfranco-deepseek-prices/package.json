@@ -1,0 +1,37 @@
+{
+  "name": "@javierfrancoleal/deepseek-prices",
+  "version": "1.0.0",
+  "description": "Live DeepSeek API token price bar for the web GUI: peak/off-peak tariff, UTC + local (Quebec) clocks, countdown to the next tariff change, and a daily self-verification against the official DeepSeek pricing page.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml",
+    "README.md"
+  ],
+  "engines": { "node": ">=24", "dsh": ">=0.2.1-rc.0" },
+  "keywords": ["deepseek-harness", "pricing", "tokens", "peak", "off-peak", "tariff"],
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "inject": ["@deepseek-ai/dsh-client-ui-layout"]
+    }
+  },
+  "publishConfig": { "access": "public" },
+  "peerDependencies": { "@deepseek-ai/cordis": "~4.0.5" }
+}

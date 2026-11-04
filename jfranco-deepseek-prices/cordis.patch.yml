@@ -1,0 +1,5 @@
+# @javierfrancoleal/deepseek-prices — live DeepSeek token price bar.
+# Host-side (daily verifier) + browser-side (shell.bottom price bar) in one package.
+- insert:
+    - id: jfranco-deepseek-prices
+      name: '@javierfrancoleal/deepseek-prices'
