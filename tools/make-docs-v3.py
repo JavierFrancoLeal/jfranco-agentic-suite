@@ -105,6 +105,17 @@ def footer(doc, docid):
 
 def new_doc(doctype, docid):
     doc = Document()
+    st = doc.styles["Normal"]
+    st.font.name = "Arial"
+    st.font.size = Pt(9.5)
+    rPr = st.element.get_or_add_rPr()
+    rFonts = rPr.find(qn("w:rFonts"))
+    if rFonts is None:
+        rFonts = OxmlElement("w:rFonts"); rPr.append(rFonts)
+    for attr in ("ascii", "hAnsi", "cs"):
+        rFonts.set(qn("w:" + attr), "Arial")
+    lang = OxmlElement("w:lang")
+    lang.set(qn("w:val"), "fr-CA"); rPr.append(lang)
     s = doc.sections[0]
     s.top_margin = Cm(1.3); s.bottom_margin = Cm(1.2)
     s.left_margin = Cm(1.6); s.right_margin = Cm(1.6)
