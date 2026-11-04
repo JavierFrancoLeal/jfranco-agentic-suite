@@ -571,7 +571,7 @@ function noticePoll(){
   const n=(l.notices||[]).slice(-1)[0];
   if(n&&n.ts!==lastNoticeTs){lastNoticeTs=n.ts;toast("📢 "+n.text);}
 }
-const STUDIO_TYPES={social:"Social publication",email:"Email reply",quote:"Quote / bid",job:"Job posting",agenda:"Agenda & follow-ups",other:"Other"};
+const STUDIO_TYPES={social:"Social publication",email:"Email reply",quote:"Quote / bid",job:"Job posting",agenda:"Agenda & follow-ups",invoice:"Invoice filing",meeting:"Meeting summary",translation:"Translation",review:"Customer review",report:"Daily report",other:"Other"};
 function renderInbox(items){
   const pend=items.filter(x=>x.status==="done");
   $("inboxList").innerHTML=pend.length?pend.map(x=>{
