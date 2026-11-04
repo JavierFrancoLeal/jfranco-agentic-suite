@@ -71,7 +71,7 @@ def header(doc, doctype):
     pad(c1, 0, 0)
     return t
 
-def way(doc, n, title, what, keep):
+def way(doc, n, title, what, keep, tag):
     t = doc.add_table(rows=1, cols=2)
     t.autofit = False
     t.columns[0].width = Cm(1.5); t.columns[1].width = Cm(16.1)
@@ -85,40 +85,46 @@ def way(doc, n, title, what, keep):
     p2 = c1.add_paragraph()
     r3 = p2.add_run("Vous gardez : "); r3.bold = True; r3.font.size = Pt(8.5); r3.font.color.rgb = V
     r4 = p2.add_run(keep); r4.font.size = Pt(8.5); r4.font.color.rgb = MUTED
-    p2.paragraph_format.space_after = Pt(6)
+    p2.paragraph_format.space_after = Pt(1)
+    p3 = c1.add_paragraph()
+    r5 = p3.add_run(tag); r5.font.size = Pt(7.5); r5.bold = True
+    r5.font.color.rgb = V if tag == TAG_P else FAINT
+    p3.paragraph_format.space_after = Pt(6)
     return t
 
+TAG_P = "Le Veilleux — installé chez vous"
+TAG_S = "Service — livré par Franco Vision"
 WAYS = [
     ("Vos publications sur les réseaux sociaux",
      "l'IA prépare les textes et la programmation ; vous révisez et publiez.",
-     "la touche finale — chaque mot passe par vous."),
+     "la touche finale — chaque mot passe par vous.", TAG_S),
     ("Vos réponses aux courriels courants",
      "l'IA rédige les brouillons ; vous les validez et les envoyez.",
-     "votre voix et votre signature."),
+     "votre voix et votre signature.", TAG_S),
     ("Vos devis et soumissions",
      "l'IA remplit les gabarits à partir de vos données ; vous signez et envoyez.",
-     "les prix et les engagements."),
+     "les prix et les engagements.", TAG_S),
     ("Le classement des factures et reçus",
      "l'IA extrait, classe et signale les anomalies ; le comptable valide.",
-     "la validation comptable."),
+     "la validation comptable.", TAG_S),
     ("Les comptes rendus de réunions et d'appels",
      "l'IA résume et liste les décisions ; vous confirmez.",
-     "la liste finale des engagements."),
+     "la liste finale des engagements.", TAG_P),
     ("Vos communications en deux langues",
      "l'IA traduit pour vos visiteurs et partenaires ; vous choisissez le ton.",
-     "le message exact."),
+     "le message exact.", TAG_P),
     ("Vos offres d'emploi et descriptions de poste",
      "l'IA propose ; vous approuvez avant publication.",
-     "le dernier mot sur votre équipe."),
+     "le dernier mot sur votre équipe.", TAG_S),
     ("Votre agenda et vos relances",
      "l'IA propose l'ordre de la semaine ; vous confirmez.",
-     "vos priorités."),
+     "vos priorités.", TAG_S),
     ("La lecture de vos avis clients",
      "l'IA dégage les tendances ; vous décidez quoi répondre et quoi changer.",
-     "la relation avec vos clients."),
+     "la relation avec vos clients.", TAG_P),
     ("Votre caisse et votre rapport du jour",
      "Le Veilleux consigne les ventes, concilie la caisse et prépare le rapport.",
-     "les décisions — le système montre, vous décidez."),
+     "les décisions — le système montre, vous décidez.", TAG_P),
 ]
 
 doc = Document()
@@ -140,8 +146,8 @@ rule(doc)
 para(doc, "10 façons simples d'utiliser l'IA dans votre PME, sans perdre le contrôle", size=16, bold=True, space_after=4)
 para(doc, "Chaque façon suit la même règle : l'IA prépare, VOUS décidez. Voici dix gestes concrets qui font gagner des heures chaque semaine — sans jargon, sans risque, sans remplacer ce qui marche.",
      size=9.5, color=MUTED, space_after=10)
-for i, (t_, w_, k_) in enumerate(WAYS, 1):
-    way(doc, i, t_, w_, k_)
+for i, (t_, w_, k_, tag_) in enumerate(WAYS, 1):
+    way(doc, i, t_, w_, k_, tag_)
 rule(doc, color="E5E7EB", sz=4, space_after=6)
 para(doc, "Vous voulez voir ces dix gestes en action dans VOTRE entreprise ? La rencontre découverte est gratuite : nous venons chez vous, nous montrons — et vous décidez.",
      size=9.5, bold=True, space_after=4)
