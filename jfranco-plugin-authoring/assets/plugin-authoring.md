@@ -131,8 +131,9 @@ Rules:
 
 | Slot | Alcance | Para qué |
 |---|---|---|
-| `shell.bottom` | root | **global full-width bottom bar** (empty by default) |
-| `shell.overlay` / `shell.leading` | root | overlay / top-left corner |
+| `shell.bottom` | root | **global full-width bottom bar** (empty by default) — **single: a 2nd occupant THROWS** |
+| `shell.overlay` | root | **list (additive)** — overlays/pills without conflict |
+| `shell.leading` | root | top-left corner (macOS) |
 | `sidebar` / `rightbar` / `main` | root | columns / central panel |
 | `conversation.input.dock` | sesión | bar above the composer |
 
@@ -164,6 +165,63 @@ This adds the dependency + bundle and runs pnpm for you; restart the app after.
 2. `cd ~/.dsh/profiles/<perfil> && pnpm install`.
 3. **Restart the app** (a new bundle needs a host recomposition).
 
+## Dynamic host→client data (Remote/Typert)
+
+When the client needs changing data (balance, host state…), expose a **Remote** on
+the host and read it from the client. Verified recipe (`jfranco-balance`,
+2026-11-04); `dsh-goal` uses a code generator that a `link:` without build cannot
+use, so write everything by hand:
+
+**Host** (`lib/index.js`):
+
+```js
+import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
+
+class MiService extends TypertRemoteService {
+  constructor(ctx) { super(ctx, "miServicio"); this.ctx = ctx; }
+  async getSnapshot() { /* JSON-serializable object */ }
+}
+const MARKER = "@deepseek-ai/dsh-typert-protocol/remote-methods";
+Object.defineProperty(MiService.prototype, MARKER, {
+  configurable: true,
+  value: Object.freeze({ version: 1, methods: Object.freeze([
+    Object.freeze({ method: "getSnapshot", invocation: Object.freeze({ kind: "direct" }) }),
+  ]) }),
+});
+export default MiService;   // default export = the Cordis plugin
+```
+
+The gateway's SRC discovery exposes endpoint `miServicio/getSnapshot` with no
+generated `./typert` artifact.
+
+**Client** (`lib/client.js`):
+
+```js
+const inject = ["slots", "locale", "remote"];
+const CONTRIBUTION = {
+  package: "@javierfrancoleal/mi-plugin",
+  descriptors: [{
+    id: "@javierfrancoleal/mi-plugin#miServicio/getSnapshot",
+    service: "miServicio", namespace: "miServicio", method: "getSnapshot",
+    invocation: { kind: "direct" }, parameters: [], result: { mode: "src-json" },
+  }],
+};
+async function apply(ctx) {
+  await ctx.remote.$mount(CONTRIBUTION);
+  const handle = ctx.get("remote.miServicio");
+  const res = await handle.getSnapshot();   // { ok: true, value } | { ok: false, error }
+}
+```
+
+**DeepSeek credentials** (authenticated APIs, e.g. `GET /user/balance`):
+
+- API key: `ctx.get("credentials").resolve("DEEPSEEK_API_KEY")` → `{ value }`
+  (header `Authorization: Bearer <key>`).
+- Account token (fallback, live-verified 2026-11-04):
+  `ctx.get("deepseekAccount").resolveToken("https://api.deepseek.com")` →
+  header `x-dsh-auth-token`. `/user/balance` accepts it, so the plugin works
+  with account sign-in.
+
 ## Gotchas
 
 1. The checkout lives inside `app.asar` — use `_dsh-inspect/asar-tool.mjs list|extract`.
@@ -172,6 +230,10 @@ This adds the dependency + bundle and runs pnpm for you; restart the app after.
 3. New bundles are NOT picked up by HMR on external edits — restart the app.
 4. `dsh.bundle.patch` + `dsh.client` can coexist (dual-face).
 5. React / slots / primitives are baseline; don't list them in `dsh.client.inject`.
+6. **Bundle URLs are revisioned**: the real form is
+   `/plugins/??<id>/client.js&rev=<sha1(mtime:ctime:size)[0:12]>`; the bare
+   `/plugins/<id>/client.js` **always 404s**. Get the `rev` from the root HTML.
+7. **The app may change port after a restart** — re-read the advertised URL.
 
 ## Validation checklist
 
@@ -179,7 +241,8 @@ This adds the dependency + bundle and runs pnpm for you; restart the app after.
 node --check lib/index.js && node --check lib/client.js
 node tools/check-client.mjs lib/client.js
 dsh --profile testprices --dump-config | grep mi-plugin     # throwaway profile, not desktop
-curl -sS http://127.0.0.1:<puerto>/plugins/@scope/mi-plugin/client.js   # 200 after restart
+curl -sS http://127.0.0.1:<puerto>/ | grep -o "mi-plugin/client[^\"']*"          # find your rev
+curl -sS "http://127.0.0.1:<puerto>/plugins/??@scope/mi-plugin/client.js&rev=<rev>"  # 200
 ```
 
 Full reference: `docs/PLUGIN-AUTHORING.md`. Template: `templates/dsh-plugin/`.

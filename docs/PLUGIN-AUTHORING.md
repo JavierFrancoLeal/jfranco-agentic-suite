@@ -194,8 +194,8 @@ servicios baseline (no listados): `slots`, `react`, `react/jsx-runtime`,
 
 | Slot | Alcance | Tipo | Para qué |
 |---|---|---|---|
-| `shell.bottom` | root | single | **barra global a todo el ancho, abajo** (vacío por defecto) |
-| `shell.overlay` | root | list | overlay sobre todo el frame |
+| `shell.bottom` | root | single | **barra global a todo el ancho, abajo** (vacío por defecto). **Un solo ocupante**: un 2.º `register` en este slot **lanza error**. |
+| `shell.overlay` | root | list | overlay **aditivo** sobre todo el frame (pills/overlays sin conflicto) |
 | `shell.leading` | root | single | esquina superior (macOS) |
 | `sidebar` / `rightbar` | root | single | columnas |
 | `main` | root | keyed | panel central (`conversation` reservado) |
@@ -253,7 +253,74 @@ Añade la dependencia + el bundle y ejecuta `pnpm` por ti; luego reinicia la app
 
 ---
 
-## 9. Gotchas (aprendidos a la fuerza)
+## 9. Datos dinámicos host→cliente (Remote/Typert)
+
+Cuando el half cliente necesita datos que cambian (saldo, estado del host…), el
+host los expone como **Remote** y el cliente los lee. Receta verificada
+(`jfranco-balance`, 2026-11-04). Ojo: `dsh-goal` usa un **generador de código** que
+un `link:` sin build no puede usar, así que aquí se escribe todo a mano.
+
+**Host** (`lib/index.js`):
+
+```js
+import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
+
+class MiService extends TypertRemoteService {
+  constructor(ctx) {
+    super(ctx, "miServicio");       // clave del servicio
+    this.ctx = ctx;
+  }
+  async getSnapshot() { /* devuelve un objeto JSON serializable */ }
+}
+// Marker remoto escrito a mano (lo que el decorador @Remote generaría).
+// No renombres getSnapshot sin actualizar este marker.
+const MARKER = "@deepseek-ai/dsh-typert-protocol/remote-methods";
+Object.defineProperty(MiService.prototype, MARKER, {
+  configurable: true,
+  value: Object.freeze({
+    version: 1,
+    methods: Object.freeze([
+      Object.freeze({ method: "getSnapshot", invocation: Object.freeze({ kind: "direct" }) }),
+    ]),
+  }),
+});
+export default MiService;   // export por defecto = el plugin Cordis
+```
+
+El gateway (descubrimiento SRC) expone el endpoint `miServicio/getSnapshot`
+**sin** artefacto `./typert` generado.
+
+**Cliente** (`lib/client.js`):
+
+```js
+const inject = ["slots", "locale", "remote"];
+const CONTRIBUTION = {
+  package: "@javierfrancoleal/mi-plugin",
+  descriptors: [{
+    id: "@javierfrancoleal/mi-plugin#miServicio/getSnapshot",
+    service: "miServicio", namespace: "miServicio", method: "getSnapshot",
+    invocation: { kind: "direct" }, parameters: [], result: { mode: "src-json" },
+  }],
+};
+async function apply(ctx) {
+  await ctx.remote.$mount(CONTRIBUTION);
+  const handle = ctx.get("remote.miServicio");   // o ctx.remote.miServicio
+  const res = await handle.getSnapshot();        // { ok: true, value } | { ok: false, error }
+}
+```
+
+**Credenciales de DeepSeek** (APIs con auth, p. ej. `GET /user/balance`):
+
+- **API key**: `ctx.get("credentials").resolve("DEEPSEEK_API_KEY")` → `{ value }`
+  (header `Authorization: Bearer <key>`).
+- **Token de cuenta** (fallback, verificado en vivo 2026-11-04):
+  `ctx.get("deepseekAccount").resolveToken("https://api.deepseek.com")`
+  → header `x-dsh-auth-token`. `/user/balance` lo acepta, así que el plugin
+  funciona con login de cuenta aunque no haya API key.
+
+---
+
+## 10. Gotchas (aprendidos a la fuerza)
 
 1. **El checkout vive dentro de `app.asar`** (no es carpeta). Para leerlo usa
    `_dsh-inspect/asar-tool.mjs list|extract`.
@@ -265,6 +332,14 @@ Añade la dependencia + el bundle y ejecuta `pnpm` por ti; luego reinicia la app
 6. **React / slots / primitives son baseline**; no los declares en `dsh.client.inject`.
 7. `node`/`pnpm` no están en `PATH`: usa los bundleros de
    `~/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/{node,pnpm}`.
+8. **URLs de bundle revisionadas**: la forma real es
+   `/plugins/??<id>/client.js&rev=<sha1(mtime:ctime:size)[0:12]>` (combo). La URL
+   desnuda `/plugins/<id>/client.js` da **404 siempre**; saca la `rev` del boot
+   graph en el HTML raíz.
+9. **La app puede cambiar de puerto al reiniciar**: no hardcodees
+   `127.0.0.1:<puerto>`; reléelo de la URL anunciada tras cada reinicio.
+10. **`shell.bottom` es `single` y LANZA error** con un 2.º ocupante. Para overlays
+    usa `shell.overlay` (list) y posiciona con CSS absoluto sobre la barra.
 
 ---
 
@@ -275,15 +350,16 @@ node --check lib/index.js && node --check lib/client.js          # 1. sintaxis
 node tools/check-client.mjs lib/client.js                        # 2. mock-load cliente
 # 3. composición (perfil desechable, no "desktop"):
 dsh --profile testprices --dump-config | grep mi-plugin
-# 4. tras reiniciar la app: el bundle debe servirse
-curl -sS http://127.0.0.1:<puerto>/plugins/@scope/mi-plugin/client.js   # 200, no 404
+# 4. tras reiniciar: busca tu bundle en el boot graph (la URL desnuda da 404)
+curl -sS http://127.0.0.1:<puerto>/ | grep -o "mi-plugin/client[^\"']*"
+curl -sS "http://127.0.0.1:<puerto>/plugins/??@scope/mi-plugin/client.js&rev=<rev>"  # 200
 ```
 
 `tools/check-plugin.sh mi-plugin` automatiza 1 + 2 (y 3 con `--compose`).
 
 ---
 
-## 11. Paquetes de referencia (extraídos en `_dsh-inspect/`)
+## 12. Paquetes de referencia (extraídos en `_dsh-inspect/`)
 
 | Paquete | Qué enseña |
 |---|---|
@@ -291,7 +367,8 @@ curl -sS http://127.0.0.1:<puerto>/plugins/@scope/mi-plugin/client.js   # 200, n
 | `dsh-client-ui-layout` | `shell.bottom`, slot raíz, `ctx.layout` |
 | `dsh-client-modules` | README = el sistema de módulos cliente |
 | `dsh-skill-badge` | proveedor de skill inmutable |
-| `dsh-goal` | half host + Remote (Typert) |
+| `dsh-goal` | Remote (Typert) vía generador de código — **no usable sin build** |
 | `jfranco-deepseek-prices` | doble cara completo (host verifier + barra cliente) |
+| `jfranco-balance` | **Remote/Typert a mano**, credenciales, `shell.overlay` sobre `shell.bottom` |
 
 Creado por **J.Franco**.
