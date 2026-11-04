@@ -120,10 +120,12 @@ table3(doc, [
 # ── 1. POURQUOI MAINTENANT ───────────────────────────────────
 section(doc, "1", "Pourquoi maintenant — le constat et le rôle du maillon humain", "L'entrepreneur d'abord")
 para(doc, "L'intelligence artificielle a changé de nature. La première génération — les robots conversationnels — répondait aux questions. La génération actuelle — les agents — exécute des tâches complètes : rédiger, classer, concilier, alerter. Ce basculement est la quatrième révolution industrielle.")
-para(doc, "L'histoire offre un précédent rassurant : la troisième révolution (l'informatique) n'a pas transformé les PME le jour où les ordinateurs ont été inventés, mais le jour où ils sont devenus assez simples pour qu'un propriétaire d'entreprise les utilise sans ingénieur. La même transition se répète aujourd'hui avec l'IA : il manque le maillon humain qui rend la technologie simple, locale et digne de confiance. Ce maillon, c'est Franco Vision.")
-bullet(doc, "Le constat : ", "beaucoup d'entreprises savent que l'IA existe, peu savent quoi en faire — et une part surprenante l'utilise déjà sans le savoir (les sources sont en section 2).")
+para(doc, "L'histoire offre un précédent rassurant : la troisième révolution (l'informatique) n'a pas transformé les PME le jour où les ordinateurs ont été inventés, mais le jour où ils sont devenus assez simples pour qu'un propriétaire d'entreprise les utilise sans ingénieur — comme on utilise aujourd'hui un système d'exploitation. La même transition se répète avec l'IA : il manque le maillon humain qui rend la technologie simple, locale et digne de confiance. Ce maillon, c'est Franco Vision.")
+bullet(doc, "Le constat : ", "beaucoup d'entreprises savent que l'IA existe, peu savent quoi en faire — et une part surprenante l'utilise déjà sans le savoir.")
+bullet(doc, "Maîtres chez nous : ", "nos clients deviennent autonomes et propriétaires de leurs outils — personne ne connaît mieux une entreprise que celui qui la dirige et la vit. L'IA potentialise les qualités, les techniques et les connaissances de la personne qui l'utilise ; elle ne la remplace jamais.")
 bullet(doc, "La prudence assumée : ", "l'arrivée d'une technologie suscite toujours une surestimation et des attentes élevées ; les entreprises technologiques promettent souvent plus qu'elles ne peuvent livrer. Notre protection contre ce piège : l'antifragilité comme discipline — surpromettre et sous-livrer fait perdre la confiance des partenaires institutionnels et financiers, et nous ne le ferons pas.")
-bullet(doc, "La méthode : ", "un pilote de 6 mois à tarif opérationnel comme socle de toute projection. Aucune promesse non validée sur le terrain ; chaque chiffre de ce plan est un indicateur à vérifier, jamais une garantie.")
+bullet(doc, "La méthode : ", "un pilote de 6 mois à tarif opérationnel comme socle de toute projection. Aucune promesse non validée sur le terrain.")
+para(doc, "C'est précisément de cette idée — tirer profit du chaos — que l'antifragilité est notre façon de penser et d'agir : nous n'évoluons pas seulement dans un monde instable, mais l'arrivée de l'IA entraînera des changements imprévisibles dans de multiples aspects de la vie quotidienne. C'est dans ce contexte d'incertitude imposée et technique que notre approche montre toute sa valeur.")
 
 # ── 2. MARCHÉ ────────────────────────────────────────────────
 section(doc, "2", "Le marché — les indicateurs, pas des promesses", "L'entrepreneur + le conseiller")
@@ -213,6 +215,7 @@ table3(doc, [
 
 # ── 10. SOURCES ──────────────────────────────────────────────
 section(doc, "10", "Sources et références (liens vérifiables)", "Délégable : analystes")
+cite(doc, "Nassim Nicholas Taleb — Antifragile : les bienfaits du désordre (2012)", "https://www.penguinrandomhouse.com/books/176227/antifragile-by-nassim-nicholas-taleb/")
 cite(doc, "Statistique Canada — Enquête sur l'utilisation de l'IA par les entreprises", "https://www150.statcan.gc.ca/n1/fr/type/donnees?MM=1")
 cite(doc, "Institut de la statistique du Québec — Adoption de l'IA au Québec", "https://statistique.quebec.ca/fr")
 cite(doc, "BDC — Recherches et analyses (dont l'étude sur les 27 %)", "https://www.bdc.ca/fr/a-propos/recherche-analyses")
