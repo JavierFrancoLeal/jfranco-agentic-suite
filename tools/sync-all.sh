@@ -30,6 +30,13 @@ pub(){ name="$1"; dir="$2";
   if [ -n "$DRY" ]; then echo "   [dry] publicaría $name desde $dir"; return; fi
   (cd "$dir" && "$NPM" publish --access public --registry https://registry.npmjs.org/ 2>&1 | grep -E "^\+ @|being processed|npm error" | head -1)
 }
+# npm staged publishing (registry, GA 2026) crea un placeholder "0.0.0-stage"
+# en el PRIMER publish de un paquete nuevo; lo deprecamos (best-effort: el
+# registry puede seguir propagando y rechazar el intento — reintentar luego).
+stage_deprecate(){ name="$1";
+  "$NPM" deprecate "$name@0.0.0-stage" "Placeholder de npm staged publishing — usa latest." >/dev/null 2>&1 \
+    && echo "   $name: 0.0.0-stage deprecado" || echo "   $name: 0.0.0-stage (registry propagando; reintenta luego)"
+}
 
 # 1. Supervisor bundle
 CHANGED=0
@@ -78,6 +85,7 @@ for d in "$ROOT"/jfranco-*; do
   if [ "$pv" = "0.0.0" ]; then
     echo "$base: no está en npm → publicar v$lv"
     pub "$name" "$d"
+    stage_deprecate "$name"
     echo "$cur" > "$marker"
   elif [ -z "$prev" ]; then
     echo "$base: primer registro del marcador (sin cambios) ✔"

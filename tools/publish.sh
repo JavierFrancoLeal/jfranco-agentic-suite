@@ -31,6 +31,11 @@ for p in jfranco-workflow-master jfranco-decision-router \
   echo ""
   echo "Publishing $p…"
   (cd "$p" && "$NODE" "$PNPM" publish --access public --no-git-checks)
+  # npm staged publishing (registry, GA 2026) crea un placeholder "0.0.0-stage"
+  # en el PRIMER publish de un paquete nuevo; lo deprecamos (best-effort).
+  pkgname="$(cd "$p" && "$NODE" -e 'console.log(require("./package.json").name)')"
+  "$NODE" "$PNPM" deprecate "$pkgname@0.0.0-stage" "Placeholder de npm staged publishing — usa latest." >/dev/null 2>&1 \
+    && echo "  (0.0.0-stage deprecado)" || echo "  (0.0.0-stage: reintenta en unos minutos si el registry aún propaga)"
 done
 
 echo ""

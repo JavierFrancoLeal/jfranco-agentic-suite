@@ -343,6 +343,11 @@ async function apply(ctx) {
    `127.0.0.1:<puerto>`; reléelo de la URL anunciada tras cada reinicio.
 10. **`shell.bottom` es `single` y LANZA error** con un 2.º ocupante. Para overlays
     usa `shell.overlay` (list) y posiciona con CSS absoluto sobre la barra.
+11. **El primer publish de un paquete NUEVO crea un placeholder `0.0.0-stage`**
+    (npm *staged publishing*, feature del REGISTRY desde GA 2026 — no es un bug de
+    tus scripts ni de pnpm/npm). La versión real se publica ~1 min después, sola.
+    Mitigación: deprecar el placeholder (`pnpm deprecate <pkg>@0.0.0-stage "…"`).
+    `publish.sh` y `sync-all.sh` ya lo hacen automáticamente (best-effort).
 
 ---
 

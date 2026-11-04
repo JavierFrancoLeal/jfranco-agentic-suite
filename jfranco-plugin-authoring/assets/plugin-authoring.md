@@ -237,6 +237,10 @@ async function apply(ctx) {
    (file stats of `lib/client.js`), first 12 hex chars — see the checklist.
    The `/plugins` endpoint needs **no auth**.
 7. **The app may change port after a restart** — re-read the advertised URL.
+8. **First publish of a NEW package gets a `0.0.0-stage` placeholder** — that's
+   npm's staged publishing (registry feature, GA 2026), not a bug in your scripts
+   or in pnpm/npm. The real version lands ~1 min later on its own. Mitigation:
+   deprecate the placeholder; `publish.sh` / `sync-all.sh` now do it automatically.
 
 ## Validation checklist
 
