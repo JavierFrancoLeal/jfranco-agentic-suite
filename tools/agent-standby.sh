@@ -91,6 +91,20 @@ while true; do
     fi
   fi
 
+  # ---- STUDIO: drafts for the owner (one app, invisible kitchen) ----
+  SITEMS="$(items_json "$SUP/api/studio/inbox")"
+  SN="$(count_of "$SITEMS")"
+  if [ "$SN" != "0" ]; then
+    STXT="$(echo "$SITEMS" | "$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{const j=JSON.parse(s);console.log(j.items.map(x=>x.id+" ::: "+x.text).join("\n"))}catch(e){console.log("")}})')"
+    SPROMPT="Drafts kitchen (Studio, Franco Vision). The owner asked these tasks (each line: id ::: type :: request): $STXT Draft each one in professional French, short and ready to publish/send. Then for EACH task POST the draft as JSON to $SUP/api/studio/result with this shape: {\"id\":\"<the task id>\",\"result\":\"<your draft>\"}. Finally reply one line: drafts posted."
+    echo "[$(date +%H:%M:%S)] $SN studio task(s) → drafting…"
+    if [ -n "$DRY" ]; then
+      echo "   would run: $DSH --profile campo headless "$SPROMPT""
+    else
+      "$DSH" --profile campo headless "$SPROMPT" >/dev/null 2>&1 || echo "   (studio run failed — check DEEPSEEK_API_KEY)"
+    fi
+  fi
+
   [ -n "$ONCE" ] && exit 0
   sleep "$POLL"
 done
