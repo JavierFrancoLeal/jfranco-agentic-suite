@@ -65,7 +65,7 @@ def eye_image(color, size=512):
     d.arc([cx - r, cy - r, cx + r, cy + r], start=0, end=180, fill=color, width=w)
     return im
 
-def lockup(eye_color, text_color, out, size=400):
+def lockup(eye_color, text_color, out, size=400, wordmark="TRASUNTO"):
     icon = eye_image(eye_color, 512)
     icon = icon.resize((size, size), Image.LANCZOS)
     fnt = F(int(size * 0.62), True)
@@ -78,16 +78,19 @@ def lockup(eye_color, text_color, out, size=400):
     im = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     im.paste(icon, (0, (H - size) // 2), icon)
     d = ImageDraw.Draw(im)
-    d.text((size + gap, (H - (bbox[3] - bbox[1])) // 2 - bbox[1] - int(size * 0.03)), "FRANCO VISION", font=fnt, fill=text_color)
+    d.text((size + gap, (H - (bbox[3] - bbox[1])) // 2 - bbox[1] - int(size * 0.03)), wordmark, font=fnt, fill=text_color)
     im.save(out)
     return out
 
 def main(outdir):
     os.makedirs(outdir, exist_ok=True)
     files = {}
-    files["franco-vision-lockup.png"] = lockup(BLUE, INK, f"{outdir}/franco-vision-lockup.png", 400)
-    files["franco-vision-lockup-mono.png"] = lockup(INK, INK, f"{outdir}/franco-vision-lockup-mono.png", 400)
-    files["franco-vision-lockup-white.png"] = lockup(WHITE, WHITE, f"{outdir}/franco-vision-lockup-white.png", 400)
+    files["trasunto-lockup.png"] = lockup(BLUE, INK, f"{outdir}/trasunto-lockup.png", 400)
+    files["franco-vision-lockup.png"] = files["trasunto-lockup.png"]
+    files["trasunto-lockup-mono.png"] = lockup(INK, INK, f"{outdir}/trasunto-lockup-mono.png", 400)
+    files["franco-vision-lockup-mono.png"] = files["trasunto-lockup-mono.png"]
+    files["trasunto-lockup-white.png"] = lockup(WHITE, WHITE, f"{outdir}/trasunto-lockup-white.png", 400)
+    files["franco-vision-lockup-white.png"] = files["trasunto-lockup-white.png"]
     eye_image(BLUE, 512).save(f"{outdir}/franco-vision-icon.png"); files["franco-vision-icon.png"] = "franco-vision-icon.png"
     eye_image(INK, 512).save(f"{outdir}/franco-vision-icon-mono.png"); files["franco-vision-icon-mono.png"] = "franco-vision-icon-mono.png"
     eye_image(WHITE, 512).save(f"{outdir}/franco-vision-icon-white.png"); files["franco-vision-icon-white.png"] = "franco-vision-icon-white.png"

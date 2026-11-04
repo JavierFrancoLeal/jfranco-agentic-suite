@@ -20,7 +20,7 @@ MUTED = RGBColor(0x6B, 0x72, 0x80)
 FAINT = RGBColor(0x9C, 0xA3, 0xAF)
 V = RGBColor(0x4D, 0x6B, 0xFE)
 GRAY = RGBColor(0x4B, 0x55, 0x63)
-LOCKUP = "tools/logo-suite/franco-vision-lockup.png"
+LOCKUP = "tools/logo-suite/trasunto-lockup.png"
 FONT = "Arial"
 
 def new_doc(title, subject, margins=(1.4, 1.2, 1.6, 1.6)):
@@ -43,7 +43,7 @@ def new_doc(title, subject, margins=(1.4, 1.2, 1.6, 1.6)):
     cp.title = title
     cp.author = "Javier Alejandro FRANCO LEAL"
     cp.subject = subject
-    cp.company = "Franco Vision inc."
+    cp.company = "Trasunto inc."
     return doc
 
 def add_hyperlink(paragraph, text, url, size=9):

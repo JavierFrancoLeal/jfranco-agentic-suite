@@ -1,4 +1,4 @@
-# Franco Vision — the free lead magnet: "10 façons simples d'utiliser l'IA".
+# Trasunto — the free lead magnet: "10 façons simples d'utiliser l'IA".
 # Same design system as the other documents (blue accent, Arial, fr-CA).
 import sys
 from docx import Document
@@ -99,8 +99,8 @@ def way(doc, n, title, what, keep, tag):
     keep_together(t)
     return t
 
-TAG_P = "Le Veilleux — installé chez vous"
-TAG_S = "Service — livré par Franco Vision"
+TAG_P = "Fanal — installé chez vous"
+TAG_S = "Service — livré par Trasunto"
 WAYS = [
     ("Vos publications sur les réseaux sociaux",
      "l'IA prépare les textes et la programmation ; vous révisez et publiez.",
@@ -130,13 +130,13 @@ WAYS = [
      "l'IA dégage les tendances ; vous décidez quoi répondre et quoi changer.",
      "la relation avec vos clients.", TAG_P),
     ("Votre caisse et votre rapport du jour",
-     "Le Veilleux consigne les ventes, concilie la caisse et prépare le rapport.",
+     "Fanal consigne les ventes, concilie la caisse et prépare le rapport.",
      "les décisions — le système montre, vous décidez.", TAG_P),
 ]
 
 doc = Document()
 cp = doc.core_properties
-cp.title = "Guide 10 façons"; cp.author = "Javier Alejandro FRANCO LEAL"; cp.company = "Franco Vision inc."
+cp.title = "Guide 10 façons"; cp.author = "Javier Alejandro FRANCO LEAL"; cp.company = "Trasunto inc."
 s = doc.sections[0]
 s.top_margin = Cm(1.3); s.bottom_margin = Cm(1.2)
 s.left_margin = Cm(1.6); s.right_margin = Cm(1.6)
@@ -160,7 +160,7 @@ for i, (t_, w_, k_, tag_) in enumerate(WAYS, 1):
 rule(doc, color="E5E7EB", sz=4, space_after=6)
 para(doc, "Vous voulez voir ces dix gestes en action dans VOTRE entreprise ? La rencontre découverte est gratuite : nous venons chez vous, nous montrons — et vous décidez.",
      size=9.5, bold=True, space_after=4)
-para(doc, "Franco Vision inc. · Charlevoix, Québec · Rencontre découverte gratuite · Page ", size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
+para(doc, "Trasunto inc. · Charlevoix, Québec · Rencontre découverte gratuite · Page ", size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
 _f = doc.paragraphs[-1]
 _fld = OxmlElement("w:fldSimple"); _fld.set(qn("w:instr"), "PAGE")
 _rr = OxmlElement("w:r"); _tt = OxmlElement("w:t"); _tt.text = "1"; _rr.append(_tt); _fld.append(_rr)

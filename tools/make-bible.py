@@ -1,4 +1,4 @@
-# Franco Vision — PLAN D'AFFAIRES v3 (Nikan discipline: facts with verifiable links, no over-promising).
+# Trasunto — PLAN D'AFFAIRES v3 (Nikan discipline: facts with verifiable links, no over-promising).
 import sys
 from docx import Document
 from docx.shared import Pt, Cm, RGBColor
@@ -14,10 +14,10 @@ from docfx import *
 
 doc = Document()
 cp = doc.core_properties
-cp.title = "FRANCO VISION — Plan d'affaires"
+cp.title = "TRASUNTO — Plan d'affaires"
 cp.author = "Javier Alejandro FRANCO LEAL"
-cp.subject = "Plan d'affaires Franco Vision"
-cp.company = "Franco Vision inc."
+cp.subject = "Plan d'affaires Trasunto"
+cp.company = "Trasunto inc."
 s = doc.sections[0]
 s.top_margin = Cm(1.4); s.bottom_margin = Cm(1.2); s.left_margin = Cm(1.6); s.right_margin = Cm(1.6)
 st = doc.styles["Normal"]; st.font.name = "Arial"; st.font.size = Pt(9.5)
@@ -34,9 +34,9 @@ p0 = c0.paragraphs[0]; p0.add_run().add_picture(LOCKUP, width=Cm(4.2))
 p1 = c1.paragraphs[0]; p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 r4 = p1.add_run("PLAN D'AFFAIRES · v3.0"); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
 rule(doc)
-para(doc, "FRANCO VISION — Plan d'affaires", size=21, bold=True, space_after=4)
+para(doc, "TRASUNTO — Plan d'affaires", size=21, bold=True, space_after=4)
 para(doc, "L'IA travaille. L'humain veille, décide, révise.", size=13, bold=True, color=V, space_after=4)
-para(doc, "Franco Vision est le maillon humain entre l'intelligence artificielle et les entreprises de Charlevoix — celles qui n'ont ni le temps ni les ressources techniques pour l'implanter elles-mêmes.", size=10, color=MUTED, space_after=10)
+para(doc, "Trasunto est le maillon humain entre l'intelligence artificielle et les entreprises de Charlevoix — celles qui n'ont ni le temps ni les ressources techniques pour l'implanter elles-mêmes.", size=10, color=MUTED, space_after=10)
 para(doc, "L'intelligence artificielle demeure un outil — extraordinairement puissant — au service de l'humain : jamais un substitut au jugement, à la responsabilité ni à l'imputabilité humaine. Cette garantie n'est pas un luxe philosophique — c'est la condition qui rend l'IA admissible, dans l'entreprise comme dans l'administration.", size=10, color=MUTED, space_after=10)
 
 # ── Sommaire ─────────────────────────────────────────────────
@@ -59,7 +59,7 @@ table3(doc, [
 section(doc, "1", "Pourquoi maintenant — le constat et le rôle du maillon humain", "L'entrepreneur d'abord")
 para(doc, "L'intelligence artificielle a changé de nature. La première génération — les robots conversationnels — répondait aux questions. La génération actuelle — les agents — exécute des tâches complètes : rédiger, classer, concilier, alerter. Ce basculement est la quatrième révolution industrielle.")
 para(doc, "Concrètement, cela signifie que toute action réalisée par ordinateur — numérique, sans déplacer un seul atome — peut être automatisée. Les possibilités sont infinies ; nous ne faisons qu'effleurer la surface des capacités de l'IA. C'est l'ampleur même de ce potentiel qui rend le maillon humain indispensable : quelqu'un doit rendre cette puissance simple, locale et digne de confiance.")
-para(doc, "L'histoire offre un précédent rassurant : la troisième révolution (l'informatique) n'a pas transformé les PME le jour où les ordinateurs ont été inventés, mais le jour où ils sont devenus assez simples pour qu'un propriétaire d'entreprise les utilise sans ingénieur — comme on utilise aujourd'hui un système d'exploitation. La même transition se répète avec l'IA : il manque le maillon humain qui rend la technologie simple, locale et digne de confiance. Ce maillon, c'est Franco Vision.")
+para(doc, "L'histoire offre un précédent rassurant : la troisième révolution (l'informatique) n'a pas transformé les PME le jour où les ordinateurs ont été inventés, mais le jour où ils sont devenus assez simples pour qu'un propriétaire d'entreprise les utilise sans ingénieur — comme on utilise aujourd'hui un système d'exploitation. La même transition se répète avec l'IA : il manque le maillon humain qui rend la technologie simple, locale et digne de confiance. Ce maillon, c'est Trasunto.")
 bullet(doc, "Le constat : ", "beaucoup d'entreprises savent que l'IA existe, peu savent quoi en faire — et une part surprenante l'utilise déjà sans le savoir.")
 bullet(doc, "Maîtres chez nous : ", "nos clients deviennent autonomes et propriétaires de leurs outils — personne ne connaît mieux une entreprise que celui qui la dirige et la vit. L'IA potentialise les qualités, les techniques et les connaissances de la personne qui l'utilise ; elle ne la remplace jamais.")
 bullet(doc, "La prudence assumée : ", "l'arrivée d'une technologie suscite toujours une surestimation et des attentes élevées ; les entreprises technologiques promettent souvent plus qu'elles ne peuvent livrer. Notre protection contre ce piège : l'antifragilité comme discipline — surpromettre et sous-livrer fait perdre la confiance des partenaires institutionnels et financiers, et nous ne le ferons pas.")
@@ -93,7 +93,7 @@ table3(doc, [
     ("Service 3", "Intégration des outils existants (Microsoft 365, Google Workspace, ChatGPT…) et formation du personnel", "750 $/jour"),
     ("Service 4", "Accompagnement continu — le cœur du modèle : le client reste maître de ses outils, avec un partenaire stable", "249–449 $/mois"),
     ("Service 5", "Ateliers, conférences et formations — avec la Chambre de commerce, la SADC et les associations sectorielles", "750–1 200 $"),
-    ("Le produit", "Le Veilleux : l'assistant de travail installé chez le client — caisse, contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes et centre de notifications « la IA informe, l'humain décide »", "SaaS"),
+    ("Le produit", "Fanal : l'assistant de travail installé chez le client — caisse, contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes et centre de notifications « la IA informe, l'humain décide »", "SaaS"),
     ("Travailleurs autonomes", "Niveau 1 dédié : activation 1 500 $ + 199–349 $/mois — l'IA prépare, le professionnel signe ; compatible avec les ordres professionnels", "Micro-entreprises"),
 ], header=("Offre", "Ce que c'est", "Tarif"))
 
@@ -124,7 +124,7 @@ cite(doc, "Gouvernement du Québec — Loi 25 (protection des renseignements per
 section(doc, "6", "La feuille de route — le pilote d'abord", "La direction")
 table3(doc, [
     ("Phase 0", "Valider la demande d'abord : premières conversations avec les entreprises bêta et lettres d'intérêt ; compléter le développement de l'application. Le nœud H1 ne démarre qu'une fois l'intérêt confirmé — un produit sans acheteur ne vaut rien", "Demande d'abord"),
-    ("Trimestre 1", "Structuration interne : incorporation (Franco Vision inc.), comptabilité, assurances ; dépôt du plan à la SADC ; signature de l'entente de phase pilote avec une PME locale", "Préparation"),
+    ("Trimestre 1", "Structuration interne : incorporation (Trasunto inc.), comptabilité, assurances ; dépôt du plan à la SADC ; signature de l'entente de phase pilote avec une PME locale", "Préparation"),
     ("Trimestres 2-3", "Phase pilote de 6 mois sur le premier secteur économique : diagnostic complet, implantations ciblées, mesure systématique (heures économisées, productivité, satisfaction), cas d'étude chiffré validé par le dirigeant", "Données réelles"),
     ("Trimestre 4", "Premier client commercial au tarif de la grille ; lancement public ; demande d'appui conditionnelle aux résultats du pilote", "Validation"),
     ("Au-delà", "Accords intermunicipaux et secteur public — seulement après validation sur le terrain, avec la même discipline de pilote", "Échelle"),
@@ -156,7 +156,7 @@ section(doc, "10", "L'organisme technologique — déjà réel, pas une idée", 
 para(doc, "Cet organisme n'est pas un projet sur papier : il existe déjà, en version bêta, sur plusieurs plateformes. Il a été construit par l'intelligence artificielle agéntique et son fondateur — l'IA a écrit le code, l'humain a décidé, vérifié et signé chaque étape. Les registres publics en font foi.")
 table3(doc, [
     ("Registres publics", "GitHub : github.com/JavierFrancoLeal/jfranco-agentic-suite — 150+ commits documentés · npm : @javierfrancoleal — les 7 organes et le superviseur publiés et installables", "Preuve tangible"),
-    ("Le Veilleux (bêta)", "Application de bureau (macOS, DMG), navigateur, PWA installable (Android/iOS), wallboard — la même application sur cinq plateformes ; caisse, journée, alertes, centre de notifications, pont Facebook", "Produit"),
+    ("Fanal (bêta)", "Application de bureau (macOS, DMG), navigateur, PWA installable (Android/iOS), wallboard — la même application sur cinq plateformes ; caisse, journée, alertes, centre de notifications, pont Facebook", "Produit"),
     ("Les 7 organes", "workflow-master, decision-router, accountability-auditor, autonomy-grader, audit (qui enseigne), forensics (qui explique) + le cerveau double (rapide + raisonneur)", "Moteur DSH"),
     ("Knowledge Ledger", "Le standard de transfert de savoir humain-IA : 26 leçons réelles, format canonique — la mémoire de l'entreprise", "Mémoire"),
     ("Les gardes", "Tests automatiques du flux complet (smoke, contrats d'amorçage, garde CSS, parcours API, synchronisation du bundle)", "Qualité"),
@@ -186,13 +186,13 @@ cite(doc, "Programme canadien d'adoption du numérique (PCAN)", "https://ised-is
 cite(doc, "Microcrédit Charlevoix", "https://www.microcreditcharlevoix.ca/")
 cite(doc, "Gouvernement du Québec — Loi 25", "https://www.quebec.ca/gouvernement/travailler-gouvernement/emplois-secteur-public/protection-renseignements-personnels")
 cite(doc, "Légis Québec — Loi sur les contrats des organismes municipaux (C-65.01)", "https://www.legisquebec.gouv.qc.ca/")
-cite(doc, "Registraire des entreprises du Québec (incorporation Franco Vision inc.)", "https://www.registreentreprises.gouv.qc.ca/")
+cite(doc, "Registraire des entreprises du Québec (incorporation Trasunto inc.)", "https://www.registreentreprises.gouv.qc.ca/")
 cite(doc, "Commission d'accès à l'information du Québec — Loi 25", "https://www.cai.gouv.qc.ca/")
 cite(doc, "FCEI — Adoption de l'IA et formation de la main-d'œuvre", "https://www.cfib-fcei.ca/fr")
 cite(doc, "Le Charlevoisien — Actualités régionales", "https://www.lecharlevoisien.com/")
 cite(doc, "Conseil de la Première Nation des Innus Essipit", "https://www.essipit.com/")
 
-footer(doc, "Franco Vision inc. · Charlevoix, Québec", "Plan d'affaires v3.0 · Novembre 2026")
+footer(doc, "Trasunto inc. · Charlevoix, Québec", "Plan d'affaires v3.0 · Novembre 2026")
 
 out = sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-PLAN-AFFAIRES.docx"
 doc.save(out)

@@ -1,4 +1,4 @@
-# Franco Vision — document design system v3.1 (business-first content + format fixes).
+# Trasunto — document design system v3.1 (business-first content + format fixes).
 # White canvas, text wordmark, hairline rules, one violet accent.
 import sys
 from docx import Document
@@ -111,7 +111,7 @@ def footer(doc, docid):
     pn.paragraph_format.space_after = Pt(0)
     p0 = doc.add_paragraph(); p0.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = p.add_run("Franco Vision inc. · Charlevoix, Québec")
+    r = p.add_run("Trasunto inc. · Charlevoix, Québec")
     r.font.size = Pt(7.5); r.font.color.rgb = FAINT
     p.paragraph_format.space_after = Pt(1)
     p2 = doc.add_paragraph(); p2.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -122,7 +122,7 @@ def footer(doc, docid):
 def new_doc(doctype, docid):
     doc = Document()
     cp = doc.core_properties
-    cp.title = docid; cp.author = "Javier Alejandro FRANCO LEAL"; cp.subject = docid; cp.company = "Franco Vision inc."
+    cp.title = docid; cp.author = "Javier Alejandro FRANCO LEAL"; cp.subject = docid; cp.company = "Trasunto inc."
     st = doc.styles["Normal"]
     st.font.name = "Arial"
     st.font.size = Pt(9.5)
@@ -171,13 +171,13 @@ def gain_rows(doc, items):
 
 # ── ONE-PAGER v4 — business-first, for SADC and busy owners ──
 def one_pager(out):
-    doc = new_doc("ONE-PAGER · SADC & ENTREPRISES", "Franco Vision · One-pager v1.1")
+    doc = new_doc("ONE-PAGER · SADC & ENTREPRISES", "Trasunto · One-pager v1.1")
     heading(doc, "Votre entreprise mérite l'IA — sans jargon, sans remplacer ce qui marche, sans perdre le contrôle.")
     para(doc, "Un service clé en main qui vous fait gagner du temps et de l'argent — et qui vous laisse toujours aux commandes.",
          size=10, color=MUTED, space_after=10)
 
     label(doc, "Ce que c'est", space_before=2)
-    para(doc, "Le Veilleux est un assistant de travail pour votre entreprise : il écoute votre équipe, consigne l'activité, tient vos comptes et prépare vos rapports — chaque jour, en français, sans que vous ayez à apprendre l'informatique. Vous décidez ; lui, il exécute et il vérifie.", space_after=4)
+    para(doc, "Fanal est un assistant de travail pour votre entreprise : il écoute votre équipe, consigne l'activité, tient vos comptes et prépare vos rapports — chaque jour, en français, sans que vous ayez à apprendre l'informatique. Vous décidez ; lui, il exécute et il vérifie.", space_after=4)
     para(doc, "Tourisme et hôtellerie · Agroalimentaire et terroir · Commerce et services · Construction et manufacturier · Travailleurs autonomes et professionnels.",
          size=8.5, color=MUTED, space_after=8)
 
@@ -197,24 +197,24 @@ def one_pager(out):
         ("De l'argent", "les paiements oubliés et les erreurs de caisse, détectés le jour même"),
         ("La tranquillité", "une mémoire parfaite : chaque vente, chaque écart, chaque rapport"),
     ])
-    para(doc, "Une entreprise qui perd 30 minutes par jour en papiers récupère l'équivalent de 3 semaines de travail par année. C'est ce que Le Veilleux rend.",
+    para(doc, "Une entreprise qui perd 30 minutes par jour en papiers récupère l'équivalent de 3 semaines de travail par année. C'est ce que Fanal rend.",
          size=9, color=INK, space_before=8, space_after=8)
 
     label(doc, "L'offre", space_before=2)
     para(doc, "Rencontre et estimation gratuites → Implantation clé en main → Abonnement simple à partir de 249 $/mois. Pilote de 6 mois à tarif réduit pour votre première expérience, sans engagement.", space_after=8)
 
     ask_box(doc, "L'appui recherché — SADC Charlevoix : (1) diffuser nos services auprès des PME de la région ; (2) identifier une entreprise pilote pour tester et raffiner le produit ; (3) orienter nos clients vers les subventions fédérales et provinciales de modernisation technologique — IA (Futurpreneur, programme LIFT de la BDC, et autres) afin d'ajuster nos prix et notre modèle d'affaires.")
-    footer(doc, "Franco Vision · One-pager v1.1")
+    footer(doc, "Trasunto · One-pager v1.1")
     doc.save(out); print("saved", out)
 
 # ── Accord de pilote (jargon neutralisé) ────────────────────
 def accord(out):
-    doc = new_doc("ACCORD DE PILOTE · 6 MOIS", "Franco Vision · Accord de pilote v1.1")
-    heading(doc, "Accord de pilote — Le Veilleux", size=16)
-    para(doc, "ENTRE : Franco Vision inc., Charlevoix (Québec) · ET : [Nom de l'entreprise], [ville], ci-après « le Client ».",
+    doc = new_doc("ACCORD DE PILOTE · 6 MOIS", "Trasunto · Accord de pilote v1.1")
+    heading(doc, "Accord de pilote — Fanal", size=16)
+    para(doc, "ENTRE : Trasunto inc., Charlevoix (Québec) · ET : [Nom de l'entreprise], [ville], ci-après « le Client ».",
          size=9, color=MUTED, space_after=8)
     label(doc, "Objet et durée", space_before=2)
-    para(doc, "Pilote de 6 mois — implantation de Le Veilleux à tarif opérationnel (couvre uniquement les frais, sans marge) : 349 $/mois.", size=9.5)
+    para(doc, "Pilote de 6 mois — implantation de Fanal à tarif opérationnel (couvre uniquement les frais, sans marge) : 349 $/mois.", size=9.5)
     label(doc, "Inclus")
     bullets(doc, [
         ("Implantation clé en main — ", "installation, personnalisation et formation de votre équipe."),
@@ -235,17 +235,17 @@ def accord(out):
     t = doc.add_table(rows=1, cols=2); t.alignment = WD_TABLE_ALIGNMENT.CENTER
     t.autofit = False
     t.columns[0].width = Cm(8.6); t.columns[1].width = Cm(8.6)
-    for i, who in enumerate(["Franco Vision inc.", "Le Client"]):
+    for i, who in enumerate(["Trasunto inc.", "Le Client"]):
         c = t.rows[0].cells[i]
         p = c.paragraphs[0]; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         r = p.add_run(who + "\n\n\n\n_______________________"); r.font.size = Pt(9.5)
         pad(c, 2, 2)
-    footer(doc, "Franco Vision · Accord de pilote v1.1")
+    footer(doc, "Trasunto · Accord de pilote v1.1")
     doc.save(out); print("saved", out)
 
 # ── Grille tarifaire (jargon neutralisé) ────────────────────
 def grille(out):
-    doc = new_doc("GRILLE TARIFAIRE · V1", "Franco Vision · Grille tarifaire v1.0")
+    doc = new_doc("GRILLE TARIFAIRE · V1", "Trasunto · Grille tarifaire v1.0")
     heading(doc, "Grille tarifaire — version 1", size=16)
     para(doc, "Tarifs post-pilote, en dollars canadiens, taxes en sus.", size=9, color=MUTED, space_after=8)
     rows = [
@@ -280,7 +280,7 @@ def grille(out):
     keep_together(t); header_repeats(t)
     para(doc, "Le cœur du modèle est l'accompagnement continu (ligne 4). Le seuil de viabilité de 86 000 $ – 96 000 $/an repose sur 2 à 3 implantations + 3 à 4 accompagnements actifs — scénarios du plan d'affaires, à valider par le pilote.",
          size=8.5, color=MUTED, space_before=8)
-    footer(doc, "Franco Vision · Grille tarifaire v1.0")
+    footer(doc, "Trasunto · Grille tarifaire v1.0")
     doc.save(out); print("saved", out)
 
 one_pager(sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-ONE-PAGER.docx")
