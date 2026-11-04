@@ -20,7 +20,7 @@ and pass the house gates.*
 |---|---|
 | Model names verified live | ✔ `deepseek-flash` works; the API itself revealed `deepseek-v4-pro` (my `deepseek-pro` guess was rejected — caught by the live test) |
 | Wiring | ✔ `agent-standby.sh` fast/deep patches (2 commits: `998c994`, `e4c034e`) |
-| End-to-end proof | ✔ BOTH brains live: (a) FAST flash — transcript "Mesa cinco: dos poutines y una limonada" → AI summary (Person 1, 2 requests, GREEN tiers); (b) DEEP v4-pro — pricing question → consulting answer (range 1 500–4 500 CAD/mois with reasoning) in a 50 s cycle |
+| End-to-end proof | ✔ BOTH brains live: (a) FAST flash — Spanish transcript → AI summary (Person 1, 2 requests, GREEN tiers); English tourist transcript → summary TRANSLATED into French ("Un club sandwich sans tomates" SEMI — the modification flag — + "Deux verres de vin blanc" GREEN: transcription, translation AND the traffic light in one cycle); (b) DEEP v4-pro — pricing question → consulting answer (range 1 500–4 500 CAD/mois with reasoning) in a 50 s cycle |
 | Gates | ✔ ALL CHECKS PASSED |
 | Human attention | Each step was proposed and the human approved; one live correction round (the model-name guess) |
 | Time | ~1 working session (wiring + test) |
