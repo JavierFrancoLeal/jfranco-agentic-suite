@@ -1,0 +1,4 @@
+# @javierfrancoleal/balance — plugin row.
+- insert:
+    - id: balance
+      name: '@javierfrancoleal/balance'
