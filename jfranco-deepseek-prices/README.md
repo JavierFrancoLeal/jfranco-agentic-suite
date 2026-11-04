@@ -18,6 +18,8 @@ temps réel :
 - **Le compte à rebours** jusqu'au prochain changement de tarif, avec l'heure locale
   du basculement.
 - **La date de vérification** des prix (survol de la barre).
+- **L'idiome et le thème** : la barre suit la langue sélectionnée dans DeepSeek
+  Harness (anglais / chinois) et les jetons de thème `--dsw-*` (clair / sombre).
 
 ---
 
@@ -90,6 +92,9 @@ des prix, la compare à la grille embarquée, et ajoute un enregistrement JSONL 
 - `status: "error"` → la page n'a pas pu être lue (warning dans le journal).
 
 La barre affiche la date de vérification embarquée au survol.
+
+Un **rappel de vérification** quotidien (via l'agenda de DeepSeek Harness) rappelle
+de contrôler ce registre et de mettre à jour les prix embarqués en cas de dérive.
 
 ---
 
