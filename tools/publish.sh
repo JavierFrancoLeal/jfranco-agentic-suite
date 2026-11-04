@@ -27,7 +27,7 @@ sh tools/check.sh
 
 for p in jfranco-workflow-master jfranco-decision-router \
          jfranco-accountability-auditor jfranco-autonomy-grader jfranco-audit \
-         jfranco-deepseek-prices jfranco-plugin-authoring; do
+         jfranco-deepseek-prices jfranco-plugin-authoring jfranco-balance; do
   echo ""
   echo "Publishing $p…"
   (cd "$p" && "$NODE" "$PNPM" publish --access public --no-git-checks)
@@ -42,3 +42,4 @@ echo "  dsh plugin --profile desktop add @javierfrancoleal/autonomy-grader"
 echo "  dsh plugin --profile desktop add @javierfrancoleal/audit"
 echo "  dsh plugin --profile desktop add @javierfrancoleal/deepseek-prices"
 echo "  dsh plugin --profile desktop add @javierfrancoleal/plugin-authoring"
+echo "  dsh plugin --profile desktop add @javierfrancoleal/balance"
