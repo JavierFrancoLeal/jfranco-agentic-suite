@@ -1,4 +1,9 @@
 #!/bin/sh
+# The dual brain lives inside the app when the key is present (flash + v4-pro).
+if [ -z "$DEEPSEEK_API_KEY" ]; then
+  KEY=$(grep -o 'DEEPSEEK_API_KEY=[^"]*' "$HOME/.zshrc" 2>/dev/null | head -1 | cut -d= -f2)
+  [ -n "$KEY" ] && export DEEPSEEK_API_KEY="$KEY"
+fi
 # J.Franco suite — zero-tech demo sandbox. Created by J.Franco. MIT.
 #
 # Runs an ISOLATED demo for a business with no technology of its own:

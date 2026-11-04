@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.58";
+const VERSION = "1.0.59";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -154,6 +154,64 @@ function saveUsers(u) {
 }
 function hashPw(pw, salt) { return crypto.scryptSync(pw, salt, 64).toString("hex"); }
 function ts() { return new Date().toISOString(); }
+// ── The dual brain, INSIDE the app ─────────────────────────────
+// When DEEPSEEK_API_KEY is set, the server calls the official API directly:
+// real-time demand → deepseek-flash; deep analysis → deepseek-v4-pro.
+// Without the key, the standby agent (tools/agent-standby.sh) takes over.
+const BRAIN_BASE = "https://api.deepseek.com/chat/completions";
+async function brain(model, prompt, maxTokens) {
+  const key = process.env.DEEPSEEK_API_KEY || "";
+  if (!key) throw new Error("no DEEPSEEK_API_KEY");
+  const r = await fetch(BRAIN_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (model.startsWith("deepseek-v4-pro") ? 4000 : 1500), temperature: 0.4 }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j.choices) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
+  try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, model); } catch {}
+  return j.choices[0].message.content || "";
+}
+function jsonBlock(text) {
+  const a = String(text).indexOf("{"), b = String(text).lastIndexOf("}");
+  if (a < 0 || b <= a) return null;
+  try { return JSON.parse(String(text).slice(a, b + 1)); } catch { return null; }
+}
+function brainOn() { return !!process.env.DEEPSEEK_API_KEY; }
+function processTranscript(b) {
+  const prompt = "Live mirror mode. A worker captured this conversation from the field: " + String(b.text || "") + " Decode it, split it by person (Person 1, Person 2…), assign each request its tier (GREEN/SEMI/YELLOW/RED). If any speech is not in French, translate it into French inside the summary. Reply with ONLY one JSON object: {\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}";
+  brain("deepseek-flash", prompt).then((out) => {
+    const j = jsonBlock(out);
+    if (!j || !Array.isArray(j.speakers)) return;
+    const s0 = liveRead();
+    s0.status = "summary";
+    s0.worker = b.worker || s0.worker;
+    s0.speakers = j.speakers.map((p, i) => ({ id: "p" + (i + 1), name: p.name || ("Person " + (i + 1)), requests: (p.requests || []).map((r, j2) => ({ id: "p" + (i + 1) + "-r" + (j2 + 1), text: String(r.text || ""), tier: r.tier || "GREEN", status: "pending" })) }));
+    liveWrite(s0);
+  }).catch((e) => console.error("flash transcript:", e.message));
+}
+function processDeep(item) {
+  const prompt = "Deep analysis. Question: " + String(item.text || "") + " Think deeply and answer thoroughly, in French if the question is in French or Spanish. Keep it useful for a business owner.";
+  brain("deepseek-v4-pro", prompt).then((out) => {
+    appendReport("Reasoner", out);
+    const s2 = liveRead();
+    s2.deepAnswers = s2.deepAnswers || [];
+    s2.deepAnswers.push({ id: item.id, text: item.text, answer: out, ts: ts() });
+    liveWrite(s2);
+  }).catch((e) => console.error("deep v4-pro:", e.message));
+}
+function processStudio(item) {
+  const prompt = "Decision center kitchen (Trasunto). The owner asked this task: " + String(item.text || "") + " Draft a short professional French response AND write in one sentence your reasoning (why this reply, based on what). Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
+  brain("deepseek-flash", prompt).then((out) => {
+    const j = jsonBlock(out);
+    if (!j || !j.result) return;
+    const tk = tasksRead();
+    const it = tk.tasks.find((x) => x.id === item.id);
+    if (it && it.status === "pending") {
+      it.result = String(j.result); it.rationale = String(j.rationale || ""); it.status = "done"; it.doneAt = ts(); tasksWrite(tk);
+    }
+  }).catch((e) => console.error("flash studio:", e.message));
+}
 function appendReport(worker, text) {
   if (db) db.prepare("INSERT INTO reports (ts,worker,text) VALUES (?,?,?)").run(ts(), worker, String(text || "").trim());
   else {
@@ -418,7 +476,7 @@ async function api(req, res, pathname) {
   }
   // The active sector pack: one dashboard skeleton, many business skins.
   if (pathname === "/api/studio" && req.method === "GET") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const tk = tasksRead(); return send(res, 200, { tasks: tk.tasks.slice(-20).reverse() }); }
-  if (pathname === "/api/studio" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const id = "t" + Date.now(); tk.tasks.push({ id, type: String(b.type || "other"), text: String(b.text || ""), by: u.name, ts: ts(), status: "pending", result: null }); tasksWrite(tk); const l = liveRead(); l.inbox = l.inbox || []; l.inbox.push({ from: u.name, kind: "studio", id, text: String(b.type || "") + " :: " + String(b.text || "") }); liveWrite(l); if (process.env.DSH_DEMO_MODE === "1") setTimeout(() => { const t2 = tasksRead(); const it = t2.tasks.find((x) => x.id === id); if (it && it.status === "pending") { it.result = "[Brouillon de démonstration — " + String(b.type || "autre") + "] " + String(b.text || ""); it.rationale = "Le client pose une question simple ; une réponse courte et chaleureuse renforce le lien et invite à venir. (Démonstration — la cuisine réelle argumente avec les données de l'entreprise.)"; it.status = "done"; it.doneAt = ts(); tasksWrite(t2); } }, 3000); return send(res, 200, { ok: true, id }); }
+  if (pathname === "/api/studio" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const id = "t" + Date.now(); tk.tasks.push({ id, type: String(b.type || "other"), text: String(b.text || ""), by: u.name, ts: ts(), status: "pending", result: null }); tasksWrite(tk); const l = liveRead(); l.inbox = l.inbox || []; l.inbox.push({ from: u.name, kind: "studio", id, text: String(b.type || "") + " :: " + String(b.text || "") }); liveWrite(l); if (brainOn()) { processStudio({ id, text: String(b.type || "") + " :: " + String(b.text || "") }); } if (process.env.DSH_DEMO_MODE === "1") setTimeout(() => { const t2 = tasksRead(); const it = t2.tasks.find((x) => x.id === id); if (it && it.status === "pending") { it.result = "[Brouillon de démonstration — " + String(b.type || "autre") + "] " + String(b.text || ""); it.rationale = "Le client pose une question simple ; une réponse courte et chaleureuse renforce le lien et invite à venir. (Démonstration — la cuisine réelle argumente avec les données de l'entreprise.)"; it.status = "done"; it.doneAt = ts(); tasksWrite(t2); } }, 3000); return send(res, 200, { ok: true, id }); }
   if (pathname === "/api/studio/send" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const it = tk.tasks.find((x) => x.id === b.id); if (!it || it.status !== "done") return send(res, 200, { ok: false }); it.status = b.decision === "send" ? "sent" : "dismissed"; it.decidedBy = u.name; it.decidedAt = ts(); tasksWrite(tk); return send(res, 200, { ok: true }); }
   if (pathname === "/api/bridge/message" && req.method === "POST") { const bt = process.env.DSH_BRIDGE_TOKEN; const given = req.headers["x-bridge-token"] || ""; if (bt && given !== bt) return send(res, 401, { error: "bad bridge token" }); if (!bt) { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); } const b = await json(req); const tk = tasksRead(); const id = "t" + Date.now(); tk.tasks.push({ id, type: "email", text: String(b.from || "client") + " : " + String(b.text || ""), by: "Facebook", ts: ts(), status: "pending", result: null }); tasksWrite(tk); const l = liveRead(); l.inbox = l.inbox || []; l.inbox.push({ from: "Facebook", kind: "studio", id, text: String(b.from || "client") + " :: " + String(b.text || "") }); liveWrite(l); return send(res, 200, { ok: true, id }); }
   if (pathname === "/api/studio/inbox" && req.method === "GET") { const l = liveRead(); const tk = tasksRead(); const doneIds = new Set(tk.tasks.filter((x) => x.status === "done").map((x) => x.id)); const items = (l.inbox || []).filter((x) => x.kind === "studio" && !doneIds.has(x.id)); return send(res, 200, { items }, true); }
@@ -451,7 +509,7 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/health" && req.method === "GET") {
     const m = metrics();
-    return send(res, 200, { ok: true, version: VERSION, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd(), budgetPct: DAILY_BUDGET_USD > 0 ? Math.round((todayCostUsd() / DAILY_BUDGET_USD) * 100) : 0 }, true);
+    return send(res, 200, { ok: true, version: VERSION, demo: process.env.DSH_DEMO_MODE === "1" || undefined, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd(), budgetPct: DAILY_BUDGET_USD > 0 ? Math.round((todayCostUsd() / DAILY_BUDGET_USD) * 100) : 0 }, true);
   }
   if (pathname === "/api/sector" && req.method === "GET") {
     try { return send(res, 200, JSON.parse(fs.readFileSync(SECTOR_FILE, "utf8"))); }
@@ -530,8 +588,10 @@ async function api(req, res, pathname) {
     const b = await json(req);
     const s2 = liveRead();
     s2.deep = s2.deep || [];
-    s2.deep.push({ id: "d" + (s2.deep.length + 1), ts: ts(), worker: b.worker || "owner", text: String(b.text || "").trim() });
+    const ditem = { id: "d" + (s2.deep.length + 1), ts: ts(), worker: b.worker || "owner", text: String(b.text || "").trim() };
+    s2.deep.push(ditem);
     liveWrite(s2);
+    if (brainOn()) processDeep(ditem); // direct v4-pro brain
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/deep/inbox" && req.method === "GET") {
@@ -539,6 +599,11 @@ async function api(req, res, pathname) {
     const items = (s2.deep || []).filter((x) => !x.acked);
     if (items.length) { s2.deep.forEach((x) => { x.acked = true; }); liveWrite(s2); }
     return send(res, 200, { items });
+  }
+  if (pathname === "/api/deep/answers" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const s2 = liveRead();
+    return send(res, 200, { answers: (s2.deepAnswers || []).slice(-5).reverse() });
   }
   if (pathname === "/api/deep/result" && req.method === "POST") {
     const b = await json(req);
@@ -550,8 +615,10 @@ async function api(req, res, pathname) {
     const b = await json(req);
     const s = liveRead();
     s.inbox = s.inbox || [];
-    s.inbox.push({ id: "t" + (s.inbox.length + 1), ts: ts(), worker: b.worker || s.worker, text: String(b.text || "").trim() });
+    const item = { id: "t" + (s.inbox.length + 1), ts: ts(), worker: b.worker || s.worker, text: String(b.text || "").trim() };
+    s.inbox.push(item);
     liveWrite(s);
+    if (brainOn()) processTranscript(item); // direct flash brain
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/live/inbox" && req.method === "GET") {
