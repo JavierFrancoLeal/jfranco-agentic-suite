@@ -17,9 +17,10 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - name: Run the suite quality gate
         run: sh tools/check.sh
-      - name: Publish the six @jfranco packages (Trusted Publishing, no token)
+      - name: Publish the seven @jfranco packages (Trusted Publishing, no token)
         run: |
           for p in jfranco-workflow-master jfranco-input-detector jfranco-decision-router \
-                   jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader; do
+                   jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader \
+                   jfranco-balance; do
             (cd "$p" && npm publish --provenance --access public)
           done
