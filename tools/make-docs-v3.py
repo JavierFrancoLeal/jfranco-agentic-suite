@@ -44,7 +44,6 @@ def para(doc, text="", size=9.5, color=INK, bold=False, align=None, space_after=
 def label(doc, text, space_before=10, space_after=4):
     p = doc.add_paragraph(); r = p.add_run(text.upper())
     r.font.size = Pt(8); r.bold = True; r.font.color.rgb = RGBColor(0x4B, 0x55, 0x63)
-    letter(r, 30)
     p.paragraph_format.space_before = Pt(space_before); p.paragraph_format.space_after = Pt(space_after)
     return p
 
@@ -88,7 +87,6 @@ def header(doc, doctype):
     pad(c0, 0, 0)
     p1 = c1.paragraphs[0]; p1.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     r4 = p1.add_run(doctype); r4.font.size = Pt(8); r4.bold = True; r4.font.color.rgb = MUTED
-    letter(r4, 26)
     pad(c1, 0, 0)
     return t
 
@@ -158,17 +156,19 @@ def one_pager(out):
          size=10, color=MUTED, space_after=10)
 
     label(doc, "Ce que c'est", space_before=2)
-    para(doc, "Le Veilleux est un assistant de travail pour votre entreprise : il écoute votre équipe, organise les commandes, tient la caisse et prépare vos rapports — chaque jour, en français, sans que vous ayez à apprendre l'informatique. Vous décidez ; lui, il exécute et il vérifie.", space_after=8)
+    para(doc, "Le Veilleux est un assistant de travail pour votre entreprise : il écoute votre équipe, consigne l'activité, tient vos comptes et prépare vos rapports — chaque jour, en français, sans que vous ayez à apprendre l'informatique. Vous décidez ; lui, il exécute et il vérifie.", space_after=4)
+    para(doc, "Tourisme et hôtellerie · Agroalimentaire et terroir · Commerce et services · Construction et manufacturier · Travailleurs autonomes et professionnels.",
+         size=8.5, color=MUTED, space_after=8)
 
     label(doc, "Ce que ça fait")
     bullets(doc, [
-        ("Pendant le service, il écrit tout : ", "qui a commandé quoi, pour quelle table, à quelle heure — sans papier ni double saisie."),
-        ("En fin de journée, la caisse se concilie toute seule : ", "ce qui a été vendu contre ce qui a été encaissé. Un écart apparaît immédiatement — erreur, oubli ou fuite."),
-        ("Le rapport du jour se prépare tout seul : ", "ventes, activité, coûts. Fini le tableur du dimanche soir."),
+        ("Au fil de la journée, il consigne tout : ", "qui a demandé quoi, pour quel client, à quelle heure — sans papier ni double saisie."),
+        ("En fin de journée, les ventes se concilient toutes seules : ", "ce qui a été vendu contre ce qui a été encaissé. Un écart apparaît immédiatement — erreur, oubli ou fuite."),
+        ("Le rapport se prépare tout seul : ", "activité, ventes, coûts. Fini le tableur du dimanche soir."),
     ])
 
     label(doc, "Comment ça vous touche")
-    para(doc, "Vous gardez vos habitudes : votre terminal de paiement, votre caisse, votre menu. On installe, on forme votre équipe, et vous continuez comme avant — avec un deuxième regard qui ne dort jamais.", space_after=8)
+    para(doc, "Vous gardez vos habitudes : vos outils, votre terminal de paiement, votre façon de travailler. On installe, on forme votre équipe, et vous continuez comme avant — avec un deuxième regard qui ne dort jamais.", space_after=8)
 
     label(doc, "Ce que vous y gagnez")
     gain_rows(doc, [
@@ -182,7 +182,7 @@ def one_pager(out):
     label(doc, "L'offre", space_before=2)
     para(doc, "Rencontre et estimation gratuites → Implantation clé en main → Abonnement simple à partir de 249 $/mois. Pilote de 6 mois à tarif réduit pour votre première expérience, sans engagement.", space_after=8)
 
-    ask_box(doc, "L'appui recherché — SADC Charlevoix : accompagnement et prêt conditionnel (25 000 $) dédié à la phase pilote, remboursé une fois la rentabilité confirmée. En complément : Futurpreneur Canada et programme LIFT de la BDC.")
+    ask_box(doc, "L'appui recherché — SADC Charlevoix : (1) diffuser nos services auprès des PME de la région ; (2) identifier une entreprise pilote pour tester et raffiner le produit ; (3) orienter nos clients vers les subventions fédérales et provinciales de modernisation technologique — IA (Futurpreneur, programme LIFT de la BDC, et autres) afin d'ajuster nos prix et notre modèle d'affaires.")
     footer(doc, "Franco Vision · One-pager v1.1")
     doc.save(out); print("saved", out)
 
@@ -243,7 +243,6 @@ def grille(out):
     for i, htxt in enumerate(["", "Service", "Tarif"]):
         c = t.rows[0].cells[i]; c.width = widths[i]; shade(c, HEADFILL)
         p = c.paragraphs[0]; r = p.add_run(htxt); r.bold = True; r.font.size = Pt(8.5); r.font.color.rgb = MUTED
-        letter(r, 20)
         pad(c, 2, 2)
     for num, name, price, tint in rows:
         rw = t.add_row()
