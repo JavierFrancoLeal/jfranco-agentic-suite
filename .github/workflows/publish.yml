@@ -29,4 +29,7 @@ jobs:
             else
               (cd "$p" && npm publish --provenance --access public)
             fi
+            # npm staged publishing (registry, GA 2026) crea un placeholder
+            # "0.0.0-stage" en el primer publish de un paquete nuevo; deprecarlo.
+            npm deprecate "$name@0.0.0-stage" "Placeholder de npm staged publishing — usa latest." >/dev/null 2>&1 || true
           done
