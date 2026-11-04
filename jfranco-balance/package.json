@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/balance",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Live DeepSeek account balance in the bottom bar: topped-up credit and total available balance, streamed from the host to the browser via the Remote/Typert pattern.",
   "author": "J.Franco",
   "license": "MIT",
@@ -23,17 +23,28 @@
     "cordis.patch.yml",
     "README.md"
   ],
-  "engines": { "node": ">=24", "dsh": ">=0.2.1-rc.0" },
+  "engines": {
+    "node": ">=24",
+    "dsh": ">=0.2.1-rc.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
     "directory": "jfranco-balance"
   },
   "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
-  "keywords": ["deepseek-harness", "plugin", "balance", "billing", "account"],
+  "keywords": [
+    "deepseek-harness",
+    "plugin",
+    "balance",
+    "billing",
+    "account"
+  ],
   "dsh": {
     "manifestVersion": 1,
-    "bundle": { "patch": "./cordis.patch.yml" },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
     "client": {
       "platform": "web",
       "inject": [
@@ -42,7 +53,9 @@
       ]
     }
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
     "@deepseek-ai/dsh-typert-protocol": ">=0.2.1-rc.0"
