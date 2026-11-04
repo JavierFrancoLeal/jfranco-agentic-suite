@@ -118,7 +118,7 @@ DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" "$NODE" "$ROOT/superviso
 } > "$DEMO/decisions.md"
 
 # Start the isolated server on the local network
-nohup env DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" caffeinate -i "$NODE" "$ROOT/supervisor/server.js" --lan > /tmp/dsh-demo.log 2>&1 &
+nohup env DSH_SUPERVISOR_DATA="$DEMO" DSH_SUPERVISOR_PORT="$PORT" DSH_DEMO_MODE=1 DSH_ALERT_TEST=1 caffeinate -i "$NODE" "$ROOT/supervisor/server.js" --lan > /tmp/dsh-demo.log 2>&1 &
 echo $! > "$PID"
 sleep 1.2
 

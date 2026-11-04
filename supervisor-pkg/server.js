@@ -45,6 +45,7 @@ const SECTOR_FILE = path.join(DATA_DIR, "sector.json");
 const REG_FILE = path.join(DATA_DIR, "register.json");
 const ALERTS_FILE = path.join(DATA_DIR, "alerts.json");
 const SHIFT_FILE = path.join(DATA_DIR, "shift.json");
+const TASKS_FILE = path.join(DATA_DIR, "tasks.json");
 const PRICE_PER_MILLION = Number(process.env.DSH_PRICE_PER_MILLION || 0.28);
 const SECTOR_OPEN = [
   { id: "temp", label: "Vérifier les températures (réfrigérateurs, congélateurs)" },
@@ -58,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.48";
+const VERSION = "1.0.49";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -221,6 +222,8 @@ function alertsWrite(a) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeF
 function shiftRead() { try { return JSON.parse(fs.readFileSync(SHIFT_FILE, "utf8")); } catch { return { date: "", opened: null, closed: null }; } }
 function shiftWrite(sh) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(SHIFT_FILE, JSON.stringify(sh, null, 2)); }
 function todayStr() { return new Date().toISOString().slice(0, 10); }
+function tasksRead() { try { return JSON.parse(fs.readFileSync(TASKS_FILE, "utf8")); } catch { return { tasks: [] }; } }
+function tasksWrite(tk) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(TASKS_FILE, JSON.stringify(tk, null, 2)); }
 // Weather: the EVIDENCE layer. Real data in (configurable source), never our predictions.
 async function fetchWeather() {
   const lat = process.env.DSH_WEATHER_LAT || "47.66";
@@ -414,6 +417,10 @@ async function api(req, res, pathname) {
     return send(res, 200, liveRead());
   }
   // The active sector pack: one dashboard skeleton, many business skins.
+  if (pathname === "/api/studio" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const tk = tasksRead(); return send(res, 200, { tasks: tk.tasks.slice(-20).reverse() }); }
+  if (pathname === "/api/studio" && req.method === "POST") { const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const id = "t" + Date.now(); tk.tasks.push({ id, type: String(b.type || "other"), text: String(b.text || ""), by: u.name, ts: ts(), status: "pending", result: null }); tasksWrite(tk); const l = liveRead(); l.inbox = l.inbox || []; l.inbox.push({ from: u.name, kind: "studio", id, text: String(b.text || "") }); liveWrite(l); return send(res, 200, { ok: true, id }); }
+  if (pathname === "/api/studio/result" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const it = tk.tasks.find((x) => x.id === b.id); if (!it) return send(res, 200, { ok: false }); it.result = String(b.result || ""); it.status = "done"; it.doneAt = ts(); tasksWrite(tk); return send(res, 200, { ok: true }); }
+  if (pathname === "/api/demo-login" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const b = await json(req); const u = loadUsers(); const name = Object.keys(u).find((n) => u[n].role === String(b.role || "owner")); if (!name) return send(res, 404, { error: "no demo user for that role" }); const token = issue(name, u[name].role, u[name].label || name); return send(res, 200, { token, name, role: u[name].role, label: u[name].label || name }, true); }
   if (pathname === "/api/alerts" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const a = alertsRead(); const active = a.items.find((x) => x.status === "active"); return send(res, 200, { active: active || null, last: a.items.slice(-3).reverse() }); }
   if (pathname === "/api/alerts/decide" && req.method === "POST") { const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const a = alertsRead(); const it = a.items.find((x) => x.id === b.id); if (!it || it.status !== "active") return send(res, 200, { ok: false }); it.status = "done"; it.decision = b.decision === "yes" ? "yes" : "no"; it.decidedBy = u.name; it.decidedAt = ts(); alertsWrite(a); if (b.decision === "yes") { const l = liveRead(); l.notices = l.notices || []; l.notices.push({ ts: ts(), from: u.name, text: "Pluie probable (~" + it.pct + "%) dans ~" + it.inHour + " h — préparez-vous." }); liveWrite(l); } return send(res, 200, { ok: true }); }
   if (pathname === "/api/shift" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const sh = shiftRead(); const same = sh.date === todayStr(); const opened = same ? sh.opened : null; const closed = same ? sh.closed : null; const phase = !opened ? "open" : (!closed ? "close" : "done"); const steps = phase === "open" ? SECTOR_OPEN : phase === "close" ? SECTOR_CLOSE : []; const bucket = phase === "open" ? (sh.openSteps || []) : (sh.closeSteps || []); return send(res, 200, { opened, closed, phase, steps: steps.map((st) => ({ id: st.id, label: st.label, done: bucket.some((x) => x.id === st.id) })) }); }
