@@ -8,93 +8,16 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 from docx.opc.constants import RELATIONSHIP_TYPE
 
-INK = RGBColor(0x11, 0x18, 0x27); MUTED = RGBColor(0x6B, 0x72, 0x80); FAINT = RGBColor(0x9C, 0xA3, 0xAF)
-V = RGBColor(0x4D, 0x6B, 0xFE); GRAY = RGBColor(0x4B, 0x55, 0x63)
-LOCKUP = "tools/logo-suite/franco-vision-lockup.png"
-
-def add_hyperlink(paragraph, text, url, size=9):
-    part = paragraph.part
-    r_id = part.relate_to(url, RELATIONSHIP_TYPE.HYPERLINK, is_external=True)
-    hl = OxmlElement("w:hyperlink"); hl.set(qn("r:id"), r_id)
-    run = OxmlElement("w:r"); rPr = OxmlElement("w:rPr")
-    c = OxmlElement("w:color"); c.set(qn("w:val"), "4D6BFE"); rPr.append(c)
-    u = OxmlElement("w:u"); u.set(qn("w:val"), "single"); rPr.append(u)
-    sz = OxmlElement("w:sz"); sz.set(qn("w:val"), str(int(size * 2))); rPr.append(sz)
-    run.append(rPr)
-    t_el = OxmlElement("w:t"); t_el.text = text; run.append(t_el)
-    hl.append(run); paragraph._p.append(hl)
-
-def rule(doc, color="4D6BFE", sz=6, space_after=8):
-    p = doc.add_paragraph(); pPr = p._p.get_or_add_pPr(); pBdr = OxmlElement("w:pBdr")
-    b = OxmlElement("w:bottom"); b.set(qn("w:val"), "single"); b.set(qn("w:sz"), str(sz)); b.set(qn("w:color"), color); b.set(qn("w:space"), "4")
-    pBdr.append(b); pPr.append(pBdr); p.paragraph_format.space_after = Pt(space_after); return p
-
-def para(doc, text="", size=9.5, color=INK, bold=False, align=None, space_after=4, space_before=0, line=1.18):
-    p = doc.add_paragraph(); r = p.add_run(text)
-    r.font.size = Pt(size); r.font.color.rgb = color; r.bold = bold
-    if align is not None: p.alignment = align
-    pf = p.paragraph_format; pf.space_after = Pt(space_after); pf.space_before = Pt(space_before); pf.line_spacing = line
-    return p
-
-def cite(doc, text, url, size=9):
-    p = doc.add_paragraph(); add_hyperlink(p, text, url, size=size)
-    p.paragraph_format.space_after = Pt(2); return p
-
-def section(doc, num, title, audience, size=14):
-    para(doc, "SECTION " + num, size=8, color=V, bold=True, space_before=12, space_after=1).paragraph_format.keep_with_next = True
-    para(doc, title, size=size, bold=True, space_after=2).paragraph_format.keep_with_next = True
-    p = doc.add_paragraph()
-    r = p.add_run("À lire par : " + audience)
-    r.font.size = Pt(8.5); r.font.color.rgb = GRAY; r.italic = True
-    p.paragraph_format.space_after = Pt(4)
-    rule(doc, color="E5E7EB", sz=4, space_after=6)
-
-def bullet(doc, lead, rest, size=9.5):
-    p = doc.add_paragraph()
-    r1 = p.add_run("· " + lead); r1.bold = True; r1.font.size = Pt(size); r1.font.color.rgb = INK
-    r2 = p.add_run(rest); r2.font.size = Pt(size); r2.font.color.rgb = MUTED
-    p.paragraph_format.space_after = Pt(3); return p
-
-def shade(cell, hexcolor):
-    tcPr = cell._tc.get_or_add_tcPr(); shd = OxmlElement("w:shd"); shd.set(qn("w:val"), "clear"); shd.set(qn("w:fill"), hexcolor); tcPr.append(shd)
-
-def cell_borders(cell, edges, color="E5E7EB", sz=4):
-    tcPr = cell._tc.get_or_add_tcPr(); b = OxmlElement("w:tcBorders")
-    for side in edges:
-        el = OxmlElement("w:" + side); el.set(qn("w:val"), "single"); el.set(qn("w:sz"), str(sz)); el.set(qn("w:color"), color); b.append(el)
-    tcPr.append(b)
-
-def no_split(row):
-    trPr = row._tr.get_or_add_trPr()
-    cant = OxmlElement("w:cantSplit")
-    trPr.append(cant)
-
-def keep_together(t):
-    for r in t.rows[:-1]:
-        for c in r.cells:
-            for p in c.paragraphs:
-                p.paragraph_format.keep_with_next = True
-
-def table3(doc, rows, widths=(2.2, 10.0, 5.0), header=("", "", "")):
-    t = doc.add_table(rows=1, cols=3); t.autofit = False
-    no_split(t.rows[0])
-    for i, htxt in enumerate(header):
-        c = t.rows[0].cells[i]; c.width = Cm(widths[i]); shade(c, "F3F4F6")
-        p = c.paragraphs[0]; r = p.add_run(htxt); r.bold = True; r.font.size = Pt(8.5); r.font.color.rgb = MUTED
-        p.paragraph_format.space_before = Pt(2); p.paragraph_format.space_after = Pt(2)
-    for a, b, c3 in rows:
-        rw = t.add_row(); no_split(rw)
-        for i, val in enumerate((a, b, c3)):
-            c = rw.cells[i]; c.width = Cm(widths[i]); cell_borders(c, ["bottom"])
-            p = c.paragraphs[0]; r = p.add_run(val); r.font.size = Pt(9)
-            p.paragraph_format.space_before = Pt(2); p.paragraph_format.space_after = Pt(2)
-            if i == 0: r.bold = True; r.font.color.rgb = V
-            elif i == 2: r.bold = True; r.font.color.rgb = INK
-            else: r.font.color.rgb = INK
-    keep_together(t)
-    return t
+import sys as _sys
+_sys.path.insert(0, "tools")
+from docfx import *
 
 doc = Document()
+cp = doc.core_properties
+cp.title = "FRANCO VISION — Plan d'affaires"
+cp.author = "Javier Alejandro FRANCO LEAL"
+cp.subject = "Plan d'affaires Franco Vision"
+cp.company = "Franco Vision inc."
 s = doc.sections[0]
 s.top_margin = Cm(1.4); s.bottom_margin = Cm(1.2); s.left_margin = Cm(1.6); s.right_margin = Cm(1.6)
 st = doc.styles["Normal"]; st.font.name = "Arial"; st.font.size = Pt(9.5)
@@ -265,8 +188,7 @@ cite(doc, "FCEI — Adoption de l'IA et formation de la main-d'œuvre", "https:/
 cite(doc, "Le Charlevoisien — Actualités régionales", "https://www.lecharlevoisien.com/")
 cite(doc, "Conseil de la Première Nation des Innus Essipit", "https://www.essipit.com/")
 
-rule(doc, color="E5E7EB", sz=4, space_after=4)
-para(doc, "Franco Vision inc. · Charlevoix, Québec · Plan d'affaires v3.0 · Novembre 2026", size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
+footer(doc, "Franco Vision inc. · Charlevoix, Québec", "Plan d'affaires v3.0 · Novembre 2026")
 
 out = sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-PLAN-AFFAIRES.docx"
 doc.save(out)

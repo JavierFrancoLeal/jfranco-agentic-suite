@@ -33,6 +33,17 @@ def letter(run, spacing=26):
     rPr = run._r.get_or_add_rPr()
     sp = OxmlElement("w:spacing"); sp.set(qn("w:val"), str(spacing)); rPr.append(sp)
 
+def keep_together(t):
+    for r in t.rows[:-1]:
+        for c in r.cells:
+            for p in c.paragraphs:
+                p.paragraph_format.keep_with_next = True
+
+def header_repeats(t):
+    trPr = t.rows[0]._tr.get_or_add_trPr()
+    if trPr.find(qn("w:tblHeader")) is None:
+        trPr.append(OxmlElement("w:tblHeader"))
+
 def para(doc, text="", size=9.5, color=INK, bold=False, align=None, space_after=4, space_before=0, line=1.18):
     p = doc.add_paragraph(); r = p.add_run(text)
     r.font.size = Pt(size); r.font.color.rgb = color; r.bold = bold
@@ -92,6 +103,13 @@ def header(doc, doctype):
 
 def footer(doc, docid):
     rule(doc, color="E5E7EB", sz=4, space_after=4)
+    pn = doc.add_paragraph(); pn.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    rn = pn.add_run("Page "); rn.font.size = Pt(7.5); rn.font.color.rgb = FAINT
+    fld = OxmlElement("w:fldSimple"); fld.set(qn("w:instr"), "PAGE")
+    rr = OxmlElement("w:r"); tt = OxmlElement("w:t"); tt.text = "1"; rr.append(tt); fld.append(rr)
+    pn._p.append(fld)
+    pn.paragraph_format.space_after = Pt(0)
+    p0 = doc.add_paragraph(); p0.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p = doc.add_paragraph(); p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run("Franco Vision inc. · Charlevoix, Québec")
     r.font.size = Pt(7.5); r.font.color.rgb = FAINT
@@ -103,6 +121,8 @@ def footer(doc, docid):
 
 def new_doc(doctype, docid):
     doc = Document()
+    cp = doc.core_properties
+    cp.title = docid; cp.author = "Javier Alejandro FRANCO LEAL"; cp.subject = docid; cp.company = "Franco Vision inc."
     st = doc.styles["Normal"]
     st.font.name = "Arial"
     st.font.size = Pt(9.5)
@@ -146,6 +166,7 @@ def gain_rows(doc, items):
         p2 = c.add_paragraph(); r2 = p2.add_run(small); r2.font.size = Pt(8); r2.font.color.rgb = MUTED
         p2.paragraph_format.space_after = Pt(0)
         pad(c, 2, 2)
+    keep_together(t)
     return t
 
 # ── ONE-PAGER v4 — business-first, for SADC and busy owners ──
@@ -256,6 +277,7 @@ def grille(out):
             if i == 0: r.bold = True; r.font.color.rgb = V
             elif i == 2: r.bold = True; r.font.color.rgb = INK; p.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             else: r.font.color.rgb = INK
+    keep_together(t); header_repeats(t)
     para(doc, "Le cœur du modèle est l'accompagnement continu (ligne 4). Le seuil de viabilité de 86 000 $ – 96 000 $/an repose sur 2 à 3 implantations + 3 à 4 accompagnements actifs — scénarios du plan d'affaires, à valider par le pilote.",
          size=8.5, color=MUTED, space_before=8)
     footer(doc, "Franco Vision · Grille tarifaire v1.0")

@@ -31,6 +31,12 @@ def letter(run, spacing=26):
     rPr = run._r.get_or_add_rPr()
     sp = OxmlElement("w:spacing"); sp.set(qn("w:val"), str(spacing)); rPr.append(sp)
 
+def keep_together(t):
+    for r in t.rows[:-1]:
+        for c in r.cells:
+            for p in c.paragraphs:
+                p.paragraph_format.keep_with_next = True
+
 def para(doc, text="", size=9.5, color=INK, bold=False, align=None, space_after=4, space_before=0, line=1.18):
     p = doc.add_paragraph(); r = p.add_run(text)
     r.font.size = Pt(size); r.font.color.rgb = color; r.bold = bold
@@ -90,6 +96,7 @@ def way(doc, n, title, what, keep, tag):
     r5 = p3.add_run(tag); r5.font.size = Pt(7.5); r5.bold = True
     r5.font.color.rgb = V if tag == TAG_P else FAINT
     p3.paragraph_format.space_after = Pt(6)
+    keep_together(t)
     return t
 
 TAG_P = "Le Veilleux — installé chez vous"
@@ -128,6 +135,8 @@ WAYS = [
 ]
 
 doc = Document()
+cp = doc.core_properties
+cp.title = "Guide 10 façons"; cp.author = "Javier Alejandro FRANCO LEAL"; cp.company = "Franco Vision inc."
 s = doc.sections[0]
 s.top_margin = Cm(1.3); s.bottom_margin = Cm(1.2)
 s.left_margin = Cm(1.6); s.right_margin = Cm(1.6)
@@ -151,8 +160,11 @@ for i, (t_, w_, k_, tag_) in enumerate(WAYS, 1):
 rule(doc, color="E5E7EB", sz=4, space_after=6)
 para(doc, "Vous voulez voir ces dix gestes en action dans VOTRE entreprise ? La rencontre découverte est gratuite : nous venons chez vous, nous montrons — et vous décidez.",
      size=9.5, bold=True, space_after=4)
-para(doc, "Franco Vision inc. · Charlevoix, Québec · Rencontre découverte gratuite · Franco Vision · Guide v1.0 · Novembre 2026",
-     size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
+para(doc, "Franco Vision inc. · Charlevoix, Québec · Rencontre découverte gratuite · Page ", size=7.5, color=FAINT, align=WD_ALIGN_PARAGRAPH.CENTER)
+_f = doc.paragraphs[-1]
+_fld = OxmlElement("w:fldSimple"); _fld.set(qn("w:instr"), "PAGE")
+_rr = OxmlElement("w:r"); _tt = OxmlElement("w:t"); _tt.text = "1"; _rr.append(_tt); _fld.append(_rr)
+_f._p.append(_fld)
 
 out = sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-GUIDE-10-FACONS.docx"
 doc.save(out)
