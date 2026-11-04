@@ -22,5 +22,11 @@ jobs:
           for p in jfranco-workflow-master jfranco-input-detector jfranco-decision-router \
                    jfranco-accountability-auditor jfranco-interpreter jfranco-autonomy-grader \
                    jfranco-balance; do
-            (cd "$p" && npm publish --provenance --access public)
+            name="$(node -p "require('./$p/package.json').name")"
+            ver="$(node -p "require('./$p/package.json').version")"
+            if npm view "$name@$ver" version >/dev/null 2>&1; then
+              echo "skip $name@$ver (already published)"
+            else
+              (cd "$p" && npm publish --provenance --access public)
+            fi
           done
