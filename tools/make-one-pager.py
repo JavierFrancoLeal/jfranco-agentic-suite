@@ -59,11 +59,11 @@ shade(c0, BAND_BG); shade(c1, BAND_BG)
 p = c0.paragraphs[0]
 run = p.add_run()
 run.add_picture("apps/desktop/assets/icon.png", width=Cm(1.1))
-run2 = p.add_run("  FRANCO IA inc.")
+run2 = p.add_run("  FRANCO VISION")
 run2.bold = True; run2.font.size = Pt(20); run2.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 p.alignment = WD_ALIGN_PARAGRAPH.LEFT
 p2 = c1.paragraphs[0]
-r = p2.add_run("Franco IA inc. · Franco AI inc. (autre nom)\nL'humain au sommet · L'IA en soutien · Produit : Le Veilleux")
+r = p2.add_run("Franco Vision inc.\nL'humain au sommet · L'IA en soutien · Produit : Le Veilleux")
 r.font.size = Pt(9); r.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
 p2.alignment = WD_ALIGN_PARAGRAPH.RIGHT
 
