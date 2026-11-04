@@ -1,4 +1,4 @@
-# Nikan IA × Le Veilleux — alignment analysis
+# Franco IA × Le Veilleux — alignment analysis
 
 *Analysis of the business plan "Plan_affaires_Nikan_IA.docx" (v5.2, July
 2026, SADC Charlevoix) against everything built in this repository.
@@ -7,7 +7,7 @@
 ## What the plan is
 
 A professional, complete consulting-services business plan in French for
-the Charlevoix region: **Nikan IA** — the human link between AI tools and
+the Charlevoix region: **Franco IA** — the human link between AI tools and
 PMEs. Positioning: "L'humain au sommet · L'IA en soutien". Three revenue
 sources (implantation · managed services · applied innovation), five
 services, a 6-month antifragile pilot, viability at ≈ $86–96k CAD/year,
@@ -17,7 +17,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
 
 > The plan is the BUSINESS CASE for the product we built, and the product
 > is the PROOF that makes the plan credible. They were written apart and
-> belong together: **Nikan IA = the company; Le Veilleux = the product.**
+> belong together: **Franco IA = the company; Le Veilleux = the product.**
 
 ## Section-by-section alignment
 
@@ -39,7 +39,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
    ≈ $36.4k, salary $50–60k, threshold $86–96k, three client scenarios.
 2. **The pilot is the engine** — the plan structures what the blueprint
    called M1: one business, 6 months, operational tariff, real data.
-3. **The name architecture** — company Nikan IA (inc.), product Le
+3. **The name architecture** — company Franco IA (inc.), product Le
    Veilleux, suite J.Franco. One organism, three names, each with a job:
    the company sells, the product delivers, the suite is the engine.
 
@@ -53,7 +53,7 @@ and a conditional ask to SADC Charlevoix ($25k loan + $20k personal).
 3. Align Service 2 pricing with the product: per-worker / per-site
    monthly (the register's Z-report justifies the invoice).
 4. Add one persona per sector pack we already ship.
-5. Keep the name Nikan IA for the company and SADC — Le Veilleux stays
+5. Keep the name Franco IA for the company and SADC — Le Veilleux stays
    the product brand.
 
 ## Conclusion
