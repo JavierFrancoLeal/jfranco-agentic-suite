@@ -333,9 +333,12 @@ async function apply(ctx) {
 7. `node`/`pnpm` no están en `PATH`: usa los bundleros de
    `~/.dsh/dsh-runtimes/dsh-primary-runtime/dependencies/{node,pnpm}`.
 8. **URLs de bundle revisionadas**: la forma real es
-   `/plugins/??<id>/client.js&rev=<sha1(mtime:ctime:size)[0:12]>` (combo). La URL
-   desnuda `/plugins/<id>/client.js` da **404 siempre**; saca la `rev` del boot
-   graph en el HTML raíz.
+   `/plugins/??<id>/client.js&rev=<rev>` (combo); la URL desnuda
+   `/plugins/<id>/client.js` da **404 siempre**. La `rev` se deriva **localmente**
+   del archivo (no hace falta scrapear el HTML, que además pide auth):
+   `sha1("plugin-artifact\0" + "<len>:mtimeMs" + "<len>:ctimeMs" + "<len>:size")`
+   con `mtimeMs`/`ctimeMs`/`size` de `lib/client.js` (comando en el checklist).
+   El endpoint `/plugins` **no requiere auth**.
 9. **La app puede cambiar de puerto al reiniciar**: no hardcodees
    `127.0.0.1:<puerto>`; reléelo de la URL anunciada tras cada reinicio.
 10. **`shell.bottom` es `single` y LANZA error** con un 2.º ocupante. Para overlays
@@ -350,9 +353,10 @@ node --check lib/index.js && node --check lib/client.js          # 1. sintaxis
 node tools/check-client.mjs lib/client.js                        # 2. mock-load cliente
 # 3. composición (perfil desechable, no "desktop"):
 dsh --profile testprices --dump-config | grep mi-plugin
-# 4. tras reiniciar: busca tu bundle en el boot graph (la URL desnuda da 404)
-curl -sS http://127.0.0.1:<puerto>/ | grep -o "mi-plugin/client[^\"']*"
-curl -sS "http://127.0.0.1:<puerto>/plugins/??@scope/mi-plugin/client.js&rev=<rev>"  # 200
+# 4. tras reiniciar: URL de bundle revisionada; la rev se deriva LOCALMENTE y el
+#    endpoint /plugins no requiere auth:
+REV=$(node -e 'const fs=require("fs"),crypto=require("crypto");const st=fs.statSync("lib/client.js");const h=crypto.createHash("sha1").update("plugin-artifact").update("\0");for(const p of [String(st.mtimeMs),String(st.ctimeMs),String(st.size)])h.update(String(Buffer.byteLength(p))+":").update(p);console.log(h.digest("hex").slice(0,12))')
+curl -sS "http://127.0.0.1:<puerto>/plugins/??@scope/mi-plugin/client.js&rev=$REV"  # 200
 ```
 
 `tools/check-plugin.sh mi-plugin` automatiza 1 + 2 (y 3 con `--compose`).

@@ -230,9 +230,12 @@ async function apply(ctx) {
 3. New bundles are NOT picked up by HMR on external edits — restart the app.
 4. `dsh.bundle.patch` + `dsh.client` can coexist (dual-face).
 5. React / slots / primitives are baseline; don't list them in `dsh.client.inject`.
-6. **Bundle URLs are revisioned**: the real form is
-   `/plugins/??<id>/client.js&rev=<sha1(mtime:ctime:size)[0:12]>`; the bare
-   `/plugins/<id>/client.js` **always 404s**. Get the `rev` from the root HTML.
+6. **Bundle URLs are revisioned**: `/plugins/??<id>/client.js&rev=<rev>`; the bare
+   `/plugins/<id>/client.js` **always 404s**. Derive `rev` LOCALLY (no need to
+   scrape the HTML, which requires auth): sha1 over
+   `"plugin-artifact\0" + "<len>:mtimeMs" + "<len>:ctimeMs" + "<len>:size"`
+   (file stats of `lib/client.js`), first 12 hex chars — see the checklist.
+   The `/plugins` endpoint needs **no auth**.
 7. **The app may change port after a restart** — re-read the advertised URL.
 
 ## Validation checklist
@@ -241,8 +244,8 @@ async function apply(ctx) {
 node --check lib/index.js && node --check lib/client.js
 node tools/check-client.mjs lib/client.js
 dsh --profile testprices --dump-config | grep mi-plugin     # throwaway profile, not desktop
-curl -sS http://127.0.0.1:<puerto>/ | grep -o "mi-plugin/client[^\"']*"          # find your rev
-curl -sS "http://127.0.0.1:<puerto>/plugins/??@scope/mi-plugin/client.js&rev=<rev>"  # 200
+REV=$(node -e 'const fs=require("fs"),crypto=require("crypto");const st=fs.statSync("lib/client.js");const h=crypto.createHash("sha1").update("plugin-artifact").update("\0");for(const p of [String(st.mtimeMs),String(st.ctimeMs),String(st.size)])h.update(String(Buffer.byteLength(p))+":").update(p);console.log(h.digest("hex").slice(0,12))')
+curl -sS "http://127.0.0.1:<puerto>/plugins/??@scope/mi-plugin/client.js&rev=$REV"  # 200 (no auth needed)
 ```
 
 Full reference: `docs/PLUGIN-AUTHORING.md`. Template: `templates/dsh-plugin/`.
