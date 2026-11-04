@@ -5,8 +5,9 @@
 # The bridge that keeps the AI permanently connected to the field:
 #   1. Workers send speech/text to the supervisor inbox (/api/live/transcript).
 #   2. This loop polls the inbox every few seconds.
-#   3. Field transcripts → the FAST brain (deepseek-chat, V4-Pro Max).
-#   4. Deep questions (/api/deep) → the DEEP brain (deepseek-reasoner),
+#   3. Field transcripts → the FAST brain (deepseek-flash): real-time
+#      demand — listening, transcription, translation, writing orders.
+#   4. Deep questions (/api/deep) → the DEEP brain (deepseek-v4-pro),
 #      which thinks at length and posts its answer to /api/deep/result.
 #
 # Requirements (one-time):
@@ -38,17 +39,26 @@ DSH="${DSH_BIN:-}"
 done
 [ -z "$DSH" ] && { echo "dsh not found. Install DeepSeek Harness first."; exit 1; }
 
-# The Reasoner patch: the second brain for deep analysis.
+# The dual brain (verified against the official API 2026-11-04):
+#   Flash patch: the FAST brain for real-time demand (listen, transcribe,
+#   translate, orders).   Deep patch: V4 Pro for deep analysis.
+cat > /tmp/dsh-fast-patch.yml <<'YML'
+- id: agent-default-model
+  name: "@deepseek-ai/dsh-agent-default-model"
+  config:
+    provider: deepseek-official
+    model: deepseek-flash
+YML
 cat > /tmp/dsh-reasoner-patch.yml <<'YML'
 - id: agent-default-model
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
     provider: deepseek-official
-    model: deepseek-reasoner
+    model: deepseek-v4-pro
     reasoningEffort: max
 YML
 
-echo "Standby agent connected to $SUP (poll every ${POLL}s). Dual brain: field→chat, deep→reasoner."
+echo "Standby agent connected to $SUP (poll every ${POLL}s). Dual brain: field→flash, deep→v4-pro."
 [ -n "$DRY" ] && echo "DRY RUN — commands are printed, not executed."
 echo "Ctrl+C to stop."
 
@@ -71,9 +81,9 @@ while true; do
     PROMPT="Live mirror mode (workflow-master skill). A worker captured this conversation from the field: $TXT Decode it, split it by person (Person 1, Person 2…), assign each request its tier (GREEN/SEMI/YELLOW/RED per decision-router), then POST the summary as JSON to $SUP/api/live/summary with this shape: {\"worker\":\"<worker>\",\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}. Keep texts short. Then answer with one line: summary posted."
     echo "[$(date +%H:%M:%S)] $N transcript(s) received → AI processing…"
     if [ -n "$DRY" ]; then
-      echo "   would run: $DSH --profile campo headless \"$PROMPT\""
+      echo "   would run: $DSH --profile campo --patch /tmp/dsh-fast-patch.yml headless \"$PROMPT\""
     else
-      "$DSH" --profile campo headless "$PROMPT" >/dev/null 2>&1 || echo "   (field run failed — check DEEPSEEK_API_KEY)"
+      "$DSH" --profile campo --patch /tmp/dsh-fast-patch.yml headless "$PROMPT" >/dev/null 2>&1 || echo "   (field run failed — check DEEPSEEK_API_KEY)"
     fi
   fi
 
@@ -101,7 +111,7 @@ while true; do
     if [ -n "$DRY" ]; then
       echo "   would run: $DSH --profile campo headless "$SPROMPT""
     else
-      "$DSH" --profile campo headless "$SPROMPT" >/dev/null 2>&1 || echo "   (studio run failed — check DEEPSEEK_API_KEY)"
+      "$DSH" --profile campo --patch /tmp/dsh-fast-patch.yml headless "$SPROMPT" >/dev/null 2>&1 || echo "   (studio run failed — check DEEPSEEK_API_KEY)"
     fi
   fi
 
