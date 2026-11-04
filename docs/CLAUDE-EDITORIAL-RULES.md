@@ -46,3 +46,35 @@ escrito en el código, no solo en el documento final.*
   "fuente confiable" — el lector lo ve al abrir el enlace.
 - Cada concepto, una vez; el piloto se explica en SU sección, no en la
   portada.
+
+## El ADN del creador (extraído de sus 119 mensajes en las 4 sesiones)
+
+- **Prohibido el puntero meta-referencial**: "decir que la explicación
+  está en otra parte hace al texto perder el hilo narrativo" — nunca
+  "voir la section X", nunca "(les sources sont en section 2)".
+- **La narrativa de cuento**: el texto fluye como una historia, sin
+  cortes que remitan a otra parte.
+- **Negritas con equilibrio**: resaltar lo esencial; jamás un documento
+  lleno de negritas.
+- **Números modestos y realistas**: "200 por 100, suena más realista" ·
+  "se me hacen exagerados" — las cifras se verifican o se marcan
+  "en suspens, à valider".
+- **Sin personas nombradas**: "quita todo lo relativo a los prefectos y
+  concéntrate en los números y cifras".
+- **Coherencia de etapa**: la empresa está naciendo — no redactar como
+  si ya existiera.
+- **La tesis original**: implementar la IA "de la misma manera que se
+  implementó la 3ª revolución industrial… con una interfaz simple que un
+  dueño pueda usar, como usamos los sistemas operativos actuales".
+- **La idea del caos**: "es precisamente de esta idea de beneficiarse
+  del caos que la antifragilidad es parte de nuestra forma de pensar y
+  actuar… la llegada de la 4ª revolución traerá cambios impredecibles".
+- **Maîtres chez nous**: los clientes se vuelven autónomos y dueños de
+  sus herramientas. "L'IA potentialise les qualités de la personne qui
+  l'utilise ; elle ne la remplace jamais."
+- **El piloto con una empresa de su comunidad** (el café de
+  Saint-Siméon): precio mínimo operativo, cuasi gratuito, mismo pueblo —
+  la prueba de rentabilidad antes que cualquier proyección.
+- **Honorarios del fundador**: 30 $/h × 140 h/mes como piso de cálculo
+  del peor escenario; el primer contrato post-piloto a precio completo
+  (aún por definir).
