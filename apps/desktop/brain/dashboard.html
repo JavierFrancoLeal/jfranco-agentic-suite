@@ -380,6 +380,14 @@ body.wall pre{max-height:40vh}
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
     </div>
+    <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
+      <input id="browserUrl" placeholder="https://…">
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
+        <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
+      </div>
+      <p class="hint" id="browserStatus"></p>
+    </div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -467,6 +475,14 @@ body.wall pre{max-height:40vh}
       <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
+    </div>
+    <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
+      <input id="browserUrl" placeholder="https://…">
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
+        <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
+      </div>
+      <p class="hint" id="browserStatus"></p>
     </div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2>
       <div id="superTiers"></div>
@@ -898,6 +914,11 @@ function showWizard(){
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
+try{
+  $("browserStart").addEventListener("click",async()=>{const u=$("browserUrl").value.trim()||"https://www.charlevoix.com";const r=await api("/api/browser/start",{method:"POST",body:{url:u}});$("browserStatus").textContent=(r&&r.error)?("⚠ "+r.error):"🤖 "+t("browserRunning")+" — "+t("browserBadge");pollBrowserStatus();});
+  $("browserStop").addEventListener("click",async()=>{await api("/api/browser/stop",{method:"POST"});$("browserStatus").textContent=t("browserStopped");});
+  async function pollBrowserStatus(){const r=await api("/api/browser/status");if(r&&r.running)$("browserStatus").textContent="🤖 "+t("browserRunning")+" — "+t("browserBadge");}
+}catch(e){}
 function pollDeepAnswers(){if(!me)return;api("/api/deep/answers").then(r=>{if(r&&r.answers&&r.answers.length){const a=r.answers[0];const lab=a.phase==="draft"?"⏳ "+t("deepDraftLabel"):t("deepAnswerLabel");$("deepAnswers").innerHTML="<div class=\"answerbox\"><b>"+lab+"</b><p>"+escapeHtml(a.answer)+"</p></div>";}}).catch(()=>{});}
 function escapeHtml(x){const d=document.createElement("div");d.textContent=String(x||"");return d.innerHTML;}
 function panelLinks(){const u=me?encodeURIComponent(me.name):"",r=me?encodeURIComponent(me.role):"",lb=me?encodeURIComponent(me.label||me.name):"";$("openPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);$("leadOpenPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);}

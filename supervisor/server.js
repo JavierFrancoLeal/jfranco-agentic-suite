@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.86";
+const VERSION = "1.0.87";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -184,6 +184,9 @@ function settingsRead() { try { return JSON.parse(fs.readFileSync(SETTINGS_FILE,
 function settingsWrite(obj) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(SETTINGS_FILE, JSON.stringify(obj, null, 2)); }
 function clientKey() { const s0 = settingsRead(); return (s0.apiKey && String(s0.apiKey).trim()) || ""; }
 function brainOn() { return !!clientKey() || !!process.env.DEEPSEEK_API_KEY; }
+// The VISIBLE browser pilot: the machine announces itself — always.
+let BROWSER = null;
+function browserBridge() { if (!BROWSER) { try { BROWSER = require(path.join(__dirname, "browser-cdp.js")); } catch (e) { BROWSER = null; } } return BROWSER; }
 // ── The orchestration layer: routing table, telemetry, executor ──
 const ROUTES = {
   transcript: { model: "deepseek-flash", budget: 0.002 },
@@ -559,6 +562,40 @@ async function api(req, res, pathname) {
   if (pathname === "/api/demo/alert" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const a = alertsRead(); a.items.push({ id: "a" + Date.now(), key: "demo-" + Date.now(), kind: "rain", pct: 85, inHour: 1, ts: ts(), status: "active", decision: null, source: "demo" }); alertsWrite(a); return send(res, 200, { ok: true }); }
   if (pathname === "/api/demo-login" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const b = await json(req); const u = loadUsers(); const name = Object.keys(u).find((n) => u[n].role === String(b.role || "owner")); if (!name) return send(res, 404, { error: "no demo user for that role" }); const token = issue(name, u[name].role, u[name].label || name); return send(res, 200, { token, name, role: u[name].role, label: u[name].label || name }, true); }
   if (pathname === "/api/alerts" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const a = alertsRead(); const active = a.items.find((x) => x.status === "active"); return send(res, 200, { active: active || null, last: a.items.slice(-3).reverse() }); }
+  if (pathname === "/api/browser/start" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const br = browserBridge();
+    if (!br || !br.chromeExists()) return send(res, 200, { ok: false, error: "Chrome not found on this machine" });
+    try { const r = await br.launch(String(b.url || "https://www.charlevoix.com")); telemetryTick("action", { tier: "GREEN", what: "Browser pilot started (badge always visible)" }); return send(res, 200, r); }
+    catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/browser/nav" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    try { const r = await browserBridge().nav(String(b.url || "")); telemetryTick("action", { tier: "GREEN", what: "Browser navigated to " + String(b.url || "") }); return send(res, 200, r); }
+    catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/browser/eval" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    if (!b.confirm) return send(res, 200, { ok: false, error: "this executes code in the page — send {confirm:true} to proceed (SEMI, logged)" });
+    try { const r = await browserBridge().evalJs(String(b.js || "")); telemetryTick("action", { tier: "SEMI", what: "Browser script executed: " + String(b.js || "").slice(0, 80) }); return send(res, 200, r); }
+    catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/browser/stop" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const r = browserBridge() ? browserBridge().stop() : { ok: true };
+    telemetryTick("action", { tier: "GREEN", what: "Browser pilot stopped" });
+    return send(res, 200, r);
+  }
+  if (pathname === "/api/browser/status" && req.method === "GET") {
+    if (!ownerOnly(res, req)) return;
+    const br = browserBridge();
+    if (!br) return send(res, 200, { running: false, badgeAlwaysOn: true });
+    try { const t = await br.targets(); return send(res, 200, { running: t.length > 0, pages: t.filter(x => x.type === "page").map(x => x.title), badgeAlwaysOn: true }); }
+    catch (e) { return send(res, 200, { running: false, badgeAlwaysOn: true }); }
+  }
   if (pathname === "/api/telemetry" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
     return send(res, 200, { ...telemetry(), autonomy: autonomyLevel() });
