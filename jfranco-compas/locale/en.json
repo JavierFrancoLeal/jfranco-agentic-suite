@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Compass",
+    "description": "Audits Fanal against DSH-derived optimizations and applies only what makes sense."
+  }
+}

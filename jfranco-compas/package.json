@@ -1,0 +1,18 @@
+{
+  "name": "@javierfrancoleal/compas",
+  "version": "1.0.0",
+  "description": "Compás — the platform optimizer organ of the J.Franco agentic workflow: audits Fanal against the optimization checklist distilled from DeepSeek Harness (one brain many skins, token gate, batched state, PWA cache, electron hardening) and applies ONLY what makes sense for a sovereign agentic orchestration layer. Never over-engineers. Created by J.Franco.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./cordis.patch.yml": "./cordis.patch.yml", "./package.json": "./package.json", "./locale/*.json": "./locale/*.json" },
+  "icon": "./icon.svg",
+  "files": ["icon.svg", "locale/*.json", "lib/index.js", "assets", "cordis.patch.yml", "README.md"],
+  "engines": { "node": ">=24", "dsh": ">=0.2.1-rc.0" },
+  "repository": { "type": "git", "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git", "directory": "jfranco-compas" },
+  "keywords": ["deepseek-harness", "agentic-workflow", "optimization", "electron", "pwa", "sovereign"],
+  "dsh": { "manifestVersion": 1, "bundle": { "patch": "./cordis.patch.yml" } },
+  "publishConfig": { "access": "public" },
+  "peerDependencies": { "@deepseek-ai/cordis": "~4.0.5", "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5" }
+}
