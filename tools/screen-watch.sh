@@ -30,9 +30,10 @@ N=0
 while [ "$N" -lt "$SECS" ]; do
   N=$((N+1))
   NOW=$(screencapture -x /tmp/watch-live.png 2>/dev/null && "$OCR_BIN" /tmp/watch-live.png 2>/dev/null)
-  if [ -n "$NOW" ] && [ "$NOW" != "$PREV" ]; then
+  NORM=$(echo "$NOW" | tr -d " " | tr "A-Z" "a-z" | cut -c1-120)
+  if [ -n "$NOW" ] && [ "$NORM" != "$PREV" ]; then
     echo "[$(date +%H:%M:%S.%3N)] $NOW" >> "$LOG"
-    PREV="$NOW"
+    PREV="$NORM"
   fi
   sleep 0.25
 done
