@@ -52,3 +52,5 @@ thought architecture.
    (`@javierfrancoleal`) keep the founder's identity — they name the
    person behind Trasunto, never the brand.
 4. New names must come from this system, never from outside it.
+
+| **Cifra** (2026-11-05) | host signature | Detects the operating system and form factor where Fanal runs and adapts texts, instructions and layout per host — the same silo and traffic light on every platform |

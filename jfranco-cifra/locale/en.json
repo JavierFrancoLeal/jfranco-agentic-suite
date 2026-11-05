@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Cipher",
+    "description": "Detects the host and adapts texts, instructions and layout per operating system and form factor."
+  }
+}
