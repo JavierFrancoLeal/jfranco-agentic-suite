@@ -16,7 +16,34 @@ everything possible to make Fanal an agentic orchestration layer?
 | The 7 organs (workflow-master, decision-router, audit, grader, forensics) | ⚠️ exist as DSH skills OUTSIDE the app runtime (campo profile) |
 | Knowledge Ledger + guard gates (check.sh, verify-app) | ✔ |
 
-## 2. The gaps — what "everything possible" still needs
+## 2. The gaps — FILLED 2026-11-05
+
+1. ✅ Organs' governance core embedded in the supervisor: routing table
+   (ROUTES: transcript/translate/studio → flash, deep → v4-pro, budgets),
+   telemetry (tiers, calls, decisions, executor actions, autonomy level),
+   executor with the traffic light (GREEN actions logged for verification).
+   The full skill pipeline still runs in the CLI profile (documented).
+2. ✅ Executor live: GREEN actions recorded (first proven action: the
+   field summary self-archives to the reports).
+3. ✅ Routing table live (intent → model → budget).
+4. ✅ In-app telemetry: the 🩺 Supervision card (tiers, calls, decisions,
+   autonomy level, last actions) fed by the aggregated /api/state.
+5. ✅ Federation minimal: /api/nodes registry (one node per organism,
+   master console can list/register).
+
+## 3. The optimizations — DONE 2026-11-05
+
+| Optimization | State |
+|---|---|
+| Token-gated web (DSH's ?token=) | ✅ SUPERVISOR_TOKEN env: when set, /dashboard and /panel require ?token= or x-supervisor-token |
+| Batched /api/state | ✅ one aggregate call (health, live, alerts, shift, studio, telemetry) |
+| Offline PWA shell | ✅ already present (panel + assets cache-first, HTML fallback) |
+| Electron single-instance + kiosk | ✅ already present (requestSingleInstanceLock, --kiosk) |
+| win/linux targets | ✅ already configured in electron-builder |
+| Code signing / notarization | ⏳ operator step (Apple Developer certificate) |
+| Module splitting / lazy loading | ⏳ deferred on purpose (lesson #17: assets must travel together; the single-file dashboard is the battle-tested artifact) |
+
+## 4. Priority order (updated)
 
 1. **The organs are not INSIDE the app.** The app calls the two brains
    directly; the organ pipeline (listen → split actions → route tiers →
@@ -53,10 +80,8 @@ demand, locale/theme tokens as separate artifacts.
 | Code signing / notarization | DMG unsigned | sign for client installs (Gatekeeper) |
 | Windows/Linux builds | mac arm64 only | electron-builder targets when the first client asks |
 
-## 4. Priority order (for the SADC path)
+## 4. Priority order (updated)
 
-1. Embed the organs' core (tiers + audit + telemetry) in the supervisor.
-2. The routing table (intent → model → budget).
-3. Batched /api/state + token gate for LAN.
-4. Offline PWA shell.
-5. Signing/notarization before the first real client install.
+1. ✅ Done: organs' core, routing table, telemetry, executor, federation stub, token gate, /api/state.
+2. Signing/notarization before the first real client install (operator step).
+3. Module splitting only if a real performance need appears on client hardware.

@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.77";
+const VERSION = "1.0.78";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -558,6 +558,8 @@ async function api(req, res, pathname) {
     const token = issue(b.user, "owner", b.user);
     return send(res, 200, { token, name: b.user, role: "owner", label: b.user }, true);
   }
+  if (pathname === "/api/nodes" && req.method === "GET") { if (!ownerOnly(res, req)) return; const nf = path.join(DATA_DIR, "nodes.json"); let n = []; try { n = JSON.parse(fs.readFileSync(nf, "utf8")); } catch {} return send(res, 200, { nodes: n }); }
+  if (pathname === "/api/nodes" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); if (!b.url || !b.name) return send(res, 400, { error: "name and url required" }); const nf = path.join(DATA_DIR, "nodes.json"); fs.mkdirSync(DATA_DIR, { recursive: true }); let n = []; try { n = JSON.parse(fs.readFileSync(nf, "utf8")); } catch {} const i = n.findIndex(x => x.url === b.url); if (i >= 0) n[i] = { name: String(b.name), url: String(b.url), sector: String(b.sector || ""), at: ts() }; else n.push({ name: String(b.name), url: String(b.url), sector: String(b.sector || ""), at: ts() }); fs.writeFileSync(nf, JSON.stringify(n)); return send(res, 200, { nodes: n }); }
   if (pathname === "/api/state" && req.method === "GET") {
     const l = liveRead(); const a = alertsRead(); const sh = shiftRead(); const tk = tasksRead();
     return send(res, 200, { health: metrics(), live: { status: l.status, worker: l.worker, table: l.table, orders: (l.orders || []).length, speakers: (l.speakers || []).length }, alerts: { active: (a.items || []).filter(x => x.status === "active").length }, shift: { status: sh.status || "closed", openedAt: sh.openedAt || null }, studio: { pending: tk.tasks.filter(x => x.status === "pending").length, done: tk.tasks.filter(x => x.status === "done" && !x.decidedAt).length }, telemetry: { ...telemetry(), autonomy: autonomyLevel() } }, true);
