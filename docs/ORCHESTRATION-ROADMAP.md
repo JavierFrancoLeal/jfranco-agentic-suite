@@ -1,0 +1,62 @@
+# ORCHESTRATION-ROADMAP — is Fanal a full agentic orchestration layer?
+
+*Honest self-audit (2026-11-05). Two questions: (1) are we doing
+everything possible to make Fanal an agentic orchestration layer?
+(2) are we optimizing like DSH and other Electron apps?*
+
+## 1. The orchestration layer — what we HAVE
+
+| Capability | State |
+|---|---|
+| One brain × many skins (browser, Electron, PWA, panel, wallboard) | ✔ built |
+| Dual brain INSIDE the app (deepseek-flash real-time · deepseek-v4-pro deep) | ✔ live-proven |
+| Decision tiers at every step (GREEN/SEMI/YELLOW/RED traffic light) | ✔ built |
+| HITL surfaces (10 s alert bar, notification inbox, confirm, register) | ✔ built |
+| Two-worlds isolation (client data separate, keys never mix) | ✔ by design |
+| The 7 organs (workflow-master, decision-router, audit, grader, forensics) | ⚠️ exist as DSH skills OUTSIDE the app runtime (campo profile) |
+| Knowledge Ledger + guard gates (check.sh, verify-app) | ✔ |
+
+## 2. The gaps — what "everything possible" still needs
+
+1. **The organs are not INSIDE the app.** The app calls the two brains
+   directly; the organ pipeline (listen → split actions → route tiers →
+   audit → grade) runs in the CLI profile, not in the Fanal runtime.
+   → Embed the organs' logic in the supervisor (server-side) so every
+   transcript also produces the tier route, the audit entry and the
+   telemetry.
+2. **No action execution.** Fanal proposes and decides, but does not yet
+   EXECUTE actions (the bridge posts are drafts for the human). An
+   orchestration layer needs an Executor with the same tier rules
+   (GREEN = auto, SEMI = verify, YELLOW = propose).
+3. **No routing table.** The dual brain is hardcoded. An orchestration
+   layer routes: intent → model/tool → budget → fallback. Add a small
+   routing table (flash for real-time, v4-pro for deep, local for
+   offline, budget caps per tier).
+4. **No in-app telemetry.** The supervision log, the grade summary and
+   the audit output exist in files, not in the dashboard.
+5. **No federation/tenancy.** One supervisor per install. The MRC nodes
+   will need multi-instance supervision from one console.
+
+## 3. Platform optimization — what DSH does that we can adopt
+
+DSH patterns: one web shell served by the runtime with token-gated URLs,
+dual-face plugins (host + client halves), client modules loaded on
+demand, locale/theme tokens as separate artifacts.
+
+| Optimization | Our state | Action |
+|---|---|---|
+| Module splitting / lazy load | dashboard.html is one big file (10 locales inline) | split locale + views into lazy artifacts (mind lesson #17: assets travel together) |
+| Token-gated web (DSH's ?token=) | dashboard is open; login is in-app | add an optional token gate for LAN exposure |
+| Offline PWA shell | manifest + sw exist | cache the shell + panel for offline-first |
+| Batched polling | several endpoints polled every 3–6 s | one /api/state aggregate |
+| Electron production (auto-update, single-instance, tray, kiosk) | not present | add for the kitchen tablet + client machines |
+| Code signing / notarization | DMG unsigned | sign for client installs (Gatekeeper) |
+| Windows/Linux builds | mac arm64 only | electron-builder targets when the first client asks |
+
+## 4. Priority order (for the SADC path)
+
+1. Embed the organs' core (tiers + audit + telemetry) in the supervisor.
+2. The routing table (intent → model → budget).
+3. Batched /api/state + token gate for LAN.
+4. Offline PWA shell.
+5. Signing/notarization before the first real client install.
