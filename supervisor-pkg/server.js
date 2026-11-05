@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.70";
+const VERSION = "1.0.71";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -638,7 +638,7 @@ async function api(req, res, pathname) {
     const b = await json(req);
     const s = liveRead();
     s.inbox = s.inbox || [];
-    const item = { id: "t" + (s.inbox.length + 1), ts: ts(), worker: b.worker || s.worker, text: String(b.text || "").trim() };
+    const item = { id: "t" + (s.inbox.length + 1), ts: ts(), worker: b.worker || s.worker, text: String(b.text || "").trim(), lang: String(b.lang || "fr") };
     s.inbox.push(item);
     liveWrite(s);
     if (brainOn()) processTranscript(item); // direct flash brain
