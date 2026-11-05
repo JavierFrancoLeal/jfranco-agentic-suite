@@ -15,9 +15,11 @@ function launch(url) {
   return new Promise((resolve, reject) => {
     if (!chromeExists()) return reject(new Error("Chrome not found"));
     if (child) return resolve({ ok: false, error: "already running" });
-    child = spawn(CHROME, ["--remote-debugging-port=" + PORT, "--user-data-dir=/tmp/fanal-browser-profile", "--no-first-run", "--no-default-browser-check", String(url || "about:blank")], { stdio: "ignore" });
-    child.on("error", reject);
-    child.on("exit", () => { child = null; });
+    const errLog = require("node:fs").createWriteStream("/tmp/fanal-browser-stderr.log", { flags: "a" });
+    child = spawn(CHROME, ["--remote-debugging-port=" + PORT, "--user-data-dir=/tmp/fanal-browser-profile", "--no-first-run", "--no-default-browser-check", String(url || "about:blank")], { stdio: ["ignore", "ignore", "pipe"] });
+    child.stderr.on("data", (d) => { try { errLog.write(d); } catch {} });
+    child.on("error", (e) => { try { require("node:fs").appendFileSync("/tmp/fanal-browser-exit.log", "spawn error: " + e.message + "\n"); } catch {} reject(e); });
+    child.on("exit", (code) => { try { require("node:fs").appendFileSync("/tmp/fanal-browser-exit.log", "exit code: " + code + "\n"); } catch {} child = null; });
     resolve({ ok: true });
   });
 }
