@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.66";
+const VERSION = "1.0.67";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -588,6 +588,20 @@ async function api(req, res, pathname) {
   }
   // Speech/text from the worker's device → the always-connected AI agent.
   // Deep-queue: questions for the Reasoner brain (the second brain, by default).
+  if (pathname === "/api/translate" && req.method === "POST") {
+    const b = await json(req);
+    const appLang = String(b.appLang || "fr").slice(0, 2).toLowerCase();
+    const otherLang = String(b.otherLang || "en").slice(0, 2).toLowerCase();
+    const text = String(b.text || "").trim();
+    if (!text) return send(res, 200, { detected: otherLang, translation: "" }, true);
+    const prompt = "Interpreter mode. The app language is " + appLang + " and the other language is " + otherLang + ". Analyze: " + text + " If it is in " + otherLang + ", translate it into " + appLang + ". If it is in " + appLang + ", translate it into " + otherLang + ". Reply with ONLY one JSON object: {\"detected\":\"<two-letter code>\",\"translation\":\"<the translation>\"}";
+    try {
+      const out = await brain("deepseek-flash", prompt);
+      const j = jsonBlock(out);
+      if (j && j.translation) return send(res, 200, { detected: j.detected || otherLang, translation: String(j.translation) }, true);
+      return send(res, 200, { detected: otherLang, translation: String(out || "").slice(0, 400) }, true);
+    } catch (e) { return send(res, 200, { detected: otherLang, translation: "", error: e.message }, true); }
+  }
   if (pathname === "/api/deep" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
     if (!budgetOk()) return send(res, 429, { error: "limit reached — raise it in settings" });
