@@ -105,3 +105,31 @@ The client is an information SILO and the owner of everything in it:
 Implemented: /api/settings/key (owner), /api/settings/status, clientKey()
 takes precedence over the environment key, the 🔑 key card in the owner
 view, and the sovereignty paragraph in the Plan d'affaires (Section 9).
+
+## 6. The decision OS (2026-11-05 vision)
+
+We do not replace Windows+Copilot — we make the operating system
+INVISIBLE and put the layer of DECISION on top (the new skin over the
+old skeleton, per the Lindy argument: infrastructure wins by being old
+and boring; intelligence lives in the skin).
+
+Three levels, in demand order:
+
+1. 🥉 **The sovereign kiosk** (today, ~80% built): Electron in kiosk
+   mode + auto-launch at boot on the client's existing OS — the user
+   only ever sees Fanal. Remaining: the auto-launch agent per OS
+   (launchd / Startup folder) and the system-UI lockdown.
+2. 🥈 **The Fanal appliance** (the H2 product): a minimal immutable
+   Linux image that boots DIRECTLY into Electron — no desktop, no
+   window manager, no licenses, no foreign telemetry. A/B updates like
+   ChromeOS; read-only root + signed image; the silo on its own
+   partition. The whole UI is our existing web stack, unchanged.
+   Built only when a paying organism (MRC/municipality) demands it —
+   demand first, then the bone.
+3. 🥇 **A from-scratch kernel**: rejected on purpose (rebuilding
+   ChromeOS; violates the Lindy logic and our business).
+
+The appliance reuses: the one-brain pattern (update once, everywhere),
+the sector packs (one image per domain), the traffic light, Cifra (it
+knows its host), Compás (it audits itself before shipping), and the
+mesh (each appliance = one node).
