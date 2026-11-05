@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.62";
+const VERSION = "1.0.63";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -181,8 +181,12 @@ function brainOn() { return !!process.env.DEEPSEEK_API_KEY; }
 function processTranscript(b) {
   const prompt = "Live mirror mode. A worker captured this conversation from the field: " + String(b.text || "") + " Decode it, split it by person (Person 1, Person 2…), assign each request its tier (GREEN/SEMI/YELLOW/RED). If any speech is not in French, translate it into French inside the summary. Reply with ONLY one JSON object: {\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}";
   brain("deepseek-flash", prompt).then((out) => {
-    const j = jsonBlock(out);
-    if (!j || !Array.isArray(j.speakers)) return;
+    let j = jsonBlock(out);
+    if (!j || !Array.isArray(j.speakers)) {
+      console.error("flash transcript: respuesta sin JSON:", String(out).slice(0, 200));
+      // fallback: un resumen mínimo en lugar de nada
+      j = { speakers: [{ name: "Person 1", requests: [{ text: String(b.text || "").slice(0, 300), tier: "GREEN" }] }] };
+    }
     const s0 = liveRead();
     s0.status = "summary";
     s0.worker = b.worker || s0.worker;
