@@ -898,7 +898,7 @@ function showWizard(){
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
-function pollDeepAnswers(){if(!me)return;api("/api/deep/answers").then(r=>{if(r&&r.answers&&r.answers.length){const a=r.answers[0];$("deepAnswers").innerHTML="<div class=\"answerbox\"><b>"+t("deepAnswerLabel")+"</b><p>"+escapeHtml(a.answer)+"</p></div>";}}).catch(()=>{});}
+function pollDeepAnswers(){if(!me)return;api("/api/deep/answers").then(r=>{if(r&&r.answers&&r.answers.length){const a=r.answers[0];const lab=a.phase==="draft"?"⏳ "+t("deepDraftLabel"):t("deepAnswerLabel");$("deepAnswers").innerHTML="<div class=\"answerbox\"><b>"+lab+"</b><p>"+escapeHtml(a.answer)+"</p></div>";}}).catch(()=>{});}
 function escapeHtml(x){const d=document.createElement("div");d.textContent=String(x||"");return d.innerHTML;}
 function panelLinks(){const u=me?encodeURIComponent(me.name):"",r=me?encodeURIComponent(me.role):"",lb=me?encodeURIComponent(me.label||me.name):"";$("openPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);$("leadOpenPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);}
 function applyLang(){

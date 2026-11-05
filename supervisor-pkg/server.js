@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.85";
+const VERSION = "1.0.86";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -241,11 +241,21 @@ function processTranscript(b) {
 }
 function processDeep(item) {
   const prompt = "Deep analysis. Question: " + String(item.text || "") + " Think deeply and answer thoroughly, in French if the question is in French or Spanish. Keep it useful for a business owner.";
+  // 1) Borrador rápido (flash, ~5 s): la respuesta llega YA, marcada como borrador
+  brain("deepseek-flash", "Short draft: answer this business question in 2-3 sentences, in French: " + String(item.text || "")).then((draft) => {
+    const s2 = liveRead();
+    s2.deepAnswers = s2.deepAnswers || [];
+    s2.deepAnswers.push({ id: item.id, text: item.text, answer: String(draft || ""), ts: ts(), phase: "draft" });
+    liveWrite(s2);
+  }).catch(() => {});
+  // 2) La respuesta profunda (v4-pro): reemplaza el borrador cuando madura
   brain("deepseek-v4-pro", prompt).then((out) => {
     appendReport("Reasoner", out);
     const s2 = liveRead();
     s2.deepAnswers = s2.deepAnswers || [];
-    s2.deepAnswers.push({ id: item.id, text: item.text, answer: out, ts: ts() });
+    const i = s2.deepAnswers.findIndex(x => x.id === item.id);
+    const entry = { id: item.id, text: item.text, answer: out, ts: ts(), phase: "final" };
+    if (i >= 0) s2.deepAnswers[i] = entry; else s2.deepAnswers.push(entry);
     liveWrite(s2);
   }).catch((e) => console.error("deep v4-pro:", e.message));
 }
@@ -440,7 +450,21 @@ const CORS = {
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
 const GATE_TOKEN = process.env.SUPERVISOR_TOKEN || "";
-function gatePass(req) { return !GATE_TOKEN || (req.url || "").includes("token=" + GATE_TOKEN) || req.headers["x-supervisor-token"] === GATE_TOKEN; }
+const GATE_COOKIE = "fanal_token";
+function readCookies(req) {
+  const h = String(req.headers.cookie || "");
+  const out = {};
+  h.split(";").forEach(p => { const i = p.indexOf("="); if (i > 0) out[p.slice(0, i).trim()] = p.slice(i + 1).trim(); });
+  return out;
+}
+function gatePass(req) {
+  if (!GATE_TOKEN) return true;
+  const c = readCookies(req);
+  if (c[GATE_COOKIE] === GATE_TOKEN) return true;
+  if ((req.url || "").includes("token=" + GATE_TOKEN)) return true;
+  return req.headers["x-supervisor-token"] === GATE_TOKEN;
+}
+const GATE_PAGE = "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Fanal — Accès</title><style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(160deg,#4D6BFE,#7c5cff 60%,#a78bfa);min-height:100vh;display:flex;align-items:center;justify-content:center}form{background:#fff;border-radius:20px;padding:30px 28px;box-shadow:0 24px 60px rgba(15,23,42,.3);text-align:center;width:min(380px,92vw)}h1{margin:0 0 6px;font-size:20px}p{color:#667085;font-size:14px;margin:0 0 16px}input{width:100%;border:1.5px solid rgba(77,107,254,.35);border-radius:12px;padding:12px;font-size:15px;margin-bottom:12px;box-sizing:border-box}button{width:100%;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(135deg,#4D6BFE,#7c5cff);cursor:pointer}</style></head><body><form method=\"post\" action=\"/api/gate\"><h1>👁️ Fanal</h1><p>Cette installation est protégée. Entrez la clé d'accès fournie avec votre Fanal.</p><input type=\"password\" name=\"token\" placeholder=\"Clé d'accès\" autofocus><button>Entrer</button></form></body></html>";
 function send(res, code, obj, pub) { const h = { "Content-Type": "application/json; charset=utf-8" }; if (pub) Object.assign(h, CORS); res.writeHead(code, h); res.end(JSON.stringify(obj)); }
 
 // ---------- API ----------
@@ -581,6 +605,16 @@ async function api(req, res, pathname) {
   if (pathname === "/api/state" && req.method === "GET") {
     const l = liveRead(); const a = alertsRead(); const sh = shiftRead(); const tk = tasksRead();
     return send(res, 200, { health: metrics(), live: { status: l.status, worker: l.worker, table: l.table, orders: (l.orders || []).length, speakers: (l.speakers || []).length }, alerts: { active: (a.items || []).filter(x => x.status === "active").length }, shift: { status: sh.status || "closed", openedAt: sh.openedAt || null }, studio: { pending: tk.tasks.filter(x => x.status === "pending").length, done: tk.tasks.filter(x => x.status === "done" && !x.decidedAt).length }, telemetry: { ...telemetry(), autonomy: autonomyLevel() } }, true);
+  }
+  if (pathname === "/api/gate" && req.method === "POST") {
+    if (!GATE_TOKEN) return send(res, 200, { ok: true });
+    const b = await json(req);
+    if (String(b.token || "") === GATE_TOKEN) {
+      res.writeHead(302, { Location: "/dashboard", "Set-Cookie": GATE_COOKIE + "=" + GATE_TOKEN + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000" });
+      return res.end();
+    }
+    res.writeHead(302, { Location: "/?bad=1" });
+    return res.end();
   }
   if (pathname === "/api/health" && req.method === "GET") {
     const m = metrics();
@@ -747,7 +781,14 @@ async function api(req, res, pathname) {
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".jpg": "image/jpeg", ".json": "application/json", ".webmanifest": "application/manifest+json", ".md": "text/plain; charset=utf-8" };
 function serveStatic(req, res, pathname) {
   let p;
-  if (!gatePass(req) && (pathname === "/" || pathname.startsWith("/dashboard") || pathname.startsWith("/panel"))) { res.writeHead(401, { "Content-Type": "text/plain" }); res.end("Fanal: token required — open the URL with ?token=<SUPERVISOR_TOKEN>"); return; }
+  if ((pathname === "/" || pathname.startsWith("/dashboard") || pathname.startsWith("/panel"))) {
+    if ((req.url || "").includes("token=" + GATE_TOKEN)) {
+      const clean = (req.url || "").split("?")[0] || "/dashboard";
+      res.writeHead(302, { Location: clean, "Set-Cookie": GATE_COOKIE + "=" + GATE_TOKEN + "; Path=/; HttpOnly; SameSite=Strict; Max-Age=31536000" });
+      return res.end();
+    }
+    if (!gatePass(req)) { res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" }); return res.end(GATE_PAGE); }
+  }
   if (pathname === "/" || pathname === "/dashboard" || pathname === "/dashboard.html") p = path.join(__dirname, "dashboard.html");
   else if (pathname === "/dashboard-i18n.js") p = path.join(__dirname, "dashboard-i18n.js");
   else if (pathname === "/panel" || pathname === "/panel.html") p = path.join(UI_DIR, "panel.html");
