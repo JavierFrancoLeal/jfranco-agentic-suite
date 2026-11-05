@@ -280,9 +280,49 @@ def grille(out):
     keep_together(t); header_repeats(t)
     para(doc, "Le cœur du modèle est l'accompagnement continu (ligne 4). Le seuil de viabilité de 86 000 $ – 96 000 $/an repose sur 2 à 3 implantations + 3 à 4 accompagnements actifs — scénarios du plan d'affaires, à valider par le pilote.",
          size=8.5, color=MUTED, space_before=8)
+
+    # El modelo (a): la clave es del cliente — Trasunto no revende la IA
+    heading(doc, "Le modèle de clé — souveraineté du client", size=12)
+    para(doc, "La clé d'API DeepSeek appartient au client, écrite sur sa propre machine ; il recharge ses propres jetons et paie DeepSeek directement. Trasunto ne détient ni ne traite aucun renseignement personnel (Loi 25 par conception) et facture uniquement ses services : installation, automatisations, mises à jour et accompagnement.", size=9, color=MUTED, space_after=6)
+
+    # El coeficiente sectorial (el modelo de pagos adaptado al sector)
+    heading(doc, "Le coefficient sectoriel — le prix suit la demande", size=12)
+    para(doc, "Certains secteurs demandent plus d'automatisations, plus de travail et plus de données. La grille de base se module par un coefficient sectoriel, à valider par le pilote :", size=9, color=MUTED, space_after=6)
+    t2 = doc.add_table(rows=1, cols=3)
+    t2.autofit = False
+    w2 = [Cm(6.5), Cm(3.4), Cm(7.3)]
+    for i, htxt in enumerate(["Secteur", "Coefficient", "Pourquoi"]):
+        c = t2.rows[0].cells[i]; c.width = w2[i]; shade(c, HEADFILL)
+        p = c.paragraphs[0]; r = p.add_run(htxt); r.bold = True; r.font.size = Pt(8.5); r.font.color.rgb = MUTED
+        pad(c, 2, 2)
+    for a2, b2, c2 in [
+        ("Restauration", "× 1,0", "La base : caisse, commandes, alertes, journées"),
+        ("Hébergement", "× 1,2", "Réservations, multi-langues, avis, ménage"),
+        ("Tourisme et attraits", "× 1,2", "Traducteur temps réel, files, billetterie"),
+        ("Agroalimentaire et détail", "× 1,1", "Étiquettes, inventaires, commandes fournisseurs"),
+        ("Professionnels et travailleurs autonomes", "× 0,8", "Le niveau 1 : la pyramide entière en une personne"),
+    ]:
+        rw = t2.add_row()
+        for i, val in enumerate([a2, b2, c2]):
+            c = rw.cells[i]; c.width = w2[i]; cell_borders(c, ["bottom"])
+            p = c.paragraphs[0]; r = p.add_run(val); r.font.size = Pt(9)
+            pad(c, 3, 3)
+            if i == 1: r.bold = True; r.font.color.rgb = V; p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            else: r.font.color.rgb = INK
+    keep_together(t2); header_repeats(t2)
+
+    # Los packs de automatización (la demanda sectorial = número de automatizaciones)
+    heading(doc, "Les packs d'automatisations", size=12)
+    para(doc, "La demande sectorielle se traduit en automatisations livrées et maintenues :", size=9, color=MUTED, space_after=6)
+    for a3, b3, c3 in [
+        ("Pack Essentiel", "249 $/mois", "Jusqu'à 6 automatisations actives (caisse, journées, alertes, rapport Z, publications, réponses types)"),
+        ("Pack Actif", "449 $/mois", "Jusqu'à 15 automatisations + analyses approfondies mensuelles + support prioritaire"),
+        ("Pack Intensif", "Sur devis", "Automatisations sur mesure par secteur (multi-langues, connecteurs, multi-sites, kiosque)"),
+    ]:
+        para(doc, "• " + a3 + " — " + c3 + " · " + b3, size=9, space_after=4)
     footer(doc, "Trasunto · Grille tarifaire v1.0")
     doc.save(out); print("saved", out)
 
-one_pager(sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-ONE-PAGER.docx")
-accord(sys.argv[2] if len(sys.argv) > 2 else "FRANCO-VISION-ACCORD-PILOTE.docx")
-grille(sys.argv[3] if len(sys.argv) > 3 else "FRANCO-VISION-GRILLE-TARIFAIRE.docx")
+one_pager(sys.argv[1] if len(sys.argv) > 1 else "TRASUNTO-ONE-PAGER.docx")
+accord(sys.argv[2] if len(sys.argv) > 2 else "TRASUNTO-ACCORD-PILOTE.docx")
+grille(sys.argv[3] if len(sys.argv) > 3 else "TRASUNTO-GRILLE-TARIFAIRE.docx")
