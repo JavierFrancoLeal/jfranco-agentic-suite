@@ -206,3 +206,10 @@ for whoever arrives later.*
 - lesson: identity infrastructure has a waiting cost: GitHub suppresses notifications for accounts hours old (anti-abuse, ~24-48 h). Plan the agent account creation ahead of the test, or the test waits.
 - correct-order: "Create the machine account ≥48 h before the first test; keep the trigger comment fresh after the account warms up; the source's cursor only reads notifications after it started."
 - evidence: /tmp/dsh-superagent (setup complete), issues #1-#2 on jfranco-agentic-suite, this entry.
+
+## 2026-11-05 — The watcher that watched its own echo
+- concepto: flujo
+- fricción: "vigila" durante 60 s produjo 3 166 cambios — todos ruido: el OCR leía la ventana del chat (el eco de mis propios mensajes) en vez de la máquina virtual; cero señal, sesenta segundos del operador perdidos.
+- lección: un observador sin blanco, sin señal y sin umbral de parada es un desperdicio — apunta el ojo, define la señal, detente al primer golpe, y jamás leas tu propio eco.
+- orden-correcta: "vigía v2: filtra la firma del chat, busca palabras-señal (Mettre, Bureau, Bienvenue…), y se detiene en el primer acierto."
+- evidencia: tools/screen-watch.sh (v2), esta entrada.
