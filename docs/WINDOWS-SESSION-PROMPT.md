@@ -50,7 +50,7 @@ es un paso posterior del operador).
 
 PROMPT END
 
-## How to run this on a SINGLE MacBook Air M1 (no second machine)
+## How to run this on a SINGLE MacBook Air M2 (Apple Silicon) (no second machine)
 
 The same computer can host a Windows virtual machine. CURRENT steps
 (verified against the official UTM docs, 2026 — the old "gallery"
