@@ -1,136 +1,61 @@
-# Antifragile review — the last errors, the organs, and the refactor verdict
+# ANTIFRAGILE REVIEW — the body of Trasunto (2026-11-05)
 
-*2026-11-03 · J.Franco · The idea is not to eliminate uncertainty — that is
-impossible. The idea is to identify it and manage it better, according to
-our resources and current objectives.*
+*Everything built, verified from the antifragile point of view, read
+through the human body and nature's wisdom. One pass, one map.*
 
-## 1. Archaeology of the last iterations (the entry-flow saga)
+## The body — twelve systems, one organism
 
-Fifteen lessons were recorded in KNOWLEDGE-LEDGER-LOG. Grouped by root cause,
-they reveal FIVE families of uncertainty — not fifteen random bugs:
-
-### Family 1 — NAMING (global namespaces)
-- The dead reference that killed the whole page (a removed id, still
-  referenced from a dynamic array).
-- The dark language boxes (two components sharing the `.tick` class; the
-  later rule won silently).
-- Corrupted design tokens (`--card2: var(--card2)` — a sed-style global
-  replace hit the definition itself).
-
-*Nature of the risk:* one global namespace (ids + classes) shared by
-thousands of lines. Any edit can collide with any other part.
-
-*Current management:* the STRICT smoke test (missing ids crash CI) ·
-the `.wtick` renaming lesson. **Gap:** no guard against duplicate CSS
-class selectors — the collision that bit us twice.
-
-### Family 2 — ORDERING (implicit layer and time models)
-- The invisible menu (z-index 90 opened behind z-index 95).
-- The splash/langStep overlap (fade not finished before the next screen).
-- The login flash, then the orphaned footer flash (partial gating).
-
-*Nature of the risk:* z-index values and timings are scattered literals;
-no single ledger is enforced by anything.
-
-*Current management:* the z-index ledger and the explicit-timeline rule in
-LEARNINGS.md. **Gap:** the ledger is prose, not code — it can be violated
-silently.
-
-### Family 3 — STATE (what is visible when)
-- White text on a light background (the saturated gradient only applied on
-  view change, not at load).
-- The default language persisted without being chosen.
-
-*Nature of the risk:* initial state and transitions are implicit; the
-"correct" state depends on load order and user actions.
-
-*Current management:* `loginpage` at load · `body.firstboot` locks the
-whole stage · persistence moved to explicit human choice.
-
-### Family 4 — SEMANTICS ("once" and borrowed ideas)
-- "Once" implemented as "seen once" instead of "configured once".
-- The language flow borrowed from Apple without its full objective
-  (one declared language governs everything).
-
-*Current management:* Knowledge Ledger principles 1-2 (full logic of the
-inspiration; not every idea is an organ) + lesson 12 (boot semantics).
-
-### Family 5 — DELIVERY (the fix never reached the tester)
-- "It persists" after correct fixes (stale installed app).
-- Patch scripts dying on syntax (my own tooling).
-
-*Current management:* the visible version badge · rebuild-discipline ·
-the strict smoke gate. 
-
-## 2. The pattern behind the five families
-
-Every serious error came from the SAME root: **the dashboard grew by
-text-patch surgery on one interleaved file** (CSS + HTML + JS in
-`dashboard.html`), with global namespaces, scattered z-index/timing
-literals, and implicit state. The organs never saw these bugs coming —
-because the organs govern the WORK PROCESS, not the CODE STRUCTURE.
-
-## 3. The organs inside the antifragile philosophy
-
-The six organs form a closed loop that GAINS from disorder:
-
-```
-/listen  workflow-master   capture (uncertainty enters)
-    ↓
-decision-router            process & propose (GREEN/YELLOW/RED)
-    ↓
-accountability-auditor     verify before output
-    ↓
-autonomy-grader            grade the decisions (A-D) → select what survives
-    ↓
-audit                      consolidate: friction → teach → record (Knowledge Ledger)
-    ↓
-forensics                  reconstruct the past for whoever comes later
-    ↑______________________ the knowledge ledger feeds the next cycle
-```
-
-Antifragility lives in the fact that ERRORS ARE THE RAW MATERIAL:
-each friction event becomes a lesson, each lesson becomes a rule or a
-tool, and each rule/tool prevents the next generation of the same error.
-The system does not avoid shocks — it feeds on them.
-
-**But:** the loop protects decisions and knowledge, not structure. The
-entry-flow bugs show that structural entropy (naming, ordering, state)
-needs its own management layer — and it has been emerging, one guard at
-a time: strict smoke · z-index ledger · firstboot lock · version badge.
-
-## 4. The refactor verdict
-
-**Refactor the dashboard's STRUCTURE — yes. Create new organs — no.**
-
-The industrial lens applied to ourselves: six organs is the right number;
-the recent friction did not come from a missing organ but from one file
-carrying three languages (CSS/HTML/JS) without boundaries. The staged
-refactor, sized to our resources:
-
-| Stage | Change | Risk removed |
+| System | Nature's wisdom | What we built |
 |---|---|---|
-| 1 | Extract the `<style>` block to `dashboard.css` | Global-replace edits stop touching CSS |
-| 2 | Extract the inline script to `dashboard.js` | String patches stop re-parsing JS; smoke tests the real file |
-| 3 | Extract the i18n dictionaries to `i18n.js` (or per-locale JSON) | Language edits stop splicing JS |
-| 4 | Add a class-collision guard to `tools/check.sh` | Duplicate CSS class selectors crash CI (the `.tick` class of bug) |
+| 🧠 Two brains | Reflex arc + neocortex (fast spinal, slow prefrontal) | deepseek-flash (listen/translate/drafts) + deepseek-v4-pro (deep questions) — the same division as the nervous system |
+| 👁️ The eye | Perception never sleeps | Fanal: the dashboard, the wallboard, the alerts — it watches while the human decides |
+| 👂🗣️ Ears + voice | Asymmetry: you hear with ears, speak with mouth | The interpreter: the client's words become TEXT (the worker reads), the worker's words become VOICE (the client hears) — each sense used for its strength |
+| ⚖️ Homeostasis | The body's default is conservative | El Fiel / the traffic light: "No" in 10 s by default, budgets per route, GREEN logged, YELLOW waits |
+| 🩺 Proprioception | The body knows itself | The Supervision card: tiers, calls, decisions, autonomy 1-5, the host signature |
+| 🔢 The skin's sense of place | Touch tells you where you are | Cifra: the host signature (mac/PC, laptop/tablet/phone) adapts texts and layout |
+| 🧭 The preventive doctor | Check before the trip | Compás: the DSH-derived audit before any platform ships |
+| 🦴 The skeleton | Bones are contracts — break them and you fall | The guard gates: check.sh, bootflow contracts, smoke STRICT, verify-app — every regression became a bone |
+| 🧬 Immune memory | Antibodies remember the pathogen | The Knowledge Ledger: 29 lessons; each error → a lesson → a gate that prevents its return |
+| 🛡️ The skin | The boundary keeps the inside inside | Two worlds, token gate, the client silo, the key that never leaves the machine |
+| 🍎 Gestation | Birth is a closed, ordered ritual | The 7-step installation: language → animation → identity → sector → key → permissions → owner |
+| 🏭 Organs + pruning | The appendix gets extirpated | 18 jfranco-* entries; the vestigial ones (interpreter, input-detector, triage, conductor…) were folded or closed — the "carrete" lesson: what resists two fixes asks to be removed |
 
-The server already serves sibling static files (panel, sw, icons), so the
-split is a serving configuration, not a new architecture. The HTML keeps
-the id ledger at the top; the strict smoke keeps guarding it.
+## The antifragile classification (Taleb's triad)
 
-**Not refactored:** the supervisor server (it has held for 36 versions
-and its endpoints are small and testable), the six organs (they are
-stable, published, and absorbed their own redundancy), the Electron shell
-(it has not been the source of friction).
+### Antifragile — grows stronger with stress
+1. **The lesson-gate loop**: every regression → a lesson → a guard. 29 cycles so far; each future error makes the body stronger.
+2. **The pilot per sector**: six months of friction per trade → the true pricing, not promises.
+3. **Telemetry**: every decision becomes evidence; autonomy rises only with proof.
+4. **The audit + forensics organs**: the body heals AND explains the wound.
+5. **The dual brain + fallback**: if the deep path fails, the fast one still serves.
+6. **The editorial DNA**: every critique of the documents became a rule (the creator's 119 messages → the house rules).
 
-## 5. The operating principle (the conclusion)
+### Robust — survives, does not improve
+Token gate · silo separation · budget caps · single-instance lock · PWA cache · the one-file dashboard (by design: assets travel together).
 
-> Uncertainty cannot be eliminated. What we did instead: we gave each
-> family of uncertainty a NAME, a GUARD, and a LESSON — and the guard
-> converts the next occurrence from a surprise into a caught, recorded,
-> and managed event. That is the difference between fragile (each error
-> hurts the same) and antifragile (each error strengthens the system).
+### Fragile — the honest list (what needs care)
+1. **One founder** — the bus factor. Mitigation: the Ledger is the memory transfer; the gap: nothing signs but the founder (accepted for the pilot).
+2. **One provider today** — DeepSeek. Mitigation by design: the client key + provider abstraction (change anytime). The demo remains tied.
+3. **One process per client, no watchdog** — if the supervisor dies on the client's machine, nothing restarts it. Prescription: a restart watcher in the production installer.
+4. **Windows untested in the field** — everything prepared, nothing run on a real Windows box. Prescription: one Windows test before the first Windows client.
+5. **macOS-only dev toolchain** — bash, sips, PlistBuddy. Fine for the factory; the product itself is clean.
+6. **The 30-second deep cycle** — the reasoning model's latency. Mitigation: flash for real-time + honest "processing" hints. It is the cost of depth, not a bug.
+7. **External trust (GitHub's new-account suppression)** — lesson #29: the ecosystem can silence us for hours; the daily retrigger absorbs it.
 
-The entry-flow saga was not waste: it was the stress test that produced
-the five families, fifteen lessons, two guards, and this review.
+## Nature's prescriptions (efficiency)
+
+1. **Redundancy only where vital** (two kidneys, one heart): the dual brain is duplicated; the signature is not. Keep it that way.
+2. **Homeostasis by default**: every automatic path is capped and logged.
+3. **Stress is food**: keep feeding the Ledger — every friction is a future bone.
+4. **Prune the vestiges**: fold, don't accumulate organs.
+5. **Gestation before birth**: Phase 0 (demand) before H1 (the node) — validated by the creator's own decision.
+6. **The skin must sweat in the real world**: signing/notarization is the next friction the body must meet — expect it, prepare it, don't fear it.
+
+## Verdict
+
+The organism is ANTIFRAGILE AT ITS CORE: every wound of this session
+became a lesson, every lesson a gate, every gate a bone. The fragile
+edges are the known unknowns — founder singularity, the untested Windows
+field, the missing watchdog — each with a prescription, each cheap to
+apply, each scheduled by the pilot's own logic: first the demand, then
+the hardening.
