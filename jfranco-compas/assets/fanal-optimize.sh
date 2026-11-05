@@ -38,6 +38,7 @@ chk "appId without the old brand"          "[ -n \"$(grep -l 'ca.trasunto.fanal'
 chk "win targets nsis + portable"          "[ -n \"$(grep -l 'nsis' "$APP/package.json" 2>/dev/null)\" ]"
 chk "bundled runtime spawn (process.execPath)" "[ -n \"$(grep -l process.execPath "$APP/main.js" 2>/dev/null)\" ]"
 chk "runtime pack renamed (trasunto-runtime)" "[ -d "$ROOT/dist/trasunto-runtime" ]"
+chk "watchdog (brain rebirth + scripts)"     "[ -n \"$(grep -l brain.on "$APP/main.js" 2>/dev/null)\" ] && [ -f "$ROOT/tools/watchdog.sh" ] && [ -f "$ROOT/tools/watchdog.cmd" ]"
 
 echo "— The one warning that matters for client machines:"
 if [ -n "$(grep -l 'require("http")\|createServer' "$SV/server.js" 2>/dev/null)" ]; then

@@ -40,6 +40,12 @@ function portOpen(host, port) {
   });
 }
 
+let brainRestarts = 0;
+let brainWatch = null;
+function armWatchdog() {
+  if (brainWatch) clearTimeout(brainWatch);
+  brainWatch = null;
+}
 async function ensureBrain() {
   if (!LOCAL || await portOpen(TARGET.host, TARGET.port)) return true;
   const serverJs = path.join(__dirname, "brain", "server.js");
@@ -53,6 +59,19 @@ async function ensureBrain() {
     },
     stdio: "ignore",
     detached: false,
+  });
+  brain.on("exit", (code) => {
+    // The watchdog: if the brain dies unexpectedly, it is reborn —
+    // with a backoff and a cap, then the error page says it honestly.
+    if (shuttingDown) return;
+    brainRestarts++;
+    if (brainRestarts <= 5) {
+      brainWatch = setTimeout(async () => {
+        try { await ensureBrain(); } catch (e) {}
+      }, Math.min(30000, 2000 * brainRestarts));
+    } else {
+      win.loadURL(errorPage());
+    }
   });
   brain.unref();
   for (let i = 0; i < 60; i++) { // up to ~15 s
@@ -76,6 +95,8 @@ function errorPage() {
 </div></body></html>`);
 }
 
+let shuttingDown = false;
+app.on("before-quit", () => { shuttingDown = true; armWatchdog(); if (brain) { try { brain.kill(); } catch {} } });
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {

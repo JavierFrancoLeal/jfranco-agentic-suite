@@ -28,6 +28,7 @@ grep -q "process.execPath" "$APP/main.js" || { echo "FAIL: supervisor not spawne
 grep -q "ELECTRON_RUN_AS_NODE" "$APP/main.js" || { echo "FAIL: ELECTRON_RUN_AS_NODE missing"; exit 1; }
 [ -f "$APP/brain/dashboard-i18n.js" ] || { echo "FAIL: dashboard-i18n.js missing from the brain bundle (lesson #17)"; exit 1; }
 [ -f "$APP/brain/browser-cdp.js" ] || { echo "FAIL: browser-cdp.js missing from the brain bundle (lesson #17)"; exit 1; }
+grep -q "brain.on(\"exit\"" "$APP/main.js" || { echo "FAIL: the Electron watchdog (brain rebirth) is missing"; exit 1; }
 echo "  ✔ bundled runtime spawn (no system Node needed on the client)"
 
 # 3c. Both installer targets configured with the clean brand id
