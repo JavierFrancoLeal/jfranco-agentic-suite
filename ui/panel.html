@@ -372,7 +372,7 @@ if(!SR){
 function startRec(){
   try{
     rec=new SR();
-    rec.lang=VOICE[cur]||"es-ES";
+    rec.lang=tradOn&&tradOther!=="AUTO"?(VOICE[tradOther]||"fr-FR"):(VOICE[cur]||"es-ES");
     rec.continuous=true;
     rec.interimResults=true;
     let finalAcc="";
