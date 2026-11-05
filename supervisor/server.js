@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.64";
+const VERSION = "1.0.65";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -189,6 +189,7 @@ function processTranscript(b) {
       j = { speakers: [{ name: "Person 1", requests: [{ text: String(b.text || "").slice(0, 300), tier: "GREEN" }] }] };
     }
     const s0 = liveRead();
+    if (s0.worker && b.worker && s0.worker !== b.worker) return; // stale brain reply: never clobber a newer session
     s0.status = "summary";
     s0.worker = b.worker || s0.worker;
     s0.speakers = j.speakers.map((p, i) => ({ id: "p" + (i + 1), name: p.name || ("Person " + (i + 1)), requests: (p.requests || []).map((r, j2) => ({ id: "p" + (i + 1) + "-r" + (j2 + 1), text: String(r.text || ""), tier: r.tier || "GREEN", status: "pending" })) }));
