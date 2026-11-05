@@ -42,6 +42,9 @@ main{max-width:580px;margin:0 auto;padding:16px}
 .speak{background:#7c5cff}
 .fbcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:16px 0}
 .fbcard h3{margin:0 0 10px;font-size:16px}
+.tradread{background:linear-gradient(135deg,rgba(77,107,254,.08),rgba(124,92,255,.08));border:1px solid rgba(77,107,254,.3);border-left:4px solid #4D6BFE;border-radius:12px;padding:10px 12px;margin:8px 0}
+.tradread small{color:#4D6BFE;font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
+.tradread #tradDisplay{font-size:19px;font-weight:700;line-height:1.4;margin-top:4px;white-space:pre-wrap}
 .tradcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0}
 .tradrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0;flex-wrap:wrap}
 .tradToggle{border:none;border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;background:var(--line2);color:var(--muted);cursor:pointer}
@@ -113,11 +116,16 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
       <span id="tradLangLabel">Other language</span>
       <span class="langmini" id="tradLangs"></span>
     </div>
+    <div class="tradread" id="tradReadBox" style="display:none">
+      <small id="tradReadLabel">👁️ Lo que dice el cliente:</small>
+      <div id="tradDisplay"></div>
+    </div>
     <p class="note" id="tradHint"></p>
   </div>
 
   <textarea id="convInput" rows="4" placeholder="Speak or type what each person said…"></textarea>
   <button class="primary" id="sendPhraseBtn" style="background:var(--blue);box-shadow:0 4px 14px rgba(77,107,254,.35);margin-top:8px">📤 Send phrase</button>
+  <button class="primary" id="readForMeBtn" style="background:#7c5cff;box-shadow:0 4px 14px rgba(124,92,255,.35);padding:14px;font-size:16px">👁️ Traducir para leer</button>
 
   <div class="sumcard" id="summaryCard" style="display:none">
     <h3 id="summaryTitle">Conversation summary</h3>
@@ -311,9 +319,9 @@ function pill(l){
   b.className="pill";b.dataset.l=l;
   b.textContent=l.toUpperCase()+" · "+LANG[l];
   b.onclick=()=>{cur=l;const F={
- es:{sayPh:"Habla o escribe lo que dijo cada persona…",sendPhrase:"📤 Enviar frase",tradTitle:"Traducción en tiempo real",tradOn:"🔁 ACTIVADA",tradOff:"ACTIVAR",tradLangLabel:"Otro idioma",tradHint:"Modo AUTO: escribe o dicta en CUALQUIERA de los 10 idiomas — la app lo detecta y lo traduce a tu idioma por la bocina. El micro escucha un idioma a la vez: para oír al cliente, elige su idioma en las píldoras.",tradLangsWord:"idiomas",newConv:"➕ Nueva conversación",back:"← Regresar",summaryTitle:"Resumen de la conversación",sentNote:"Enviado a cocina y central",processing:"La IA resume…",noSummary:"El resumen aparecerá aquí.",person:"Persona",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escribe la frase aquí abajo y pulsa Enviar."},
- en:{sayPh:"Speak or type what each person said…",sendPhrase:"📤 Send phrase",tradTitle:"Real-time translation",tradOn:"🔁 ACTIVE",tradOff:"TURN ON",tradLangLabel:"Other language",tradHint:"AUTO mode: type or dictate in ANY of the 10 languages — the app detects it and speaks the translation in your language. The microphone hears one language at a time: to listen to the client, pick their language in the pills.",tradLangsWord:"languages",newConv:"➕ New conversation",back:"← Back",summaryTitle:"Conversation summary",sentNote:"Sent to kitchen & central",processing:"The AI is summarizing…",noSummary:"The summary will appear here.",person:"Person",confirm:"Confirm ✓",confirmed:"Confirmed ✔",typeHint:"type the phrase below and press Send."},
- fr:{sayPh:"Parlez ou écrivez ce que chaque personne a dit…",sendPhrase:"📤 Envoyer",tradTitle:"Traduction en temps réel",tradOn:"🔁 ACTIVÉE",tradOff:"ACTIVER",tradLangLabel:"Autre langue",tradHint:"Mode AUTO : écrivez ou dictez dans N'IMPORTE QUELLE des 10 langues — l'app la détecte et la traduit dans votre langue par le haut-parleur. Le micro écoute une langue à la fois : pour entendre le client, choisissez sa langue dans les pastilles.",tradLangsWord:"langues",newConv:"➕ Nouvelle conversation",back:"← Retour",summaryTitle:"Résumé de la conversation",sentNote:"Envoyé en cuisine et au central",processing:"L'IA résume…",noSummary:"Le résumé apparaîtra ici.",person:"Personne",confirm:"Confirmer ✓",confirmed:"Confirmé ✔",typeHint:"écrivez la phrase ci-dessous et appuyez sur Envoyer."},
+ es:{sayPh:"Habla o escribe lo que dijo cada persona…",sendPhrase:"📤 Enviar frase",readForMe:"👁️ Traducir para leer",tradReadLabel:"👁️ Lo que dice el cliente:",tradTitle:"Traducción en tiempo real",tradOn:"🔁 ACTIVADA",tradOff:"ACTIVAR",tradLangLabel:"Otro idioma",tradHint:"Modo AUTO: escribe o dicta en CUALQUIERA de los 10 idiomas — la app lo detecta y lo traduce a tu idioma por la bocina. El micro escucha un idioma a la vez: para oír al cliente, elige su idioma en las píldoras.",tradLangsWord:"idiomas",newConv:"➕ Nueva conversación",back:"← Regresar",summaryTitle:"Resumen de la conversación",sentNote:"Enviado a cocina y central",processing:"La IA resume…",noSummary:"El resumen aparecerá aquí.",person:"Persona",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escribe la frase aquí abajo y pulsa Enviar."},
+ en:{sayPh:"Speak or type what each person said…",sendPhrase:"📤 Send phrase",readForMe:"👁️ Translate to read",tradReadLabel:"👁️ What the client says:",tradTitle:"Real-time translation",tradOn:"🔁 ACTIVE",tradOff:"TURN ON",tradLangLabel:"Other language",tradHint:"AUTO mode: type or dictate in ANY of the 10 languages — the app detects it and speaks the translation in your language. The microphone hears one language at a time: to listen to the client, pick their language in the pills.",tradLangsWord:"languages",newConv:"➕ New conversation",back:"← Back",summaryTitle:"Conversation summary",sentNote:"Sent to kitchen & central",processing:"The AI is summarizing…",noSummary:"The summary will appear here.",person:"Person",confirm:"Confirm ✓",confirmed:"Confirmed ✔",typeHint:"type the phrase below and press Send."},
+ fr:{sayPh:"Parlez ou écrivez ce que chaque personne a dit…",sendPhrase:"📤 Envoyer",readForMe:"👁️ Traduire pour lire",tradReadLabel:"👁️ Ce que dit le client :",tradTitle:"Traduction en temps réel",tradOn:"🔁 ACTIVÉE",tradOff:"ACTIVER",tradLangLabel:"Autre langue",tradHint:"Mode AUTO : écrivez ou dictez dans N'IMPORTE QUELLE des 10 langues — l'app la détecte et la traduit dans votre langue par le haut-parleur. Le micro écoute une langue à la fois : pour entendre le client, choisissez sa langue dans les pastilles.",tradLangsWord:"langues",newConv:"➕ Nouvelle conversation",back:"← Retour",summaryTitle:"Résumé de la conversation",sentNote:"Envoyé en cuisine et au central",processing:"L'IA résume…",noSummary:"Le résumé apparaîtra ici.",person:"Personne",confirm:"Confirmer ✓",confirmed:"Confirmé ✔",typeHint:"écrivez la phrase ci-dessous et appuyez sur Envoyer."},
  de:{sayPh:"Sprechen oder tippen Sie, was jede Person gesagt hat…",sendPhrase:"📤 Senden",summaryTitle:"Gesprächsübersicht",sentNote:"An Küche & Zentrale gesendet",processing:"Die KI fasst zusammen…",noSummary:"Die Übersicht erscheint hier.",person:"Person",confirm:"Bestätigen ✓",confirmed:"Bestätigt ✔",typeHint:"tippen Sie die Phrase unten und drücken Sie Senden."},
  it:{sayPh:"Parla o scrivi cosa ha detto ogni persona…",sendPhrase:"📤 Invia",summaryTitle:"Riepilogo della conversazione",sentNote:"Inviato a cucina e centrale",processing:"L'IA riassume…",noSummary:"Il riepilogo apparirà qui.",person:"Persona",confirm:"Conferma ✓",confirmed:"Confermato ✔",typeHint:"scrivi la frase sotto e premi Invia."},
  pt:{sayPh:"Fale ou escreva o que cada pessoa disse…",sendPhrase:"📤 Enviar",summaryTitle:"Resumo da conversa",sentNote:"Enviado à cozinha e central",processing:"A IA resume…",noSummary:"O resumo aparecerá aqui.",person:"Pessoa",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escreva a frase abaixo e pressione Enviar."},
@@ -386,7 +394,7 @@ function startRec(){
       }
       finalText=finalAcc;
       convInput.value=(finalAcc?finalAcc+" ":"")+(interimTxt?interimTxt:"");
-      if(tradOn&&finalAcc)translateUtterance(finalAcc);
+      if(tradOn&&finalAcc)translateUtterance(finalAcc,tradOther!=="AUTO"?"client":"worker");
       interim=finalAcc;
     };
     rec.onend=()=>{
@@ -421,24 +429,33 @@ function renderTradLangs(){const box=$("tradLangs");box.innerHTML="";TRAD_LANGS.
 function tradUI(){const t=$("tradToggle");t.textContent=tradOn?ft("tradOn"):ft("tradOff");t.classList.toggle("on",tradOn);$("tradLangRow").style.display=tradOn?"flex":"none";$("status").textContent=tradOn?(tradOther==="AUTO"?("🔁 "+ft("tradTitle")+" [AUTO · 10 "+ft("tradLangsWord")+"]"):("🔁 "+ft("tradTitle")+" ["+tradOther.toUpperCase()+"]")):"";}
 $("tradToggle").onclick=()=>{tradOn=!tradOn;tradUI();};
 renderTradLangs();tradUI();
-async function translateUtterance(text){
+let lastClientLang=tradOther!=="AUTO"?tradOther:"fr";
+async function translateUtterance(text,mode){
   if(!text)return;
   try{
     const r=await fetch(SUP+"/api/translate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,appLang:cur,otherLang:tradOther})});
     const j=await r.json();
-    if(j.translation){
-      convInput.value=convInput.value?convInput.value+"\n⟳ "+j.translation:j.translation;
+    if(!j.translation)return;
+    if(mode==="client"){
+      lastClientLang=j.detected&&j.detected!==cur?j.detected:lastClientLang;
+      $("tradReadBox").style.display="block";
+      const d=$("tradDisplay");
+      d.textContent=(d.textContent?d.textContent+"\n":"")+j.translation;
+      convInput.value=convInput.value?convInput.value+"\n[client] "+j.translation:j.translation;
+    }else{
+      const spk=tradOther!=="AUTO"?tradOther:lastClientLang;
+      const VO={fr:"fr-FR",es:"es-ES",de:"de-DE",it:"it-IT",pt:"pt-PT",zh:"zh-CN",ja:"ja-JP",ko:"ko-KR",ar:"ar-SA",en:"en-US"};
       if("speechSynthesis" in window){
         const u=new SpeechSynthesisUtterance(j.translation);
-        const spk=j.detected===cur?(tradOther==="AUTO"?cur:tradOther):cur;
-        const VO={fr:"fr-FR",es:"es-ES",de:"de-DE",it:"it-IT",pt:"pt-PT",zh:"zh-CN",ja:"ja-JP",ko:"ko-KR",ar:"ar-SA",en:"en-US"};
         u.lang=VO[spk]||"en-US";
         speechSynthesis.speak(u);
+        $("status").textContent="🔊 "+j.translation.slice(0,60);
       }
     }
   }catch(e){}
 }
-$("newConvBtn").onclick=async()=>{await fetch(SUP+"/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";};
+$("readForMeBtn").onclick=async()=>{if(tradOn&&convInput.value.trim())await translateUtterance(convInput.value.trim(),"client");};
+$("newConvBtn").onclick=async()=>{await fetch(SUP+"/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";$("tradReadBox").style.display="none";$("tradDisplay").textContent="";};
 $("backBtn").onclick=()=>{summaryCard.style.display="none";};
 // ── The real field flow: phrase → transcript → FLASH summary → confirm ──
 const SUP=location.origin;
