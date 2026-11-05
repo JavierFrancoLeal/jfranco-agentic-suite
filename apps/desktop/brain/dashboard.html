@@ -897,7 +897,14 @@ function flushPendingSetup(){
     if(p.sector&&p.sector!=="generic")api("/api/sector/pick",{method:"POST",body:{id:p.sector}});
   }catch(e){}
 }
-function showWizard(){try{if(localStorage.getItem("lv-onboarded")==="1")return;}catch(e){}if(demoMode)return;$("wizardView").classList.remove("hidden");$("wizardView").style.display="flex";wizStep=0;wizRender();}
+function showWizard(){
+  try{if(localStorage.getItem("lv-onboarded")==="1")return false;}catch(e){}
+  if(demoMode||/[?&]demo=/.test(location.search))return false; // la demo nunca muestra el asistente
+  $("wizardView").classList.remove("hidden");
+  $("wizardView").style.display="flex";
+  wizStep=0;wizRender();
+  return true;
+}
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
@@ -949,7 +956,7 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";bootFlash(2600,()=>{document.body.classList.remove("firstboot");showWizard()||finishBoot();});};
+    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";bootFlash(2600,()=>{document.body.classList.remove("firstboot");if(!showWizard())finishBoot();});};
     rows.appendChild(r);
   }
 }
