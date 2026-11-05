@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.71";
+const VERSION = "1.0.72";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -597,7 +597,7 @@ async function api(req, res, pathname) {
     const otherLang = String(b.otherLang || "en").slice(0, 2).toLowerCase();
     const text = String(b.text || "").trim();
     if (!text) return send(res, 200, { detected: otherLang, translation: "" }, true);
-    const prompt = "Interpreter mode. The app language is " + appLang + " and the other language is " + otherLang + ". Analyze: " + text + " If it is in " + otherLang + ", translate it into " + appLang + ". If it is in " + appLang + ", translate it into " + otherLang + ". Reply with ONLY one JSON object: {\"detected\":\"<two-letter code>\",\"translation\":\"<the translation>\"}";
+    const prompt = "Interpreter mode. The app language is " + appLang + ". Analyze: " + text + " Detect which of these 10 languages it is: es (Spanish), fr (French), en (English), de (German), it (Italian), pt (Portuguese), zh (Chinese), ja (Japanese), ko (Korean), ar (Arabic). Translate it into " + appLang + " (unless it is already in " + appLang + "). Reply with ONLY one JSON object: {\"detected\":\"<two-letter code>\",\"translation\":\"<the translation>\"}";
     try {
       const out = await brain("deepseek-flash", prompt);
       const j = jsonBlock(out);
