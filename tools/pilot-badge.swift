@@ -4,7 +4,7 @@ import Foundation
 // (like Chrome Remote Desktop / TeamViewer's edge strip), never covers
 // the work area. Blue while active, red on warning. Elapsed time live.
 let scr = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
-let bar = NSPanel(contentRect: NSRect(x: 0, y: scr.maxY - 32, width: scr.width, height: 32), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+let bar = NSPanel(contentRect: NSRect(x: 0, y: scr.maxY - 64, width: scr.width, height: 30), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
 bar.level = .statusBar
 bar.isOpaque = false
 bar.backgroundColor = NSColor(calibratedRed: 0.30, green: 0.42, blue: 0.996, alpha: 0.88)
