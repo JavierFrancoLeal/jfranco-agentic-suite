@@ -470,7 +470,8 @@ sendPhraseBtn.onclick=async()=>{
   const text=convInput.value.trim();
   if(!text){convInput.focus();return;}
   $("status").textContent=ft("processing");
-  await fetch(SUP+"/api/live/transcript",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({worker:workerInput.value.trim()||"worker",text})});
+  if(tradOn)await translateUtterance(text,"worker");
+  await fetch(SUP+"/api/live/transcript",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({worker:workerInput.value.trim()||"worker",text,lang:cur})});
   convInput.value="";
   $("status").textContent="";
 };
