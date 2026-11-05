@@ -33,6 +33,12 @@ chk "sector packs present"                 "[ -f "$ROOT/docs/sector-packs/restau
 chk "guard gates (check.sh + verify-app)"  "[ -f "$ROOT/tools/check.sh" ] && [ -f "$ROOT/tools/verify-app.sh" ]"
 chk "routing table + telemetry in server"  "[ -n \"$(grep -l 'const ROUTES' "$SV/server.js" 2>/dev/null)\" ]"
 
+echo "— The installers (mac + windows), ready to build:"
+chk "appId without the old brand"          "[ -n \"$(grep -l 'ca.trasunto.fanal' "$APP/package.json" 2>/dev/null)\" ]"
+chk "win targets nsis + portable"          "[ -n \"$(grep -l 'nsis' "$APP/package.json" 2>/dev/null)\" ]"
+chk "bundled runtime spawn (process.execPath)" "[ -n \"$(grep -l process.execPath "$APP/main.js" 2>/dev/null)\" ]"
+chk "runtime pack renamed (trasunto-runtime)" "[ -d "$ROOT/dist/trasunto-runtime" ]"
+
 echo "— The one warning that matters for client machines:"
 if [ -n "$(grep -l 'require("http")\|createServer' "$SV/server.js" 2>/dev/null)" ]; then
   echo "  ⚠ The supervisor is a Node script: the CLIENT host needs Node ≥18. DSH ships its own runtime — for production Fanal, bundle a node runtime in the installer (the desktop app already does)."

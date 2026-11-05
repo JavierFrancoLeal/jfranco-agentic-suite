@@ -15,7 +15,7 @@
     "electron-builder": "^26.0.0"
   },
   "build": {
-    "appId": "ca.jfranco.leveilleux",
+    "appId": "ca.trasunto.fanal",
     "productName": "Fanal",
     "files": [
       "main.js",
@@ -31,11 +31,16 @@
         "dmg",
         "zip"
       ],
-      "icon": "assets/icon.png"
+      "icon": "assets/icon.png",
+      "artifactName": "Fanal-${version}-${arch}.${ext}"
     },
     "win": {
-      "target": "nsis",
-      "icon": "assets/icon.png"
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.png",
+      "artifactName": "Fanal-${version}-${arch}.${ext}"
     },
     "linux": {
       "target": "AppImage",
@@ -44,10 +49,16 @@
     },
     "extraResources": [
       {
-        "from": "../../dist/le-veilleux-runtime",
+        "from": "../../dist/trasunto-runtime",
         "to": "runtime"
       }
-    ]
+    ],
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Fanal"
+    }
   },
   "allowScripts": {
     "electron@37.10.3": true
