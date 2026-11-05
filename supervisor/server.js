@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.63";
+const VERSION = "1.0.64";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -165,12 +165,13 @@ async function brain(model, prompt, maxTokens) {
   const r = await fetch(BRAIN_BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (model.startsWith("deepseek-v4-pro") ? 4000 : 1500), temperature: 0.4 }),
+    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (model.startsWith("deepseek-v4-pro") ? 12000 : 8000), temperature: 0.4 }),
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.choices) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
   try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, model); } catch {}
-  return j.choices[0].message.content || "";
+  const m = j.choices[0].message || {};
+  return m.content || m.reasoning_content || "";
 }
 function jsonBlock(text) {
   const a = String(text).indexOf("{"), b = String(text).lastIndexOf("}");
