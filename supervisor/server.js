@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.80";
+const VERSION = "1.0.81";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -568,6 +568,7 @@ async function api(req, res, pathname) {
     const s0 = settingsRead();
     if (String(b.key || "").trim()) s0.apiKey = String(b.key).trim();
     else delete s0.apiKey;
+    if (String(b.bizName || "").trim()) s0.bizName = String(b.bizName).trim();
     settingsWrite(s0);
     return send(res, 200, { ok: true, hasKey: !!clientKey(), source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none") });
   }
