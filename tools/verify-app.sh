@@ -26,6 +26,7 @@ echo "  ✔ zero old brand strings in app sources"
 # 3b. The supervisor must be spawned with the app's own Electron node (no system Node on the client)
 grep -q "process.execPath" "$APP/main.js" || { echo "FAIL: supervisor not spawned via process.execPath (client would need system Node)"; exit 1; }
 grep -q "ELECTRON_RUN_AS_NODE" "$APP/main.js" || { echo "FAIL: ELECTRON_RUN_AS_NODE missing"; exit 1; }
+[ -f "$APP/brain/dashboard-i18n.js" ] || { echo "FAIL: dashboard-i18n.js missing from the brain bundle (lesson #17)"; exit 1; }
 echo "  ✔ bundled runtime spawn (no system Node needed on the client)"
 
 # 3c. Both installer targets configured with the clean brand id
