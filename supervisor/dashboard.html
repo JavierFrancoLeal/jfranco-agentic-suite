@@ -93,6 +93,13 @@ tbody tr:hover{background:rgba(77,107,254,.07)}
 @keyframes wizin{from{opacity:0;transform:translateY(26px) scale(.97)}to{opacity:1;transform:none}}
 .wiz-card.slideout{animation:wizout .22s ease forwards}
 @keyframes wizout{to{opacity:0;transform:translateY(-16px)}}
+.wiz-stepbar{height:5px;border-radius:999px;background:rgba(77,107,254,.14);overflow:hidden;margin-bottom:8px}
+.wiz-stepfill{height:100%;width:14%;background:linear-gradient(90deg,#4D6BFE,#7c5cff);border-radius:999px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.wiz-counter{font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#4D6BFE;margin-bottom:12px}
+.wiz-done{text-align:left;font-size:12.5px;color:#98a2b3;margin:10px 0 0}
+.wiz-done div{padding:3px 0}
+.wiz-done div.ok{color:#15803d}
+.wiz-time{font-size:11.5px;color:#98a2b3;margin:14px 0 0}
 .wiz-dots{display:flex;justify-content:center;gap:8px;margin-bottom:18px}
 .wiz-dots span{width:9px;height:9px;border-radius:999px;background:rgba(77,107,254,.25);transition:all .3s}
 .wiz-dots span.on{width:26px;background:linear-gradient(90deg,#4D6BFE,#7c5cff)}
@@ -295,13 +302,17 @@ body.wall pre{max-height:40vh}
   </div>
   <div id="wizardView" class="wizard hidden" style="display:none">
     <div class="wiz-card" id="wizCard">
+      <div class="wiz-stepbar"><div class="wiz-stepfill" id="wizStepFill"></div></div>
+      <div class="wiz-counter" id="wizCounter">Étape 1 sur 7</div>
       <div class="wiz-dots" id="wizDots"></div>
       <h2 id="wizTitle">Bienvenue</h2>
       <div class="wiz-body" id="wizBody"></div>
+      <div class="wiz-done" id="wizDoneList"></div>
       <div class="wiz-actions">
         <button class="btn ghost" id="wizBack" style="display:none">← Retour</button>
         <button class="btn" id="wizNext">Continuer</button>
       </div>
+      <p class="wiz-time" id="wizTime">Environ 3 minutes</p>
     </div>
   </div>
 <div id="inboxView" class="hidden" style="display:none">
@@ -870,6 +881,10 @@ function wizBodyHTML(){
 }
 function wizRender(){
   const W={0:t("wizStartTitle"),1:t("wizBizTitle"),2:t("wizSectorTitle"),3:t("wizKeyTitle"),4:t("wizPermsTitle"),5:t("wizRecapTitle"),6:t("wizDoneTitle")};
+  $("wizCounter").textContent=t("wizStepOf").replace("{n}",String(wizStep+1)).replace("{t}",String(WIZ_STEPS));
+  $("wizStepFill").style.width=Math.round(((wizStep+1)/WIZ_STEPS)*100)+"%";
+  const DONES=W.map((x,i)=>({t:x,ok:i<wizStep}));
+  $("wizDoneList").innerHTML=DONES.slice(0,wizStep).map(x=>'<div class="ok">✔ '+x.t+'</div>').join("");
   $("wizTitle").textContent=W[wizStep];
   $("wizBody").innerHTML=wizBodyHTML();
   $("wizBack").style.display=wizStep===0?"none":"inline-block";
