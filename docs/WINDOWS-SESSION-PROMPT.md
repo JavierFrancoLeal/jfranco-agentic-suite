@@ -49,3 +49,23 @@ honestamente en el reporte. NO firmes el instalador (el certificado OV
 es un paso posterior del operador).
 
 PROMPT END
+
+## How to run this on a SINGLE MacBook Air M1 (no second machine)
+
+The same computer can host a Windows virtual machine:
+
+1. Install **UTM** (free, made for Apple Silicon): https://mac.getutm.app
+2. Inside UTM's gallery, pick **"Windows 11 ARM"** — it downloads the
+   official Microsoft VHDX and creates the machine for you.
+3. Boot the VM → inside Windows: install **Git for Windows**
+   (git-scm.com) and **Node.js ARM64** (nodejs.org, the Windows ARM64
+   build).
+4. Install **DeepSeek Harness for Windows** (the official installer; if
+   it only ships x64, Windows 11 ARM runs it under emulation).
+5. Open a DSH session inside the VM (the web GUI opens in the VM's
+   browser) and paste the prompt above.
+
+Notes: Windows 11 ARM is the only Windows that runs on an M1; x64 apps
+work through its built-in emulation. The unsigned .exe can ALSO be
+generated directly on macOS (electron-builder cross-build) — the VM is
+for the REAL field test.
