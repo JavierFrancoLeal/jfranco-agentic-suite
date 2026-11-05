@@ -5,6 +5,7 @@ import Foundation
 // the work area. Blue while active, red on warning. Elapsed time live.
 let scr = NSScreen.main?.frame ?? NSRect(x: 0, y: 0, width: 1440, height: 900)
 let bar = NSPanel(contentRect: NSRect(x: 0, y: scr.maxY - 64, width: scr.width, height: 30), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+bar.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 bar.level = .statusBar
 bar.isOpaque = false
 bar.backgroundColor = NSColor(calibratedRed: 0.30, green: 0.42, blue: 0.996, alpha: 0.88)
@@ -29,9 +30,9 @@ Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
   do {
     let t = try String(contentsOfFile: "/tmp/pilot-badge.txt", encoding: .utf8).trimmingCharacters(in: .whitespacesAndNewlines)
     if !t.isEmpty {
-      label.stringValue = t.hasPrefix("⚠") ? t : "🤖 \(t)"
+      label.stringValue = t.hasPrefix("⚠") ? t : (t.hasPrefix("✅") ? t : "🤖 \(t)")
       warned = t.hasPrefix("⚠")
-      bar.backgroundColor = t.hasPrefix("⚠") ? NSColor(calibratedRed: 0.94, green: 0.27, blue: 0.23, alpha: 0.94) : NSColor(calibratedRed: 0.30, green: 0.42, blue: 0.996, alpha: 0.88)
+      bar.backgroundColor = t.hasPrefix("⚠") ? NSColor(calibratedRed: 0.94, green: 0.27, blue: 0.23, alpha: 0.94) : (t.hasPrefix("✅") ? NSColor(calibratedRed: 0.13, green: 0.62, blue: 0.28, alpha: 0.92) : NSColor(calibratedRed: 0.30, green: 0.42, blue: 0.996, alpha: 0.88))
     }
   } catch {}
 }
