@@ -15,7 +15,7 @@ n=0
 while true; do
   n=$((n+1))
   echo "[watchdog] starting the supervisor (run $n)…"
-  DSH_SUPERVISOR_DATA="$DATA" PORT="$PORT" "$NODE" "$ROOT/supervisor/server.js" --lan
+  DSH_SUPERVISOR_DATA="$DATA" DSH_SUPERVISOR_PORT="$PORT" PORT="$PORT" "$NODE" "$ROOT/supervisor/server.js" --lan
   code=$?
   echo "[watchdog] the supervisor exited (code $code) — restarting in 3 s"
   sleep 3

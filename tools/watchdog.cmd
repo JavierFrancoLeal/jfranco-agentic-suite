@@ -9,6 +9,7 @@ set DATA=%USERPROFILE%\.dsh\supervisor-data
 echo [watchdog] starting the supervisor…
 set DSH_SUPERVISOR_DATA=%DATA%
 set PORT=%PORT%
+set DSH_SUPERVISOR_PORT=%PORT%
 "%NODE%" "%ROOT%\supervisor\server.js" --lan
 echo [watchdog] the supervisor exited — restarting in 3 s
 timeout /t 3 /nobreak >nul
