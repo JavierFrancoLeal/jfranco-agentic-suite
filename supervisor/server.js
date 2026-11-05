@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.79";
+const VERSION = "1.0.80";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -584,6 +584,13 @@ async function api(req, res, pathname) {
   if (pathname === "/api/health" && req.method === "GET") {
     const m = metrics();
     return send(res, 200, { ok: true, version: VERSION, demo: process.env.DSH_DEMO_MODE === "1" || undefined, uptime: Math.round(process.uptime()), workers: m.workers, reports: m.reports, budgetUsd: DAILY_BUDGET_USD, spentTodayUsd: todayCostUsd(), budgetPct: DAILY_BUDGET_USD > 0 ? Math.round((todayCostUsd() / DAILY_BUDGET_USD) * 100) : 0 }, true);
+  }
+  if (pathname === "/api/sector/pick" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    if (!b.id) return send(res, 400, { error: "id required" });
+    try { const dir = process.env.DSH_SECTOR_PACKS_DIR || path.join(ROOT, "docs", "sector-packs"); fs.copyFileSync(path.join(dir, String(b.id) + ".json"), SECTOR_FILE); return send(res, 200, { ok: true, id: b.id }); }
+    catch (e) { return send(res, 404, { error: "sector pack not found" }); }
   }
   if (pathname === "/api/sector" && req.method === "GET") {
     try { return send(res, 200, JSON.parse(fs.readFileSync(SECTOR_FILE, "utf8"))); }
