@@ -42,6 +42,20 @@ main{max-width:580px;margin:0 auto;padding:16px}
 .speak{background:#7c5cff}
 .fbcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:16px 0}
 .fbcard h3{margin:0 0 10px;font-size:16px}
+.sumcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+.sumcard h3{margin:0 0 10px;font-size:16px}
+.sumcard .person{margin-bottom:10px}
+.sumcard .person b{font-size:14.5px}
+.sumcard .req{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--line2);border:1px solid var(--line);margin:6px 0;font-size:14px}
+.sumcard .req span{flex:1}
+.tier{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px}
+.tier-GREEN{background:#dcfce7;color:#15803d}
+.tier-SEMI{background:#fef9c3;color:#a16207}
+.tier-YELLOW{background:#fef9c3;color:#a16207}
+.tier-RED{background:#fee2e2;color:#b91c1c}
+.confirmBtn{border:none;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:700;background:var(--ok);color:#fff;cursor:pointer}
+.confirmBtn.done{background:var(--line2);color:var(--muted);cursor:default}
+#convInput{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:16px;margin:12px 0 0;font-family:inherit;background:var(--card);color:var(--ink);resize:vertical}
 .fbcard select,.fbcard textarea,.fbcard button{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;margin-bottom:8px;font-family:inherit;background:var(--card);color:var(--ink)}
 .fbcard textarea{resize:vertical}
 .fbcard button{background:var(--blue);color:#fff;font-weight:600;border:none;cursor:pointer}
@@ -83,11 +97,14 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
   <button class="primary" id="listenBtn">🎙️ LISTEN / DICTATE</button>
   <div class="status" id="status"></div>
 
-  <div class="prompt" id="prompt"></div>
+  <textarea id="convInput" rows="4" placeholder="Speak or type what each person said…"></textarea>
+  <button class="primary" id="sendPhraseBtn" style="background:var(--blue);box-shadow:0 4px 14px rgba(77,107,254,.35);margin-top:8px">📤 Send phrase</button>
 
-  <div class="row">
-    <button class="copy" id="copyBtn">📋 Copy for DSH</button>
-    <button class="speak" id="speakBtn">🔊 Read aloud</button>
+  <div class="sumcard" id="summaryCard" style="display:none">
+    <h3 id="summaryTitle">Conversation summary</h3>
+    <div id="speakersList"></div>
+    <div id="ordersList"></div>
+    <p class="note" id="sentNote"></p>
   </div>
 
   <p class="note" id="note"></p>
@@ -217,7 +234,7 @@ const S={
   legend:"الإشارة: 🟢 تلقائي · ⚑ شبه تلقائي (تحقق) · 🟡 مقترح (أنت تقرر) · 🔴 اسأل.",fbTitle:"ملاحظات ميدانية",fbPh:"ماذا حدث؟ ما الذي يجب تحسينه؟",fbSent:"أُرسل — سيقرأه الوكيل",fbOffline:"المشرف غير متصل — تم نسخ الموجه إلى DSH",catError:"خطأ",catImprovement:"تحسين",catIdea:"فكرة"}
 };
 const $=id=>document.getElementById(id);
-const promptEl=$("prompt"),langsEl=$("langs"),workerInput=$("workerInput"),roleInput=$("roleInput");
+const langsEl=$("langs"),workerInput=$("workerInput"),roleInput=$("roleInput"),convInput=$("convInput"),sendPhraseBtn=$("sendPhraseBtn"),summaryCard=$("summaryCard"),speakersList=$("speakersList"),ordersList=$("ordersList"),sentNoteEl=$("sentNote"),summaryTitleEl=$("summaryTitle");
 let cur="en",darkOn=false,recording=false,armed=false,rec=null,interim="",finalText="";
 // Session continuity: the dashboard sends ?user=…&role=…&lang=…
 const q=new URLSearchParams(location.search);
@@ -251,8 +268,7 @@ function applyLang(){
   $("subtitle").textContent=s.subtitle;
   $("note").textContent=s.note(END[cur]);
   $("legend").textContent=s.legend;
-  $("copyBtn").textContent=s.copy;
-  $("speakBtn").textContent=s.speak;
+  try{convInput.placeholder=F[cur].sayPh;sendPhraseBtn.textContent=F[cur].sendPhrase;summaryTitleEl.textContent=F[cur].summaryTitle;sentNoteEl.textContent=F[cur].sentNote;}catch(e){}
   if(!recording)$("listenBtn").textContent=s.listen;
   workerInput.placeholder=s.worker;
   roleInput.placeholder=s.role;
@@ -264,7 +280,6 @@ function applyLang(){
   $("catError").textContent=s.catError;
   $("catImprovement").textContent=s.catImprovement;
   $("catIdea").textContent=s.catIdea;
-  promptEl.textContent=identity()+s.clue(LANG[cur])+(finalText?(" "+finalText):"");
   updateIdentity();
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
 }
@@ -281,18 +296,6 @@ function applyToggles(){document.body.classList.toggle("dark",darkOn);$("darkBtn
 $("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-panel-dark",darkOn?"1":"0");}catch(e){}applyToggles();};
 try{darkOn=localStorage.getItem("dsh-panel-dark")==="1";}catch(e){}
 applyToggles();
-$("copyBtn").onclick=async()=>{
-  try{await navigator.clipboard.writeText(promptEl.textContent);}
-  catch(e){promptEl.select();document.execCommand("copy");}
-  $("copyBtn").textContent=S[cur].copied;
-  setTimeout(()=>$("copyBtn").textContent=S[cur].copy,1500);
-};
-$("speakBtn").onclick=()=>{
-  if(!("speechSynthesis" in window)){$("speakBtn").textContent="🔇";return;}
-  const u=new SpeechSynthesisUtterance(promptEl.textContent);
-  u.lang=VOICE[cur]||"es-ES";
-  speechSynthesis.speak(u);
-};
 // Dictation: continuous + auto-restart while armed (fixes the instant stop).
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!SR){
@@ -321,8 +324,7 @@ function startRec(){
         else interimTxt+=r[0].transcript;
       }
       finalText=finalAcc;
-      const base=identity()+S[cur].clue(LANG[cur]);
-      promptEl.textContent=base+(finalAcc?(" "+finalAcc):"")+(interimTxt?(" …"+interimTxt+"…"):"");
+      convInput.value=(finalAcc?finalAcc+" ":"")+(interimTxt?interimTxt:"");
       interim=finalAcc;
     };
     rec.onend=()=>{
@@ -334,9 +336,9 @@ function startRec(){
       else{$("listenBtn").textContent=S[cur].listen;}
     };
     rec.onerror=(e)=>{
-      if(e.error==="not-allowed"){armed=false;$("status").textContent=S[cur].micError;}
+      if(e.error==="not-allowed"){armed=false;$("status").textContent=S[cur].micError+" — "+F[cur].typeHint;}
       else if(e.error==="no-speech"){/* armed keeps restarting */}
-      else{armed=false;$("status").textContent=S[cur].micError;}
+      else{armed=false;$("status").textContent=S[cur].micError+" — "+F[cur].typeHint;}
       if(!armed){recording=false;$("listenBtn").classList.remove("live");$("listenBtn").textContent=S[cur].listen;rec=null;}
     };
     recording=true;
@@ -346,10 +348,67 @@ function startRec(){
     rec.start();
   }catch(e){
     armed=false;recording=false;
-    $("status").textContent=S[cur].micError;
+    $("status").textContent=S[cur].micError+" — "+F[cur].typeHint;
     $("listenBtn").textContent=S[cur].listen;
   }
 }
+// ── The real field flow: phrase → transcript → FLASH summary → confirm ──
+const SUP=location.origin;
+const F={
+ es:{sayPh:"Habla o escribe lo que dijo cada persona…",sendPhrase:"📤 Enviar frase",summaryTitle:"Resumen de la conversación",sentNote:"Enviado a cocina y central",processing:"La IA resume…",noSummary:"El resumen aparecerá aquí.",person:"Persona",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escribe la frase aquí abajo y pulsa Enviar."},
+ en:{sayPh:"Speak or type what each person said…",sendPhrase:"📤 Send phrase",summaryTitle:"Conversation summary",sentNote:"Sent to kitchen & central",processing:"The AI is summarizing…",noSummary:"The summary will appear here.",person:"Person",confirm:"Confirm ✓",confirmed:"Confirmed ✔",typeHint:"type the phrase below and press Send."},
+ fr:{sayPh:"Parlez ou écrivez ce que chaque personne a dit…",sendPhrase:"📤 Envoyer",summaryTitle:"Résumé de la conversation",sentNote:"Envoyé en cuisine et au central",processing:"L'IA résume…",noSummary:"Le résumé apparaîtra ici.",person:"Personne",confirm:"Confirmer ✓",confirmed:"Confirmé ✔",typeHint:"écrivez la phrase ci-dessous et appuyez sur Envoyer."},
+ de:{sayPh:"Sprechen oder tippen Sie, was jede Person gesagt hat…",sendPhrase:"📤 Senden",summaryTitle:"Gesprächsübersicht",sentNote:"An Küche & Zentrale gesendet",processing:"Die KI fasst zusammen…",noSummary:"Die Übersicht erscheint hier.",person:"Person",confirm:"Bestätigen ✓",confirmed:"Bestätigt ✔",typeHint:"tippen Sie die Phrase unten und drücken Sie Senden."},
+ it:{sayPh:"Parla o scrivi cosa ha detto ogni persona…",sendPhrase:"📤 Invia",summaryTitle:"Riepilogo della conversazione",sentNote:"Inviato a cucina e centrale",processing:"L'IA riassume…",noSummary:"Il riepilogo apparirà qui.",person:"Persona",confirm:"Conferma ✓",confirmed:"Confermato ✔",typeHint:"scrivi la frase sotto e premi Invia."},
+ pt:{sayPh:"Fale ou escreva o que cada pessoa disse…",sendPhrase:"📤 Enviar",summaryTitle:"Resumo da conversa",sentNote:"Enviado à cozinha e central",processing:"A IA resume…",noSummary:"O resumo aparecerá aqui.",person:"Pessoa",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escreva a frase abaixo e pressione Enviar."},
+ zh:{sayPh:"说出或写下每个人说的话…",sendPhrase:"📤 发送",summaryTitle:"对话摘要",sentNote:"已发送到厨房和中心",processing:"AI 正在总结…",noSummary:"摘要将显示在这里。",person:"人",confirm:"确认 ✓",confirmed:"已确认 ✔",typeHint:"在下方输入内容并点击发送。"},
+ ja:{sayPh:"各人の発言を話すか入力してください…",sendPhrase:"📤 送信",summaryTitle:"会話の要約",sentNote:"キッチンと本部へ送信済み",processing:"AI が要約中…",noSummary:"要約がここに表示されます。",person:"人",confirm:"確認 ✓",confirmed:"確認済み ✔",typeHint:"下に入力して送信してください。"},
+ ko:{sayPh:"각 사람이 한 말을 말하거나 입력하세요…",sendPhrase:"📤 보내기",summaryTitle:"대화 요약",sentNote:"주방과 중앙으로 전송됨",processing:"AI가 요약 중…",noSummary:"요약이 여기에 표시됩니다.",person:"사람",confirm:"확인 ✓",confirmed:"확인됨 ✔",typeHint:"아래에 입력하고 보내기를 누르세요."},
+ ar:{sayPh:"تحدث أو اكتب ما قاله كل شخص…",sendPhrase:"📤 إرسال",summaryTitle:"ملخص المحادثة",sentNote:"أُرسل إلى المطبخ والمركز",processing:"الذكاء الاصطناعي يلخص…",noSummary:"سيظهر الملخص هنا.",person:"شخص",confirm:"تأكيد ✓",confirmed:"تم التأكيد ✔",typeHint:"اكتب العبارة بالأسفل واضغط إرسال."}
+};
+const TIER={GREEN:"🟢",SEMI:"⚑",YELLOW:"🟡",RED:"🔴"};
+function ft(k){return F[cur][k]||F.en[k]||k;}
+function renderSummary(st){
+  summaryCard.style.display="block";
+  speakersList.innerHTML="";
+  ordersList.innerHTML="";
+  (st.speakers||[]).forEach(p=>{
+    const box=document.createElement("div");box.className="person";
+    const name=document.createElement("b");name.textContent=ft("person")+" — "+(p.name||"?");box.appendChild(name);
+    (p.requests||[]).forEach(r=>{
+      const row=document.createElement("div");row.className="req";
+      const txt=document.createElement("span");txt.textContent=r.text;row.appendChild(txt);
+      const pill=document.createElement("span");pill.className="tier tier-"+(r.tier||"GREEN");pill.textContent=TIER[r.tier||"GREEN"]+" "+(r.tier||"GREEN");row.appendChild(pill);
+      const conf=document.createElement("button");conf.className="confirmBtn"+(r.status==="confirmed"?" done":"");
+      conf.textContent=r.status==="confirmed"?ft("confirmed"):ft("confirm");
+      if(r.status!=="confirmed")conf.onclick=async()=>{
+        conf.disabled=true;
+        await fetch(SUP+"/api/live/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestId:r.id})});
+        pollLive();
+      };
+      row.appendChild(conf);box.appendChild(row);
+    });
+    speakersList.appendChild(box);
+  });
+  if((st.orders||[]).length){const o=document.createElement("b");o.textContent=ft("sentNote")+" ("+st.orders.length+")";ordersList.appendChild(o);}
+}
+async function pollLive(){
+  try{
+    const r=await fetch(SUP+"/api/live");
+    const st=await r.json();
+    if(st&&st.status==="summary")renderSummary(st);
+  }catch(e){}
+}
+sendPhraseBtn.onclick=async()=>{
+  const text=convInput.value.trim();
+  if(!text){convInput.focus();return;}
+  $("status").textContent=ft("processing");
+  await fetch(SUP+"/api/live/transcript",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({worker:workerInput.value.trim()||"worker",text})});
+  convInput.value="";
+  $("status").textContent="";
+};
+setInterval(pollLive,3000);
+pollLive();
 // Field feedback: send to the supervisor backend, or copy a prompt for DSH.
 $("fbSend").onclick=async()=>{
   const text=$("fbText").value.trim();
@@ -357,7 +416,6 @@ $("fbSend").onclick=async()=>{
   const w=workerInput.value.trim(),r=roleInput.value.trim();
   let sent=false;
   try{
-    const SUP=(location.port==="8787"||location.port==="8443")?location.origin:"http://127.0.0.1:8787";
     const res=await fetch(SUP+"/api/feedback",{
       method:"POST",headers:{"Content-Type":"application/json"},
       body:JSON.stringify({worker:w||"anonymous",role:r,category:$("fbCat").value,text})
