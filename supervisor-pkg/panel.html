@@ -42,9 +42,13 @@ main{max-width:580px;margin:0 auto;padding:16px}
 .speak{background:#7c5cff}
 .fbcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:16px 0}
 .fbcard h3{margin:0 0 10px;font-size:16px}
-.tradread{background:linear-gradient(135deg,rgba(77,107,254,.08),rgba(124,92,255,.08));border:1px solid rgba(77,107,254,.3);border-left:4px solid #4D6BFE;border-radius:12px;padding:10px 12px;margin:8px 0}
-.tradread small{color:#4D6BFE;font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase}
-.tradread #tradDisplay{font-size:19px;font-weight:700;line-height:1.4;margin-top:4px;white-space:pre-wrap}
+.tradread{background:#ffffff;border:2px solid #4D6BFE;border-left:8px solid #4D6BFE;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 10px 30px rgba(77,107,254,.18)}
+.tradread-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.tradread small{color:#4D6BFE;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.tradread #tradClearBtn{border:none;background:var(--line2);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}
+.tradread #tradDisplay{font-size:26px;font-weight:800;line-height:1.5;white-space:pre-wrap;color:#101828}
+body.dark .tradread{background:#141f31}
+body.dark .tradread #tradDisplay{color:#e6ecf7}
 .tradcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0}
 .tradrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0;flex-wrap:wrap}
 .tradToggle{border:none;border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;background:var(--line2);color:var(--muted);cursor:pointer}
@@ -117,7 +121,10 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
       <span class="langmini" id="tradLangs"></span>
     </div>
     <div class="tradread" id="tradReadBox" style="display:none">
-      <small id="tradReadLabel">👁️ Lo que dice el cliente:</small>
+      <div class="tradread-head">
+        <small id="tradReadLabel">👁️ Lo que dice el cliente:</small>
+        <button id="tradClearBtn">🗑️</button>
+      </div>
       <div id="tradDisplay"></div>
     </div>
     <p class="note" id="tradHint"></p>
@@ -440,7 +447,7 @@ async function translateUtterance(text,mode){
       lastClientLang=j.detected&&j.detected!==cur?j.detected:lastClientLang;
       $("tradReadBox").style.display="block";
       const d=$("tradDisplay");
-      d.textContent=(d.textContent?d.textContent+"\n":"")+j.translation;
+      d.textContent=j.translation+(d.textContent?"\n"+d.textContent:"");
       convInput.value=convInput.value?convInput.value+"\n[client] "+j.translation:j.translation;
     }else{
       const spk=tradOther!=="AUTO"?tradOther:lastClientLang;
@@ -455,6 +462,7 @@ async function translateUtterance(text,mode){
   }catch(e){}
 }
 $("readForMeBtn").onclick=async()=>{if(tradOn&&convInput.value.trim())await translateUtterance(convInput.value.trim(),"client");};
+$("tradClearBtn").onclick=()=>{$("tradDisplay").textContent="";};
 $("newConvBtn").onclick=async()=>{await fetch(SUP+"/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";$("tradReadBox").style.display="none";$("tradDisplay").textContent="";};
 $("backBtn").onclick=()=>{summaryCard.style.display="none";};
 // ── The real field flow: phrase → transcript → FLASH summary → confirm ──
