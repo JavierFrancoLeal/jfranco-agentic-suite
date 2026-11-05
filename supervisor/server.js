@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.78";
+const VERSION = "1.0.79";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -160,7 +160,7 @@ function ts() { return new Date().toISOString(); }
 // Without the key, the standby agent (tools/agent-standby.sh) takes over.
 const BRAIN_BASE = "https://api.deepseek.com/chat/completions";
 async function brain(model, prompt, maxTokens) {
-  const key = process.env.DEEPSEEK_API_KEY || "";
+  const key = clientKey() || process.env.DEEPSEEK_API_KEY || "";
   if (!key) throw new Error("no DEEPSEEK_API_KEY");
   const r = await fetch(BRAIN_BASE, {
     method: "POST",
@@ -179,7 +179,11 @@ function jsonBlock(text) {
   if (a < 0 || b <= a) return null;
   try { return JSON.parse(String(text).slice(a, b + 1)); } catch { return null; }
 }
-function brainOn() { return !!process.env.DEEPSEEK_API_KEY; }
+const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
+function settingsRead() { try { return JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8")); } catch { return {}; } }
+function settingsWrite(obj) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(SETTINGS_FILE, JSON.stringify(obj, null, 2)); }
+function clientKey() { const s0 = settingsRead(); return (s0.apiKey && String(s0.apiKey).trim()) || ""; }
+function brainOn() { return !!clientKey() || !!process.env.DEEPSEEK_API_KEY; }
 // ── The orchestration layer: routing table, telemetry, executor ──
 const ROUTES = {
   transcript: { model: "deepseek-flash", budget: 0.002 },
@@ -557,6 +561,19 @@ async function api(req, res, pathname) {
     if (b.sector) { try { const dir = process.env.DSH_SECTOR_PACKS_DIR || path.join(ROOT, "docs", "sector-packs"); fs.copyFileSync(path.join(dir, String(b.sector) + ".json"), SECTOR_FILE); } catch {} }
     const token = issue(b.user, "owner", b.user);
     return send(res, 200, { token, name: b.user, role: "owner", label: b.user }, true);
+  }
+  if (pathname === "/api/settings/key" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const s0 = settingsRead();
+    if (String(b.key || "").trim()) s0.apiKey = String(b.key).trim();
+    else delete s0.apiKey;
+    settingsWrite(s0);
+    return send(res, 200, { ok: true, hasKey: !!clientKey(), source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none") });
+  }
+  if (pathname === "/api/settings/status" && req.method === "GET") {
+    if (!ownerOnly(res, req)) return;
+    return send(res, 200, { hasKey: !!clientKey(), source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none"), dailyBudget: DAILY_BUDGET_USD, models: { fast: ROUTES.transcript.model, deep: ROUTES.deep.model } });
   }
   if (pathname === "/api/nodes" && req.method === "GET") { if (!ownerOnly(res, req)) return; const nf = path.join(DATA_DIR, "nodes.json"); let n = []; try { n = JSON.parse(fs.readFileSync(nf, "utf8")); } catch {} return send(res, 200, { nodes: n }); }
   if (pathname === "/api/nodes" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); if (!b.url || !b.name) return send(res, 400, { error: "name and url required" }); const nf = path.join(DATA_DIR, "nodes.json"); fs.mkdirSync(DATA_DIR, { recursive: true }); let n = []; try { n = JSON.parse(fs.readFileSync(nf, "utf8")); } catch {} const i = n.findIndex(x => x.url === b.url); if (i >= 0) n[i] = { name: String(b.name), url: String(b.url), sector: String(b.sector || ""), at: ts() }; else n.push({ name: String(b.name), url: String(b.url), sector: String(b.sector || ""), at: ts() }); fs.writeFileSync(nf, JSON.stringify(n)); return send(res, 200, { nodes: n }); }

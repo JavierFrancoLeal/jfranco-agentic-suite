@@ -154,6 +154,7 @@ bullet(doc, "Après le pilote : ", "conseil consultatif de 3 à 5 personnes (pro
 # ── 9. ORGANISME ─────────────────────────────────────────────
 section(doc, "10", "L'organisme technologique — déjà réel, pas une idée", "Délégable : directeur technique — l'entrepreneur n'a pas besoin de lire ceci")
 para(doc, "Cet organisme n'est pas un projet sur papier : il existe déjà, en version bêta, sur plusieurs plateformes. Il a été construit par l'intelligence artificielle agéntique et son fondateur — l'IA a écrit le code, l'humain a décidé, vérifié et signé chaque étape. Les registres publics en font foi.")
+para(doc, "Souveraineté totale par conception : la clé d'API appartient au client et reste écrite sur sa propre machine ; ses données et sa télémétrie demeurent dans son silo. Trasunto ne détient ni ne traite aucun renseignement personnel — il installe, met au point, met à jour et accompagne. Le client peut changer de clé ou de fournisseur à tout moment, sans dépendre de Trasunto pour continuer.", size=9.5, color=MUTED)
 table3(doc, [
     ("Registres publics", "GitHub : github.com/JavierFrancoLeal/jfranco-agentic-suite — 150+ commits documentés · npm : @javierfrancoleal — les 7 organes et le superviseur publiés et installables", "Preuve tangible"),
     ("Fanal (bêta)", "Application de bureau (macOS, DMG), navigateur, PWA installable (Android/iOS), wallboard — la même application sur cinq plateformes ; caisse, journée, alertes, centre de notifications, pont Facebook", "Produit"),
@@ -194,6 +195,6 @@ cite(doc, "Conseil de la Première Nation des Innus Essipit", "https://www.essip
 
 footer(doc, "Trasunto inc. · Charlevoix, Québec", "Plan d'affaires v3.0 · Novembre 2026")
 
-out = sys.argv[1] if len(sys.argv) > 1 else "FRANCO-VISION-PLAN-AFFAIRES.docx"
+out = sys.argv[1] if len(sys.argv) > 1 else "TRASUNTO-PLAN-AFFAIRES.docx"
 doc.save(out)
 print("saved", out)

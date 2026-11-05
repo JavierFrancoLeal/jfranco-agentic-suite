@@ -85,3 +85,23 @@ demand, locale/theme tokens as separate artifacts.
 1. ✅ Done: organs' core, routing table, telemetry, executor, federation stub, token gate, /api/state.
 2. Signing/notarization before the first real client install (operator step).
 3. Module splitting only if a real performance need appears on client hardware.
+
+## 5. Client sovereignty architecture (2026-11-05 decision)
+
+The client is an information SILO and the owner of everything in it:
+
+- The client's own DEEPSEEK_API_KEY, written on the client's machine only
+  (owner UI card → DATA_DIR/settings.json; the key is never returned by
+  any endpoint, never logged, never leaves the silo).
+- The client recharges their own tokens; Trasunto holds no keys, no data,
+  no telemetry content.
+- Trasunto's product role: install, update, automate (the DSH factory
+  produces the updates; the client receives them as Fanal releases),
+  accompany. Loi 25: Trasunto ne détient ni ne traite aucun renseignement
+  personnel — minimal obligations by design.
+- Exit guarantee: the client can change key or provider at any moment;
+  the AI keeps working without Trasunto.
+
+Implemented: /api/settings/key (owner), /api/settings/status, clientKey()
+takes precedence over the environment key, the 🔑 key card in the owner
+view, and the sovereignty paragraph in the Plan d'affaires (Section 9).
