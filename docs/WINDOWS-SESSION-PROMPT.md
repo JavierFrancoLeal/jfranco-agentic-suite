@@ -52,17 +52,38 @@ PROMPT END
 
 ## How to run this on a SINGLE MacBook Air M1 (no second machine)
 
-The same computer can host a Windows virtual machine:
+The same computer can host a Windows virtual machine. CURRENT steps
+(verified against the official UTM docs, 2026 — the old "gallery"
+button no longer exists):
 
-1. Install **UTM** (free, made for Apple Silicon): https://mac.getutm.app
-2. Inside UTM's gallery, pick **"Windows 11 ARM"** — it downloads the
-   official Microsoft VHDX and creates the machine for you.
-3. Boot the VM → inside Windows: install **Git for Windows**
-   (git-scm.com) and **Node.js ARM64** (nodejs.org, the Windows ARM64
-   build).
-4. Install **DeepSeek Harness for Windows** (the official installer; if
+1. Install **UTM**: https://mac.getutm.app
+2. Install **CrystalFetch** (the tool UTM itself recommends for getting
+   the Windows installer legally from Microsoft):
+   App Store → search "CrystalFetch", or from
+   https://github.com/TuringSoftware/CrystalFetch/releases
+   → open CrystalFetch → pick the **Windows 11 ARM64** build → download
+   the ISO.
+3. In UTM, click the **"+"** button → **"Virtualize"** → **"Windows"** →
+   choose RAM/cores → make sure **"Install Windows 10 or higher"** AND
+   **"Install drivers and SPICE tools"** are checked → **Browse** →
+   select the ISO from step 2 → choose disk size → **Save** → press the
+   ▶ Run button.
+4. In the VM window, press any key to start the Windows installer and
+   follow it. Known traps (from the official docs):
+   - "This PC can't run Windows 11" → newer UTM enables Secure Boot/TPM
+     automatically; if not, the registry LabConfig bypass is in the UTM
+     docs.
+   - No network during setup → Shift+F10 → `OOBE\BYPASSNRO`, or on
+     newer builds Shift+F10 → `start ms-cxh:localonly`.
+   - Black screen after the guest tools (24H2) → eject the guest ISO
+     from the CD menu and reset.
+   (Windows needs a valid Microsoft license; for testing you can run
+   unactivated.)
+5. Inside Windows: install **Git for Windows** (git-scm.com) and
+   **Node.js ARM64** (nodejs.org, Windows ARM64 build).
+6. Install **DeepSeek Harness for Windows** (the official installer; if
    it only ships x64, Windows 11 ARM runs it under emulation).
-5. Open a DSH session inside the VM (the web GUI opens in the VM's
+7. Open a DSH session inside the VM (the web GUI opens in the VM's
    browser) and paste the prompt above.
 
 Notes: Windows 11 ARM is the only Windows that runs on an M1; x64 apps
