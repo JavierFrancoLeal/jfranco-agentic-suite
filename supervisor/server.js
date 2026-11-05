@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.65";
+const VERSION = "1.0.66";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -180,7 +180,7 @@ function jsonBlock(text) {
 }
 function brainOn() { return !!process.env.DEEPSEEK_API_KEY; }
 function processTranscript(b) {
-  const prompt = "Live mirror mode. A worker captured this conversation from the field: " + String(b.text || "") + " Decode it, split it by person (Person 1, Person 2…), assign each request its tier (GREEN/SEMI/YELLOW/RED). If any speech is not in French, translate it into French inside the summary. Reply with ONLY one JSON object: {\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}";
+  const prompt = "Live mirror mode. A worker captured this conversation from the field: " + String(b.text || "") + " Decode it: split by person (Person 1, Person 2…) and keep ONLY the actionable requests — orders, reservations, modifications, questions a client asks. IGNORE greetings, jokes, chit-chat, and any noise that needs no action. If any speech is not in French, translate it into French inside the summary. Assign each request its tier (GREEN/SEMI/YELLOW/RED). If nothing needs action, return an empty speakers array. Reply with ONLY one JSON object: {\"speakers\":[{\"name\":\"<person>\",\"requests\":[{\"text\":\"<request>\",\"tier\":\"<tier>\"}]}]}";
   brain("deepseek-flash", prompt).then((out) => {
     let j = jsonBlock(out);
     if (!j || !Array.isArray(j.speakers)) {

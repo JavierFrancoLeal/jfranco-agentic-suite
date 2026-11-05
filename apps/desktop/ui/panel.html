@@ -287,7 +287,45 @@ function pill(l){
   const b=document.createElement("button");
   b.className="pill";b.dataset.l=l;
   b.textContent=l.toUpperCase()+" · "+LANG[l];
-  b.onclick=()=>{cur=l;applyLang();};
+  b.onclick=()=>{cur=l;const F={
+ es:{sayPh:"Habla o escribe lo que dijo cada persona…",sendPhrase:"📤 Enviar frase",summaryTitle:"Resumen de la conversación",sentNote:"Enviado a cocina y central",processing:"La IA resume…",noSummary:"El resumen aparecerá aquí.",person:"Persona",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escribe la frase aquí abajo y pulsa Enviar."},
+ en:{sayPh:"Speak or type what each person said…",sendPhrase:"📤 Send phrase",summaryTitle:"Conversation summary",sentNote:"Sent to kitchen & central",processing:"The AI is summarizing…",noSummary:"The summary will appear here.",person:"Person",confirm:"Confirm ✓",confirmed:"Confirmed ✔",typeHint:"type the phrase below and press Send."},
+ fr:{sayPh:"Parlez ou écrivez ce que chaque personne a dit…",sendPhrase:"📤 Envoyer",summaryTitle:"Résumé de la conversation",sentNote:"Envoyé en cuisine et au central",processing:"L'IA résume…",noSummary:"Le résumé apparaîtra ici.",person:"Personne",confirm:"Confirmer ✓",confirmed:"Confirmé ✔",typeHint:"écrivez la phrase ci-dessous et appuyez sur Envoyer."},
+ de:{sayPh:"Sprechen oder tippen Sie, was jede Person gesagt hat…",sendPhrase:"📤 Senden",summaryTitle:"Gesprächsübersicht",sentNote:"An Küche & Zentrale gesendet",processing:"Die KI fasst zusammen…",noSummary:"Die Übersicht erscheint hier.",person:"Person",confirm:"Bestätigen ✓",confirmed:"Bestätigt ✔",typeHint:"tippen Sie die Phrase unten und drücken Sie Senden."},
+ it:{sayPh:"Parla o scrivi cosa ha detto ogni persona…",sendPhrase:"📤 Invia",summaryTitle:"Riepilogo della conversazione",sentNote:"Inviato a cucina e centrale",processing:"L'IA riassume…",noSummary:"Il riepilogo apparirà qui.",person:"Persona",confirm:"Conferma ✓",confirmed:"Confermato ✔",typeHint:"scrivi la frase sotto e premi Invia."},
+ pt:{sayPh:"Fale ou escreva o que cada pessoa disse…",sendPhrase:"📤 Enviar",summaryTitle:"Resumo da conversa",sentNote:"Enviado à cozinha e central",processing:"A IA resume…",noSummary:"O resumo aparecerá aqui.",person:"Pessoa",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escreva a frase abaixo e pressione Enviar."},
+ zh:{sayPh:"说出或写下每个人说的话…",sendPhrase:"📤 发送",summaryTitle:"对话摘要",sentNote:"已发送到厨房和中心",processing:"AI 正在总结…",noSummary:"摘要将显示在这里。",person:"人",confirm:"确认 ✓",confirmed:"已确认 ✔",typeHint:"在下方输入内容并点击发送。"},
+ ja:{sayPh:"各人の発言を話すか入力してください…",sendPhrase:"📤 送信",summaryTitle:"会話の要約",sentNote:"キッチンと本部へ送信済み",processing:"AI が要約中…",noSummary:"要約がここに表示されます。",person:"人",confirm:"確認 ✓",confirmed:"確認済み ✔",typeHint:"下に入力して送信してください。"},
+ ko:{sayPh:"각 사람이 한 말을 말하거나 입력하세요…",sendPhrase:"📤 보내기",summaryTitle:"대화 요약",sentNote:"주방과 중앙으로 전송됨",processing:"AI가 요약 중…",noSummary:"요약이 여기에 표시됩니다.",person:"사람",confirm:"확인 ✓",confirmed:"확인됨 ✔",typeHint:"아래에 입력하고 보내기를 누르세요."},
+ ar:{sayPh:"تحدث أو اكتب ما قاله كل شخص…",sendPhrase:"📤 إرسال",summaryTitle:"ملخص المحادثة",sentNote:"أُرسل إلى المطبخ والمركز",processing:"الذكاء الاصطناعي يلخص…",noSummary:"سيظهر الملخص هنا.",person:"شخص",confirm:"تأكيد ✓",confirmed:"تم التأكيد ✔",typeHint:"اكتب العبارة بالأسفل واضغط إرسال."}
+};
+const TIER={GREEN:"🟢",SEMI:"⚑",YELLOW:"🟡",RED:"🔴"};
+function ft(k){return F[cur][k]||F.en[k]||k;}
+function renderSummary(st){
+  summaryCard.style.display="block";
+  speakersList.innerHTML="";
+  ordersList.innerHTML="";
+  (st.speakers||[]).forEach(p=>{
+    const box=document.createElement("div");box.className="person";
+    const name=document.createElement("b");name.textContent=ft("person")+" — "+(p.name||"?");box.appendChild(name);
+    (p.requests||[]).forEach(r=>{
+      const row=document.createElement("div");row.className="req";
+      const txt=document.createElement("span");txt.textContent=r.text;row.appendChild(txt);
+      const pill=document.createElement("span");pill.className="tier tier-"+(r.tier||"GREEN");pill.textContent=TIER[r.tier||"GREEN"]+" "+(r.tier||"GREEN");row.appendChild(pill);
+      const conf=document.createElement("button");conf.className="confirmBtn"+(r.status==="confirmed"?" done":"");
+      conf.textContent=r.status==="confirmed"?ft("confirmed"):ft("confirm");
+      if(r.status!=="confirmed")conf.onclick=async()=>{
+        conf.disabled=true;
+        await fetch(SUP+"/api/live/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestId:r.id})});
+        pollLive();
+      };
+      row.appendChild(conf);box.appendChild(row);
+    });
+    speakersList.appendChild(box);
+  });
+  if((st.orders||[]).length){const o=document.createElement("b");o.textContent=ft("sentNote")+" ("+st.orders.length+")";ordersList.appendChild(o);}
+}
+applyLang();};
   langsEl.appendChild(b);
 }
 for(const l of Object.keys(LANG))pill(l);
@@ -354,44 +392,6 @@ function startRec(){
 }
 // ── The real field flow: phrase → transcript → FLASH summary → confirm ──
 const SUP=location.origin;
-const F={
- es:{sayPh:"Habla o escribe lo que dijo cada persona…",sendPhrase:"📤 Enviar frase",summaryTitle:"Resumen de la conversación",sentNote:"Enviado a cocina y central",processing:"La IA resume…",noSummary:"El resumen aparecerá aquí.",person:"Persona",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escribe la frase aquí abajo y pulsa Enviar."},
- en:{sayPh:"Speak or type what each person said…",sendPhrase:"📤 Send phrase",summaryTitle:"Conversation summary",sentNote:"Sent to kitchen & central",processing:"The AI is summarizing…",noSummary:"The summary will appear here.",person:"Person",confirm:"Confirm ✓",confirmed:"Confirmed ✔",typeHint:"type the phrase below and press Send."},
- fr:{sayPh:"Parlez ou écrivez ce que chaque personne a dit…",sendPhrase:"📤 Envoyer",summaryTitle:"Résumé de la conversation",sentNote:"Envoyé en cuisine et au central",processing:"L'IA résume…",noSummary:"Le résumé apparaîtra ici.",person:"Personne",confirm:"Confirmer ✓",confirmed:"Confirmé ✔",typeHint:"écrivez la phrase ci-dessous et appuyez sur Envoyer."},
- de:{sayPh:"Sprechen oder tippen Sie, was jede Person gesagt hat…",sendPhrase:"📤 Senden",summaryTitle:"Gesprächsübersicht",sentNote:"An Küche & Zentrale gesendet",processing:"Die KI fasst zusammen…",noSummary:"Die Übersicht erscheint hier.",person:"Person",confirm:"Bestätigen ✓",confirmed:"Bestätigt ✔",typeHint:"tippen Sie die Phrase unten und drücken Sie Senden."},
- it:{sayPh:"Parla o scrivi cosa ha detto ogni persona…",sendPhrase:"📤 Invia",summaryTitle:"Riepilogo della conversazione",sentNote:"Inviato a cucina e centrale",processing:"L'IA riassume…",noSummary:"Il riepilogo apparirà qui.",person:"Persona",confirm:"Conferma ✓",confirmed:"Confermato ✔",typeHint:"scrivi la frase sotto e premi Invia."},
- pt:{sayPh:"Fale ou escreva o que cada pessoa disse…",sendPhrase:"📤 Enviar",summaryTitle:"Resumo da conversa",sentNote:"Enviado à cozinha e central",processing:"A IA resume…",noSummary:"O resumo aparecerá aqui.",person:"Pessoa",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escreva a frase abaixo e pressione Enviar."},
- zh:{sayPh:"说出或写下每个人说的话…",sendPhrase:"📤 发送",summaryTitle:"对话摘要",sentNote:"已发送到厨房和中心",processing:"AI 正在总结…",noSummary:"摘要将显示在这里。",person:"人",confirm:"确认 ✓",confirmed:"已确认 ✔",typeHint:"在下方输入内容并点击发送。"},
- ja:{sayPh:"各人の発言を話すか入力してください…",sendPhrase:"📤 送信",summaryTitle:"会話の要約",sentNote:"キッチンと本部へ送信済み",processing:"AI が要約中…",noSummary:"要約がここに表示されます。",person:"人",confirm:"確認 ✓",confirmed:"確認済み ✔",typeHint:"下に入力して送信してください。"},
- ko:{sayPh:"각 사람이 한 말을 말하거나 입력하세요…",sendPhrase:"📤 보내기",summaryTitle:"대화 요약",sentNote:"주방과 중앙으로 전송됨",processing:"AI가 요약 중…",noSummary:"요약이 여기에 표시됩니다.",person:"사람",confirm:"확인 ✓",confirmed:"확인됨 ✔",typeHint:"아래에 입력하고 보내기를 누르세요."},
- ar:{sayPh:"تحدث أو اكتب ما قاله كل شخص…",sendPhrase:"📤 إرسال",summaryTitle:"ملخص المحادثة",sentNote:"أُرسل إلى المطبخ والمركز",processing:"الذكاء الاصطناعي يلخص…",noSummary:"سيظهر الملخص هنا.",person:"شخص",confirm:"تأكيد ✓",confirmed:"تم التأكيد ✔",typeHint:"اكتب العبارة بالأسفل واضغط إرسال."}
-};
-const TIER={GREEN:"🟢",SEMI:"⚑",YELLOW:"🟡",RED:"🔴"};
-function ft(k){return F[cur][k]||F.en[k]||k;}
-function renderSummary(st){
-  summaryCard.style.display="block";
-  speakersList.innerHTML="";
-  ordersList.innerHTML="";
-  (st.speakers||[]).forEach(p=>{
-    const box=document.createElement("div");box.className="person";
-    const name=document.createElement("b");name.textContent=ft("person")+" — "+(p.name||"?");box.appendChild(name);
-    (p.requests||[]).forEach(r=>{
-      const row=document.createElement("div");row.className="req";
-      const txt=document.createElement("span");txt.textContent=r.text;row.appendChild(txt);
-      const pill=document.createElement("span");pill.className="tier tier-"+(r.tier||"GREEN");pill.textContent=TIER[r.tier||"GREEN"]+" "+(r.tier||"GREEN");row.appendChild(pill);
-      const conf=document.createElement("button");conf.className="confirmBtn"+(r.status==="confirmed"?" done":"");
-      conf.textContent=r.status==="confirmed"?ft("confirmed"):ft("confirm");
-      if(r.status!=="confirmed")conf.onclick=async()=>{
-        conf.disabled=true;
-        await fetch(SUP+"/api/live/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestId:r.id})});
-        pollLive();
-      };
-      row.appendChild(conf);box.appendChild(row);
-    });
-    speakersList.appendChild(box);
-  });
-  if((st.orders||[]).length){const o=document.createElement("b");o.textContent=ft("sentNote")+" ("+st.orders.length+")";ordersList.appendChild(o);}
-}
 async function pollLive(){
   try{
     const r=await fetch(SUP+"/api/live");
