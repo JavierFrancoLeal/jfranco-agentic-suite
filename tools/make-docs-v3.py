@@ -188,6 +188,10 @@ def one_pager(out):
         ("Le rapport se prépare tout seul : ", "activité, ventes, coûts. Fini le tableur du dimanche soir."),
     ])
 
+    label(doc, "Les trois lignes de produit")
+    para(doc, "Le Publicateur rédige vos publications et vous publiez. Le Répondant lit vos messages (Messenger, courriels, Airbnb) et propose la réponse dans la langue de votre client — vous envoyez. Le Secrétaire remplit vos formulaires et factures, laisse vide ce qui est délicat — vous signez. Dans les trois cas : l'IA prépare, l'humain décide.", space_after=4)
+    para(doc, "Fanal est neutre : une maison Apple, deux prises interchangeables — Google ou Microsoft 365 — et un seul cerveau, la clé du client.", size=8.5, color=MUTED, space_after=8)
+
     label(doc, "Comment ça vous touche")
     para(doc, "Vous gardez vos habitudes : vos outils, votre terminal de paiement, votre façon de travailler. On installe, on forme votre équipe, et vous continuez comme avant — avec un deuxième regard qui ne dort jamais. L'IA potentialise votre savoir-faire ; elle ne le remplace jamais. Vous restez maître de vos outils.", space_after=8)
 

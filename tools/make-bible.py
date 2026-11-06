@@ -94,8 +94,13 @@ table3(doc, [
     ("Service 4", "Accompagnement continu — le cœur du modèle : le client reste maître de ses outils, avec un partenaire stable", "249–449 $/mois"),
     ("Service 5", "Ateliers, conférences et formations — avec la Chambre de commerce, la SADC et les associations sectorielles", "750–1 200 $"),
     ("Le produit", "Fanal : l'assistant de travail installé chez le client — caisse, contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes et centre de notifications « la IA informe, l'humain décide »", "SaaS"),
+    ("Ligne 1", "Le Publicateur — publications Facebook/Instagram/X : Fanal rédige le brouillon en français, le client publie", "Inclus"),
+    ("Ligne 2", "Le Répondant — Messenger/Gmail/Airbnb : Fanal lit la conversation, propose la réponse dans la langue du client (10 langues), le client envoie", "Inclus"),
+    ("Ligne 3", "Le Secrétaire — formulaires, factures, comptabilité : Fanal remplit l'évident, laisse vide le délicat, le client signe", "Inclus"),
     ("Travailleurs autonomes", "Niveau 1 dédié : activation 1 500 $ + 199–349 $/mois — l'IA prépare, le professionnel signe ; compatible avec les ordres professionnels", "Micro-entreprises"),
 ], header=("Offre", "Ce que c'est", "Tarif"))
+
+para(doc, "Fanal est neutre par conception : une maison Apple, deux prises interchangeables — Google ou Microsoft 365 — et un seul cerveau (la clé du client). Copilot ne parle que Microsoft, Gemini ne parle que Google ; Fanal parle avec les deux, dans l'écosystème que le client possède déjà. Trasunto n'emprisonne personne : le client change de clé ou de fournisseur quand il veut.", size=9.5, color=MUTED, space_after=8)
 
 # ── 4. MODÈLE + VIABILITÉ ───────────────────────────────────
 section(doc, "4", "Le modèle d'affaires et la viabilité", "L'entrepreneur + le comptable")
