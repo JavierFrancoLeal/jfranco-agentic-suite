@@ -53,7 +53,7 @@ for f in "$ROOT"/docs/sector-packs/*.json; do
   cmp -s "$f" "$ROOT/supervisor-pkg/sector-packs/$b" 2>/dev/null || { cp "$f" "$ROOT/supervisor-pkg/sector-packs/$b"; CHANGED=1; }
 done
 # Desktop app bundle: keep the brain + UI copies fresh
-  for pair in "supervisor/dashboard.html:apps/desktop/brain/dashboard.html" "supervisor/dashboard-i18n.js:apps/desktop/brain/dashboard-i18n.js" "supervisor/browser-cdp.js:apps/desktop/brain/browser-cdp.js" "ui/panel.html:apps/desktop/ui/panel.html" "ui/manifest.webmanifest:apps/desktop/ui/manifest.webmanifest" "ui/sw.js:apps/desktop/ui/sw.js"; do
+  for pair in "supervisor/server.js:apps/desktop/brain/server.js" "supervisor/dashboard.html:apps/desktop/brain/dashboard.html" "supervisor/dashboard-i18n.js:apps/desktop/brain/dashboard-i18n.js" "supervisor/browser-cdp.js:apps/desktop/brain/browser-cdp.js" "ui/panel.html:apps/desktop/ui/panel.html" "ui/manifest.webmanifest:apps/desktop/ui/manifest.webmanifest" "ui/sw.js:apps/desktop/ui/sw.js"; do
     src="${pair%%:*}"; dst="${pair##*:}";
     cmp -s "$ROOT/$src" "$ROOT/$dst" || { cp "$ROOT/$src" "$ROOT/$dst"; CHANGED=1; }
   done
