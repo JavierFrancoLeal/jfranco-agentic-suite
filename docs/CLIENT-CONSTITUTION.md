@@ -60,3 +60,30 @@ The files live in the CLIENT's silo, co-written with the client's own
 words; Fanal consults them before every proposal and records every
 decision after it. The human remains the signer; the files make the
 signing fast. "L'IA travaille. L'humain veille, décide, révise."
+
+## Identity beyond the name (added 2026-11-06)
+
+The NAME is only a label; the CHANNEL is the key. Contacts in the
+Memory carry identifiers (phone, email, Facebook/Messenger account).
+When a message arrives, the Répondant extracts the sender from the
+header and matches by the identifier first, by the name second — and
+when the identity is ambiguous (two Jean Tremblay), the machine
+DECLARES the ambiguity and asks the human instead of guessing. The
+record then carries WHO was identified and by WHICH identifier.
+
+## The bilateral accountability (the differential idea)
+
+The human-in-the-loop is not fixed to one chair: the burden attaches to
+the actor who carries the interest for the irreversible act.
+
+- Example 1 — the ORDER: the diner confirms "lo de siempre". The
+  burden, the traceability and the decision are HIS — the customer end
+  of the spectrum.
+- Example 2 — the INVOICE: the owner verifies, approves and pays. The
+  burden, the traceability and the decision are HIS — the owner end.
+
+Fanal is the neutral notary in the middle: the same semáforo, the same
+registry, and the record states WHO verified (role + name + channel +
+timestamp) — whichever end the burden belongs to for that action. The
+verification power is distributed to the actor who KNOWS: the diner
+knows his order; the owner knows his money.
