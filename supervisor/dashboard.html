@@ -412,6 +412,7 @@ body.wall pre{max-height:40vh}
         <select id="memType" style="flex:1"><option value="client">client</option><option value="fournisseur">fournisseur</option><option value="partenaire">partenaire</option></select>
       </div>
       <input id="memOrder" placeholder="« lo de siempre » · adresse · prix" style="margin-top:6px">
+      <input id="memIds" placeholder="identifiants : téléphone / courriel / facebook" style="margin-top:6px">
       <button class="btn small" id="memSave" style="margin-top:6px">Enregistrer</button>
       <div id="memList" style="margin-top:6px;font-size:12.5px"></div>
     </div>
@@ -538,6 +539,7 @@ body.wall pre{max-height:40vh}
         <select id="memType" style="flex:1"><option value="client">client</option><option value="fournisseur">fournisseur</option><option value="partenaire">partenaire</option></select>
       </div>
       <input id="memOrder" placeholder="« lo de siempre » · adresse · prix" style="margin-top:6px">
+      <input id="memIds" placeholder="identifiants : téléphone / courriel / facebook" style="margin-top:6px">
       <button class="btn small" id="memSave" style="margin-top:6px">Enregistrer</button>
       <div id="memList" style="margin-top:6px;font-size:12.5px"></div>
     </div>
@@ -995,7 +997,7 @@ try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.
 async function loadConstitution(){try{const r=await api("/api/constitution");if(!r||r.error)return;const ta=$("constitutionFields");if(ta&&!ta.dataset.touched)ta.value=["philosophie: "+(r.philosophy||""),"ton: "+(r.tone||""),"politiques: "+(r.policies||""),"rabais: "+(r.discountRule||""),"prix minimum: "+(r.minPrice||""),"escalades: "+(r.escalation||"")].join("\n");}catch(e){}}
 async function saveConstitution(){const v=$("constitutionFields").value;const o={};v.split("\n").forEach(l=>{const i=l.indexOf(":");if(i>0)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});const map={philosophie:"philosophy",ton:"tone",politiques:"policies",rabais:"discountRule","prix minimum":"minPrice",escalades:"escalation"};const body={};Object.keys(map).forEach(k=>body[map[k]]=o[k]||"");await api("/api/constitution",{method:"POST",body});$("constitutionStatus").textContent="✔ "+t("saved");}
 async function loadMemory(){try{const r=await api("/api/memory");const cs=(r&&r.contacts)||[];$("memList").innerHTML=cs.map((c,i)=>"<div>• <b>"+esc(c.name)+"</b> ("+esc(c.type)+") "+(c.order?esc(c.order)+" ":"")+(c.address?esc(c.address)+" ":"")+(c.price?esc(c.price):"")+"</div>").join("");}catch(e){}}
-async function saveMemory(){const b={name:$("memName").value.trim(),type:$("memType").value,order:$("memOrder").value.trim()};if(!b.name)return;await api("/api/memory",{method:"POST",body:b});$("memName").value="";$("memOrder").value="";loadMemory();}
+async function saveMemory(){const b={name:$("memName").value.trim(),type:$("memType").value,order:$("memOrder").value.trim(),ids:$("memIds").value.trim()};if(!b.name)return;await api("/api/memory",{method:"POST",body:b});$("memName").value="";$("memOrder").value="";$("memIds").value="";loadMemory();}
 async function pollKpi(){try{const r=await api("/api/kpi");if(!r||r.error)return;const el=$("kpiLine");if(el)el.textContent="⏱️ "+t("kpiSaved")+": "+r.timeSavedMin+" min · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections;}catch(e){}}
 try{$("constitutionSave").addEventListener("click",saveConstitution);$("memSave").addEventListener("click",saveMemory);}catch(e){}
 async function fbPrepare(task){const r=await api("/api/facebook/prepare",{method:"POST",body:{text:task.result}});showMsg(r&&r.status?r.status:(r&&r.error||t("saved")));}
@@ -1006,7 +1008,7 @@ async function repondantScan(){const b=$("repondantScan");b.disabled=true;b.text
   if(!r||!r.ok){box.innerHTML="<p class=\"hint\">⚠ "+(r&&r.error||"")+"</p>";return;}
   lastReply=r.reply||"";
   box.innerHTML="<div class=\"st-res\">"+esc((r.conv||"").slice(0,180))+"…</div>"+
-    (r.reply?("<div class=\"st-res\" style=\"border-left:3px solid #7c5cff;padding-left:8px\"><span class=\"hint\">"+(r.langName?("["+esc(r.langName)+"] "):"")+"</span>"+esc(r.reply)+"</div><div class=\"st-why\">"+esc(r.why||"")+"</div><button class=\"btn small\" id=\"repondantPrepare\">📨 "+t("repondantPrepareBtn")+"</button>"):"<p class=\"hint\">"+t("repondantNoKey")+"</p>");
+    (r.reply?("<div class=\"st-res\" style=\"border-left:3px solid #7c5cff;padding-left:8px\"><span class=\"hint\">"+(r.langName?("["+esc(r.langName)+"] "):"")+(r.sender&&r.sender!=="ambigu"?("👤 "+esc(r.sender)+" · "):(r.sender==="ambigu"?"👥 AMBIGÜE — vérifiez qui c'est · ":""))+"</span>"+esc(r.reply)+"</div><div class=\"st-why\">"+esc(r.why||"")+"</div><button class=\"btn small\" id=\"repondantPrepare\">📨 "+t("repondantPrepareBtn")+"</button>"):"<p class=\"hint\">"+t("repondantNoKey")+"</p>");
   const pb=$("repondantPrepare");if(pb)pb.onclick=async()=>{const rr=await api("/api/repondant/prepare",{method:"POST",body:{text:lastReply}});showMsg(rr&&rr.status?rr.status:(rr&&rr.error||""));};}
 let lastValues={};
 async function secretaireScan(){const b=$("secretaireScan");b.disabled=true;b.textContent="…";const r=await api("/api/secretaire/scan",{method:"POST"});b.disabled=false;b.textContent=t("secretaireScanBtn");

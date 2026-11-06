@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/accountability-auditor",
-  "version": "1.1.85",
+  "version": "1.1.86",
   "description": "Agentic-workflow stage 3: mandatory reflection and verification pass that emits an Accountability Report before every final output.",
   "author": "J.Franco",
   "license": "MIT",
