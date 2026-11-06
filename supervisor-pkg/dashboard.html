@@ -954,7 +954,7 @@ async function repondantScan(){const b=$("repondantScan");b.disabled=true;b.text
   if(!r||!r.ok){box.innerHTML="<p class=\"hint\">⚠ "+(r&&r.error||"")+"</p>";return;}
   lastReply=r.reply||"";
   box.innerHTML="<div class=\"st-res\">"+esc((r.conv||"").slice(0,180))+"…</div>"+
-    (r.reply?("<div class=\"st-res\" style=\"border-left:3px solid #7c5cff;padding-left:8px\">"+esc(r.reply)+"</div><div class=\"st-why\">"+esc(r.why||"")+"</div><button class=\"btn small\" id=\"repondantPrepare\">📨 "+t("repondantPrepareBtn")+"</button>"):"<p class=\"hint\">"+t("repondantNoKey")+"</p>");
+    (r.reply?("<div class=\"st-res\" style=\"border-left:3px solid #7c5cff;padding-left:8px\"><span class=\"hint\">"+(r.langName?("["+esc(r.langName)+"] "):"")+"</span>"+esc(r.reply)+"</div><div class=\"st-why\">"+esc(r.why||"")+"</div><button class=\"btn small\" id=\"repondantPrepare\">📨 "+t("repondantPrepareBtn")+"</button>"):"<p class=\"hint\">"+t("repondantNoKey")+"</p>");
   const pb=$("repondantPrepare");if(pb)pb.onclick=async()=>{const rr=await api("/api/repondant/prepare",{method:"POST",body:{text:lastReply}});showMsg(rr&&rr.status?rr.status:(rr&&rr.error||""));};}
 try{$("repondantScan").addEventListener("click",repondantScan);}catch(e){}
 try{
