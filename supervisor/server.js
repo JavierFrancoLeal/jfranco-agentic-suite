@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.97";
+const VERSION = "1.0.98";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -159,18 +159,36 @@ function ts() { return new Date().toISOString(); }
 // real-time demand → deepseek-flash; deep analysis → deepseek-v4-pro.
 // Without the key, the standby agent (tools/agent-standby.sh) takes over.
 const BRAIN_BASE = "https://api.deepseek.com/chat/completions";
+function providersRead() {
+  try { const p = path.join(DATA_DIR, "providers.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
+  catch (e) { return {}; }
+}
+function providersWrite(p) { try { fs.writeFileSync(path.join(DATA_DIR, "providers.json"), JSON.stringify(p)); } catch (e) {} }
+// The anti-fragile brain: every tier routes to a CONFIGURED provider —
+// cloud or LOCAL (open models). Change providers.json and the brain changes.
+function route(model) {
+  const pr = providersRead();
+  const tier = String(model).includes("v4-pro") ? "deep" : "fast";
+  const cfg = pr[tier] || {};
+  return {
+    baseUrl: String(cfg.baseUrl || BRAIN_BASE),
+    key: String(cfg.key || clientKey() || process.env.DEEPSEEK_API_KEY || ""),
+    model: String(cfg.model || model),
+  };
+}
 async function brain(model, prompt, maxTokens) {
-  const key = clientKey() || process.env.DEEPSEEK_API_KEY || "";
-  if (!key) throw new Error("no DEEPSEEK_API_KEY");
-  const r = await fetch(BRAIN_BASE, {
+  const rt = route(model);
+  const key = rt.key;
+  if (!key) throw new Error("no API key");
+  const r = await fetch(rt.baseUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-    body: JSON.stringify({ model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (model.startsWith("deepseek-v4-pro") ? 12000 : 8000), temperature: 0.4 }),
+    body: JSON.stringify({ model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0.4 }),
   });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.choices) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
-  try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, model); } catch {}
-  try { telemetryTick("call", { model, tokens: Number(j.usage && j.usage.total_tokens) || 0 }); } catch {}
+  try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, String(rt.model || model)); } catch {}
+  try { telemetryTick("call", { model: String(rt.model || model), tokens: Number(j.usage && j.usage.total_tokens) || 0 }); } catch {}
   const m = j.choices[0].message || {};
   return m.content || m.reasoning_content || "";
 }
@@ -186,7 +204,7 @@ function clientKey() { const s0 = settingsRead(); return (s0.apiKey && String(s0
 function brainOn() { return !!clientKey() || !!process.env.DEEPSEEK_API_KEY; }
 function constitutionRead() {
   try { const p = path.join(DATA_DIR, "constitution.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
-  catch (e) { return { philosophy: "", tone: "", policies: "", discountRule: "", minPrice: "", escalation: "" }; }
+  catch (e) { return { philosophy: "", tone: "", policies: "", discountRule: "", minPrice: "", extremeDiscounts: "", escalation: "" }; }
 }
 function constitutionWrite(c) { try { fs.writeFileSync(path.join(DATA_DIR, "constitution.json"), JSON.stringify(c)); } catch (e) {} }
 function memoryRead() {
@@ -196,7 +214,7 @@ function memoryRead() {
 function memoryWrite(m) { try { fs.writeFileSync(path.join(DATA_DIR, "memory.json"), JSON.stringify(m)); } catch (e) {} }
 function constitutionCtx() {
   const c = constitutionRead();
-  return "Constitution du client: " + [c.philosophy, c.tone, c.policies, c.discountRule, c.minPrice ? "prix minimum: " + c.minPrice : "", c.escalation].filter(Boolean).join(" | ") + ". ";
+  return "Constitution du client: " + [c.philosophy, c.tone, c.policies, c.discountRule, c.minPrice ? "prix minimum: " + c.minPrice : "", c.extremeDiscounts ? "conditions extrêmes du rabais (l'offre du prix minimum exige TOUJOURS l'humain): " + c.extremeDiscounts : "", c.escalation].filter(Boolean).join(" | ") + ". ";
 }
 function memoryCtx() {
   const m = memoryRead();
@@ -665,6 +683,21 @@ async function api(req, res, pathname) {
       return send(res, 200, { ok: true, status: "Facebook ouvert, le texte est copié — collez-le dans le recuadro et publiez vous-même." });
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
   }
+  if (pathname === "/api/settings/brain" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const pr = providersRead();
+    return send(res, 200, { fast: pr.fast || { baseUrl: BRAIN_BASE, model: "deepseek-flash" }, deep: pr.deep || { baseUrl: BRAIN_BASE, model: "deepseek-v4-pro" } });
+  }
+  if (pathname === "/api/settings/brain" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const pr = providersRead();
+    if (b.fast) pr.fast = { baseUrl: String(b.fast.baseUrl || BRAIN_BASE), key: String(b.fast.key || ""), model: String(b.fast.model || "deepseek-flash") };
+    if (b.deep) pr.deep = { baseUrl: String(b.deep.baseUrl || BRAIN_BASE), key: String(b.deep.key || ""), model: String(b.deep.model || "deepseek-v4-pro") };
+    providersWrite(pr);
+    telemetryTick("action", { tier: "GREEN", what: "Brain router updated (fast: " + (pr.fast && pr.fast.model) + ", deep: " + (pr.deep && pr.deep.model) + ")" });
+    return send(res, 200, { ok: true });
+  }
   if (pathname === "/api/kpi" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
     const tel = telemetry();
@@ -694,7 +727,7 @@ async function api(req, res, pathname) {
   if (pathname === "/api/constitution" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
-    constitutionWrite({ philosophy: String(b.philosophy || ""), tone: String(b.tone || ""), policies: String(b.policies || ""), discountRule: String(b.discountRule || ""), minPrice: String(b.minPrice || ""), escalation: String(b.escalation || "") });
+    constitutionWrite({ philosophy: String(b.philosophy || ""), tone: String(b.tone || ""), policies: String(b.policies || ""), discountRule: String(b.discountRule || ""), minPrice: String(b.minPrice || ""), extremeDiscounts: String(b.extremeDiscounts || ""), escalation: String(b.escalation || "") });
     telemetryTick("action", { tier: "GREEN", what: "Constitution updated" });
     return send(res, 200, { ok: true });
   }

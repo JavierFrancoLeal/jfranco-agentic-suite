@@ -390,6 +390,13 @@ body.wall pre{max-height:40vh}
       <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
+      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        <input id="brainFast" placeholder="fast: deepseek-flash" style="flex:1;min-width:110px">
+        <input id="brainDeep" placeholder="deep: deepseek-v4-pro" style="flex:1;min-width:110px">
+        <input id="brainBase" placeholder="baseUrl (vide = DeepSeek)" style="flex:2;min-width:160px">
+      </div>
+      <button class="btn small gray" id="brainSave" style="margin-top:6px">Changer de cerveau</button>
+      <p class="hint" id="brainStatus"></p>
     </div>
     <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
@@ -401,7 +408,9 @@ body.wall pre{max-height:40vh}
     </div>
     <div class="card"><h2 id="constitutionTitle">⚖️ Constitution</h2>
       <p class="hint" id="constitutionHint"></p>
-      <textarea id="constitutionFields" rows="7" placeholder="philosophie · ton · politiques · règle de rabais · prix minimum · escalades"></textarea>
+      <textarea id="constitutionFields" rows="8" placeholder="philosophie · ton · politiques · règle de rabais · prix minimum · escalades"></textarea>
+      <label class="hint" style="margin-top:4px;display:block">Conditions extrêmes du rabais (le prix minimum = DERNIÈRE option, l'offre exige toujours l'humain) :</label>
+      <input id="constitutionExtreme" placeholder="ex: uniquement réservation ferme le jour même, chambre vide, client fidèle, max 2x/semaine">
       <button class="btn small" id="constitutionSave" style="margin-top:6px">Enregistrer</button>
       <p class="hint" id="constitutionStatus"></p>
     </div>
@@ -517,6 +526,13 @@ body.wall pre{max-height:40vh}
       <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
+      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+        <input id="brainFast" placeholder="fast: deepseek-flash" style="flex:1;min-width:110px">
+        <input id="brainDeep" placeholder="deep: deepseek-v4-pro" style="flex:1;min-width:110px">
+        <input id="brainBase" placeholder="baseUrl (vide = DeepSeek)" style="flex:2;min-width:160px">
+      </div>
+      <button class="btn small gray" id="brainSave" style="margin-top:6px">Changer de cerveau</button>
+      <p class="hint" id="brainStatus"></p>
     </div>
     <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
@@ -528,7 +544,9 @@ body.wall pre{max-height:40vh}
     </div>
     <div class="card"><h2 id="constitutionTitle">⚖️ Constitution</h2>
       <p class="hint" id="constitutionHint"></p>
-      <textarea id="constitutionFields" rows="7" placeholder="philosophie · ton · politiques · règle de rabais · prix minimum · escalades"></textarea>
+      <textarea id="constitutionFields" rows="8" placeholder="philosophie · ton · politiques · règle de rabais · prix minimum · escalades"></textarea>
+      <label class="hint" style="margin-top:4px;display:block">Conditions extrêmes du rabais (le prix minimum = DERNIÈRE option, l'offre exige toujours l'humain) :</label>
+      <input id="constitutionExtreme" placeholder="ex: uniquement réservation ferme le jour même, chambre vide, client fidèle, max 2x/semaine">
       <button class="btn small" id="constitutionSave" style="margin-top:6px">Enregistrer</button>
       <p class="hint" id="constitutionStatus"></p>
     </div>
@@ -994,8 +1012,8 @@ function showWizard(){
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
-async function loadConstitution(){try{const r=await api("/api/constitution");if(!r||r.error)return;const ta=$("constitutionFields");if(ta&&!ta.dataset.touched)ta.value=["philosophie: "+(r.philosophy||""),"ton: "+(r.tone||""),"politiques: "+(r.policies||""),"rabais: "+(r.discountRule||""),"prix minimum: "+(r.minPrice||""),"escalades: "+(r.escalation||"")].join("\n");}catch(e){}}
-async function saveConstitution(){const v=$("constitutionFields").value;const o={};v.split("\n").forEach(l=>{const i=l.indexOf(":");if(i>0)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});const map={philosophie:"philosophy",ton:"tone",politiques:"policies",rabais:"discountRule","prix minimum":"minPrice",escalades:"escalation"};const body={};Object.keys(map).forEach(k=>body[map[k]]=o[k]||"");await api("/api/constitution",{method:"POST",body});$("constitutionStatus").textContent="✔ "+t("saved");}
+async function loadConstitution(){try{const r=await api("/api/constitution");if(!r||r.error)return;const ta=$("constitutionFields");if(ta&&!ta.dataset.touched)ta.value=["philosophie: "+(r.philosophy||""),"ton: "+(r.tone||""),"politiques: "+(r.policies||""),"rabais: "+(r.discountRule||""),"prix minimum: "+(r.minPrice||""),"escalades: "+(r.escalation||"")].join("\n");const ex=$("constitutionExtreme");if(ex&&!ex.dataset.touched)ex.value=r.extremeDiscounts||"";}catch(e){}}
+async function saveConstitution(){const v=$("constitutionFields").value;const o={};v.split("\n").forEach(l=>{const i=l.indexOf(":");if(i>0)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});const map={philosophie:"philosophy",ton:"tone",politiques:"policies",rabais:"discountRule","prix minimum":"minPrice",escalades:"escalation"};const body={};Object.keys(map).forEach(k=>body[map[k]]=o[k]||"");body.extremeDiscounts=$("constitutionExtreme").value.trim();await api("/api/constitution",{method:"POST",body});$("constitutionStatus").textContent="✔ "+t("saved");}
 async function loadMemory(){try{const r=await api("/api/memory");const cs=(r&&r.contacts)||[];$("memList").innerHTML=cs.map((c,i)=>"<div>• <b>"+esc(c.name)+"</b> ("+esc(c.type)+") "+(c.order?esc(c.order)+" ":"")+(c.address?esc(c.address)+" ":"")+(c.price?esc(c.price):"")+"</div>").join("");}catch(e){}}
 async function saveMemory(){const b={name:$("memName").value.trim(),type:$("memType").value,order:$("memOrder").value.trim(),ids:$("memIds").value.trim()};if(!b.name)return;await api("/api/memory",{method:"POST",body:b});$("memName").value="";$("memOrder").value="";$("memIds").value="";loadMemory();}
 async function pollKpi(){try{const r=await api("/api/kpi");if(!r||r.error)return;const el=$("kpiLine");if(el)el.textContent="⏱️ "+t("kpiSaved")+": "+r.timeSavedMin+" min · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections;}catch(e){}}
@@ -1216,7 +1234,7 @@ $("toHomeBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 async function enter(){
   if(!PACK){PACK=await api("/api/sector");applyPack();}
   setWho();
-  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);pollKeyStatus();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done"))$("inboxView").style.display="flex";});});loadConstitution();loadMemory();pollKpi();setInterval(pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
+  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);pollKeyStatus();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done"))$("inboxView").style.display="flex";});});loadConstitution();loadMemory();loadBrain();pollKpi();setInterval(pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
   else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done"))$("inboxView").style.display="flex";});});if(kitchenPoll)clearInterval(kitchenPoll);kitchenPoll=setInterval(kitchenWatch,4000);}
   else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();if(livePoll)clearInterval(livePoll);livePoll=setInterval(()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
