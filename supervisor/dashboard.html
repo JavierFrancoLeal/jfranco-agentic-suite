@@ -390,6 +390,119 @@ body.wall pre{max-height:40vh}
       <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
+      <p class="hint" id="keyBalance"></p>
+    </div>
+    <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
+      <input id="browserUrl" placeholder="https://…">
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
+        <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
+      </div>
+      <p class="hint" id="browserStatus"></p>
+    </div>
+    <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
+      <p class="hint" id="secretaireHint"></p>
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="secretaireScan" style="flex:1">Analyser le formulaire</button>
+      </div>
+      <div id="secretaireResult"></div>
+    </div>
+    <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
+      <p class="hint" id="repondantHint"></p>
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="repondantScan" style="flex:1">Analyser la page</button>
+      </div>
+      <div id="repondantResult"></div>
+    </div>
+    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
+      <div id="superTiers"></div>
+      <div id="superCalls"></div>
+      <div id="superDecisions"></div>
+      <div id="superAutonomy"></div>
+      <div id="superActions" class="hint"></div>
+      <div class="hostsig hint"></div>
+    </div>
+    <div class="tabs">
+      <button data-tab="overview" class="active" id="tabOverview">Overview</button>
+      <button data-tab="field" id="tabField">Field</button>
+      <button data-tab="rules" id="tabRules">Rules</button>
+      <button data-tab="sector" id="tabSector">Sector</button>
+      <button data-tab="studio" id="tabStudio">🔔 Notifications</button>
+      <button data-tab="reglages" id="tabReglages">⚙️ Réglages</button>
+    </div>
+    <nav class="bnav" id="ownerBnav">
+      <button data-tab="overview" class="active">📊<span id="bnavOverview">Overview</span></button>
+      <button data-tab="field">🗒️<span id="bnavField">Field</span></button>
+      <button data-tab="rules">📜<span id="bnavRules">Rules</span></button>
+      <button data-tab="sector">🏪<span id="bnavSector">Sector</span></button>
+      <button data-tab="studio">🔔<span id="bnavStudio">Notifications</span></button>
+      <button data-tab="reglages">⚙️<span id="bnavReglages">Réglages</span></button>
+    </nav>
+    <div id="tab-overview">
+      <div class="card"><h2 id="workersTitle">Workers</h2>
+        <table id="usersTable"><thead><tr><th id="thUser">User</th><th id="thRole">Role</th></tr></thead><tbody></tbody></table>
+        <h2 style="margin-top:14px" id="addWorkerTitle">Add worker</h2>
+        <div id="suggestUsers" class="row"></div>
+        <input id="newUser" placeholder="User name"><input id="newPass" type="password" placeholder="Password" minlength="8">
+        <input id="newLabel" placeholder="Role label (e.g. Cook)">
+        <select id="newRole"><option id="optEmployee" value="employee">employee</option><option id="optLead" value="lead">lead</option><option id="optOwner" value="owner">owner</option></select>
+        <button class="btn" id="addUserBtn">Add worker</button>
+      </div>
+      <div class="card"><h2 id="ordersTitle">Orders — kitchen & bill</h2><button class="btn small gray" id="exportOrdersBtn" style="margin-bottom:8px">⬇ Export bill</button><div id="ownerOrders"></div><p class="hint" id="billSummary"></p></div>
+      <div class="card" id="shiftCard"><h2 id="shiftTitle">🌅 Ouverture de la journée</h2><div id="shiftBody"></div><button class="btn small gray" id="closeDayBtn" style="display:none;margin-top:6px">Fermer la journée</button></div>
+      <div class="card"><h2 id="regDayTitle">🪙 Day register (counter-audit)</h2><div id="regDay"></div><div class="row" style="margin-top:8px"><input id="regSearch" placeholder="Search items…" style="flex:2;margin:0"><select id="regMethod" style="flex:1;margin:0"><option value="all">All</option><option value="cash">Cash</option><option value="card">Card</option><option value="terminal">Terminal</option></select></div><div id="regSales"></div><button class="btn small gray" id="exportRegisterBtn" style="margin-top:6px">⬇ Export Z-report</button></div>
+      <div class="card"><h2 id="usageTitle">Usage & cost</h2><p class="hint" id="usageSub">(per worker, estimated)</p>
+        <p class="hint" id="usageBudget"></p>
+        <table id="usageTable"><thead><tr><th id="thWorker">Worker</th><th id="thSessions">Sessions</th><th id="thTokens">Tokens</th><th id="thCost">Est. cost</th></tr></thead><tbody></tbody></table>
+      </div>
+      <div class="card"><h2 id="panelTitle">Action Panel</h2><p class="note" id="panelNote">Workers open the panel from their tablet or phone.</p>
+        <a href="/panel" target="_blank" id="openPanelLink"><button class="btn" id="openPanel">Open Action Panel</button></a>
+      </div>
+    </div>
+    <div id="tab-field" class="hidden">
+      <div class="card"><h2 id="fieldReportsTitle">Field reports</h2>
+        <div class="row" style="margin-bottom:8px"><button class="btn small gray" id="refreshReports">Refresh</button><button class="btn small gray" id="exportBtn">⬇ Export reports</button><button class="btn small gray" id="autoRefresh">Auto-refresh: OFF</button></div>
+        <pre id="reports"></pre>
+      </div>
+      <div class="card"><h2 id="deepTitle">Deep analysis (Reasoner)</h2>
+        <textarea id="deepText" rows="3" placeholder="Ask a deep question…"></textarea>
+        <button class="btn" id="deepSend">Ask deep</button>
+        <p class="hint" id="deepHint">The Reasoner brain thinks deeply and appends its answer to the reports.</p>
+        <div id="deepAnswers"></div>
+        <button class="btn small gray" id="demoAlertBtn" style="display:none;margin-top:6px">🔔 <span id="demoAlertBtnText">Simuler une alerte</span></button>
+      </div>
+      <div class="card"><h2 id="trailTitle">Conversation trail</h2><p class="hint" id="trailHint">The raw phrases captured from the field, in order.</p><pre id="trail"></pre></div>
+      <div class="card"><h2 id="feedbackTitle">Feedback queue</h2><pre id="feedback"></pre>
+        <p class="hint" id="feedbackHint">The agent reads this queue and resolves errors and improvements.</p>
+      </div>
+    </div>
+    ="tab-sector" class="hidden">
+      <div class="card"><h2 id="sectorPresetsTitle">Sector presets</h2><div id="presetGrid" class="row"></div></div>
+      <div class="card">
+        <h2 id="customSectorTitle">Custom sector</h2>
+        <input id="csId" placeholder="id (e.g. bakery)">
+        <input id="csLabelEn" placeholder="Label (EN)"><input id="csLabelFr" placeholder="Label (FR)">
+        <input id="csOrdersEn" placeholder="Orders title (EN)"><input id="csOrdersFr" placeholder="Orders title (FR)">
+        <input id="csF1Id" placeholder="Field 1 id (e.g. orderNo)"><input id="csF1Label" placeholder="Field 1 label (EN)">
+        <input id="csF2Id" placeholder="Field 2 id (optional)"><input id="csF2Label" placeholder="Field 2 label (EN)">
+        <button class="btn" id="saveSectorBtn">Save sector</button>
+        <button class="btn gray" id="aiSectorBtn" style="margin-top:6px">Suggest with AI (copy prompt)</button>
+      </div>
+    </div>
+    <div id="tab-rules" class="hidden">
+      <div class="card"><h2 id="rulesTitle">Business rules</h2><p class="hint" id="rulesHint">These rules train the traffic light.</p>
+        <textarea id="decisions" rows="14"></textarea>
+        <button class="btn" id="saveDecisions">Save rules</button><span id="decisionsSaved" class="note"></span>
+      </div>
+    </div>
+  </div>
+
+  <div id="leadView" class="hidden">
+    <div class="metrics" id="leadMetrics"></div>
+    <div class="card"><h2 id="keyTitle">🔑 Clé IA (la vôtre)</h2>
+      <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
+      <button class="btn small" id="keySave">Enregistrer la clé</button>
+      <p class="hint" id="keyStatus"></p>
     </div>
     <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
@@ -641,6 +754,7 @@ body.wall pre{max-height:40vh}
     <p class="hint" id="alertHint" style="margin:6px 0 0"></p>
   </div><footer class="foot"><div class="langs" id="footLangs"></div><div class="copyr">Fanal · open source (MIT) · autor J.Franco</div><div class="copyr" id="verBadge" style="opacity:.75;margin-top:2px"></div></footer>
   <script src="dashboard-i18n.js"></script>
+<div id="tab-reglages" class="hidden" style="max-width:880px;margin:0 auto;padding:16px"><h2 style="font-size:18px;margin:0 0 10px">⚙️ Réglages</h2><p class="hint">Tout se règle ici, comme les Réglages de votre système — et tout reste dans votre silo.</p><div class="card"><h2>🧠 Cerveau</h2><p class="hint">Le routeur anti-fragile : changez de modèle ou de fournisseur sans toucher au code. Vide = DeepSeek.</p><div class="row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><input id="brainFast" placeholder="fast: deepseek-flash" style="flex:1;min-width:110px"><input id="brainDeep" placeholder="deep: deepseek-v4-pro" style="flex:1;min-width:110px"><input id="brainBase" placeholder="baseUrl (vide = DeepSeek)" style="flex:2;min-width:160px"></div><button class="btn small gray" id="brainSave" style="margin-top:6px">Changer de cerveau</button><p class="hint" id="brainStatus"></p></div><div class="card"><h2>⚠️ Zone dangereuse</h2><p class="hint">Réinstaller l'assistant (efface la configuration locale, pas vos données).</p><button class="btn small gray" id="dangerReset" style="margin-top:6px">Réinitialiser Fanal</button></div></div>
 <script>
 "use strict";
 const LANG={es:"ES",en:"EN",fr:"FR",de:"DE",it:"IT",pt:"PT",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
@@ -982,7 +1096,7 @@ function showWizard(){
   return true;
 }
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
-function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});}
+function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
 async function loadConstitution(){try{const r=await api("/api/constitution");if(!r||r.error)return;const ta=$("constitutionFields");if(ta&&!ta.dataset.touched)ta.value=["philosophie: "+(r.philosophy||""),"ton: "+(r.tone||""),"politiques: "+(r.policies||""),"rabais: "+(r.discountRule||""),"prix minimum: "+(r.minPrice||""),"escalades: "+(r.escalation||"")].join("\n");const ex=$("constitutionExtreme");if(ex&&!ex.dataset.touched)ex.value=r.extremeDiscounts||"";}catch(e){}}
 async function saveConstitution(){const v=$("constitutionFields").value;const o={};v.split("\n").forEach(l=>{const i=l.indexOf(":");if(i>0)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});const map={philosophie:"philosophy",ton:"tone",politiques:"policies",rabais:"discountRule","prix minimum":"minPrice",escalades:"escalation"};const body={};Object.keys(map).forEach(k=>body[map[k]]=o[k]||"");body.extremeDiscounts=$("constitutionExtreme").value.trim();await api("/api/constitution",{method:"POST",body});$("constitutionStatus").textContent="✔ "+t("saved");}

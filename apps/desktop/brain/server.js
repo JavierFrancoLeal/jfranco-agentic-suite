@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.104";
+const VERSION = "1.0.105";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -697,6 +697,21 @@ async function api(req, res, pathname) {
     providersWrite(pr);
     telemetryTick("action", { tier: "GREEN", what: "Brain router updated (fast: " + (pr.fast && pr.fast.model) + ", deep: " + (pr.deep && pr.deep.model) + ")" });
     return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/settings/balance" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const key = clientKey() || process.env.DEEPSEEK_API_KEY || "";
+    if (!key) return send(res, 200, { ok: false, error: "no key" });
+    const rt = route("deepseek-flash");
+    try {
+      const r = await fetch("https://api.deepseek.com/user/balance", { headers: { Authorization: "Bearer " + key } });
+      const j = await r.json().catch(() => ({}));
+      const bal = j && j.balance_infos && j.balance_infos[0];
+      const usd = bal ? Number(bal.total_balance || 0) : null;
+      const res = { ok: true, usd, currency: bal && bal.currency, prices: { flash: 0.002, "v4-pro": 0.05, unit: "USD / 8k-12k tokens (approx)" } };
+      if (usd === null && !r.ok) return send(res, 200, { ok: false, error: "balance unavailable from the provider" });
+      return send(res, 200, res);
+    } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
   }
   if (pathname === "/api/kpi" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
