@@ -9,6 +9,7 @@
   <a href="https://www.npmjs.com/package/@javierfrancoleal/workflow-master"><img src="https://img.shields.io/npm/v/@javierfrancoleal/workflow-master?label=npm&style=for-the-badge" alt="npm"></a>
   <a href="https://github.com/JavierFrancoLeal/jfranco-agentic-suite/releases"><img src="https://img.shields.io/github/v/release/JavierFrancoLeal/jfranco-agentic-suite?label=release&style=for-the-badge" alt="release"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT"></a>
+  <a href="POLITIQUE-CONFIDENTIALITE.md"><img src="https://img.shields.io/badge/confidentialité-Loi%2025-0EA5E9?style=for-the-badge" alt="Politique de confidentialité"></a>
   <a href="#-languages-and-interpretation"><img src="https://img.shields.io/badge/languages-10-7C5CFF?style=for-the-badge" alt="10 languages"></a>
 </p>
 
