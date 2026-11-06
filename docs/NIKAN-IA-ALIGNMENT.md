@@ -114,3 +114,17 @@ business; this repository built the proof.
 5. Workshops with the Chambre de commerce de Charlevoix + SADC (channel 1).
 6. Gaussian splatting 3D tours (Source 3) — the tourism flagship
    integration when the sector asks.
+
+
+## 2026-11-06 — The multiplatform and ecosystem re-check
+
+Since the first alignment: the three product lines (Publicateur /
+Répondant / Secrétaire) are built, bilingual in 10 languages, verified
+INSIDE the macOS and Windows installers; the ecosystem architecture is
+written (Apple the house, Google/Microsoft the interchangeable plug,
+DeepSeek the brain, Fanal the wheel); the anti-loop harness and the
+STANDBY dossier freeze the remote-control advances. Verdict for the
+plan: the product now has a NAMED OFFER (the 3 lines) that the plan's
+services 2-3 can sell per sector — the plan stays the business case, the
+product stays the proof, and the multiplatform claim is now TRUE for
+macOS and Windows (installer pending signing, demand-first).

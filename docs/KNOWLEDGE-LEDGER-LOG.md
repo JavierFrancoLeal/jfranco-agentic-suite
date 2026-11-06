@@ -227,3 +227,11 @@ for whoever arrives later.*
 - lección: todo estado de FIN debe autodestruirse; el silencio del agente es VERDE y mudo, jamás rojo con alarmas — la alarma la revisa el agente, no el operador.
 - orden-correcta: "done → 30 s → desaparece; sin guardián de notificaciones."
 - evidencia: tools/pilot-badge.sh (done auto-dismiss), commit 7ba0332, esta entrada.
+
+
+## 2026-11-05/06 — The heart travels, and the plumber is a plug
+- concepto: flujo · arquitectura
+- fricción: el bundle de Electron empaquetaba la CARA (dashboard, i18n) pero NO el server.js — las 3 líneas nunca llegaron a la app instalada (2 días de trabajo invisible para el producto). Y al integrar ecosistemas: cada servicio es un enchufe intercambiable (Google o Microsoft), no una dependencia.
+- lección: en todo paquete, el CORAZÓN viaja con la cara — verify-app vigila que el bundle traiga el server al día; y la neutralidad de ecosistemas es el foso: un solo cerebro, dos enchufes, la clave del cliente.
+- orden-correcta: "sync-all empareja server.js al brain bundle + guardián en verify-app; conectores por demanda."
+- evidencia: tools/sync-all.sh, tools/verify-app.sh, docs/ECOSYSTEM-ARCHITECTURE.md, esta entrada.

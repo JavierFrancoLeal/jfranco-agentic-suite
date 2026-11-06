@@ -25,16 +25,23 @@ every automatic action is tiered and logged, and the human decides.
 | Interpreter 10 languages, asymmetric I/O | ✅ | read for the worker, speak for the client |
 | Noise filter + per-sector packs | ✅ | restaurant/hotel/tourism/agro + coefficient pricing |
 | 7-step sovereign installation | ✅ | closed wizard, demo-skipped |
-| Browser pilot WITH mandatory badge | ✅ NEW | /api/browser/* — visible Chrome, badge verified in-page, SEMI confirm, telemetry |
+| Browser pilot WITH mandatory badge | ✅ | /api/browser/* — visible Chrome, badge verified in-page, SEMI confirm, telemetry |
+| The three product lines (Publicateur/Répondant/Secrétaire) | ✅ NEW | live in the dashboard AND inside the mac/win installers (asar-verified) |
+| Ecosystem plugs (Google/Microsoft) | 📐 designed | ECOSYSTEM-ARCHITECTURE — connectors demand-first |
+| Anti-loop harness | ✅ | tools/drive-step.sh — never poll twice, two-fails-switch, end auto-dismisses |
 | Federation (nodes registry) | ✅ minimal | /api/nodes + MESH.md |
 | Full organ pipeline inside the runtime | ⚠️ partial | governance core embedded; skills still in the CLI profile |
 | Watchdog (auto-restart on the client) | ⏳ | prescription #3 |
 | Windows field test | ⏳ | UTM + CrystalFetch in progress by the operator |
 | Signing/notarization | ⏳ | operator step (certificates) |
 
-## The verdict
+## The verdict (refreshed 2026-11-06)
 
 The middleware is REAL and sovereign at its core: the client's key, the
-silo, the exit guarantee, the tiers, the visible browser pilot. What
-remains is hardening (watchdog, Windows test, signing) — all scheduled
-by the pilot's own logic: demand first, then the armor.
+silo, the exit guarantee, the tiers, the visible browser pilot — and now
+the THREE PRODUCT LINES are alive inside the installers: Le Publicateur,
+Le Répondant (10 languages, site tone), Le Secrétaire (prudent by
+design), all ending in the human's finger. The ecosystem architecture is
+written: Apple the house, Google/Microsoft the interchangeable plumber
+plug, DeepSeek the brain, Fanal the wheel. The Windows test and the
+signing stay in the STANDBY dossier, demand-first.
