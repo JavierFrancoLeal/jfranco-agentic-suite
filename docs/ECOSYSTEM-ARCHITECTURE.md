@@ -27,6 +27,28 @@ how Fanal ties them without mixing anything. 2026-11-05.*
    in the client's Google account. Trasunto never stores any of it;
    the exit guarantee holds: change key, change provider, any time.
 
+## The plumber slot is a PLUG (Google OR Microsoft OR both)
+
+The tier is interchangeable — the same socket accepts either ecosystem,
+or both at once, per client:
+
+| Google (the blue plug) | Microsoft 365 (the purple plug) |
+|---|---|
+| Gmail API | Graph Mail (Outlook) |
+| Google Sheets | Excel (Graph) |
+| Google Docs | Word (Graph) |
+| Google Drive | OneDrive |
+| Google Calendar | Graph Calendar |
+| Google Meet | Teams |
+| Chrome (the visible hand) | Edge/Chrome (the same CDP hand) |
+
+Nothing else changes: the same hands, the same Studio, the same
+semáforo, the same human decision. A client with Gmail plugs the blue
+plug; a client with Outlook plugs the purple plug; a client with both
+plugs both. Trasunto never chooses a side — the neutrality is the
+selling point. The first connector is still built for the FIRST pilot
+client that pays for it.
+
 ## The one-sentence contract
 
 Apple runs the house, Google carries the pipes, DeepSeek does the
