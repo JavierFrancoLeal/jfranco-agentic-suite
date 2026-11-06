@@ -926,7 +926,7 @@ function wizBodyHTML(){
   if(wizStep===0)return '<span class="wiz-ico">🚀</span><p>'+L("wizStartBody")+'</p><p class="hint">'+HT("home")+'</p>';
   if(wizStep===1)return '<span class="wiz-ico">🏪</span><p>'+L("wizBizBody")+'</p><input id="wizBizInput" placeholder="'+L("wizBizPh")+'">';
   if(wizStep===2){const secs=[["restaurant",L("wizSecRest")],["hotel",L("wizSecHotel")],["tourisme",L("wizSecTour")],["agroalimentaire",L("wizSecAgro")],["generic",L("wizSecGeneric")]];return '<p>'+L("wizSectorBody")+'</p><div class="wiz-sectors">'+secs.map(x=>'<div class="ws'+(wizSector===x[0]?" on":"")+'" data-sec="'+x[0]+'">'+x[1]+'<small>'+(x[0]==="restaurant"?L("wizSecRestD"):x[0]==="hotel"?L("wizSecHotelD"):x[0]==="tourisme"?L("wizSecTourD"):x[0]==="agroalimentaire"?L("wizSecAgroD"):L("wizSecGenericD"))+'</small></div>').join("")+'</div>';}
-  if(wizStep===3)return '<p>'+L("wizKeyBody")+'</p><input type="password" id="wizKeyInput" placeholder="DEEPSEEK_API_KEY"><p class="hint">'+L("wizKeyHint")+'</p>';
+  if(wizStep===3)return '<p>'+L("wizKeyBody")+'</p><input type="password" id="wizKeyInput" placeholder="DEEPSEEK_API_KEY"><p class="hint">'+L("wizKeyHint")+'</p><p>'+L("wizBrainChoice")+'</p><select id="wizBrainSel"><option value="deepseek">'+L("wizBrainCloud")+'</option><option value="local">'+L("wizBrainLocal")+'</option></select><p class="hint">'+L("wizBrainNote")+'</p>';
   if(wizStep===4)return '<p>'+L("wizPermsBody")+'</p><div class="wiz-sectors"><div class="ws wiz-perm" data-p="mic"><small>🎙️ '+L("wizPermMic")+' — '+HT("permMic")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws wiz-perm" data-p="notif"><small>🔔 '+L("wizPermNotif")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws" style="cursor:default"><small>📁 '+HT("permFinder")+'</small></div><div class="ws" style="cursor:default"><small>🌐 '+L("wizPermLan")+'</small></div></div>';
   if(wizStep===5)return '<p>'+L("wizConsBody")+'</p><textarea id="wizConsInput" rows="4" placeholder="'+L("wizConsPh")+'"></textarea><p class="hint">'+L("wizConsHint")+'</p>';
   if(wizStep===6)return '<p>'+L("wizRecapBody")+'</p><div class="wiz-sectors" style="cursor:default"><div class="ws" style="cursor:default"><small>🏪 '+L("wizBizLabel")+': <b id="wizRecapBiz">—</b></small></div><div class="ws" style="cursor:default"><small>🏷️ '+L("wizSectorTitle")+': <b id="wizRecapSec">—</b></small></div><div class="ws" style="cursor:default"><small>🔑 '+L("wizKeyTitle")+': <b id="wizRecapKey">—</b></small></div><div class="ws" style="cursor:default"><small>⚖️ '+L("wizConsTitle")+': <b id="wizRecapCons">—</b></small></div></div>';
@@ -952,7 +952,7 @@ function wizRender(){
 async function wizNext(){
   if(wizStep===WIZ_STEPS-1){
     try{localStorage.setItem("lv-onboarded","1");}catch(e){}
-    try{localStorage.setItem("lv-pending-setup",JSON.stringify({bizName:$("wizBizInput")?$("wizBizInput").value:"",sector:wizSector,key:$("wizKeyInput")?$("wizKeyInput").value:"",constitution:$("wizConsInput")?$("wizConsInput").value:""}));}catch(e){}
+    try{localStorage.setItem("lv-pending-setup",JSON.stringify({bizName:$("wizBizInput")?$("wizBizInput").value:"",sector:wizSector,key:$("wizKeyInput")?$("wizKeyInput").value:"",constitution:$("wizConsInput")?$("wizConsInput").value:"",brain:$("wizBrainSel")?$("wizBrainSel").value:"deepseek"}));}catch(e){}
     $("wizardView").style.display="none";$("wizardView").classList.add("hidden");
     finishBoot();
     return;}
@@ -970,6 +970,7 @@ function flushPendingSetup(){
     if(p.key)api("/api/settings/key",{method:"POST",body:{key:p.key,bizName:p.bizName||""}});
     if(p.sector&&p.sector!=="generic")api("/api/sector/pick",{method:"POST",body:{id:p.sector}});
     if(p.constitution)api("/api/constitution",{method:"POST",body:{philosophy:p.constitution}});
+    if(p.brain==="local")api("/api/settings/brain",{method:"POST",body:{fast:{model:"llama3.3",baseUrl:"http://localhost:11434/v1"},deep:{model:"qwen3:32b",baseUrl:"http://localhost:11434/v1"}}});
   }catch(e){}
 }
 function showWizard(){
