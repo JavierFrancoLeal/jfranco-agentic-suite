@@ -103,6 +103,9 @@ table3(doc, [
 
 para(doc, "Fanal est neutre par conception : une maison Apple, deux prises interchangeables — Google ou Microsoft 365 — et un seul cerveau (la clé du client). Copilot ne parle que Microsoft, Gemini ne parle que Google ; Fanal parle avec les deux, dans l'écosystème que le client possède déjà. Trasunto n'emprisonne personne : le client change de clé ou de fournisseur quand il veut.", size=9.5, color=MUTED, space_after=8)
 
+# ── 3bis. CONFORMITÉ LÉGALE (Loi 25) ─────────────────────────
+para(doc, "Conformité Loi 25 par conception : les données restent dans le silo du client ; le choix du cerveau (nuage ou local) est consigné à l'installation ; la télémétrie est anonymisée ; la politique de confidentialité, le protocole d'incidents et le calendrier de rétention sont publiés ; Trasunto nomme son responsable de la protection des renseignements personnels. La conformité n'est pas une charge — c'est un argument de vente : la PME québécoise achète la tranquillité réglementaire avec le produit.", size=9.5, color=MUTED, space_after=8)
+
 # ── 4. MODÈLE + VIABILITÉ ───────────────────────────────────
 section(doc, "4", "Le modèle d'affaires et la viabilité", "L'entrepreneur + le comptable")
 bullet(doc, "La viabilité : ", "86 000 – 96 000 $/an : charges annuelles ≈ 36 350 $ + salaire du fondateur de 50 000 à 60 000 $. Atteinte avec un nombre raisonnable de contrats — trois scénarios simples dans le plan du fondateur, à valider rigoureusement par le pilote.")
