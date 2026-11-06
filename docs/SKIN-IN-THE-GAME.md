@@ -109,3 +109,28 @@ the margin; the signature stays in the record.
 
 The work transfers to the machine; the responsibility never does. Skin
 follows the signature — from the founder's guarantee to Jean's poutine.
+
+## Institutionalizing the asset (the plugin answer)
+
+For Trasunto, Fanal and every future scale-up (MRCs, municipalities,
+Gouvernement du Québec, Canada): the Constitution must be a FIRST-CLASS
+ORGAN, not a file inside one app. The institutional standard:
+
+1. **The schema** — constitution.json is the published contract: the
+   fields, the tiers, the version number. Every organism that runs
+   Fanal reads and writes the SAME schema.
+2. **The organ** — a dedicated plugin (`@javierfrancoleal/constitution`,
+   next to decision-router and accountability-auditor) that loads the
+   constitution, exposes it to every skill, and validates edits.
+3. **The versioned record** — every save bumps the version with the
+   timestamp (already live: v1.0.100); the export endpoint
+   (/api/constitution/export) downloads the document. A public body can
+   publish its constitution — transparency as the selling point.
+4. **The install-time step** — the 7-step wizard is now 8 steps: the
+   house rules are written at installation (step 5), then refined in
+   the new ⚙️ Réglages section (Constitution · Mémoire · Cerveau ·
+   Zone dangereuse), modeled after Claude/Apple/Microsoft settings but
+   programmed like an open-source product with universal adoption.
+5. **The doctrine for every future idea** — any new Fanal module, any
+   MRC node, any municipal deployment inherits the same organ: the
+   constitution travels with the organism, not with the app.
