@@ -38,7 +38,7 @@ const provider = {
 
 export function apply(ctx) {
   ctx.on("skills", (skills) => {
-    skills.register(PROVIDER_NAME, provider);
+    skills.registerProvider(() => provider);
   });
 }
 
