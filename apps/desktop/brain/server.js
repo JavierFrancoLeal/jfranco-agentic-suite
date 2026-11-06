@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.105";
+const VERSION = "1.0.106";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -712,6 +712,28 @@ async function api(req, res, pathname) {
       if (usd === null && !r.ok) return send(res, 200, { ok: false, error: "balance unavailable from the provider" });
       return send(res, 200, res);
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/phone/call" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const text = String(b.text || "").trim();
+    if (!text) return send(res, 200, { error: "text required" });
+    const st = settingsRead() || {};
+    const tel = telemetry();
+    const ctx = "Entreprise: " + String(st.bizName || "inconnue") + ". " + constitutionCtx() + memoryCtx();
+    const prompt = "Le Téléphoniste de Fanal (démo, sans matériel). " + ctx + " L'appelant vient de dire: " + text + " Réponds à l'oral, en français, comme une réceptionniste chaleureuse: UNE seule réplique courte (max 2 phrases). Si l'appelant veut réserver: propose une heure, confirme le nom, et finis par demander sa CONFIRMATION (sa parole est la signature). Respecte la constitution (jamais le prix minimum sans l'humain). Si la réplique précédente était l'annonce, ne la répète pas.";
+    let reply = "";
+    if (brainOn()) { try { reply = await brain("flash", prompt, 400); } catch (e) { reply = "Je suis Fanal, l'assistant de " + String(st.bizName || "cette entreprise") + ". Comment puis-je vous aider aujourd'hui ?"; } }
+    else reply = "Bienvenue chez " + String(st.bizName || "nous") + " — je suis Fanal, votre assistant. Je peux réserver immédiatement, ou un humain vous répondra dans 15 à 30 minutes. Que préférez-vous ?";
+    telemetryTick("action", { tier: "SEMI", what: "Téléphoniste answered a simulated call" });
+    return send(res, 200, { ok: true, reply });
+  }
+  if (pathname === "/api/phone/announce" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const st = settingsRead() || {};
+    const a = "Vous êtes accueilli par Fanal, l'assistant de " + String(st.bizName || "cette entreprise") + " — je peux réserver immédiatement avec toutes les données à jour, ou un humain vous répondra dans 15 à 30 minutes. Cet appel est enregistré. Comment puis-je vous aider ?";
+    telemetryTick("action", { tier: "GREEN", what: "Téléphoniste announced itself (the audio badge)" });
+    return send(res, 200, { ok: true, reply: a });
   }
   if (pathname === "/api/kpi" && req.method === "GET") {
     if (!managerOnly(res, req)) return;

@@ -400,6 +400,15 @@ body.wall pre{max-height:40vh}
       </div>
       <p class="hint" id="browserStatus"></p>
     </div>
+    <div class="card"><h2 id="telephonisteTitle">☎️ Le Téléphoniste</h2>
+      <p class="hint" id="telephonisteHint"></p>
+      <button class="btn small" id="phoneAnnounce" style="margin-bottom:6px">Décrocher (annonce)</button>
+      <div id="phoneLog" class="st-res" style="min-height:60px;text-align:left"></div>
+      <div class="row" style="display:flex;gap:6px;margin-top:6px">
+        <input id="phoneInput" placeholder="« je voudrais réserver une table pour deux à 19 h »" style="flex:1">
+        <button class="btn small" id="phoneSend" style="flex:0">Envoyer</button>
+      </div>
+    </div>
     <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
       <p class="hint" id="secretaireHint"></p>
       <div class="row" style="display:flex;gap:8px">
@@ -511,6 +520,15 @@ body.wall pre{max-height:40vh}
         <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
       </div>
       <p class="hint" id="browserStatus"></p>
+    </div>
+    <div class="card"><h2 id="telephonisteTitle">☎️ Le Téléphoniste</h2>
+      <p class="hint" id="telephonisteHint"></p>
+      <button class="btn small" id="phoneAnnounce" style="margin-bottom:6px">Décrocher (annonce)</button>
+      <div id="phoneLog" class="st-res" style="min-height:60px;text-align:left"></div>
+      <div class="row" style="display:flex;gap:6px;margin-top:6px">
+        <input id="phoneInput" placeholder="« je voudrais réserver une table pour deux à 19 h »" style="flex:1">
+        <button class="btn small" id="phoneSend" style="flex:0">Envoyer</button>
+      </div>
     </div>
     <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
       <p class="hint" id="secretaireHint"></p>
@@ -642,6 +660,15 @@ body.wall pre{max-height:40vh}
       <input id="memIds" placeholder="identifiants : téléphone / courriel / facebook" style="margin-top:6px">
       <button class="btn small" id="memSave" style="margin-top:6px">Enregistrer</button>
       <div id="memList" style="margin-top:6px;font-size:12.5px"></div>
+    </div>
+    <div class="card"><h2 id="telephonisteTitle">☎️ Le Téléphoniste</h2>
+      <p class="hint" id="telephonisteHint"></p>
+      <button class="btn small" id="phoneAnnounce" style="margin-bottom:6px">Décrocher (annonce)</button>
+      <div id="phoneLog" class="st-res" style="min-height:60px;text-align:left"></div>
+      <div class="row" style="display:flex;gap:6px;margin-top:6px">
+        <input id="phoneInput" placeholder="« je voudrais réserver une table pour deux à 19 h »" style="flex:1">
+        <button class="btn small" id="phoneSend" style="flex:0">Envoyer</button>
+      </div>
     </div>
     <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
       <p class="hint" id="secretaireHint"></p>
@@ -1098,6 +1125,10 @@ function showWizard(){
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
+function phoneLog(who,text){const l=$("phoneLog");if(l)l.innerHTML+="<div style=\"margin:4px 0\"><b>"+who+":</b> "+esc(text)+"</div>";l.scrollTop=l.scrollHeight;}
+async function phoneAnnounce(){const r=await api("/api/phone/announce");if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
+async function phoneSend(){const v=$("phoneInput").value.trim();if(!v)return;phoneLog("🧍 Appelant",v);$("phoneInput").value="";const r=await api("/api/phone/call",{method:"POST",body:{text:v}});if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
+try{$("phoneAnnounce").addEventListener("click",phoneAnnounce);$("phoneSend").addEventListener("click",phoneSend);}catch(e){}
 async function loadConstitution(){try{const r=await api("/api/constitution");if(!r||r.error)return;const ta=$("constitutionFields");if(ta&&!ta.dataset.touched)ta.value=["philosophie: "+(r.philosophy||""),"ton: "+(r.tone||""),"politiques: "+(r.policies||""),"rabais: "+(r.discountRule||""),"prix minimum: "+(r.minPrice||""),"escalades: "+(r.escalation||"")].join("\n");const ex=$("constitutionExtreme");if(ex&&!ex.dataset.touched)ex.value=r.extremeDiscounts||"";}catch(e){}}
 async function saveConstitution(){const v=$("constitutionFields").value;const o={};v.split("\n").forEach(l=>{const i=l.indexOf(":");if(i>0)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});const map={philosophie:"philosophy",ton:"tone",politiques:"policies",rabais:"discountRule","prix minimum":"minPrice",escalades:"escalation"};const body={};Object.keys(map).forEach(k=>body[map[k]]=o[k]||"");body.extremeDiscounts=$("constitutionExtreme").value.trim();await api("/api/constitution",{method:"POST",body});$("constitutionStatus").textContent="✔ "+t("saved");}
 async function loadMemory(){try{const r=await api("/api/memory");const cs=(r&&r.contacts)||[];$("memList").innerHTML=cs.map((c,i)=>"<div>• <b>"+esc(c.name)+"</b> ("+esc(c.type)+") "+(c.order?esc(c.order)+" ":"")+(c.address?esc(c.address)+" ":"")+(c.price?esc(c.price):"")+"</div>").join("");}catch(e){}}
