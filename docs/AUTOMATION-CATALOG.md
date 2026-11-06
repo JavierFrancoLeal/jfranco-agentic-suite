@@ -59,6 +59,15 @@ DECIDE in the human (the 20 % that carries responsibility), and move
 heavy integrations to APIs later, per client, when the pilot proves the
 demand. The catalog above is the offer; the pilot will price it.
 
+## The phone road (Le Téléphoniste) — designed 2026-11-06
+
+A fourth candidate line, demand-first: Fanal answers and makes calls
+with the mandatory audible announcement ("vous parlez à Fanal — réserver
+immédiatement ou un humain dans 15 à 30 minutes"), the interpreter mode
+for live calls in 10 languages, and the same constitution/memory/semáforo.
+The design lives in docs/TELEPHONY.md; the integration is built for the
+first pilot client that pays for it.
+
 ## The ecosystem road (Google and Microsoft 365) — added 2026-11-05
 
 Fanal does NOT rebuild Office or Workspace: it ORCHESTRATES them.
