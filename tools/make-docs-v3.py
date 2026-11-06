@@ -234,6 +234,16 @@ def accord(out):
     ])
     label(doc, "Démarche antifragile")
     para(doc, "Aucune projection non validée : le pilote est le moteur de toute donnée future. À la fin des 6 mois : (a) reconduction au tarif commercial (grille v1), ou (b) sortie sans frais cachés — le Client conserve ses rapports exportés.", size=9.5)
+    label(doc, "Confidentialité et protection des renseignements personnels (Loi 25)")
+    bullets(doc, [
+        ("Les données restent chez le Client — ", "Fanal les traite sur la machine du Client ; Trasunto ne détient, ne conserve ni ne transfère aucun renseignement personnel."),
+        ("Le choix du cerveau appartient au Client — ", "le Client choisit le fournisseur du modèle (nuage étranger ou cerveau local) et détient sa propre clé d'API ; ce choix est consigné à l'installation."),
+        ("Consentement documenté — ", "la présente clause vaut consentement écrit au traitement effectué par le Client avec son propre compte."),
+        ("Sécurité par conception — ", "télémétrie anonymisée (aucun nom, aucun contenu), registres journalisés sur place, export et effacement à la demande."),
+        ("En cas d'arrêt — ", "le Client exporte ses rapports et sa constitution ; Trasunto ne conserve aucune copie."),
+    ])
+    label(doc, "Symétrie du pilote")
+    para(doc, "Si le temps correctif (le Client refait ce que Fanal aurait dû faire) dépasse le seuil convenu, le mois suivant est crédité — Trasunto mange l'échec avec la même force qu'il facture le succès.", size=9.5)
     label(doc, "Résiliation")
     para(doc, "30 jours de préavis, sans pénalité, par l'une ou l'autre partie.", size=9.5, space_after=10)
     para(doc, "Signé à ______________________, le ______________________", size=9.5, space_before=8, space_after=12)

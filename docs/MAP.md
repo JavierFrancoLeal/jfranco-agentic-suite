@@ -10,7 +10,7 @@ session, agent or partner finds the whole organism in one read.
 2. **The brain** — supervisor/server.js (v1.0.94) · ROUTES (flash 0.002 / v4-pro 0.05) · brain() · telemetry() · the semáforo
 3. **The hands** — supervisor/browser-cdp.js (the VISIBLE Chrome pilot) · the connector slot (Google Graph/Gmail, Microsoft Graph — demand-first)
 4. **The face** — supervisor/dashboard.html + dashboard-i18n.js (10 locales) · ui/panel.html · ui/sw.js + manifest (PWA)
-5. **The organs (npm)** — workflow-master · decision-router · accountability-auditor · autonomy-grader · audit · forensics · docfactory · compas · cifra (+ vestigial: interpreter, input-detector, cortex, triage, conductor, balance, usage-auditor, deepseek-prices)
+5. **The organs (npm)** — ACTIVE: workflow-master · decision-router · accountability-auditor · autonomy-grader · audit · forensics · docfactory · compas · cifra · constitution — ARCHIVED (paused, genome intact, see VESTIGIAL-ORGANS.md): interpreter · input-detector · cortex · triage · conductor · balance · usage-auditor · deepseek-prices
 6. **The packaging** — apps/desktop (Electron: main.js with the watchdog, brain bundle, Fanal-0.1.0-arm64.dmg/.zip, win-unpacked/Fanal.exe) · the 7-step wizard · the token gate
 7. **The business layer** — TRASUNTO-PLAN-AFFAIRES · ONE-PAGER · ACCORD-PILOTE · GRILLE-TARIFAIRE (the 3 lines + the packs) · docs/NIKAN-IA-ALIGNMENT.md
 
