@@ -58,3 +58,24 @@ PREPARE in the browser (80 % of the work: reading, drafting, filling),
 DECIDE in the human (the 20 % that carries responsibility), and move
 heavy integrations to APIs later, per client, when the pilot proves the
 demand. The catalog above is the offer; the pilot will price it.
+
+## The ecosystem road (Google and Microsoft 365) — added 2026-11-05
+
+Fanal does NOT rebuild Office or Workspace: it ORCHESTRATES them.
+Through the OFFICIAL APIs, the same three lines become native and
+robust (no selectors, no fragile DOM):
+
+- Gmail API → the Répondant reads threads and prepares replies;
+- Google Sheets / Excel (Graph) → the Secrétaire fills the books;
+- Google Docs / Word (Graph) → the document factory drops drafts;
+- Calendar / Teams → follow-ups, meeting summaries, notices.
+
+The client authorizes with THEIR account (OAuth), their data stays in
+their account, their key stays in their silo — Fanal keeps only the
+traffic light. The connectors are NEW HANDS beside the browser hand:
+same governance, same semáforo, same human decision.
+
+The rule stays demand-first: the FIRST connector is built for the FIRST
+pilot client that pays for it (Gmail for a hotel, Graph for a
+professional). The neutrality is the selling point: one Fanal brain for
+Google AND Microsoft, with the client's own key — independent of both.
