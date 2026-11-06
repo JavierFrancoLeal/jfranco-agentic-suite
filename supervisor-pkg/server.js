@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.89";
+const VERSION = "1.0.90";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -562,6 +562,25 @@ async function api(req, res, pathname) {
   if (pathname === "/api/demo/alert" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const a = alertsRead(); a.items.push({ id: "a" + Date.now(), key: "demo-" + Date.now(), kind: "rain", pct: 85, inHour: 1, ts: ts(), status: "active", decision: null, source: "demo" }); alertsWrite(a); return send(res, 200, { ok: true }); }
   if (pathname === "/api/demo-login" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const b = await json(req); const u = loadUsers(); const name = Object.keys(u).find((n) => u[n].role === String(b.role || "owner")); if (!name) return send(res, 404, { error: "no demo user for that role" }); const token = issue(name, u[name].role, u[name].label || name); return send(res, 200, { token, name, role: u[name].role, label: u[name].label || name }, true); }
   if (pathname === "/api/alerts" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const a = alertsRead(); const active = a.items.find((x) => x.status === "active"); return send(res, 200, { active: active || null, last: a.items.slice(-3).reverse() }); }
+  if (pathname === "/api/facebook/prepare" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const text = String(b.text || "").trim();
+    if (!text) return send(res, 400, { error: "text required" });
+    const br = browserBridge();
+    if (!br || !br.chromeExists()) return send(res, 200, { ok: false, error: "Chrome not found" });
+    try {
+      let opened = false;
+      try { const t = await br.targets(); opened = t.length > 0; } catch (e) {}
+      if (!opened) await br.launch("https://www.facebook.com/");
+      else await br.nav("https://www.facebook.com/");
+      // El texto viaja al portapapeles del navegador (robusto, sin selectores frágiles):
+      // el HUMANO lo pega en el recuadro y pulsa Publicar — el envío es suyo.
+      await br.evalJs("navigator.clipboard.writeText(" + JSON.stringify(text) + ").then(function(){return 'copié'}).catch(function(){return 'pega tú'})");
+      telemetryTick("action", { tier: "SEMI", what: "Publication prepared in Facebook (text to clipboard, badge on)" });
+      return send(res, 200, { ok: true, status: "Facebook ouvert, le texte est copié — collez-le dans le recuadro et publiez vous-même." });
+    } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
   if (pathname === "/api/browser/start" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);

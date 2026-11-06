@@ -311,12 +311,38 @@ def grille(out):
             else: r.font.color.rgb = INK
     keep_together(t2); header_repeats(t2)
 
+    # Las tres líneas de producto del catálogo de automatización (Chrome, visible)
+    heading(doc, "Les trois lignes de produit d'automatisation", size=12)
+    para(doc, "Fanal prépare dans le navigateur (brouillons, formulaires remplis, textes prêts) avec l'insigne toujours visible ; l'humain décide, confirme et envoie. Rien n'est publié sans sa main :", size=9, color=MUTED, space_after=6)
+    t3 = doc.add_table(rows=1, cols=3)
+    t3.autofit = False
+    w3 = [Cm(4.0), Cm(7.6), Cm(5.6)]
+    for i, htxt in enumerate(["Ligne", "Ce qu'elle automatise (préparation)", "L'envoi"]):
+        c = t3.rows[0].cells[i]; c.width = w3[i]; shade(c, HEADFILL)
+        p = c.paragraphs[0]; r = p.add_run(htxt); r.bold = True; r.font.size = Pt(8.5); r.font.color.rgb = MUTED
+        pad(c, 2, 2)
+    for a3, b3, c3 in [
+        ("Le Publicateur", "Facebook, Instagram, X — brouillons rédigés, image et texte prêts, la page ouverte", "Le client publie (jamais automatique)"),
+        ("Le Répondant", "Messenger, commentaires, courriels (Gmail) — réponse proposée avec sa raison", "Le client envoie ou corrige"),
+        ("Le Secrétaire", "Factures (comptabilité web), formulaires, registres — champs remplis, brouillons sauvegardés", "Le client vérifie et soumet"),
+    ]:
+        rw = t3.add_row()
+        for i, val in enumerate([a3, b3, c3]):
+            c = rw.cells[i]; c.width = w3[i]; cell_borders(c, ["bottom"])
+            p = c.paragraphs[0]; r = p.add_run(val); r.font.size = Pt(9)
+            pad(c, 3, 3)
+            if i == 0: r.bold = True; r.font.color.rgb = V
+            elif i == 2: r.font.color.rgb = MUTED
+            else: r.font.color.rgb = INK
+    keep_together(t3); header_repeats(t3)
+    para(doc, "Les CAPTCHA et la double authentification ne sont pas des limites : c'est la porte de l'humain — Fanal s'arrête et demande, par conception.", size=8.5, color=MUTED, space_after=8)
+
     # Los packs de automatización (la demanda sectorial = número de automatizaciones)
     heading(doc, "Les packs d'automatisations", size=12)
     para(doc, "La demande sectorielle se traduit en automatisations livrées et maintenues :", size=9, color=MUTED, space_after=6)
     for a3, b3, c3 in [
-        ("Pack Essentiel", "249 $/mois", "Jusqu'à 6 automatisations actives (caisse, journées, alertes, rapport Z, publications, réponses types)"),
-        ("Pack Actif", "449 $/mois", "Jusqu'à 15 automatisations + analyses approfondies mensuelles + support prioritaire"),
+        ("Pack Essentiel", "249 $/mois", "Jusqu'à 6 automatisations actives — réparties entre le Publicateur, le Répondant et le Secrétaire"),
+        ("Pack Actif", "449 $/mois", "Jusqu'à 15 automatisations actives + analyses approfondies mensuelles + support prioritaire"),
         ("Pack Intensif", "Sur devis", "Automatisations sur mesure par secteur (multi-langues, connecteurs, multi-sites, kiosque)"),
     ]:
         para(doc, "• " + a3 + " — " + c3 + " · " + b3, size=9, space_after=4)

@@ -712,12 +712,15 @@ function openDecision(x){
     "<h3>"+esc(t("inboxDraft"))+"</h3><div class=\"draft\">"+esc(x.result||"—")+"</div>"+
     "<div class=\"dec-actions\"><button class=\"btn\" id=\"sendBtn\">"+esc(t("inboxSend"))+"</button>"+
     "<button class=\"btn\" id=\"noSendBtn\"><span class=\"noSendFill\"></span><span class=\"noSendTxt\">"+esc(t("inboxNoSend"))+"</span></button></div>"+
+    (x.type==="publication"?("<button class=\"btn\" id=\"fbBtn\" style=\"margin-top:8px;background:linear-gradient(135deg,#1877F2,#4D6BFE)\">📘 "+esc(t("fbPlace"))+"</button>"):"")+
     "<p class=\"hint\" style=\"margin:8px 0 0\">"+esc(t("alertDefaultHint"))+"</p>";
   const fill=d.querySelector(".noSendFill");
   if(fill){fill.style.animation="none";void fill.offsetWidth;fill.style.animation="";}
   const timer=setTimeout(()=>decideInbox(x.id,"nosend"),10000);
   d.querySelector("#sendBtn").onclick=async()=>{clearTimeout(timer);await decideInbox(x.id,"send");};
   d.querySelector("#noSendBtn").onclick=async()=>{clearTimeout(timer);await decideInbox(x.id,"nosend");};
+  const fb=d.querySelector("#fbBtn");
+  if(fb)fb.onclick=async()=>{clearTimeout(timer);await fbPrepare(x);};
 }
 async function decideInbox(id,decision){
   await api("/api/studio/send",{id,decision});
@@ -929,6 +932,7 @@ function showWizard(){
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
+async function fbPrepare(task){const r=await api("/api/facebook/prepare",{method:"POST",body:{text:task.result}});showMsg(r&&r.status?r.status:(r&&r.error||t("saved")));}
 try{
   $("browserStart").addEventListener("click",async()=>{const u=$("browserUrl").value.trim()||"https://www.charlevoix.com";const r=await api("/api/browser/start",{method:"POST",body:{url:u}});$("browserStatus").textContent=(r&&r.error)?("⚠ "+r.error):"🤖 "+t("browserRunning")+" — "+t("browserBadge");pollBrowserStatus();});
   $("browserStop").addEventListener("click",async()=>{await api("/api/browser/stop",{method:"POST"});$("browserStatus").textContent=t("browserStopped");});
