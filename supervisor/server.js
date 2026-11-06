@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.90";
+const VERSION = "1.0.91";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -562,6 +562,34 @@ async function api(req, res, pathname) {
   if (pathname === "/api/demo/alert" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const a = alertsRead(); a.items.push({ id: "a" + Date.now(), key: "demo-" + Date.now(), kind: "rain", pct: 85, inHour: 1, ts: ts(), status: "active", decision: null, source: "demo" }); alertsWrite(a); return send(res, 200, { ok: true }); }
   if (pathname === "/api/demo-login" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const b = await json(req); const u = loadUsers(); const name = Object.keys(u).find((n) => u[n].role === String(b.role || "owner")); if (!name) return send(res, 404, { error: "no demo user for that role" }); const token = issue(name, u[name].role, u[name].label || name); return send(res, 200, { token, name, role: u[name].role, label: u[name].label || name }, true); }
   if (pathname === "/api/alerts" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const a = alertsRead(); const active = a.items.find((x) => x.status === "active"); return send(res, 200, { active: active || null, last: a.items.slice(-3).reverse() }); }
+  if (pathname === "/api/repondant/scan" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const br = browserBridge();
+    if (!br || !br.chromeExists()) return send(res, 200, { ok: false, error: "Chrome not found" });
+    try {
+      const r = await br.evalJs("document.body.innerText.slice(-1800)");
+      const conv = String((r && r.result && r.result.value) || "").trim();
+      if (conv.length < 20) return send(res, 200, { ok: false, error: "nothing to read — open the Messenger or Gmail conversation" });
+      telemetryTick("action", { tier: "GREEN", what: "Répondant read the visible conversation" });
+      if (!brainOn()) return send(res, 200, { ok: true, conv, reply: "", rationale: "sans clé" });
+      const pr = await brain("flash", "Tu es le Répondant de Fanal. Voici la fin d'une conversation (Messenger ou courriel). Réponds EXACTEMENT au format JSON: {\"reply\":\"une réponse courte, polie, en français, prête à envoyer\",\"why\":\"une phrase: pourquoi cette réponse\"}. Conversation: " + conv.slice(-1200), 800);
+      let parsed = { reply: "", why: "" };
+      try { parsed = JSON.parse(String(pr).match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch (e) {}
+      telemetryTick("action", { tier: "SEMI", what: "Répondant proposed a reply (human sends)" });
+      return send(res, 200, { ok: true, conv: conv.slice(-900), reply: parsed.reply || "", why: parsed.why || "" });
+    } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/repondant/prepare" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const text = String(b.text || "").trim();
+    if (!text) return send(res, 400, { error: "text required" });
+    try {
+      await browserBridge().evalJs("navigator.clipboard.writeText(" + JSON.stringify(text) + ").then(function(){return 'copié'}).catch(function(){return 'pega tú'})");
+      telemetryTick("action", { tier: "SEMI", what: "Répondant prepared the reply (clipboard, human sends)" });
+      return send(res, 200, { ok: true, status: "La réponse est copiée — collez-la dans le fil et ENVOYEZ vous-même." });
+    } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
   if (pathname === "/api/facebook/prepare" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);

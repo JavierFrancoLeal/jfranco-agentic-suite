@@ -399,6 +399,13 @@ body.wall pre{max-height:40vh}
       </div>
       <p class="hint" id="browserStatus"></p>
     </div>
+    <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
+      <p class="hint" id="repondantHint"></p>
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="repondantScan" style="flex:1">Analyser la page</button>
+      </div>
+      <div id="repondantResult"></div>
+    </div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -494,6 +501,13 @@ body.wall pre{max-height:40vh}
         <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
       </div>
       <p class="hint" id="browserStatus"></p>
+    </div>
+    <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
+      <p class="hint" id="repondantHint"></p>
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="repondantScan" style="flex:1">Analyser la page</button>
+      </div>
+      <div id="repondantResult"></div>
     </div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2>
       <div id="superTiers"></div>
@@ -933,6 +947,16 @@ try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
 async function fbPrepare(task){const r=await api("/api/facebook/prepare",{method:"POST",body:{text:task.result}});showMsg(r&&r.status?r.status:(r&&r.error||t("saved")));}
+let lastReply="";
+async function repondantScan(){const b=$("repondantScan");b.disabled=true;b.textContent="…";const r=await api("/api/repondant/scan",{method:"POST"});b.disabled=false;b.textContent=t("repondantScanBtn");
+  const box=$("repondantResult");
+  if(r&&r.error){box.innerHTML="<p class=\"hint\">⚠ "+esc(r.error)+"</p>";return;}
+  if(!r||!r.ok){box.innerHTML="<p class=\"hint\">⚠ "+(r&&r.error||"")+"</p>";return;}
+  lastReply=r.reply||"";
+  box.innerHTML="<div class=\"st-res\">"+esc((r.conv||"").slice(0,180))+"…</div>"+
+    (r.reply?("<div class=\"st-res\" style=\"border-left:3px solid #7c5cff;padding-left:8px\">"+esc(r.reply)+"</div><div class=\"st-why\">"+esc(r.why||"")+"</div><button class=\"btn small\" id=\"repondantPrepare\">📨 "+t("repondantPrepareBtn")+"</button>"):"<p class=\"hint\">"+t("repondantNoKey")+"</p>");
+  const pb=$("repondantPrepare");if(pb)pb.onclick=async()=>{const rr=await api("/api/repondant/prepare",{method:"POST",body:{text:lastReply}});showMsg(rr&&rr.status?rr.status:(rr&&rr.error||""));};}
+try{$("repondantScan").addEventListener("click",repondantScan);}catch(e){}
 try{
   $("browserStart").addEventListener("click",async()=>{const u=$("browserUrl").value.trim()||"https://www.charlevoix.com";const r=await api("/api/browser/start",{method:"POST",body:{url:u}});$("browserStatus").textContent=(r&&r.error)?("⚠ "+r.error):"🤖 "+t("browserRunning")+" — "+t("browserBadge");pollBrowserStatus();});
   $("browserStop").addEventListener("click",async()=>{await api("/api/browser/stop",{method:"POST"});$("browserStatus").textContent=t("browserStopped");});
