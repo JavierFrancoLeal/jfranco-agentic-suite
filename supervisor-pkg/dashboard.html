@@ -526,13 +526,6 @@ body.wall pre{max-height:40vh}
       <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
-      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-        <input id="brainFast" placeholder="fast: deepseek-flash" style="flex:1;min-width:110px">
-        <input id="brainDeep" placeholder="deep: deepseek-v4-pro" style="flex:1;min-width:110px">
-        <input id="brainBase" placeholder="baseUrl (vide = DeepSeek)" style="flex:2;min-width:160px">
-      </div>
-      <button class="btn small gray" id="brainSave" style="margin-top:6px">Changer de cerveau</button>
-      <p class="hint" id="brainStatus"></p>
     </div>
     <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
@@ -1017,7 +1010,9 @@ async function saveConstitution(){const v=$("constitutionFields").value;const o=
 async function loadMemory(){try{const r=await api("/api/memory");const cs=(r&&r.contacts)||[];$("memList").innerHTML=cs.map((c,i)=>"<div>• <b>"+esc(c.name)+"</b> ("+esc(c.type)+") "+(c.order?esc(c.order)+" ":"")+(c.address?esc(c.address)+" ":"")+(c.price?esc(c.price):"")+"</div>").join("");}catch(e){}}
 async function saveMemory(){const b={name:$("memName").value.trim(),type:$("memType").value,order:$("memOrder").value.trim(),ids:$("memIds").value.trim()};if(!b.name)return;await api("/api/memory",{method:"POST",body:b});$("memName").value="";$("memOrder").value="";$("memIds").value="";loadMemory();}
 async function pollKpi(){try{const r=await api("/api/kpi");if(!r||r.error)return;const el=$("kpiLine");if(el)el.textContent="⏱️ "+t("kpiSaved")+": "+r.timeSavedMin+" min · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections;}catch(e){}}
-try{$("constitutionSave").addEventListener("click",saveConstitution);$("memSave").addEventListener("click",saveMemory);}catch(e){}
+async function loadBrain(){try{const r=await api("/api/settings/brain");if(!r||r.error)return;const bf=$("brainFast"),bd=$("brainDeep");if(bf&&!bf.dataset.touched)bf.value=(r.fast&&r.fast.model)||"deepseek-flash";if(bd&&!bd.dataset.touched)bd.value=(r.deep&&r.deep.model)||"deepseek-v4-pro";}catch(e){}}
+async function saveBrain(){const base=$("brainBase");const b={fast:{model:($("brainFast").value||"").trim()||"deepseek-flash",baseUrl:(base&&base.value||"").trim()},deep:{model:($("brainDeep").value||"").trim()||"deepseek-v4-pro",baseUrl:(base&&base.value||"").trim()}};await api("/api/settings/brain",{method:"POST",body:b});$("brainStatus").textContent="✔ "+t("saved")+" — "+t("brainNote");}
+try{$("constitutionSave").addEventListener("click",saveConstitution);$("memSave").addEventListener("click",saveMemory);$("brainSave").addEventListener("click",saveBrain);}catch(e){}
 async function fbPrepare(task){const r=await api("/api/facebook/prepare",{method:"POST",body:{text:task.result}});showMsg(r&&r.status?r.status:(r&&r.error||t("saved")));}
 let lastReply="";
 async function repondantScan(){const b=$("repondantScan");b.disabled=true;b.textContent="…";const r=await api("/api/repondant/scan",{method:"POST"});b.disabled=false;b.textContent=t("repondantScanBtn");
