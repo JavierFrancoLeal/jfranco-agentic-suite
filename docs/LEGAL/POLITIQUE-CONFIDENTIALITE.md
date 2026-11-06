@@ -28,7 +28,19 @@ l'IA et les PME : nous installons, configurons et accompagnons Fanal.
 Accès, rectification, portabilité et effacement — sur demande à
 [coordonnées], réponse sous 30 jours.
 
-## Le responsable
+## Le responsable (la fonction, pas la charge personnelle)
 
-Javier Alejandro Franco Leal, responsable de la protection des
-renseignements personnels.
+La PERSONNE responsable au sens de la Loi 25 est l'entreprise
+elle-même : Trasunto inc. — c'est la personne morale qui répond des
+actes, pas son fondateur personnellement (la responsabilité limitée de
+la société protège le patrimoine personnel, sauf faute personnelle :
+fraude ou négligence grossière).
+
+La FONCTION de responsable de la protection des renseignements
+personnels (art. 3.1, al. 2 — elle peut être déléguée, en tout ou en
+partie) est exercée aujourd'hui par : Javier Alejandro Franco Leal,
+fondateur. À l'échelle, la fonction sera déléguée à un directeur des
+opérations ou à un consultant externe en protection des renseignements
+personnels — la politique l'annoncera alors.
+
+Contact : [coordonnées] — réponse sous 30 jours.

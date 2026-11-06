@@ -19,8 +19,15 @@
 
 ## Archived (paused, reactivable)
 
-interpreter · input-detector · cortex · triage · conductor · balance ·
-usage-auditor · deepseek-prices
+interpreter · input-detector · cortex · triage · conductor ·
+usage-auditor — never installed, dormant genome.
+
+## The founder's cockpit (DSH profile only, NOT part of the Fanal organism)
+
+deepseek-prices · balance — the founder's own price/balance dashboard in
+DSH. Their ESSENCE lives natively in Fanal: the balance + prices line
+in the Clé IA card (/api/settings/balance) — one app, zero technical
+look for the client.
 
 ## The rule
 
