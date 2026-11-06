@@ -1,0 +1,5 @@
+# @javierfrancoleal/constitution — the institutional organ of the J.Franco
+# workflow. Inserts the skill provider into the host plane of the Cordis tree.
+- insert:
+    - id: constitution
+      name: '@javierfrancoleal/constitution'

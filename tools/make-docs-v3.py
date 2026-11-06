@@ -208,7 +208,8 @@ def one_pager(out):
     para(doc, "Rencontre et estimation gratuites → Implantation clé en main → Abonnement simple à partir de 249 $/mois. Pilote de 6 mois à tarif réduit pour votre première expérience, sans engagement.", space_after=8)
 
     ask_box(doc, "L'appui recherché — SADC Charlevoix : (1) diffuser nos services auprès des PME de la région ; (2) identifier une entreprise pilote pour tester et raffiner le produit ; (3) orienter nos clients vers les subventions fédérales et provinciales de modernisation technologique — IA (Futurpreneur, programme LIFT de la BDC, et autres) afin d'ajuster nos prix et notre modèle d'affaires.")
-    footer(doc, "Trasunto · One-pager v1.1")
+    para(doc, "Notre métier n'est pas de vendre de l'IA : nous vendons l'économie de capital humain et le capital technologique et organisationnel de la quatrième révolution industrielle. La machine exécute ce qui n'a pas de conséquences ; l'humain signe ce qui en a. Chaque acteur garde sa peau et ses incitations exactement là où sa signature vaut.", size=9, bold=True, color=V, space_before=8)
+    footer(doc, "Trasunto · One-pager v1.2")
     doc.save(out); print("saved", out)
 
 # ── Accord de pilote (jargon neutralisé) ────────────────────

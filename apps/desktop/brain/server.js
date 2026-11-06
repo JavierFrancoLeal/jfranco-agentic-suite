@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.99";
+const VERSION = "1.0.100";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -649,7 +649,7 @@ async function api(req, res, pathname) {
       const pr = await brain("flash", "Le Répondant de Fanal. " + constitutionCtx() + memoryCtx() + "Site: " + String(page.h || "inconnu") + " (" + String(page.ti || "").slice(0, 80) + "). Conversation: " + conv.slice(-1200) + " 1) Détecte la langue parmi: es fr en de it pt zh ja ko ar. 2) Propose une réponse COURTE, polie et professionnelle DANS CETTE LANGUE. 3) Adapte le ton au site: airbnb → hôte professionnel; expedia/booking → gestionnaire de réservations; page de gestion de restaurant → professionnel de la restauration; sinon → réponse d'affaires. 4) why en FRANÇAIS, une phrase. 5) sender: identifie l'expéditeur visible de la conversation (nom + téléphone/courriel/compte). Si la Mémoire contient UN contact dont un identifiant correspond, réponds ce contact; si le NOM est ambigu (plusieurs personnes du même nom sans identifiant clair), réponds sender:\"ambigu\". Réponds UNIQUEMENT en JSON: {\"lang\":\"<code>\",\"reply\":\"...\",\"why\":\"...\",\"sender\":\"<identité ou ambigu>\"}", 800);
       let parsed = { lang: "", reply: "", why: "", sender: "" };
       try { parsed = JSON.parse(String(pr).match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch (e) {}
-      telemetryTick("action", { tier: "SEMI", what: "Répondant proposed a reply in " + String(parsed.lang || "?") + " for " + String(parsed.sender || "?") + " (human sends)" });
+      telemetryTick("action", { tier: "SEMI", what: "Répondant proposed a reply in " + String(parsed.lang || "?") + " (human sends)" });
       return send(res, 200, { ok: true, conv: conv.slice(-900), reply: parsed.reply || "", why: parsed.why || "", langName: LANG_NAMES[parsed.lang] || parsed.lang || "", sender: parsed.sender || "" });
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
   }
@@ -750,7 +750,7 @@ async function api(req, res, pathname) {
     const c = { name: String(b.name || ""), type: String(b.type || "client"), order: String(b.order || ""), address: String(b.address || ""), price: String(b.price || ""), ids: String(b.ids || "") };
     if (b.idx !== undefined && m.contacts[b.idx]) m.contacts[b.idx] = c; else m.contacts.push(c);
     memoryWrite(m);
-    telemetryTick("action", { tier: "GREEN", what: "Memory contact saved (" + c.name + ")" });
+    telemetryTick("action", { tier: "GREEN", what: "Memory contact saved (type " + c.type + ")" });
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/browser/start" && req.method === "POST") {
