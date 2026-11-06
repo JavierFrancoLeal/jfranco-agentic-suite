@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.99";
+const VERSION = "1.0.100";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -727,9 +727,17 @@ async function api(req, res, pathname) {
   if (pathname === "/api/constitution" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
-    constitutionWrite({ philosophy: String(b.philosophy || ""), tone: String(b.tone || ""), policies: String(b.policies || ""), discountRule: String(b.discountRule || ""), minPrice: String(b.minPrice || ""), extremeDiscounts: String(b.extremeDiscounts || ""), escalation: String(b.escalation || "") });
-    telemetryTick("action", { tier: "GREEN", what: "Constitution updated" });
-    return send(res, 200, { ok: true });
+    const prev = constitutionRead();
+    const nc = { philosophy: String(b.philosophy || ""), tone: String(b.tone || ""), policies: String(b.policies || ""), discountRule: String(b.discountRule || ""), minPrice: String(b.minPrice || ""), extremeDiscounts: String(b.extremeDiscounts || ""), escalation: String(b.escalation || ""), version: Number(prev.version || 0) + 1, updatedAt: ts() };
+    constitutionWrite(nc);
+    telemetryTick("action", { tier: "GREEN", what: "Constitution updated to v" + nc.version });
+    return send(res, 200, { ok: true, version: nc.version });
+  }
+  if (pathname === "/api/constitution/export" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=constitution.json");
+    return res.end(JSON.stringify(constitutionRead(), null, 2));
   }
   if (pathname === "/api/memory" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
