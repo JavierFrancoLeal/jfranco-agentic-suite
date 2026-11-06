@@ -213,3 +213,17 @@ for whoever arrives later.*
 - lección: un observador sin blanco, sin señal y sin umbral de parada es un desperdicio — apunta el ojo, define la señal, detente al primer golpe, y jamás leas tu propio eco.
 - orden-correcta: "vigía v2: filtra la firma del chat, busca palabras-señal (Mettre, Bureau, Bienvenue…), y se detiene en el primer acierto."
 - evidencia: tools/screen-watch.sh (v2), esta entrada.
+
+## 2026-11-05 — The synthetic keyboard is the human's, not the agent's
+- concepto: flujo
+- fricción: manejar la VM de Windows por teclado sintético: las letras llegaban pero los símbolos (· : /) se corrompían — el teclado AZERTY francés de Windows remapeaba los caracteres. Tres intentos fallidos hasta el truco.
+- lección: el teclado sintético de un agente no es el teclado físico del humano — calibrar el LAYOUT antes de teclear (Win+Space cambió a US y la URL entró perfecta). La red tampoco era la LAN: la VM comparte bridge100 → el host es 192.168.64.1.
+- orden-correcta: "layout primero (Win+Space), IP del puente (192.168.64.1), y al primer muro: parar y entregar UNA instrucción al humano."
+- evidencia: tools/screen-read.sh, docs/STANDBY-REMOTE-CONTROL.md, esta entrada.
+
+## 2026-11-05 — The announcement must not outlive the announced
+- concepto: flujo
+- fricción: la insignia "Terminado" verde quedaba en pantalla para siempre — anunciaba el fin pero jamás programaba su desaparición; y el guardián de inactividad confundía "el humano me detuvo" con "el agente se colgó" (notificaciones de Apple falsas).
+- lección: todo estado de FIN debe autodestruirse; el silencio del agente es VERDE y mudo, jamás rojo con alarmas — la alarma la revisa el agente, no el operador.
+- orden-correcta: "done → 30 s → desaparece; sin guardián de notificaciones."
+- evidencia: tools/pilot-badge.sh (done auto-dismiss), commit 7ba0332, esta entrada.
