@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.94";
+const VERSION = "1.0.95";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -184,6 +184,25 @@ function settingsRead() { try { return JSON.parse(fs.readFileSync(SETTINGS_FILE,
 function settingsWrite(obj) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(SETTINGS_FILE, JSON.stringify(obj, null, 2)); }
 function clientKey() { const s0 = settingsRead(); return (s0.apiKey && String(s0.apiKey).trim()) || ""; }
 function brainOn() { return !!clientKey() || !!process.env.DEEPSEEK_API_KEY; }
+function constitutionRead() {
+  try { const p = path.join(DATA_DIR, "constitution.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
+  catch (e) { return { philosophy: "", tone: "", policies: "", discountRule: "", minPrice: "", escalation: "" }; }
+}
+function constitutionWrite(c) { try { fs.writeFileSync(path.join(DATA_DIR, "constitution.json"), JSON.stringify(c)); } catch (e) {} }
+function memoryRead() {
+  try { const p = path.join(DATA_DIR, "memory.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
+  catch (e) { return { contacts: [] }; }
+}
+function memoryWrite(m) { try { fs.writeFileSync(path.join(DATA_DIR, "memory.json"), JSON.stringify(m)); } catch (e) {} }
+function constitutionCtx() {
+  const c = constitutionRead();
+  return "Constitution du client: " + [c.philosophy, c.tone, c.policies, c.discountRule, c.minPrice ? "prix minimum: " + c.minPrice : "", c.escalation].filter(Boolean).join(" | ") + ". ";
+}
+function memoryCtx() {
+  const m = memoryRead();
+  const cs = (m.contacts || []).slice(0, 15).map((x) => x.name + " (" + (x.type || "contact") + "): " + (x.order || "") + " " + (x.address ? "adresse " + x.address : "") + (x.price ? " prix " + x.price : "")).join(" · ");
+  return cs ? "Mémoire (clients, fournisseurs, 'lo de siempre'): " + cs + ". " : "";
+}
 // The VISIBLE browser pilot: the machine announces itself — always.
 let BROWSER = null;
 function browserBridge() { if (!BROWSER) { try { BROWSER = require(path.join(__dirname, "browser-cdp.js")); } catch (e) { BROWSER = null; } } return BROWSER; }
@@ -609,7 +628,7 @@ async function api(req, res, pathname) {
       if (conv.length < 20) return send(res, 200, { ok: false, error: "nothing to read — open the conversation (Messenger, Gmail, Airbnb, Expedia…)" });
       telemetryTick("action", { tier: "GREEN", what: "Répondant read the visible conversation (" + String(page.h || "page") + ")" });
       if (!brainOn()) return send(res, 200, { ok: true, conv, reply: "", why: "", langName: "" });
-      const pr = await brain("flash", "Le Répondant de Fanal. Site: " + String(page.h || "inconnu") + " (" + String(page.ti || "").slice(0, 80) + "). Conversation: " + conv.slice(-1200) + " 1) Détecte la langue parmi: es fr en de it pt zh ja ko ar. 2) Propose une réponse COURTE, polie et professionnelle DANS CETTE LANGUE. 3) Adapte le ton au site: airbnb → hôte professionnel; expedia/booking → gestionnaire de réservations; page de gestion de restaurant → professionnel de la restauration; sinon → réponse d'affaires. 4) why en FRANÇAIS, une phrase. Réponds UNIQUEMENT en JSON: {\"lang\":\"<code>\",\"reply\":\"...\",\"why\":\"...\"}", 800);
+      const pr = await brain("flash", "Le Répondant de Fanal. " + constitutionCtx() + memoryCtx() + "Site: " + String(page.h || "inconnu") + " (" + String(page.ti || "").slice(0, 80) + "). Conversation: " + conv.slice(-1200) + " 1) Détecte la langue parmi: es fr en de it pt zh ja ko ar. 2) Propose une réponse COURTE, polie et professionnelle DANS CETTE LANGUE. 3) Adapte le ton au site: airbnb → hôte professionnel; expedia/booking → gestionnaire de réservations; page de gestion de restaurant → professionnel de la restauration; sinon → réponse d'affaires. 4) why en FRANÇAIS, une phrase. Réponds UNIQUEMENT en JSON: {\"lang\":\"<code>\",\"reply\":\"...\",\"why\":\"...\"}", 800);
       let parsed = { lang: "", reply: "", why: "" };
       try { parsed = JSON.parse(String(pr).match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch (e) {}
       telemetryTick("action", { tier: "SEMI", what: "Répondant proposed a reply in " + String(parsed.lang || "?") + " (human sends)" });
@@ -645,6 +664,53 @@ async function api(req, res, pathname) {
       telemetryTick("action", { tier: "SEMI", what: "Publication prepared in Facebook (text to clipboard, badge on)" });
       return send(res, 200, { ok: true, status: "Facebook ouvert, le texte est copié — collez-le dans le recuadro et publiez vous-même." });
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/kpi" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const tel = telemetry();
+    const acts = tel.actions || [];
+    let saved = 0, corrections = 0, tasks = 0;
+    for (const a of acts) {
+      if (a.tier === "GREEN" && /read the visible conversation/i.test(String(a.what))) saved += 30;
+      if (/proposed a reply/i.test(String(a.what))) { saved += 90; tasks++; }
+      if (/Publication prepared/i.test(String(a.what))) saved += 120;
+      if (/filled (\d+) form fields/i.test(String(a.what))) saved += Number(String(a.what).match(/filled (\d+) form fields/i)[1]) * 15;
+      if (/draft|Studio/i.test(String(a.what)) && a.tier === "SEMI") { saved += 240; tasks++; }
+      if (/dismissed/i.test(String(a.what))) { corrections++; tasks++; }
+    }
+    const ok = Math.max(0, tasks - corrections);
+    return send(res, 200, {
+      timeSavedMin: Math.round(saved / 60),
+      timeSavedHr: (saved / 3600).toFixed(2),
+      tasks, ok, corrections,
+      successRate: tasks ? Math.round((ok / tasks) * 100) : 100,
+      productiveSecs: saved, correctiveSecs: corrections * 60,
+    });
+  }
+  if (pathname === "/api/constitution" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    return send(res, 200, constitutionRead());
+  }
+  if (pathname === "/api/constitution" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    constitutionWrite({ philosophy: String(b.philosophy || ""), tone: String(b.tone || ""), policies: String(b.policies || ""), discountRule: String(b.discountRule || ""), minPrice: String(b.minPrice || ""), escalation: String(b.escalation || "") });
+    telemetryTick("action", { tier: "GREEN", what: "Constitution updated" });
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/memory" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    return send(res, 200, memoryRead());
+  }
+  if (pathname === "/api/memory" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const m = memoryRead();
+    const c = { name: String(b.name || ""), type: String(b.type || "client"), order: String(b.order || ""), address: String(b.address || ""), price: String(b.price || "") };
+    if (b.idx !== undefined && m.contacts[b.idx]) m.contacts[b.idx] = c; else m.contacts.push(c);
+    memoryWrite(m);
+    telemetryTick("action", { tier: "GREEN", what: "Memory contact saved (" + c.name + ")" });
+    return send(res, 200, { ok: true });
   }
   if (pathname === "/api/browser/start" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;

@@ -1,0 +1,62 @@
+# CLIENT-CONSTITUTION — the co-created layer that guides Fanal
+
+*How each client co-creates the files that stamp their ideology, tone,
+policies and workflows into Fanal — plus the KPI that measures the only
+resource that matters: human time. 2026-11-06.*
+
+## The concept
+
+Fanal is born generic; every client makes it THEIRS. The co-created
+layer is a living dossier in the client's silo:
+
+1. **The Constitution** (`constitution.json`) — philosophy, values,
+   tone, return policies, discount rules, the minimum operational
+   price, and the escalation rules (what ALWAYS asks the human).
+2. **The Memory** (`memory.json`) — clients, providers, partners; their
+   "lo de siempre" orders; horizontal and vertical relationships; the
+   calendars to verify before promising a date.
+3. **The learnings** — every correction the human makes to a proposal
+   is captured automatically: Fanal's conduct improves with every
+   decision, and the human never repeats the same correction twice.
+
+## The two examples (the spec)
+
+**Example 1 — the regular client.** Jean Tremblay calls "lo de
+siempre". Fanal verifies the Memory (Jean → poutine + hamburger, address
+X, price Y), proposes the confirmation; Jean confirms; the ORDER is
+verified by the CUSTOMER himself → the burden of proof is his, the
+human-in-the-loop is satisfied, the registry is complete. Irreversible
+action (an order placed) = verified by a human.
+
+**Example 2 — the recurring provider.** Fanal contacts the provider,
+asks for the order and the invoice, extracts the data, and shows the
+invoice to the owner; the owner verifies, approves and pays; Fanal
+closes the conversation. The owner saved the whole upstream workflow;
+his time was used ONLY for verify/approve/pay — the irreversible part.
+
+## The KPI — human time saved
+
+The most valuable resource is the HUMAN'S time. The credible metric:
+
+- Reference table: how long a human takes to write an email of X words
+  (~40 wpm + thinking), open the browser and reach a page (~20 s),
+  fill a form field (~15 s), find a past conversation (~90 s).
+- `timeSaved = Σ (reference time per action class) − corrective time`.
+- The success rate: tasks done without correction ÷ tasks total. Every
+  correction means human time re-invested — the purpose failed.
+
+## The two usage metrics
+
+1. **Productive time** — the human using Fanal the way we designed:
+   approving, sending, deciding. This is the KPI numerator's ally.
+2. **Corrective time** — the human doing the work Fanal should have
+   done: editing drafts, re-scanning, fixing fills. This is the alarm:
+   when corrective time grows, the constitution and the memory are not
+   yet tuned, and the co-creation loop must continue.
+
+## The rule of the house
+
+The files live in the CLIENT's silo, co-written with the client's own
+words; Fanal consults them before every proposal and records every
+decision after it. The human remains the signer; the files make the
+signing fast. "L'IA travaille. L'humain veille, décide, révise."
