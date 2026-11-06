@@ -87,3 +87,31 @@ registry, and the record states WHO verified (role + name + channel +
 timestamp) — whichever end the burden belongs to for that action. The
 verification power is distributed to the actor who KNOWS: the diner
 knows his order; the owner knows his money.
+
+## The skin-in-the-game principle (added 2026-11-06)
+
+Verification attaches to the actor with knowledge AND skin in the game:
+Jean verifies his order because he will EAT it and his reputation rides
+on it; the manager verifies because he is PAID for it; the owner
+verifies because his PATRIMONY is at stake. The burden is never
+assigned to a title — it is assigned to the one whose skin is in the
+outcome.
+
+## Who must consult the Constitution (the instances)
+
+| Instance | What it must consult |
+|---|---|
+| Le Répondant | tone, policies, memory identities — before every reply proposal |
+| Le Studio | tone, discounts, minimum price, escalation rules — before every draft |
+| Le Secrétaire | minimum price, policies — before every field proposal |
+| decision-router (organ) | the escalation rules decide the tier of each action |
+| workflow-master (organ) | the house policies shape every workflow step |
+| accountability-auditor (organ) | the report cites WHICH constitution rule each action followed |
+| autonomy-grader (organ) | the grade measures compliance with the escalation rules |
+| audit (organ) | the consolidation audits constitution compliance over time |
+| docfactory (organ) | the documents speak the client's tone |
+| The PDFs (Accord pilote) | the co-creation of the Constitution is a named deliverable of the pilot |
+
+The rule: every brain call and every organ that proposes or grades must
+READ the constitution first; every record must SAY which rule it
+followed. The constitution is the client's law inside Fanal.

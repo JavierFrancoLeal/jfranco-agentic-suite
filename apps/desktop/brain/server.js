@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.95";
+const VERSION = "1.0.96";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -282,7 +282,7 @@ function processDeep(item) {
   }).catch((e) => console.error("deep v4-pro:", e.message));
 }
 function processStudio(item) {
-  const prompt = "Decision center kitchen (Trasunto). The owner asked this task: " + String(item.text || "") + " Draft a short professional French response AND write in one sentence your reasoning (why this reply, based on what). Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
+  const prompt = "Decision center kitchen (Trasunto). " + constitutionCtx() + memoryCtx() + "The owner asked this task: " + String(item.text || "") + " Draft a short professional French response that RESPECTS the house rules above (tone, policies, discounts, minimum price, escalations) AND write in one sentence your reasoning. Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
   brain("deepseek-flash", prompt).then((out) => {
     const j = jsonBlock(out);
     if (!j || !j.result) return;
@@ -595,7 +595,7 @@ async function api(req, res, pathname) {
       if (!brainOn()) return send(res, 200, { ok: true, fields: page.fields, values: {}, summary: "sans clé" });
       const st = settingsRead() || {};
       const ctx = "Entreprise: " + String(st.bizName || "inconnue") + ". Secteur: " + String(st.sector || "inconnu") + ". Site: " + String(page.h || "inconnu") + ".";
-      const pr = await brain("flash", "Le Secrétaire de Fanal. " + ctx + " Voici les champs du formulaire (JSON): " + JSON.stringify(page.fields).slice(0, 1600) + " Propose des valeurs PLAUSIBLES pour les champs évidents (nom, adresse, courriel, montants, dates, notes) avec des données d'exemple cohérentes de l'entreprise. Laisse VIDE tout champ incertain (sécurité, gouvernement, montants inconnus). Réponds UNIQUEMENT en JSON: {\"values\":{\"<name ou id du champ>\":\"valeur\",...},\"summary\":\"une phrase en français: ce qui a été rempli et ce qui reste à l'humain\"}", 900);
+      const pr = await brain("flash", "Le Secrétaire de Fanal. " + ctx + constitutionCtx() + " Voici les champs du formulaire (JSON): " + JSON.stringify(page.fields).slice(0, 1600) + " Propose des valeurs PLAUSIBLES pour les champs évidents (en respectant le prix minimum et les politiques de la constitution) (nom, adresse, courriel, montants, dates, notes) avec des données d'exemple cohérentes de l'entreprise. Laisse VIDE tout champ incertain (sécurité, gouvernement, montants inconnus). Réponds UNIQUEMENT en JSON: {\"values\":{\"<name ou id du champ>\":\"valeur\",...},\"summary\":\"une phrase en français: ce qui a été rempli et ce qui reste à l'humain\"}", 900);
       let parsed = { values: {}, summary: "" };
       try { parsed = JSON.parse(String(pr).match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch (e) {}
       telemetryTick("action", { tier: "SEMI", what: "Secrétaire proposed form values (human submits)" });
