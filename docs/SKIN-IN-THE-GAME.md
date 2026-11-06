@@ -9,10 +9,15 @@ and one ethical case study. 2026-11-06.*
 **Recommended, final:**
 
 > "Notre métier n'est pas de vendre de l'intelligence artificielle :
-> nous vendons le transfert du travail **sans transfert de la
-> responsabilité**. La machine exécute ce qui n'a pas de conséquences ;
-> l'humain signe ce qui en a. Chaque acteur garde sa peau et ses
-> incitations exactement là où sa signature vaut."
+> nous vendons l'économie de capital humain et des ressources qui
+> l'accompagnent — l'attention du propriétaire, le coût des erreurs, les
+> ventes perdues par silence, le crédit de réputation — et nous vendons
+> le capital technologique et organisationnel de la quatrième révolution
+> industrielle : des automatisations installées, une mémoire d'entreprise
+> vivante et une constitution co-écrite qui grandissent avec le client.
+> La machine exécute ce qui n'a pas de conséquences ; l'humain signe ce
+> qui en a. Chaque acteur garde sa peau et ses incitations exactement là
+> où sa signature vaut."
 
 *(EN) "Our business is not selling artificial intelligence: we sell the
 transfer of WORK without the transfer of RESPONSIBILITY. The machine
@@ -77,6 +82,28 @@ the confirmation is his SIGNATURE — the machine never invents a price
 below the written floor, and never applies the code without the human's
 finger. Knowledge in the machine, skin in the owner, signature in the
 record. Asymmetry eliminated by design.
+
+## The anti-fragile brain (change brains, never change Fanal)
+
+The router lives in the client's silo (`providers.json`): every tier
+(fast/deep) points to a provider, a base URL and a model — cloud or
+LOCAL (open models via Ollama at http://localhost:11434/v1). The
+dashboard card "Changer de cerveau" switches it without touching code.
+Scenarios covered by design: Canada bans a foreign model → point the
+tier to a local open model; a US provider stops serving Canada → point
+it elsewhere; the client's budget changes → a cheaper model per tier.
+The constitution says which brain each tier uses — sovereignty of the
+key AND of the brain.
+
+## The extreme-conditions configurator
+
+The minimum operational price is the LAST option, and OFFERING it is a
+human decision by constitution: the client configures in Fanal the
+extreme conditions (e.g. "only for a same-day firm booking, empty
+room, loyal client, max twice a week"). Fanal may PROPOSE the option to
+the HUMAN (YELLOW) when the conditions are met; only the human offers
+it to the final client. The machine knows the numbers; the owner keeps
+the margin; the signature stays in the record.
 
 ## The one-line contract
 
