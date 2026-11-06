@@ -39,3 +39,30 @@ key), (3) the local option is a first-class alternative. Residual risk:
 the provider's own retention policies — mitigated by the local option
 and documented in the Accord-Pilote. Trasunto renews this evaluation
 when the default provider changes.
+
+
+## What REMAINS to be fully shielded (the precise list)
+
+The client's consigned choice satisfies the CONSENT element — it does
+not, by itself, complete the Loi 25 system. The remaining obligations
+of Trasunto (as the Québec enterprise and service provider):
+
+1. **Politique de confidentialité published** — transparency duty
+   (art. 8.2): a public privacy policy on Trasunto's site.
+2. **Responsable de la protection des renseignements personnels**
+   (art. 3.1) — name the privacy officer (the founder may hold it).
+3. **Incident and breach protocol** (art. 3.5-3.8) — the incident
+   journal + the duty to notify the CAI and the affected persons if a
+   confidentiality incident risks serious harm.
+4. **The client's own EFVP template** (art. 17) — the CLIENT is the
+   one communicating to the foreign provider; Trasunto delivers the
+   evaluation template and the guidance (the wizard's choice is the
+   documented decision).
+5. **Retention and destruction schedule** — documented in the
+   onboarding (Trasunto holds nothing; the client's silo rules are
+   written down).
+6. **The written agreement with the provider** — the client's contract
+   with the provider (their account) is pointed to; the local option
+   remains the safe harbor.
+
+Verdict: consent closed; the system door needs these six items.

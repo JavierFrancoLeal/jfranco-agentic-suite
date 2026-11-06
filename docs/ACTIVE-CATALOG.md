@@ -15,6 +15,7 @@
 8. compas — the platform optimizer
 9. cifra — the host-signature organ
 10. constitution — the co-created law of the house
+11. plugin-authoring — the house utility for building organs
 
 ## Archived (paused, reactivable)
 
