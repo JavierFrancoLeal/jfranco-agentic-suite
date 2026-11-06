@@ -399,6 +399,13 @@ body.wall pre{max-height:40vh}
       </div>
       <p class="hint" id="browserStatus"></p>
     </div>
+    <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
+      <p class="hint" id="secretaireHint"></p>
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="secretaireScan" style="flex:1">Analyser le formulaire</button>
+      </div>
+      <div id="secretaireResult"></div>
+    </div>
     <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
       <p class="hint" id="repondantHint"></p>
       <div class="row" style="display:flex;gap:8px">
@@ -501,6 +508,13 @@ body.wall pre{max-height:40vh}
         <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
       </div>
       <p class="hint" id="browserStatus"></p>
+    </div>
+    <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
+      <p class="hint" id="secretaireHint"></p>
+      <div class="row" style="display:flex;gap:8px">
+        <button class="btn small" id="secretaireScan" style="flex:1">Analyser le formulaire</button>
+      </div>
+      <div id="secretaireResult"></div>
     </div>
     <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
       <p class="hint" id="repondantHint"></p>
@@ -956,6 +970,18 @@ async function repondantScan(){const b=$("repondantScan");b.disabled=true;b.text
   box.innerHTML="<div class=\"st-res\">"+esc((r.conv||"").slice(0,180))+"…</div>"+
     (r.reply?("<div class=\"st-res\" style=\"border-left:3px solid #7c5cff;padding-left:8px\"><span class=\"hint\">"+(r.langName?("["+esc(r.langName)+"] "):"")+"</span>"+esc(r.reply)+"</div><div class=\"st-why\">"+esc(r.why||"")+"</div><button class=\"btn small\" id=\"repondantPrepare\">📨 "+t("repondantPrepareBtn")+"</button>"):"<p class=\"hint\">"+t("repondantNoKey")+"</p>");
   const pb=$("repondantPrepare");if(pb)pb.onclick=async()=>{const rr=await api("/api/repondant/prepare",{method:"POST",body:{text:lastReply}});showMsg(rr&&rr.status?rr.status:(rr&&rr.error||""));};}
+let lastValues={};
+async function secretaireScan(){const b=$("secretaireScan");b.disabled=true;b.textContent="…";const r=await api("/api/secretaire/scan",{method:"POST"});b.disabled=false;b.textContent=t("secretaireScanBtn");
+  const box=$("secretaireResult");
+  if(r&&r.error){box.innerHTML="<p class=\"hint\">⚠ "+esc(r.error)+"</p>";return;}
+  if(!r||!r.ok){box.innerHTML="<p class=\"hint\">⚠ "+(r&&r.error||"")+"</p>";return;}
+  lastValues=r.values||{};
+  const keys=Object.keys(lastValues);
+  box.innerHTML=(r.summary&&r.summary!=="sans clé"?("<div class=\"st-why\">"+esc(r.summary)+"</div>"):"")+
+    "<div class=\"st-res\">"+(r.fields||[]).slice(0,10).map(f=>esc(f.n||f.id||f.p||"…")).join(" · ")+"</div>"+
+    (keys.length?("<div class=\"st-res\" style=\"border-left:3px solid #7c5cff;padding-left:8px\">"+keys.map(k=>"<b>"+esc(k)+"</b> → "+esc(lastValues[k])).join("<br>")+"</div><button class=\"btn small\" id=\"secretaireFill\">✍️ "+t("secretaireFillBtn")+"</button>"):"<p class=\"hint\">"+t("secretaireNoKey")+"</p>");
+  const fb=$("secretaireFill");if(fb)fb.onclick=async()=>{const rr=await api("/api/secretaire/fill",{method:"POST",body:{values:lastValues}});showMsg(rr&&rr.status?rr.status:(rr&&rr.error||""));};}
+try{$("secretaireScan").addEventListener("click",secretaireScan);}catch(e){}
 try{$("repondantScan").addEventListener("click",repondantScan);}catch(e){}
 try{
   $("browserStart").addEventListener("click",async()=>{const u=$("browserUrl").value.trim()||"https://www.charlevoix.com";const r=await api("/api/browser/start",{method:"POST",body:{url:u}});$("browserStatus").textContent=(r&&r.error)?("⚠ "+r.error):"🤖 "+t("browserRunning")+" — "+t("browserBadge");pollBrowserStatus();});

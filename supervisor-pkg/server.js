@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.92";
+const VERSION = "1.0.93";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -562,6 +562,40 @@ async function api(req, res, pathname) {
   if (pathname === "/api/demo/alert" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const a = alertsRead(); a.items.push({ id: "a" + Date.now(), key: "demo-" + Date.now(), kind: "rain", pct: 85, inHour: 1, ts: ts(), status: "active", decision: null, source: "demo" }); alertsWrite(a); return send(res, 200, { ok: true }); }
   if (pathname === "/api/demo-login" && req.method === "POST") { if (process.env.DSH_DEMO_MODE !== "1") return send(res, 403, { error: "demo mode disabled" }); const b = await json(req); const u = loadUsers(); const name = Object.keys(u).find((n) => u[n].role === String(b.role || "owner")); if (!name) return send(res, 404, { error: "no demo user for that role" }); const token = issue(name, u[name].role, u[name].label || name); return send(res, 200, { token, name, role: u[name].role, label: u[name].label || name }, true); }
   if (pathname === "/api/alerts" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const a = alertsRead(); const active = a.items.find((x) => x.status === "active"); return send(res, 200, { active: active || null, last: a.items.slice(-3).reverse() }); }
+  if (pathname === "/api/secretaire/scan" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const br = browserBridge();
+    if (!br || !br.chromeExists()) return send(res, 200, { ok: false, error: "Chrome not found" });
+    try {
+      const r = await br.evalJs("JSON.stringify({h:location.hostname,fields:Array.from(document.querySelectorAll('input,select,textarea')).slice(0,40).map(f=>({n:f.name||'',id:f.id||'',p:f.placeholder||'',t:f.type||'',l:f.getAttribute('aria-label')||''}))})");
+      const raw = String((r && r.result && r.result.value) || "{}");
+      let page = { h: "", fields: [] };
+      try { page = JSON.parse(raw); } catch (e) {}
+      if (!(page.fields || []).length) return send(res, 200, { ok: false, error: "no form fields found — open the form page" });
+      telemetryTick("action", { tier: "GREEN", what: "Secrétaire read the form fields (" + String(page.h || "page") + ")" });
+      if (!brainOn()) return send(res, 200, { ok: true, fields: page.fields, values: {}, summary: "sans clé" });
+      const st = settingsRead() || {};
+      const ctx = "Entreprise: " + String(st.bizName || "inconnue") + ". Secteur: " + String(st.sector || "inconnu") + ". Site: " + String(page.h || "inconnu") + ".";
+      const pr = await brain("flash", "Le Secrétaire de Fanal. " + ctx + " Voici les champs du formulaire (JSON): " + JSON.stringify(page.fields).slice(0, 1600) + " Propose des valeurs PLAUSIBLES pour les champs évidents (nom, adresse, courriel, montants, dates, notes) avec des données d'exemple cohérentes de l'entreprise. Laisse VIDE tout champ incertain (sécurité, gouvernement, montants inconnus). Réponds UNIQUEMENT en JSON: {\"values\":{\"<name ou id du champ>\":\"valeur\",...},\"summary\":\"une phrase en français: ce qui a été rempli et ce qui reste à l'humain\"}", 900);
+      let parsed = { values: {}, summary: "" };
+      try { parsed = JSON.parse(String(pr).match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch (e) {}
+      telemetryTick("action", { tier: "SEMI", what: "Secrétaire proposed form values (human submits)" });
+      return send(res, 200, { ok: true, fields: page.fields, values: parsed.values || {}, summary: parsed.summary || "" });
+    } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/secretaire/fill" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const values = b.values && typeof b.values === "object" ? b.values : {};
+    const n = Object.keys(values).length;
+    if (!n) return send(res, 400, { error: "values required" });
+    try {
+      const js = "(function(){var v=" + JSON.stringify(values) + ";var done=0;Object.keys(v).forEach(function(k){var el=document.querySelector('[name=\\''+k+'\\']')||document.getElementById(k);if(el&&v[k]){el.value=v[k];try{el.dispatchEvent(new Event('input',{bubbles:true}));el.dispatchEvent(new Event('change',{bubbles:true}));}catch(e){}done++;}});return done;})()";
+      const r = await browserBridge().evalJs(js);
+      telemetryTick("action", { tier: "SEMI", what: "Secrétaire filled " + n + " form fields (human verifies and submits)" });
+      return send(res, 200, { ok: true, filled: r && r.result && r.result.value, status: "Champs remplis — VÉRIFIEZ et SOUMETTEZ vous-même." });
+    } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
   if (pathname === "/api/repondant/scan" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
     const br = browserBridge();
