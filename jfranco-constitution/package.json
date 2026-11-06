@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/constitution",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "The institutional organ of the J.Franco agentic workflow: the client's co-created constitution (philosophy, tone, policies, minimum price, extreme conditions, escalations) that every proposal must consult and every record must cite.",
   "author": "J.Franco",
   "license": "MIT",
@@ -21,5 +21,11 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/dsh-skill": ">=0.1.0"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
   }
 }
