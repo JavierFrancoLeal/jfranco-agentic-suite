@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/autonomy-grader",
-  "version": "1.1.119",
+  "version": "1.1.120",
   "description": "Governance layer of the J.Franco agentic workflow: grades the reliability of automatic decisions from the supervision log and proposes tier moves — the human approves every change.",
   "author": "J.Franco",
   "license": "MIT",
@@ -29,6 +29,15 @@
     "manifestVersion": 1,
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "nodejsRange": ">=20",
+      "dshRange": ">=0.2.1-rc.0",
+      "dshReleases": {
+        "0.2.2-alpha.2": "unknown",
+        "0.2.2-alpha.3": "unknown",
+        "0.2.2-rc.1": "unknown"
+      }
     }
   },
   "peerDependencies": {

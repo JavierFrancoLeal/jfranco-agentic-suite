@@ -6,12 +6,54 @@
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
-  "exports": { ".": "./lib/index.js", "./cordis.patch.yml": "./cordis.patch.yml", "./package.json": "./package.json", "./locale/*.json": "./locale/*.json" },
-  "files": ["lib/index.js", "assets", "cordis.patch.yml", "README.md", "locale/*.json"],
-  "engines": { "node": ">=24", "dsh": ">=0.2.1-rc.0" },
-  "repository": { "type": "git", "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git", "directory": "jfranco-cifra" },
-  "keywords": ["deepseek-harness", "host-detection", "cross-platform", "sovereign"],
-  "dsh": { "manifestVersion": 1, "bundle": { "patch": "./cordis.patch.yml" } },
-  "publishConfig": { "access": "public" },
-  "peerDependencies": { "@deepseek-ai/cordis": "~4.0.5", "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5" }
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "files": [
+    "lib/index.js",
+    "assets",
+    "cordis.patch.yml",
+    "README.md",
+    "locale/*.json"
+  ],
+  "engines": {
+    "node": ">=24",
+    "dsh": ">=0.2.1-rc.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "directory": "jfranco-cifra"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "host-detection",
+    "cross-platform",
+    "sovereign"
+  ],
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "nodejsRange": ">=20",
+      "dshRange": ">=0.2.1-rc.0",
+      "dshReleases": {
+        "0.2.2-alpha.2": "unknown",
+        "0.2.2-alpha.3": "unknown",
+        "0.2.2-rc.1": "unknown"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "~4.0.5",
+    "@deepseek-ai/dsh-skill": ">=0.2.1-rc.5"
+  }
 }

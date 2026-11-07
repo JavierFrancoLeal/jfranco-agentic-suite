@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/workflow-master",
-  "version": "1.2.119",
+  "version": "1.2.120",
   "description": "Agentic-workflow trigger layer: listening mode that captures conversations, decodes the requests, and builds the workflow — automatic actions, proposals, and questions.",
   "author": "J.Franco",
   "license": "MIT",
@@ -29,6 +29,15 @@
     "manifestVersion": 1,
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "nodejsRange": ">=20",
+      "dshRange": ">=0.2.1-rc.0",
+      "dshReleases": {
+        "0.2.2-alpha.2": "unknown",
+        "0.2.2-alpha.3": "unknown",
+        "0.2.2-rc.1": "unknown"
+      }
     }
   },
   "peerDependencies": {
