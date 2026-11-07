@@ -134,6 +134,23 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
   <button class="primary" id="sendPhraseBtn" style="background:var(--blue);box-shadow:0 4px 14px rgba(77,107,254,.35);margin-top:8px">📤 Send phrase</button>
   <button class="primary" id="readForMeBtn" style="background:#7c5cff;box-shadow:0 4px 14px rgba(124,92,255,.35);padding:14px;font-size:16px">👁️ Traducir para leer</button>
 
+  <div class="sumcard" id="dayCard" style="display:none">
+    <h3 style="margin:0 0 10px">📅 Ma journée — mes tâches</h3>
+    <div class="row" style="display:flex;gap:6px;margin-bottom:10px">
+      <input id="taskLabel" placeholder="table 4 / client…" style="flex:1">
+      <button id="taskOpen" style="background:var(--blue)">Ouvrir</button>
+    </div>
+    <div id="dayList" style="font-size:13px;text-align:left"></div>
+    <div id="closePrompt" style="display:none;margin-top:10px;padding:10px;border:1px solid var(--line2);border-radius:10px">
+      <p style="margin:0 0 8px" id="closeQuestion">Désirez-vous faire autre chose ?</p>
+      <div class="row" style="display:flex;gap:8px">
+        <button id="closeYes" style="background:var(--line2);color:var(--ink)">Oui</button>
+        <button id="closeNo" style="background:var(--blue)" class="noSel">Non</button>
+      </div>
+      <p style="margin:8px 0 0;font-size:11.5px;color:var(--mut)" id="closeHint">La tâche restera dans votre journée — touchez-la pour la reprendre.</p>
+    </div>
+    <button id="dayBack" style="background:var(--line2);color:var(--ink);margin-top:10px">← Retour</button>
+  </div>
   <div class="sumcard" id="summaryCard" style="display:none">
     <h3 id="summaryTitle">Conversation summary</h3>
     <div id="speakersList"></div>
@@ -141,6 +158,7 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
     <p class="note" id="sentNote"></p>
     <div class="row">
       <button id="newConvBtn" style="background:var(--blue)">➕ Nouvelle conversation</button>
+      <button id="dayBtn" style="background:var(--blue)">📅 Ma journée</button>
       <button id="backBtn" style="background:var(--line2);color:var(--ink)">← Retour</button>
     </div>
   </div>
@@ -464,6 +482,16 @@ async function translateUtterance(text,mode){
 $("readForMeBtn").onclick=async()=>{if(tradOn&&convInput.value.trim())await translateUtterance(convInput.value.trim(),"client");};
 $("tradClearBtn").onclick=()=>{$("tradDisplay").textContent="";};
 $("newConvBtn").onclick=async()=>{await fetch(SUP+"/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";$("tradReadBox").style.display="none";$("tradDisplay").textContent="";};
+let closeTimer=null,closeSessionId=null;
+async function loadMyDay(){try{const r=await fetch(SUP+"/api/task/mine");const j=await r.json();const ss=(j&&j.sessions)||[];$("dayList").innerHTML=ss.length?ss.map(x=>"<div class=\"dayItem\" data-id=\""+x.id+"\" style=\"padding:6px;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center\"><span>"+(x.status==="open"?"🟢":"⚪")+" "+esc(x.label||x.id)+"</span>"+(x.status==="open"?"<button class=\"dayClose\" data-id=\""+x.id+"\" style=\"background:var(--blue)\">Clôturer</button>":"")+"</div>").join(""):"<p style=\"color:var(--mut)\">Aucune tâche aujourd'hui.</p>";
+  document.querySelectorAll(".dayClose").forEach(b=>b.onclick=()=>askClose(b.dataset.id));}catch(e){}}
+async function askClose(id){const r=await fetch(SUP+"/api/task/close-prompt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})});const j=await r.json();if(!j||!j.ok)return;closeSessionId=id;$("closePrompt").style.display="block";$("closeQuestion").textContent=j.question||"Désirez-vous faire autre chose ?";
+  $("closeYes").onclick=()=>{clearTimeout(closeTimer);$("closePrompt").style.display="none";loadMyDay();};
+  $("closeNo").onclick=async()=>{clearTimeout(closeTimer);await fetch(SUP+"/api/task/close",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:closeSessionId})});$("closePrompt").style.display="none";loadMyDay();};
+  clearTimeout(closeTimer);closeTimer=setTimeout(async()=>{await fetch(SUP+"/api/task/close",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:closeSessionId,auto:true})});$("closePrompt").style.display="none";loadMyDay();},10000);}
+$("taskOpen").onclick=async()=>{const label=$("taskLabel").value.trim();await fetch(SUP+"/api/task/open",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({label})});$("taskLabel").value="";loadMyDay();};
+$("dayBtn").onclick=()=>{$("dayCard").style.display="block";$("summaryCard").style.display="none";loadMyDay();};
+$("dayBack").onclick=()=>{$("dayCard").style.display="none";};
 $("backBtn").onclick=()=>{summaryCard.style.display="none";};
 // ── The real field flow: phrase → transcript → FLASH summary → confirm ──
 const SUP=location.origin;
