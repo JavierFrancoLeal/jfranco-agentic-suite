@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.128";
+const VERSION = "1.0.129";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -936,7 +936,15 @@ async function api(req, res, pathname) {
         const j = await r.json();
         const models = (j.models || []).map((m) => m.name);
         out.detected = { ollama: true, models };
-        const pick = models.find((m) => /qwen2\.5:7b|llama3\.2:3b/.test(m)) || models[0];
+        let pick = models.find((m) => /qwen2\.5:7b/.test(m)) || models.find((m) => /llama3\.2:3b/.test(m)) || models[0];
+        if (!pick) {
+          // El cliente jamás escribe comandos: si Ollama está vacío, Fanal baja el modelo SOLO.
+          try {
+            await fetch("http://localhost:11434/api/pull", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "qwen2.5:7b" }), signal: AbortSignal.timeout(600000) });
+            pick = "qwen2.5:7b";
+            out.detected.pulled = true;
+          } catch (e) { out.detected.pulled = false; }
+        }
         if (pick) {
           const pr = providersRead();
           pr.fast = { baseUrl: "http://localhost:11434/v1", key: "", model: pick };

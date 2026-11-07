@@ -54,3 +54,27 @@ Fanal.app / Fanal.exe
 On first run the app walks the client through: language → the Fanal
 animation → the closed 7-step installation (business, sector, client key,
 macOS/Windows permissions, summary) → the owner account.
+
+## The client installation (the definitive process — 2026-11-07)
+
+A virgin client machine needs ONLY this:
+
+1. **Fanal** (the .dmg/.exe) — the ONLY mandatory install. The app
+   bundles EVERYTHING: the supervisor, the brain, the Node.js runtime,
+   the dashboard and the panel. The client NEVER installs DSH — DSH is
+   Trasunto's development environment, not the client's.
+2. **The wizard (20 minutes, with the founder)** — language, business,
+   sector, the client's OWN API key (they create their account), the
+   permissions, the house rules.
+3. **Ollama (OPTIONAL — the sovereignty option)** — one app install;
+   then the ✨ magic button in Réglages detects it, downloads the model
+   and configures everything. One click, no commands.
+4. **Chrome** — already present on every machine; the browser pilot
+   uses it for the visible hand.
+5. **NOTHING ELSE** — no Node.js, no terminal, no Git, no code.
+
+Contrast with the business system: the installation IS Service 2 of the
+plan ("implantation clé en main") — the founder's human link makes it a
+20-minute guided conversation, not a technical ordeal; the client's key
+and data stay theirs (the two-worlds rule); and the local brain is the
+upsell of sovereignty (the $799 Mac mini runs it forever).
