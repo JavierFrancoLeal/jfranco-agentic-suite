@@ -61,3 +61,24 @@ automatically; a daily re-trigger is scheduled.
 ⏳ — blocked on the operator: the SETUP protocol needs the operator's 9
 answers (Q1: Sources) before the agent can run. The baseline is the
 reference bar: every criterion of column A must be met by column B.
+
+
+## COLUMN B — CANCELLED (2026-11-07, the director's decision)
+
+After 48+ hours the GitHub notification suppression for the new
+trasunto-agent account never lifted (notifications remained 0 every
+day). The director cancelled the experiment: the daily reminder is
+deleted, the comparison column is closed.
+
+The verdict that fills column B: the ORCHESTRATOR and the AGENT work
+(session 21fa3f1f: the dsh-superagent build, the gh-agent wrapper, the
+standby patches) — but the LOOP does not: GitHub silences new accounts'
+notifications, so the agent never hears the trigger. Conclusion for the
+house: the autonomous-GitHub-agent loop is BLOCKED BY THE PLATFORM, not
+by our code; resume it only when GitHub releases the account, or wire
+the trigger through another channel (a webhook the agent polls
+directly). The report closes: column A (the human agent) wins on
+reliability TODAY; the machine agent stays in the STANDBY dossier.
+
+Nothing was lost: the superagent profile, the agent account and the
+docs remain for the day the channel opens.
