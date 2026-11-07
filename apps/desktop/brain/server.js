@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.136";
+const VERSION = "1.0.137";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1059,6 +1059,39 @@ async function api(req, res, pathname) {
     liveWrite(l);
     telemetryTick("action", { tier: "GREEN", what: "Task session closed by " + u.name + (b.auto === true ? " (auto-NO after 10 s)" : "") });
     return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/session/mutate" && req.method === "POST") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const l = liveRead();
+    const s2 = (l.sessions || []).find((x) => x.id === b.id);
+    if (!s2 || s2.status !== "open") return send(res, 200, { ok: false, error: "session not open" });
+    s2.operational = s2.operational || { items: [], alerts: [], incidents: [], total: "" };
+    const actor = String(b.actor || "FRONT");
+    const action = b.action || {};
+    const items = s2.operational.items;
+    if (actor === "FRONT" && action.type === "ADD_ITEM") {
+      const it = { itemId: require("node:crypto").randomBytes(4).toString("hex"), name: String(action.name || ""), qty: Number(action.qty) || 1, unitPrice: Number(action.unitPrice) || 0, status: "prep", addedAt: Date.now() };
+      items.push(it);
+      return send(res, 200, { ok: true, itemId: it.itemId });
+    }
+    if (actor === "FRONT" && action.type === "DECREMENT_ITEM") {
+      const it = items.find((x) => x.itemId === action.itemId);
+      if (!it) return send(res, 200, { ok: false, error: "item not found" });
+      if (it.status !== "prep") return send(res, 200, { ok: false, error: "BLOQUEADO_YA_COCINADO — la cocina lo marcó; se registra como incidente si insiste" });
+      if (it.qty > 1) it.qty--; else s2.operational.items = items.filter((x) => x.itemId !== action.itemId);
+      return send(res, 200, { ok: true });
+    }
+    if (actor === "BACK" && action.type === "ADVANCE") {
+      const it = items.find((x) => x.itemId === action.itemId);
+      if (!it) return send(res, 200, { ok: false, error: "item not found" });
+      const next = { prep: "pret", pret: "livre", livre: "livre" };
+      it.status = next[it.status] || "prep";
+      it.statusUpdatedAt = Date.now();
+      liveWrite(l);
+      return send(res, 200, { ok: true, status: it.status });
+    }
+    return send(res, 200, { ok: false, error: "action not authorized for " + actor });
   }
   if (pathname === "/api/task/op" && req.method === "POST") {
     const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
