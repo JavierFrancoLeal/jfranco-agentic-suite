@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.135";
+const VERSION = "1.0.136";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -305,6 +305,36 @@ function unveil(text, vaultArg) {
 function constitutionCtx() {
   const c = constitutionRead();
   return "Constitution du client: " + [c.philosophy, c.tone, c.policies, c.discountRule, c.minPrice ? "prix minimum: " + c.minPrice : "", c.extremeDiscounts ? "conditions extrêmes du rabais (l'offre du prix minimum exige TOUJOURS l'humain): " + c.extremeDiscounts : "", c.escalation].filter(Boolean).join(" | ") + ". ";
+}
+function appendLedger(entry) {
+  try {
+    const dir = path.join(DATA_DIR, "archive");
+    fs.mkdirSync(dir, { recursive: true });
+    const f = path.join(dir, "ledger_" + new Date().toISOString().slice(0, 7) + ".jsonl");
+    const rec = { ts: new Date().toISOString(), id: entry.id || "", branch: entry.branch || "", signerRole: entry.signerRole || "OWNER", signerName: entry.signerName || "", summary: entry.summary || "", hash: entry.hash || "", pdfFile: "fanal_" + new Date().toISOString().slice(0, 10) + ".pdf" };
+    fs.appendFileSync(f, JSON.stringify(rec) + "\n", { mode: 0o600 });
+  } catch (e) {}
+}
+function searchLedger(q, dateFilter) {
+  const dir = path.join(DATA_DIR, "archive");
+  const norm = (x) => String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const query = norm(q || "");
+  const out = [];
+  try {
+    const files = fs.readdirSync(dir).filter((x) => x.startsWith("ledger_") && x.endsWith(".jsonl")).sort().reverse();
+    for (const file of files) {
+      const lines = fs.readFileSync(path.join(dir, file), "utf8").trim().split("\n");
+      for (let i = lines.length - 1; i >= 0; i--) {
+        if (!lines[i]) continue;
+        try {
+          const row = JSON.parse(lines[i]);
+          if (dateFilter && !String(row.ts).startsWith(dateFilter)) continue;
+          if (!query || norm(row.id + " " + row.branch + " " + row.signerName + " " + row.summary + " " + row.hash).includes(query)) { out.push(row); if (out.length >= 30) return out; }
+        } catch (e) {}
+      }
+    }
+  } catch (e) {}
+  return out;
 }
 function memoryCtx() {
   const m = memoryRead();
@@ -844,7 +874,9 @@ async function api(req, res, pathname) {
   // The active sector pack: one dashboard skeleton, many business skins.
   if (pathname === "/api/studio" && req.method === "GET") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const tk = tasksRead(); return send(res, 200, { tasks: tk.tasks.slice(-20).reverse() }); }
   if (pathname === "/api/studio" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const id = "t" + Date.now(); tk.tasks.push({ id, type: String(b.type || "other"), text: String(b.text || ""), by: u.name, ts: ts(), status: "pending", result: null }); tasksWrite(tk); const l = liveRead(); l.inbox = l.inbox || []; l.inbox.push({ from: u.name, kind: "studio", id, text: String(b.type || "") + " :: " + String(b.text || "") }); liveWrite(l); if (brainOn()) { processStudio({ id, text: String(b.type || "") + " :: " + String(b.text || "") }); } if (process.env.DSH_DEMO_MODE === "1" && !brainOn()) setTimeout(() => { const t2 = tasksRead(); const it = t2.tasks.find((x) => x.id === id); if (it && it.status === "pending") { it.result = "[Brouillon de démonstration — " + String(b.type || "autre") + "] " + String(b.text || ""); it.rationale = "Le client pose une question simple ; une réponse courte et chaleureuse renforce le lien et invite à venir. (Démonstration — la cuisine réelle argumente avec les données de l'entreprise.)"; it.status = "done"; it.doneAt = ts(); tasksWrite(t2); } }, 3000); return send(res, 200, { ok: true, id }); }
-  if (pathname === "/api/studio/send" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const it = tk.tasks.find((x) => x.id === b.id); if (!it || it.status !== "done") return send(res, 200, { ok: false }); it.status = b.decision === "send" ? "sent" : "dismissed"; it.decidedBy = u.name; it.decidedAt = ts(); tasksWrite(tk); return send(res, 200, { ok: true }); }
+  if (pathname === "/api/studio/send" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const tk = tasksRead(); const it = tk.tasks.find((x) => x.id === b.id); if (!it || it.status !== "done") return send(res, 200, { ok: false }); it.status = b.decision === "send" ? "sent" : "dismissed"; it.decidedBy = u.name; it.decidedAt = ts(); tasksWrite(tk);
+    appendLedger({ id: it.id, branch: it.type || "", signerRole: "OWNER", signerName: u.name, summary: (it.text || "").slice(0, 90), hash: require("node:crypto").createHash("sha256").update(String(it.id) + String(it.result || "") + String(ts())).digest("hex").slice(0, 12) });
+    return send(res, 200, { ok: true }); }
   if (pathname === "/api/bridge/message" && req.method === "POST") { const bt = process.env.DSH_BRIDGE_TOKEN; const given = req.headers["x-bridge-token"] || ""; if (bt && given !== bt) return send(res, 401, { error: "bad bridge token" }); if (!bt) { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); } const b = await json(req); const tk = tasksRead(); const id = "t" + Date.now(); tk.tasks.push({ id, type: "email", text: String(b.from || "client") + " : " + String(b.text || ""), by: "Facebook", ts: ts(), status: "pending", result: null }); tasksWrite(tk); const l = liveRead(); l.inbox = l.inbox || []; l.inbox.push({ from: "Facebook", kind: "studio", id, text: String(b.from || "client") + " :: " + String(b.text || "") }); liveWrite(l); return send(res, 200, { ok: true, id }); }
   if (pathname === "/api/studio/inbox" && req.method === "GET") { const l = liveRead(); const tk = tasksRead(); const doneIds = new Set(tk.tasks.filter((x) => x.status === "done").map((x) => x.id)); const items = (l.inbox || []).filter((x) => x.kind === "studio" && !doneIds.has(x.id)); return send(res, 200, { items }, true); }
   if (pathname === "/api/studio/result" && req.method === "POST") { const b = await json(req); const tk = tasksRead(); const it = tk.tasks.find((x) => x.id === b.id); if (!it) return send(res, 200, { ok: false }); it.result = String(b.result || ""); it.rationale = String(b.rationale || ""); it.status = "done"; it.doneAt = ts(); tasksWrite(tk); return send(res, 200, { ok: true }); }
@@ -1023,6 +1055,7 @@ async function api(req, res, pathname) {
     const s2 = (l.sessions || []).find((x) => x.id === b.id && x.worker === u.name);
     if (!s2) return send(res, 200, { ok: false, error: "not found" });
     s2.status = "closed"; s2.closedAt = ts();
+    appendLedger({ id: s2.id, branch: "session", signerRole: "OWNER", signerName: u.name, summary: (s2.label || s2.id) + (b.auto === true ? " fermé (auto-NO)" : " fermé"), hash: require("node:crypto").createHash("sha256").update(String(s2.id) + String(s2.closedAt)).digest("hex").slice(0, 12) });
     liveWrite(l);
     telemetryTick("action", { tier: "GREEN", what: "Task session closed by " + u.name + (b.auto === true ? " (auto-NO after 10 s)" : "") });
     return send(res, 200, { ok: true });
@@ -1113,6 +1146,11 @@ async function api(req, res, pathname) {
     } catch (e) {
       return send(res, 200, { ok: true, serverSeesOllama: false, error: e.message });
     }
+  }
+  if (pathname === "/api/ledger/search" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const u = new URL(req.url, "http://x");
+    return send(res, 200, { results: searchLedger(u.searchParams.get("q") || "", u.searchParams.get("d") || "") }, true);
   }
   if (pathname === "/api/capabilities" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
@@ -1226,7 +1264,8 @@ async function api(req, res, pathname) {
     if (!managerOnly(res, req)) return;
     return send(res, 200, { ...telemetry(), autonomy: autonomyLevel() });
   }
-  if (pathname === "/api/alerts/decide" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const a = alertsRead(); const it = a.items.find((x) => x.id === b.id); if (!it || it.status !== "active") return send(res, 200, { ok: false }); it.status = "done"; it.decision = b.decision === "yes" ? "yes" : "no"; it.decidedBy = u.name; it.decidedAt = ts(); alertsWrite(a); if (b.decision === "yes") { const l = liveRead(); l.notices = l.notices || []; l.notices.push({ ts: ts(), from: u.name, text: "Pluie probable (~" + it.pct + "%) dans ~" + it.inHour + " h — préparez-vous." }); liveWrite(l); } return send(res, 200, { ok: true }); }
+  if (pathname === "/api/alerts/decide" && req.method === "POST") { const u = auth(req); if (!u || (u.role !== "owner" && u.role !== "lead")) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const a = alertsRead(); const it = a.items.find((x) => x.id === b.id); if (!it || it.status !== "active") return send(res, 200, { ok: false }); it.status = "done"; it.decision = b.decision === "yes" ? "yes" : "no"; it.decidedBy = u.name; it.decidedAt = ts(); alertsWrite(a);
+    appendLedger({ id: it.id, branch: "alert", signerRole: "OWNER", signerName: u.name, summary: "Alerte: " + String(it.title || it.id).slice(0, 80), hash: require("node:crypto").createHash("sha256").update(String(it.id) + String(ts())).digest("hex").slice(0, 12) }); if (b.decision === "yes") { const l = liveRead(); l.notices = l.notices || []; l.notices.push({ ts: ts(), from: u.name, text: "Pluie probable (~" + it.pct + "%) dans ~" + it.inHour + " h — préparez-vous." }); liveWrite(l); } return send(res, 200, { ok: true }); }
   if (pathname === "/api/shift" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const sh = shiftRead(); const same = sh.date === todayStr(); const opened = same ? sh.opened : null; const closed = same ? sh.closed : null; const phase = !opened ? "open" : (!closed ? "close" : "done"); const steps = phase === "open" ? SECTOR_OPEN : phase === "close" ? SECTOR_CLOSE : []; const bucket = phase === "open" ? (sh.openSteps || []) : (sh.closeSteps || []); return send(res, 200, { opened, closed, phase, steps: steps.map((st) => ({ id: st.id, label: st.label, done: bucket.some((x) => x.id === st.id) })) }); }
   if (pathname === "/api/shift/mark" && req.method === "POST") { const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const sh = shiftRead(); if (sh.date !== todayStr()) { sh.date = todayStr(); sh.opened = null; sh.closed = null; } const phase = sh.opened ? "close" : "open"; const bucket = phase === "open" ? (sh.openSteps = sh.openSteps || []) : (sh.closeSteps = sh.closeSteps || []); const list = phase === "open" ? SECTOR_OPEN : SECTOR_CLOSE; const cur = list.map((st) => ({ id: st.id, label: st.label, done: bucket.some((x) => x.id === st.id) })); const step = cur.find((x) => x.id === b.stepId); if (!step) return send(res, 200, { ok: false }); if (b.done) { if (!bucket.some((x) => x.id === b.stepId)) bucket.push({ id: b.stepId, by: u.name, ts: ts() }); } else { sh[phase === "open" ? "openSteps" : "closeSteps"] = bucket.filter((x) => x.id !== b.stepId); } const doneAll = list.every((st) => bucket.some((x) => x.id === st.id)); if (doneAll) { if (phase === "open") sh.opened = { by: u.name, ts: ts(), steps: bucket }; else sh.closed = { by: u.name, ts: ts(), steps: bucket }; } shiftWrite(sh); return send(res, 200, { ok: true, phase, doneAll, done: b.done }); }
   if (pathname === "/api/register" && req.method === "GET") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); return send(res, 200, regView()); }
