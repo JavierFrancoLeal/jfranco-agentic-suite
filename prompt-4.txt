@@ -1,0 +1,9 @@
+Nuevo nivel REAL: Ollama YA está instalado y corriendo en mi Mac (v0.40.15, localhost:11434, modelo llama3.2:3b residente), mi clave de Google está lista para el peldaño RESCUE (endpoint OpenAI-compatible generativelanguage.googleapis.com/v1beta/openai, modelo gemini-4-argon), y adopté tu frente C (el relevo con acta criptográfica + el PDF diario destilado con las 4 llaves operativas). La escalera completa: OLLAMA → DEEPSEEK → GEMINI 4 ARGON → HUMANO.
+
+Tres frentes con el formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) EL ORDEN DE CONSTRUCCIÓN DE LA VOZ: ya tengo SenseVoice disponible en DSH (STT local), llama3.2:3b residente, y la voz del sistema (speechSynthesis). Dame la SECUENCIA de construcción del circuito en vivo (semana 1, 2, 3): el VAD de 420ms que diseñaste, el puente STT→traducción→TTS con el presupuesto de 900ms, el barge-in, y el Téléphoniste con la muletilla a los 900ms. ¿Qué mido primero para saber que el circuito sirve antes de tocar el teléfono?
+
+B) EL MULTIVENDOR REAL: con los TRES proveedores configurados en mi fetch genérico (Ollama local, DeepSeek, el endpoint OpenAI de Gemini), dame la lista de verificación PREVIO al primer lote: ¿qué pruebo primero con cada proveedor (una llamada mínima, el JSON, la latencia) y en qué orden, para detectar incompatibilidades de formato en 10 minutos y no en pleno lote?
+
+C) LA CAPTURA OPERATIVA AUTOMÁTICA: mis sesiones de mesa hoy guardan un transcript vacío — quiero que Fanal, al cerrar la mesa, DESTILE la conversación en las 4 llaves operativas (items, alergias/seguridad, incidentes, total) SIN guardar la biografía del cliente (Loi 25). Dame el prompt de destilación exacto (el flash recibe la conversación velada y devuelve SOLO ese JSON operativo), y los invariantes deterministas que validen que la destilación no inventó un artículo ni perdió una alergia.
