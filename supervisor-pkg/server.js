@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.110";
+const VERSION = "1.0.111";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -356,6 +356,14 @@ function validateDraft(j, itemText) {
   return "";
 }
 function processStudio(item) {
+  setTimeout(() => {
+    const tk = tasksRead();
+    const it = tk.tasks.find((x) => x.id === item.id);
+    if (it && it.status === "pending") {
+      it.status = "done"; it.doneAt = ts(); it.result = "Le pas a expiré (90 s) — à traiter par l'humain."; it.rationale = "Le validador n'a reçu aucune réponse à temps."; it.validation = "timeout — human"; tasksWrite(tk);
+      telemetryTick("action", { tier: "YELLOW", what: "Studio step timed out — handed to the human" });
+    }
+  }, 90000);
   const prompt = "Decision center kitchen (Trasunto). " + constitutionCtx() + memoryCtx() + "The owner asked this task: " + String(item.text || "") + " Draft a short professional French response that RESPECTS the house rules above (tone, policies, discounts, minimum price, escalations) AND write in one sentence your reasoning. Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
   brain("deepseek-flash", prompt).then((out) => {
     const j = jsonBlock(out);

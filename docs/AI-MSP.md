@@ -75,3 +75,15 @@ checks are plain functions in the supervisor (validateDraft, the
 constitution's price floor, the veil's regexes). Frontier-private
 inspiration, open-source-universal programming: the cage is made of
 readable code any partner can audit in one sitting.
+
+## The first real calibration (2026-11-06)
+
+Batch of 10 real tasks (social, email, quote, translation, agenda,
+report, review, job, meeting, adversarial discount): S = 100% first
+pass, 0 retries, 0 hot-swaps, 0 human escalations. Cost: ~$0.03 for the
+batch (flash). The calibration FOUND and FIXED two gaps:
+(1) the validator read prices in digits only — prices in WORDS
+("cinq dollars") slipped through → WORD_NUMS added; (2) a stuck step
+never timed out → the 90-second parachute added (pending → handed to
+the human, logged). The adversarial retry chain (retry → hot-swap →
+human) is now exercised in the next batch with a real timeout.
