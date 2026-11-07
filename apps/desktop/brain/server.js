@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.113";
+const VERSION = "1.0.114";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -180,12 +180,17 @@ async function brain(model, prompt, maxTokens) {
   const rt = route(model);
   const key = rt.key;
   if (!key) throw new Error("no API key");
-  const r = await fetch(rt.baseUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-    body: JSON.stringify({ model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0.4 }),
-    signal: AbortSignal.timeout(90000),
-  });
+  let r = null;
+  for (let netAttempt = 0; netAttempt <= 3; netAttempt++) {
+    r = await fetch(rt.baseUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
+      body: JSON.stringify({ model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0 }),
+      signal: AbortSignal.timeout(90000),
+    });
+    if ((r.status === 429 || r.status >= 500) && netAttempt < 3) { await new Promise((rs) => setTimeout(rs, Math.pow(2, netAttempt) * 1000 + Math.random() * 200)); continue; }
+    break;
+  }
   const j = await r.json().catch(() => ({}));
   if (!r.ok || !j.choices) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
   try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, String(rt.model || model)); } catch {}
@@ -404,7 +409,16 @@ function validateDraft(j, itemText) {
 }
 let STUDIO_BUSY = 0;
 function processStudio(item) {
-  if (STUDIO_BUSY >= 4) { setTimeout(() => processStudio(item), 1500); return; }
+  if (item._queuedAt === undefined) item._queuedAt = Date.now();
+  if (STUDIO_BUSY >= 4) {
+    if (Date.now() - item._queuedAt > 45000) {
+      const tkQ = tasksRead();
+      const itQ = tkQ.tasks.find((x) => x.id === item.id);
+      if (itQ && itQ.status === "pending") { itQ.status = "done"; itQ.doneAt = ts(); itQ.result = "File d'attente saturée — à relancer plus tard."; itQ.rationale = "Plus de 45 s en attente."; itQ.validation = "queue saturation — human"; tasksWrite(tkQ); }
+      return;
+    }
+    setTimeout(() => processStudio(item), 1500); return;
+  }
   STUDIO_BUSY++;
   const parachute = setTimeout(() => {
     const tk = tasksRead();
@@ -429,7 +443,7 @@ function processStudio(item) {
         telemetryTick("action", { tier: "GREEN", what: "Studio draft passed the deterministic validation" });
       } else {
         // One retry with the error fed back; then escalate; the human is the last validator.
-        brain("deepseek-flash", prompt + " TA PREMIÈRE RÉPONSE A ÉTÉ REFUSÉE PAR LE VALIDATEUR DÉTERMINISTE: " + err + " Corrige et réponds UNIQUEMENT en JSON.").then((out2) => {
+        brain("deepseek-flash", prompt + " [CORRECTION OBLIGATOIRE PAR VALIDATEUR]: " + err + " RÈGLE SUPRÊME: corrige ces erreurs MAIS garde intactes toutes les règles de la Constitution — zéro rabais implicite, zéro prix sous le plancher. Réponds UNIQUEMENT en JSON.").then((out2) => {
           const j2 = jsonBlock(out2);
           const it2 = tasksRead().tasks.find((x) => x.id === item.id);
           if (!it2 || it2.status !== "pending") return;
@@ -438,8 +452,16 @@ function processStudio(item) {
             it2.result = String(j2.result); it2.rationale = String(j2.rationale || ""); it2.status = "done"; it2.doneAt = ts(); it2.validation = "passed after 1 retry"; tasksWrite(tasksRead());
             telemetryTick("action", { tier: "SEMI", what: "Studio draft passed after one corrective retry" });
           } else {
-            // HOT-SWAP: el paso atascado despierta al cerebro profundo (solo este paso), luego vuelve el barato.
-            brain("deepseek-v4-pro", prompt + " TA RÉPONSE A ÉTÉ REFUSÉE DEUX FOIS PAR LE VALIDATEUR: " + err2 + " Corrige et réponds UNIQUEMENT en JSON.").then((out3) => {
+            // HOT-SWAP con freno presupuestario: si el día está al límite, el humano recibe la tarea.
+            const telNow = telemetry();
+            const spent = Number(telNow.spentToday || 0);
+            const limit = Number(process.env.DAILY_BUDGET_USD || 0);
+            if (limit > 0 && spent >= limit) {
+              const itB = tasksRead().tasks.find((x) => x.id === item.id);
+              if (itB && itB.status === "pending") { itB.status = "done"; itB.doneAt = ts(); itB.result = String(j2 && j2.result || ""); itB.rationale = "Budget journalier atteint — le cerveau profond n'a pas été sollicité."; itB.validation = "budget brake — human"; tasksWrite(tasksRead()); telemetryTick("action", { tier: "YELLOW", what: "Studio hot-swap blocked by the daily budget — handed to the human" }); }
+              done1(); return;
+            }
+            brain("deepseek-v4-pro", prompt + " TA RÉPONSE A ÉTÉ REFUSÉE DEUX FOIS PAR LE VALIDATEUR: " + err2 + " CORRIGE les erreurs MAIS garde intactes toutes les règles de la Constitution (zéro rabais implicite, zéro prix sous le plancher). Réponds UNIQUEMENT en JSON.").then((out3) => {
               const j3 = jsonBlock(out3);
               const it3 = tasksRead().tasks.find((x) => x.id === item.id);
               if (!it3 || it3.status !== "pending") return;
@@ -861,6 +883,57 @@ async function api(req, res, pathname) {
       if (usd === null && !r.ok) return send(res, 200, { ok: false, error: "balance unavailable from the provider" });
       return send(res, 200, res);
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/task/open" && req.method === "POST") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const l = liveRead();
+    l.sessions = l.sessions || [];
+    const id = "s" + Date.now();
+    l.sessions.push({ id, worker: u.name, label: String(b.label || ""), status: "open", startedAt: ts(), closedAt: null, transcript: [] });
+    liveWrite(l);
+    telemetryTick("action", { tier: "GREEN", what: "Task session opened by " + u.name + (b.label ? " (" + String(b.label).slice(0, 40) + ")" : "") });
+    return send(res, 200, { ok: true, id });
+  }
+  if (pathname === "/api/task/close-prompt" && req.method === "POST") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const l = liveRead();
+    const s2 = (l.sessions || []).find((x) => x.id === b.id && x.worker === u.name);
+    if (!s2 || s2.status !== "open") return send(res, 200, { ok: false, error: "session not open" });
+    return send(res, 200, { ok: true, question: "Désirez-vous faire autre chose ?", options: ["Oui", "Non"], defaultOption: "Non", autoAfterSecs: 10, resumeHint: "La tâche restera dans votre journée — touchez-la pour la reprendre." });
+  }
+  if (pathname === "/api/task/close" && req.method === "POST") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const l = liveRead();
+    const s2 = (l.sessions || []).find((x) => x.id === b.id && x.worker === u.name);
+    if (!s2) return send(res, 200, { ok: false, error: "not found" });
+    s2.status = "closed"; s2.closedAt = ts();
+    liveWrite(l);
+    telemetryTick("action", { tier: "GREEN", what: "Task session closed by " + u.name + (b.auto === true ? " (auto-NO after 10 s)" : "") });
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/task/mine" && req.method === "GET") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const l = liveRead();
+    const mine = (l.sessions || []).filter((x) => x.worker === u.name).slice(-20);
+    return send(res, 200, { sessions: mine }, true);
+  }
+  if (pathname === "/api/day/report" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const l = liveRead();
+    const d = new Date().toISOString().slice(0, 10);
+    const lines = ["RAPPORT DU JOUR — " + d, ""];
+    for (const x of (l.sessions || [])) {
+      lines.push("### " + (x.label || x.id) + " — " + x.worker + " (" + x.status + ")");
+      lines.push("ouvert " + x.startedAt + (x.closedAt ? " · fermé " + x.closedAt : ""));
+      if (x.transcript && x.transcript.length) lines.push(x.transcript.join("\n"));
+      lines.push("");
+    }
+    if (!(l.sessions || []).length) lines.push("Aucune session aujourd'hui.");
+    telemetryTick("action", { tier: "GREEN", what: "Daily report generated" });
+    return send(res, 200, { report: lines.join("\n") });
   }
   if (pathname === "/api/phone/call" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
