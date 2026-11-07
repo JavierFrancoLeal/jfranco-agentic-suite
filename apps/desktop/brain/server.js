@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.123";
+const VERSION = "1.0.124";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -183,13 +183,15 @@ async function brain(model, prompt, maxTokens, tierArg) {
   if (!key) throw new Error("no API key");
   if (!isBrainHealthy(rt.tier)) throw new Error("circuit open for " + rt.tier);
   const isLocal = /localhost|127\.0\.0\.1/.test(String(rt.baseUrl || ""));
+  let callUrl = String(rt.baseUrl);
+  if (!/chat\/completions/.test(callUrl)) callUrl = callUrl.replace(/\/$/, "") + "/chat/completions";
   while (isLocal && LOCAL_BUSY >= 1) { await new Promise((rs) => setTimeout(rs, 200)); }
   if (isLocal) LOCAL_BUSY++;
   let r = null;
   const payload = { model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0 };
   if (isLocal) { payload.response_format = { type: "json_object" }; }
   for (let netAttempt = 0; netAttempt <= 3; netAttempt++) {
-    r = await fetch(rt.baseUrl, {
+    r = await fetch(callUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
       body: JSON.stringify(payload),
