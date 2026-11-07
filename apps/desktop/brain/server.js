@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.121";
+const VERSION = "1.0.122";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -446,6 +446,29 @@ const BRANCH_RULES = {
   education: "Rôle: préparer le matériel scolaire — plans de cours, communications aux parents. L'enseignant valide.",
   auto: "Rôle: préparer les dossiers d'atelier — devis types, historiques. JAMAIS de diagnostic final: le mécanicien certifié valide.",
 };
+const branchTelemetry = {};
+function recordRungAttempt(branch, rung, success, durationMs) {
+  if (!branchTelemetry[branch]) branchTelemetry[branch] = { localWindow: [], stats: { local: { ok: 0, fail: 0, sterileMs: 0 }, deep: { ok: 0, fail: 0, sterileMs: 0 }, rescue: { ok: 0, fail: 0, sterileMs: 0 } }, bypassLocal: false, skippedSinceLastProbe: 0 };
+  const b = branchTelemetry[branch];
+  const st = b.stats[rung] || { ok: 0, fail: 0, sterileMs: 0 };
+  if (success) st.ok++; else { st.fail++; st.sterileMs += durationMs; }
+  if (rung === "local") {
+    b.localWindow.push({ ok: success ? 1 : 0, ms: success ? 0 : durationMs });
+    if (b.localWindow.length > 20) b.localWindow.shift();
+    if (b.localWindow.length >= 10) {
+      const winRate = b.localWindow.reduce((x, y) => x + y.ok, 0) / b.localWindow.length;
+      const avgSterile = b.localWindow.reduce((x, y) => x + y.ms, 0) / b.localWindow.length;
+      b.bypassLocal = (winRate < 0.5) || (avgSterile > 8000);
+    }
+  }
+}
+function shouldRunLocalForBranch(branch, localQueueEmpty) {
+  const b = branchTelemetry[branch];
+  if (!b || !b.bypassLocal) return true;
+  b.skippedSinceLastProbe++;
+  if (b.skippedSinceLastProbe >= 10 && localQueueEmpty) { b.skippedSinceLastProbe = 0; return true; }
+  return false;
+}
 function processStudio(item) {
   if (item._queuedAt === undefined) item._queuedAt = Date.now();
   // El carril LOCAL (Ollama) no espera en la cola: es el reflejo de la médula.
@@ -957,6 +980,21 @@ async function api(req, res, pathname) {
     telemetryTick("action", { tier: "GREEN", what: "Task session closed by " + u.name + (b.auto === true ? " (auto-NO after 10 s)" : "") });
     return send(res, 200, { ok: true });
   }
+  if (pathname === "/api/task/handoff" && req.method === "POST") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const l = liveRead();
+    const s2 = (l.sessions || []).find((x) => x.id === b.id && x.worker === u.name);
+    if (!s2 || s2.status !== "open") return send(res, 200, { ok: false, error: "session not open" });
+    const snap = { id: s2.id, label: s2.label || "", items: s2.operational && s2.operational.items || [], alerts: s2.operational && s2.operational.alerts || [], total: s2.operational && s2.operational.total || "" };
+    const hash = require("node:crypto").createHash("sha256").update(JSON.stringify(snap)).digest("hex").slice(0, 12);
+    s2.handoffLog = s2.handoffLog || [];
+    s2.handoffLog.push({ from: u.name, to: String(b.to || "?"), at: ts(), semaphore: "GREEN", snapshotHash: hash, snapshot: snap });
+    s2.worker = String(b.to || s2.worker);
+    liveWrite(l);
+    telemetryTick("action", { tier: "GREEN", what: "Task handoff from " + u.name + " to " + String(b.to || "?") + " (hash " + hash + ")" });
+    return send(res, 200, { ok: true, hash, alerts: snap.alerts.length });
+  }
   if (pathname === "/api/task/mine" && req.method === "GET") {
     const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
     const l = liveRead();
@@ -971,7 +1009,12 @@ async function api(req, res, pathname) {
     for (const x of (l.sessions || [])) {
       lines.push("### " + (x.label || x.id) + " — " + x.worker + " (" + x.status + ")");
       lines.push("ouvert " + x.startedAt + (x.closedAt ? " · fermé " + x.closedAt : ""));
-      if (x.transcript && x.transcript.length) lines.push(x.transcript.join("\n"));
+      const op = x.operational || {};
+      if (op.items && op.items.length) lines.push("articles: " + op.items.join(", "));
+      if (op.alerts && op.alerts.length) lines.push("alertes (sécurité/allergies): " + op.alerts.join(", "));
+      if (op.incidents && op.incidents.length) lines.push("incidents de service: " + op.incidents.join(", "));
+      if (op.total) lines.push("total: " + op.total);
+      if (x.handoffLog && x.handoffLog.length) lines.push("relevés: " + x.handoffLog.map((h) => h.from + "→" + h.to + " (" + h.snapshotHash + ")").join(" · "));
       lines.push("");
     }
     if (!(l.sessions || []).length) lines.push("Aucune session aujourd'hui.");

@@ -4,28 +4,31 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Trasunto — Prompts para Argon Max</title>
 <style>
-body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(160deg,#eef2ff,#fdf4ff);margin:0;padding:32px 16px;color:#0f172a}
-.wrap{max-width:820px;margin:0 auto}
-h1{font-size:24px;margin:0 0 4px}
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(160deg,#eef2ff,#fdf4ff);margin:0;padding:28px 14px;color:#0f172a}
+.wrap{max-width:860px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
 p.sub{color:#64748b;margin:0 0 20px;font-size:14px}
-textarea{width:100%;min-height:220px;border-radius:14px;border:1px solid #cbd5e1;padding:14px;font-size:14px;line-height:1.55;font-family:inherit;box-sizing:border-box}
-button{margin-top:10px;background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;border:none;border-radius:999px;padding:12px 26px;font-size:15px;font-weight:700;cursor:pointer}
+.card{background:#fff;border-radius:16px;padding:18px;margin-bottom:22px;box-shadow:0 4px 16px rgba(15,23,42,.07)}
+.card h2{font-size:16px;margin:0 0 8px}
+textarea{width:100%;min-height:200px;border-radius:12px;border:1px solid #cbd5e1;padding:12px;font-size:13.5px;line-height:1.55;font-family:inherit;box-sizing:border-box}
+button{margin-top:8px;background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;border:none;border-radius:999px;padding:11px 24px;font-size:14px;font-weight:700;cursor:pointer}
 button.copied{background:#16a34a}
 </style>
 </head>
 <body>
 <div class="wrap">
 <h1>🎻 Prompts para Gemini Argon Max</h1>
-<p class="sub">Pega este prompt en la MISMA conversación de Gemini. Cada respuesta, cópiala y pégala en la sesión de Fanal.</p>
-<textarea id="p">Apliqué tus 5 parches y tu auditoría del velo. El velo ahora es v2.1: guardia toponímica (rue/boul./Saint-… nunca se tokenizan), anclas contextuales (cualquier nombre tras Bonjour/M./Mme/Signé: se captura aunque la Memoria esté vacía), mini-set de 50 apellidos quebequenses solo con Mayúscula inicial, fronteras con guion y apóstrofo (Jean-François ya no se parte), y el número cívico se enmascara. La bóveda viaja con CADA llamada (concurrencia resuelta) y barro los huérfanos cada hora.
+<p class="sub">Copia UNO, pégalo en la MISMA conversación de Gemini, espera, y trae la respuesta a Fanal.</p>
 
-AHORA el siguiente piso: mi elevador S. Su estado real: validar (acumula errores: piso de precios en dígitos/palabras, formato de Québec "1 250,50 $", trampa de descuento, token huérfano) → 1 reintento con el error exacto → hot-swap al cerebro profundo (v4-pro) → paracaídas AbortSignal.timeout(90s) → humano. YA añadí una cola de máximo 4 cerebros en vuelo porque un lote de 60 tareas saturó al proveedor y el paracaídas disparó sobre tareas en espera.
+<div class="card"><h2>Prompt 1 — La presentación de Fanal</h2>
+<textarea id="p1">Recuerda la arquitectura multicerebro en Electron que discutimos. Pues la CONSTRUÍ — y quiero que la audites como consultor adversarial. Se llama Fanal: una capa de orquestación agéntica soberana para PYMEs de Québec. La pila REAL: un supervisor Node.js de UN SOLO ARCHIVO (sin framework, sin cadena de build, sin librería de esquemas) + una app Electron (macOS/Windows) + un dashboard web en 10 idiomas. Su jaula determinista son FUNCIONES PLANAS: validateDraft (vacío/inválido, piso de precios en dígitos Y en palabras), la Constitución del cliente (tono, políticas, precio mínimo, condiciones extremas, escaladas), un router de cerebros (providers.json: baseUrl/modelo/clave por nivel — nube o Ollama local), un velo PII en memoria (regex: los nombres de la Memoria del cliente + teléfonos/correos se tokenizan ANTES de la nube y se re-hidratan DESPUÉS), el elevador S (validar → 1 reintento con el error exacto → hot-swap al cerebro profundo → paracaídas de 90 s → humano), el semáforo (GREEN/SEMI/YELLOW/RED, registrado), y la accountability bilateral (firma el que tiene la piel en el juego). Medido: 10 tareas reales, S = 100% al primer pase, ~$0.03 en total. REGLA: estás auditando un sistema REAL Y FUNCIONANDO — no propongas reconstrucciones; propón los CAMBIOS MÍNIMOS. Empieza con tu veredicto de una línea.</textarea><br><button id="b1">Copiar prompt 1</button></div>
 
-Estresa el elevador con ESTOS modos de falla concretos y dime para cada uno el arreglo mínimo en funciones planas (cero dependencias): (1) el proveedor devuelve HTTP 429 repetidamente — ¿backoff exponencial con jitter en el reintento, o la cola ya basta? (2) el hot-swap despierta al cerebro caro pero el PRESUPUESTO diario del cliente está al límite — ¿cómo decide el elevador entre gastar y escalar al humano? (3) la temperatura: ¿0.4 es correcta o debo bajar a 0 para el JSON del validador? (4) el reintento alimenta el error al prompt — ¿hay riesgo de que el modelo 'aprenda' a decir precios sobre el piso mientras el descuento se esconde en otra frase, y qué invariante lo atrapa? (5) con la cola de 4, ¿cuál es el tiempo máximo de espera aceptable para una tarea antes de declararla abandonada? Responde: VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números.</textarea><br>
+<div class="card"><h2>Prompt 2 — La auditoría de los 3 cerebros</h2>
 <textarea id="p2">Mi modelo evolucionó a TRES cerebros simultáneos y resolví los cuellos de botella. El estado REAL: (1) router de 3 niveles — fast = Ollama LOCAL (llama3.3, milisegundos, gratis, y su carril SALTA la cola de espera porque es el reflejo local), deep = DeepSeek v4-pro, y RESCUE = Gemini (tu endpoint OpenAI-compatible, el rescate senatorial que solo despierta en el ~1% de casos rebeldes, con freno de presupuesto diario); (2) el elevador S: validar (acumula errores, formato de Québec, trampa de descuento) → 1 reintento con el error exacto + la Constitución reafirmada → hot-swap al RESCUE → paracaídas AbortSignal 90s → humano; (3) la cola: máx 4 EN VUELO para la nube, techo de 45s configurable, backoff exponencial con jitter para 429; (4) el velo PII 2.1 (Unicode, sin acentos, anclas contextuales, bóveda por llamada, barrido 24h); (5) la telemetría mide S, el costo ponderado y las correcciones humanas.
 
-Audita ESTO con los ojos de un arquitecto de sistemas distribuidos: (1) ¿la escalera LOCAL → deep → RESCUE → humano tiene algún punto de fallo que yo no vea cuando los TRES proveedores caen a la vez? (2) el hot-swap al RESCUE usa el endpoint OpenAI-compatible de Gemini — ¿qué diferencias de formato/encabezados entre DeepSeek, Ollama y Gemini pueden romper mi fetch genérico, y cuál es el parche mínimo? (3) con el carril local saltando la cola, ¿cómo evito que 100 tareas locales simultáneas ahoguen la RAM de la máquina? (4) ¿el costo de mandar el error + la Constitución completa al RESCUE en cada hot-swap es aceptable, o hay una compresión mínima del prompt? (5) ¿qué métrica me dice que la escalera está SANAMENTE calibrada (proporción ideal local/deep/rescue) y cuándo debo rebalancear? Responde: VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números.</textarea><br>
-<button id="b2" onclick="navigator.clipboard.writeText(document.getElementById('p2').value).then(()=>{this.textContent='✔ ¡Copiado!';this.classList.add('copied');setTimeout(()=>{this.textContent='Copiar el prompt 2';this.classList.remove('copied');},2000)})">Copiar el prompt 2</button>
+Audita ESTO con los ojos de un arquitecto de sistemas distribuidos: (1) ¿la escalera LOCAL → deep → RESCUE → humano tiene algún punto de fallo que yo no vea cuando los TRES proveedores caen a la vez? (2) el hot-swap al RESCUE usa el endpoint OpenAI-compatible de Gemini — ¿qué diferencias de formato/encabezados entre DeepSeek, Ollama y Gemini pueden romper mi fetch genérico, y cuál es el parche mínimo? (3) con el carril local saltando la cola, ¿cómo evito que 100 tareas locales simultáneas ahoguen la RAM de la máquina? (4) ¿el costo de mandar el error + la Constitución completa al RESCUE en cada hot-swap es aceptable, o hay una compresión mínima del prompt? (5) ¿qué métrica me dice que la escalera está SANAMENTE calibrada (proporción ideal local/deep/rescue) y cuándo debo rebalancear? Responde: VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números.</textarea><br><button id="b2">Copiar prompt 2</button></div>
+
+<div class="card"><h2>Prompt 3 — Voz real · TFEP · relevo de turno</h2>
 <textarea id="p3">Progreso desde tu última auditoría — adopté TODO: el semáforo local de hierro (Ollama procesa 1 a la vez), el disyuntor por proveedor (3 fallos de red → 2 min abierto), los dialectos por proveedor (Ollama: num_ctx 8192, format json, keep_alive 15m), y confirmé que mi paracaídas ya es GLOBAL (90s por TAREA, no por peldaño) y que cada intento es una llamada fresca de un solo mensaje (la alternancia user/assistant no me rompe). La escalera REAL ahora: OLLAMA local → DEEPSEEK v4-pro → GEMINI (rescate, ~1-3%) → HUMANO. Además vivo: 15 agentes de rama (jurídico, contable, financiero, marketing, económico, seguros, RH, inmobiliario, salubridad, aduanas, ciberseguridad, salud, educación, taller) con sus jaulas y su "dossier de validation" para el profesional certificado; las sesiones de tarea por trabajador (abrir → cerrar con la pregunta "¿deseas algo más?" y auto-NO a los 10s → retomar); el velo PII 2.1; la telemetría del KPI (tiempo humano ahorrado vs correcciones).
 
 Tres frentes NUEVOS, con el mismo formato (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
@@ -34,9 +37,26 @@ A) LA VOZ EN TIEMPO REAL con la escalera de 4: quiero que la recepcionista tradu
 
 B) LA TFEP Y EL BYPASS: quiero medir la tasa de fricción estéril por peldaño (LOCAL/deep/RESCUE) y el bypass automático (si LOCAL baja del 50% de éxito en una categoría en una ventana de 20 intentos, saltarlo para esa categoría). Dame la estructura mínima de datos en mi telemetría JSON y la fórmula exacta del rebalanceo, sin una base de datos.
 
-C) EL CICLO DE VIDA DE LA TAREA DEL TRABAJADOR: la mesera con 10 mesas abiertas a la vez, una sesión por mesa, la pregunta de cierre con auto-NO a los 10s, y el PDF diario completo para el dueño. Audita el diseño: ¿qué le falta a una sesión para que el relevo de turno (una mesera entrega 4 mesas a la siguiente) sea una transferencia GREEN registrada sin perder el contexto de ninguna mesa? ¿Y cómo debe el PDF diario separar lo RELEVANTE (la orden) de lo PRIVADO (la vida del cliente) sin que el dueño pierda nada?</textarea><br>
-<button id="b3" onclick="navigator.clipboard.writeText(document.getElementById('p3').value).then(()=>{this.textContent='✔ ¡Copiado!';this.classList.add('copied');setTimeout(()=>{this.textContent='Copiar el prompt 3';this.classList.remove('copied');},2000)})">Copiar el prompt 3</button>
-<br><br><button id="b" onclick="navigator.clipboard.writeText(document.getElementById('p').value).then(()=>{this.textContent='✔ ¡Copiado!';this.classList.add('copied');setTimeout(()=>{this.textContent='Copiar el prompt';this.classList.remove('copied');},2000)})">Copiar el prompt</button>
+C) EL CICLO DE VIDA DE LA TAREA DEL TRABAJADOR: la mesera con 10 mesas abiertas a la vez, una sesión por mesa, la pregunta de cierre con auto-NO a los 10s, y el PDF diario completo para el dueño. Audita el diseño: ¿qué le falta a una sesión para que el relevo de turno (una mesera entrega 4 mesas a la siguiente) sea una transferencia GREEN registrada sin perder el contexto de ninguna mesa? ¿Y cómo debe el PDF diario separar lo RELEVANTE (la orden) de lo PRIVADO (la vida del cliente) sin que el dueño pierda nada?</textarea><br><button id="b3">Copiar prompt 3</button></div>
 </div>
+<script>
+function copiar(id, btn){
+  const ta=document.getElementById(id);
+  const texto=ta.value;
+  function ok(){btn.textContent="✔ ¡Copiado!";btn.classList.add("copied");setTimeout(()=>{btn.textContent=btn.dataset.label;btn.classList.remove("copied");},2000);}
+  if(navigator.clipboard&&window.isSecureContext){navigator.clipboard.writeText(texto).then(ok).catch(()=>fallback());}
+  else{fallback();}
+  function fallback(){
+    ta.focus();ta.select();
+    try{const hecho=document.execCommand("copy");if(hecho){ok();}else{alert("Selecciona el texto y cópialo con Cmd+C");}}
+    catch(e){alert("Selecciona el texto y cópialo con Cmd+C");}
+  }
+}
+["b1","b2","b3"].forEach((id,i)=>{
+  const btn=document.getElementById(id);
+  btn.dataset.label="Copiar prompt "+(i+1);
+  btn.onclick=()=>copiar("p"+(i+1),btn);
+});
+</script>
 </body>
 </html>
