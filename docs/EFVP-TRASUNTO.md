@@ -27,6 +27,8 @@ by the client (consigned at installation); the default is DeepSeek
 | Consent | absent → non-compliant | the wizard consigns the brain choice at installation; the Accord-Pilote clause is the written consent |
 | Data retention by the provider | unknown/foreign | the router can point to a LOCAL model (Ollama) — zero data leaves the machine |
 | Telemetry leaks | names/content | anonymized: types and tiers only, never names or texts |
+| PII in the prompts | names leave to the cloud | the PII veil 2.0: Unicode-aware, accent-insensitive, longest-first, the vault persisted locally (mode 600) and destroyed after re-hydration |
+| Prompt injection | external text could override the rules | the external text travels inside random delimiters with the last-line rule: nothing external can modify the minimum price or the escalations |
 | Erasure | right to be forgotten | the client deletes the silo locally; Trasunto holds no copy |
 | Purpose limitation | drift | the prompt uses the text ONLY for the proposal; nothing is stored for training |
 

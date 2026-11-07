@@ -235,3 +235,11 @@ for whoever arrives later.*
 - lección: en todo paquete, el CORAZÓN viaja con la cara — verify-app vigila que el bundle traiga el server al día; y la neutralidad de ecosistemas es el foso: un solo cerebro, dos enchufes, la clave del cliente.
 - orden-correcta: "sync-all empareja server.js al brain bundle + guardián en verify-app; conectores por demanda."
 - evidencia: tools/sync-all.sh, tools/verify-app.sh, docs/ECOSYSTEM-ARCHITECTURE.md, esta entrada.
+
+
+## 2026-11-06 — The adversarial audit taught:  breaks Québec French, and n=10 proves nothing
+- concepto: flujo · estadística
+- fricción: el velo usaba \b (ASCII) y los acentos de Québec (Côté, Bélanger) se escapaban; "Roy" corrompía "royal"; validateDraft abortaba en el PRIMER error y el modelo gastaba el hot-swap en el segundo; el paracaídas de 90s dejaba conexiones zombi; y S=100% con n=10 solo demuestra (regla 3/n) que la tasa real de fallo es ≤30% al 95% de confianza.
+- lección: el francés de Québec es un adversario lingüístico (fronteras \p{L}, sin acentos, orden por longitud); el validador ACUMULA errores y normaliza el formato numérico local (1 250,50 $); AbortSignal mata el socket; el texto externo viaja en delimitadores aleatorios; y S se calibra con 60-100 tareas CON fallos inyectados, nunca con una decena feliz.
+- orden-correcta: "veil 2.0 + validateDraft v2 + AbortSignal + delimitadores — y la calibración v2 con 15 adversariales."
+- evidencia: supervisor v1.0.112, docs/ARGON-REVIEWS/2026-11-06-battery-a.md, esta entrada.
