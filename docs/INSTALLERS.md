@@ -66,9 +66,14 @@ A virgin client machine needs ONLY this:
 2. **The wizard (20 minutes, with the founder)** — language, business,
    sector, the client's OWN API key (they create their account), the
    permissions, the house rules.
-3. **Ollama (OPTIONAL — the sovereignty option)** — one app install;
-   then the ✨ magic button in Réglages detects it, downloads the model
-   and configures everything. One click, no commands.
+3. **Ollama (the local rung of the 4-brain ladder — installed BY
+   Trasunto during the implantation)** — two clicks, then the ✨ magic
+   button in Réglages downloads the model and configures everything.
+   The ladder (fast → deep → rescue → human) is BUILT INTO Fanal and
+   always works; Ollama adds the LOCAL rung (free, instant, private) —
+   without it the ladder runs on the three cloud brains, still
+   antifragile. The DEFAULT offer includes it: every pilot gets the
+   four brains.
 4. **Chrome** — already present on every machine; the browser pilot
    uses it for the visible hand.
 5. **NOTHING ELSE** — no Node.js, no terminal, no Git, no code.
