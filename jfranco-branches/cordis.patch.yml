@@ -1,0 +1,4 @@
+# @javierfrancoleal/branches — the branch agents of the J.Franco workflow.
+- insert:
+    - id: branches
+      name: '@javierfrancoleal/branches'
