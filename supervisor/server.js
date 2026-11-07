@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.118";
+const VERSION = "1.0.119";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -435,7 +435,7 @@ function processStudio(item) {
       telemetryTick("action", { tier: "YELLOW", what: "Studio step timed out — handed to the human" });
     }
     STUDIO_BUSY = Math.max(0, STUDIO_BUSY - 1);
-, Number(process.env.FANAL_PARACHUTE_MS || 90000));
+  }, Number(process.env.FANAL_PARACHUTE_MS || 90000));
   const done1 = () => { clearTimeout(parachute); STUDIO_BUSY = Math.max(0, STUDIO_BUSY - 1); };
   const branchRule = BRANCH_RULES[item.type] || "";
   const prompt = "Decision center kitchen (Trasunto). " + branchRule + " " + constitutionCtx() + memoryCtx() + "The owner asked this task: " + String(item.text || "") + " Draft a short professional French response that RESPECTS the house rules above (tone, policies, discounts, minimum price, escalations) AND write in one sentence your reasoning. Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";

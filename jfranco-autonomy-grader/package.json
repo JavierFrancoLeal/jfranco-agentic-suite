@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/autonomy-grader",
-  "version": "1.1.108",
+  "version": "1.1.109",
   "description": "Governance layer of the J.Franco agentic workflow: grades the reliability of automatic decisions from the supervision log and proposes tier moves — the human approves every change.",
   "author": "J.Franco",
   "license": "MIT",
