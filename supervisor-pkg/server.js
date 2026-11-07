@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.127";
+const VERSION = "1.0.128";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -926,6 +926,27 @@ async function api(req, res, pathname) {
       telemetryTick("action", { tier: "SEMI", what: "Publication prepared in Facebook (text to clipboard, badge on)" });
       return send(res, 200, { ok: true, status: "Facebook ouvert, le texte est copié — collez-le dans le recuadro et publiez vous-même." });
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+  }
+  if (pathname === "/api/settings/brain/auto" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const out = { ok: true, detected: {}, fast: null };
+    try {
+      const r = await fetch("http://localhost:11434/api/tags", { signal: AbortSignal.timeout(4000) });
+      if (r.ok) {
+        const j = await r.json();
+        const models = (j.models || []).map((m) => m.name);
+        out.detected = { ollama: true, models };
+        const pick = models.find((m) => /qwen2\.5:7b|llama3\.2:3b/.test(m)) || models[0];
+        if (pick) {
+          const pr = providersRead();
+          pr.fast = { baseUrl: "http://localhost:11434/v1", key: "", model: pick };
+          providersWrite(pr);
+          out.fast = pick;
+          telemetryTick("action", { tier: "GREEN", what: "Brain auto-configured: local " + pick + " (the client never typed a baseUrl)" });
+        }
+      } else { out.detected = { ollama: false }; }
+    } catch (e) { out.detected = { ollama: false }; }
+    return send(res, 200, out);
   }
   if (pathname === "/api/settings/brain" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
