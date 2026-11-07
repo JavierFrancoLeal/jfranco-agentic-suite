@@ -176,6 +176,9 @@ td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 #langStep{position:fixed;inset:0;background:linear-gradient(160deg,#4D6BFE,#7c5cff 60%,#a78bfa);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:95;transition:opacity .45s,visibility .45s;animation:stepin .55s ease}
 @keyframes stepin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 #langStep.done{opacity:0;visibility:hidden}
+.langbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:12px 8px;color:#fff;cursor:pointer;font-size:15px;display:flex;flex-direction:column;gap:2px;align-items:center;transition:background .2s}
+.langbtn:hover{background:rgba(255,255,255,.28)}
+.langbtn small{opacity:.7;font-size:10.5px;letter-spacing:.12em}
 .langstep-inner{text-align:center}
 .langstep-hint{color:rgba(255,255,255,.9);font-size:14px;margin:18px 0 4px}
 .langstep-inner .langreel{width:min(340px,86vw);background:rgba(167,139,250,.55)!important;border:1px solid rgba(255,255,255,.6)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
@@ -327,9 +330,11 @@ body.wall pre{max-height:40vh}
   <div id="inboxDecision" class="hidden"></div>
 </div>
 <div id="langStep" class="hidden" style="display:none">
-    <div class="langstep-inner">
-      <svg width="110" height="110" viewBox="0 0 64 64" aria-hidden="true"><path class="draw" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <div class="langreel" id="langStepReel"><div class="ticks" id="langStepTicks"></div></div>
+    <div class="langstep-inner" style="text-align:center">
+      <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <h2 style="color:#fff;margin:14px 0 4px;font-size:24px;letter-spacing:-.01em">Choisissez votre langue</h2>
+      <p style="color:rgba(255,255,255,.75);margin:0 0 18px;font-size:13.5px">Choose your language · Elige tu idioma</p>
+      <div id="langStepList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;max-width:640px;margin:0 auto"></div>
     </div>
   </div>
   <div id="splash"><div class="splash-inner">
@@ -1211,12 +1216,21 @@ const LANGNAMES={es:"Español",en:"English",fr:"Français",de:"Deutsch",it:"Ital
 const LANGORDER=["it","zh","de","es","en","fr","ja","pt","ko","ar"];
 function buildLangMenu(){
   const rows=$("langRows");
+  const stepList=$("langStepList");
+  if(stepList)stepList.innerHTML="";
   for(const l of LANGORDER){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
     r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";bootFlash(2600,()=>{document.body.classList.remove("firstboot");if(!showWizard())finishBoot();});};
     rows.appendChild(r);
+    if(stepList){
+      const b=document.createElement("button");
+      b.className="langbtn";
+      b.innerHTML='<b>'+LANGNAMES[l]+'</b><small>'+l.toUpperCase()+'</small>';
+      b.onclick=r.onclick;
+      stepList.appendChild(b);
+    }
   }
 }
 function markReel(){
