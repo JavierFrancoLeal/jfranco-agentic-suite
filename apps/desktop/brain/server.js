@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.118";
+const VERSION = "1.0.119";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -414,6 +414,15 @@ const BRANCH_RULES = {
   finance: "Rôle: préparer les finances — respecter le budget quotidien et le plancher de prix. JAMAIS de conseil d'investissement.",
   marketing: "Rôle: préparer le marketing — ton de la maison, Loi 25 (jamais de données personnelles sans consentement).",
   economics: "Rôle: préparer l'analyse économique — le prix minimum est la dernière option, l'offrir exige l'humain.",
+  insurance: "Rôle: préparer les dossiers d'assurance — comparer les couvertures, lister les exclusions. JAMAIS de conseil de couverture: le courtier certifié valide.",
+  hr: "Rôle: préparer la paie et les RH — horaires, calculs, contrats types. JAMAIS de décision disciplinaire: le professionnel RH valide.",
+  realestate: "Rôle: préparer les dossiers immobiliers — comparables, documents types. JAMAIS de représentation: le courtier certifié (OACIQ) valide.",
+  foodsafety: "Rôle: préparer la salubrité — plans de nettoyage, registres MAPAQ. JAMAIS de certification: l'inspecteur valide.",
+  importexport: "Rôle: préparer les dossiers douaniers — classifications, documents types. JAMAIS de déclaration: le courtier en douane valide.",
+  cybersecurity: "Rôle: préparer la cyberhygiène — inventaire des comptes, listes de contrôle. JAMAIS de test intrusif: l'auditeur certifié valide.",
+  healthadmin: "Rôle: préparer l'administration clinique — dossiers types, rendez-vous. JAMAIS de donnée de santé à la nuage: le gestionnaire valide.",
+  education: "Rôle: préparer le matériel scolaire — plans de cours, communications aux parents. L'enseignant valide.",
+  auto: "Rôle: préparer les dossiers d'atelier — devis types, historiques. JAMAIS de diagnostic final: le mécanicien certifié valide.",
 };
 function processStudio(item) {
   if (item._queuedAt === undefined) item._queuedAt = Date.now();

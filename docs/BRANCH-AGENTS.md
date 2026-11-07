@@ -50,3 +50,23 @@ signal as the human's corrections.
 The branch agents never impersonate the professions: they never give a
 legal opinion, never sign a return, never recommend an investment. They
 prepare, explain and cite — the license signs.
+
+## The expanded professions (all the economic sectors)
+
+The same pattern extends to every sector: the agent prepares, the
+certified professional validates.
+
+| Branch | Prepares | The certified validator |
+|---|---|---|
+| insurance | coverage comparisons, exclusion lists | the broker |
+| hr | payroll, schedules, contract templates | the HR professional |
+| realestate | comparables, standard documents | the OACIQ broker |
+| foodsafety | cleaning plans, MAPAQ registers | the inspector |
+| importexport | customs classifications, documents | the customs broker |
+| cybersecurity | account inventory, checklists | the certified auditor |
+| healthadmin | clinic templates, appointments (never health data to the cloud) | the manager |
+| education | lesson plans, parent communications | the teacher |
+| auto | workshop quotes, histories | the certified mechanic |
+
+The rule is identical everywhere: PREPARE, EXPLAIN, CITE — the license
+signs. Each branch is a plug for the same organism.
