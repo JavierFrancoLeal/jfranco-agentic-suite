@@ -15,6 +15,10 @@ l'IA et les PME : nous installons, configurons et accompagnons Fanal.
   coordonnées du signataire, leçons ANONYMISÉES du pilote.
 - La télémétrie de Fanal est anonymisée : des types et des compteurs,
   jamais des noms ni des contenus.
+- Le voile PII 2.0 : les noms, téléphones et courriels sont remplacés
+  par des jetons locaux AVANT tout appel au modèle (insensible aux
+  accents du français québécois, bóveda local détruite après usage) —
+  la nuage ne voit jamais un nom réel.
 
 ## Ce que VOUS détenez
 
