@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.123";
+const VERSION = "1.0.124";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -187,7 +187,7 @@ async function brain(model, prompt, maxTokens, tierArg) {
   if (isLocal) LOCAL_BUSY++;
   let r = null;
   const payload = { model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0 };
-  if (isLocal) { payload.format = "json"; payload.options = { num_ctx: 8192 }; payload.keep_alive = "15m"; }
+  if (isLocal) { payload.response_format = { type: "json_object" }; }
   for (let netAttempt = 0; netAttempt <= 3; netAttempt++) {
     r = await fetch(rt.baseUrl, {
       method: "POST",
@@ -543,7 +543,13 @@ function processStudio(item) {
         }).catch((e) => { done1(); console.error("flash studio retry:", e.message); });
       }
     }
-  }).catch((e) => { done1(); console.error("flash studio:", e.message); });
+  }).catch((e) => {
+    done1();
+    const tkF = tasksRead();
+    const itF = tkF.tasks.find((x) => x.id === item.id);
+    if (itF && itF.status === "pending") { itF.status = "done"; itF.doneAt = ts(); itF.result = "Le cerveau rapide a échoué (" + String(e.message || "erreur").slice(0, 80) + ") — à relancer ou à traiter par l'humain."; itF.rationale = "First attempt failed."; itF.validation = "first attempt failed — human"; tasksWrite(tkF); telemetryTick("action", { tier: "YELLOW", what: "Studio first attempt failed — handed to the human" }); }
+    console.error("flash studio:", e.message);
+  });
 }
 function appendReport(worker, text) {
   if (db) db.prepare("INSERT INTO reports (ts,worker,text) VALUES (?,?,?)").run(ts(), worker, String(text || "").trim());
