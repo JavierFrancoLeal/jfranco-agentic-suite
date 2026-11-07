@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.107";
+const VERSION = "1.0.108";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -299,6 +299,20 @@ function processDeep(item) {
     liveWrite(s2);
   }).catch((e) => console.error("deep v4-pro:", e.message));
 }
+function validateDraft(j, itemText) {
+  // The deterministic wrapper: the "S-elevator" around the probabilistic tokens.
+  if (!j || !j.result || !String(j.result).trim()) return "empty or unparseable draft";
+  const c = constitutionRead();
+  if (c.minPrice) {
+    const nums = String(j.result).match(/\$?\d+(?:[.,]\d{2})?/g) || [];
+    const floor = parseFloat(String(c.minPrice).replace(/[^0-9.]/g, ""));
+    for (const n of nums) {
+      const v = parseFloat(n.replace(/[$,]/g, ""));
+      if (!isNaN(v) && !isNaN(floor) && v < floor && v > 0) return "price below the constitutional minimum (" + c.minPrice + ")";
+    }
+  }
+  return "";
+}
 function processStudio(item) {
   const prompt = "Decision center kitchen (Trasunto). " + constitutionCtx() + memoryCtx() + "The owner asked this task: " + String(item.text || "") + " Draft a short professional French response that RESPECTS the house rules above (tone, policies, discounts, minimum price, escalations) AND write in one sentence your reasoning. Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
   brain("deepseek-flash", prompt).then((out) => {
@@ -307,7 +321,26 @@ function processStudio(item) {
     const tk = tasksRead();
     const it = tk.tasks.find((x) => x.id === item.id);
     if (it && it.status === "pending") {
-      it.result = String(j.result); it.rationale = String(j.rationale || ""); it.status = "done"; it.doneAt = ts(); tasksWrite(tk);
+      const err = validateDraft(j, item.text);
+      if (!err) {
+        it.result = String(j.result); it.rationale = String(j.rationale || ""); it.status = "done"; it.doneAt = ts(); it.validation = "passed"; tasksWrite(tk);
+        telemetryTick("action", { tier: "GREEN", what: "Studio draft passed the deterministic validation" });
+      } else {
+        // One retry with the error fed back; then escalate; the human is the last validator.
+        brain("deepseek-flash", prompt + " TA PREMIÈRE RÉPONSE A ÉTÉ REFUSÉE PAR LE VALIDATEUR DÉTERMINISTE: " + err + " Corrige et réponds UNIQUEMENT en JSON.").then((out2) => {
+          const j2 = jsonBlock(out2);
+          const it2 = tasksRead().tasks.find((x) => x.id === item.id);
+          if (!it2 || it2.status !== "pending") return;
+          const err2 = validateDraft(j2, item.text);
+          if (!err2) {
+            it2.result = String(j2.result); it2.rationale = String(j2.rationale || ""); it2.status = "done"; it2.doneAt = ts(); it2.validation = "passed after 1 retry"; tasksWrite(tasksRead());
+            telemetryTick("action", { tier: "SEMI", what: "Studio draft passed after one corrective retry" });
+          } else {
+            it2.result = String(j2 && j2.result || ""); it2.rationale = String(j2 && j2.rationale || "") + " (validé par l'humain — le validateur a signalé: " + err2 + ")"; it2.status = "done"; it2.doneAt = ts(); it2.validation = "human is the last validator"; tasksWrite(tasksRead());
+            telemetryTick("action", { tier: "YELLOW", what: "Studio draft escalated — the human is the last validator" });
+          }
+        }).catch((e) => console.error("flash studio retry:", e.message));
+      }
     }
   }).catch((e) => console.error("flash studio:", e.message));
 }
