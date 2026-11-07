@@ -1,0 +1,15 @@
+Tu doctrina ligera está adoptada (la ventana de 420px, el CSS cero-GPU, el buzón primero, las 4 métricas). Pero mi socio fundador aportó una corrección que cambia el problema, y quiero tu juicio sobre ella:
+
+"El valor del software es lo que puede hacer. PERO de nada sirve lo que puede hacer si el usuario NO SABE que puede hacerlo."
+
+Contexto que tú NO conoces y que cambia la ecuación: somos un producto FRONTERA durante la adopción masiva de la IA. No vendemos una herramienta conocida (el cliente ya sabía usar un Excel); vendemos FLUJOS DE TRABAJO NUEVOS que nosotros INVENTAMOS (capital organizativo): el Répondant que responde en 10 idiomas, el Secrétaire que llena formularios dejando vacío lo delicado, 15 agentes de rama que preparan dossiers para profesionales certificados, la escalera de 4 cerebros, la accountability bilateral. El cliente de la 4ª revolución industrial no pide estas cosas porque NO SABE que existen. La interfaz no puede limitarse a ser ligera y silenciosa: también debe ENSEÑAR y DESCUBRIR.
+
+Preguntas, con el formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) LA UI COMO PEDAGOGA: ¿cuáles son los patrones de interfaz que hacen que el usuario DESCUBRA lo que el software puede hacer, sin volver la app ruidosa ni pesada? (piensa en la revelación progresiva, las sugerencias proactivas, la galería de capacidades, el "¿quieres que lo haga por ti?").
+
+B) EL MOMENTO DEL DESCUBRIMIENTO: para un cliente que abre Fanal por PRIMERA vez (una mesera, un dueño), ¿cuál es la secuencia mínima de 3 momentos que le ENSEÑA el valor en su primer día, respetando la doctrina ligera?
+
+C) EL SEMÁFORO COMO INTERFAZ DE CONFIANZA: nuestro GREEN/YELLOW/RED ya explica CADA propuesta con su razón. ¿Cómo lo convertimos en el instrumento pedagógico central (el cliente APRENDE a confiar mirando el semáforo) — sin convertirlo en jerga técnica?
+
+D) EL EQUILIBRIO FINAL: la doctrina ligera (cero CPU, 380px, silencio GREEN) vs la pedagogía (mostrar capacidades). ¿Dónde está la línea entre "enseñar" y "estorbar", y qué regla de oro la define?
