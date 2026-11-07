@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.119";
+const VERSION = "1.0.120";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -166,18 +166,19 @@ function providersRead() {
 function providersWrite(p) { try { fs.writeFileSync(path.join(DATA_DIR, "providers.json"), JSON.stringify(p)); } catch (e) {} }
 // The anti-fragile brain: every tier routes to a CONFIGURED provider —
 // cloud or LOCAL (open models). Change providers.json and the brain changes.
-function route(model) {
+function route(model, tierArg) {
   const pr = providersRead();
-  const tier = String(model).includes("v4-pro") ? "deep" : "fast";
+  const tier = tierArg || (String(model).includes("v4-pro") ? "deep" : "fast");
   const cfg = pr[tier] || {};
   return {
     baseUrl: String(cfg.baseUrl || BRAIN_BASE),
     key: String(cfg.key || clientKey() || process.env.DEEPSEEK_API_KEY || ""),
     model: String(cfg.model || model),
+    tier,
   };
 }
-async function brain(model, prompt, maxTokens) {
-  const rt = route(model);
+async function brain(model, prompt, maxTokens, tierArg) {
+  const rt = route(model, tierArg);
   const key = rt.key;
   if (!key) throw new Error("no API key");
   let r = null;
@@ -426,7 +427,10 @@ const BRANCH_RULES = {
 };
 function processStudio(item) {
   if (item._queuedAt === undefined) item._queuedAt = Date.now();
-  if (STUDIO_BUSY >= 4) {
+  // El carril LOCAL (Ollama) no espera en la cola: es el reflejo de la médula.
+  const fastCfg = (providersRead() || {}).fast || {};
+  const isLocal = /localhost|127\.0\.0\.1/.test(String(fastCfg.baseUrl || ""));
+  if (STUDIO_BUSY >= 4 && !isLocal) {
     if (Date.now() - item._queuedAt > Number(process.env.FANAL_QUEUE_CEILING_MS || 45000)) {
       const tkQ = tasksRead();
       const itQ = tkQ.tasks.find((x) => x.id === item.id);
@@ -469,7 +473,7 @@ function processStudio(item) {
             it2.result = String(j2.result); it2.rationale = String(j2.rationale || ""); it2.status = "done"; it2.doneAt = ts(); it2.validation = "passed after 1 retry"; tasksWrite(tasksRead());
             telemetryTick("action", { tier: "SEMI", what: "Studio draft passed after one corrective retry" });
           } else {
-            // HOT-SWAP con freno presupuestario: si el día está al límite, el humano recibe la tarea.
+            // HOT-SWAP con freno presupuestario y el TERCER cerebro (el rescate senatorial, configurable).
             const telNow = telemetry();
             const spent = Number(telNow.spentToday || 0);
             const limit = Number(process.env.DAILY_BUDGET_USD || 0);
@@ -478,7 +482,7 @@ function processStudio(item) {
               if (itB && itB.status === "pending") { itB.status = "done"; itB.doneAt = ts(); itB.result = String(j2 && j2.result || ""); itB.rationale = "Budget journalier atteint — le cerveau profond n'a pas été sollicité."; itB.validation = "budget brake — human"; tasksWrite(tasksRead()); telemetryTick("action", { tier: "YELLOW", what: "Studio hot-swap blocked by the daily budget — handed to the human" }); }
               done1(); return;
             }
-            brain("deepseek-v4-pro", prompt + " TA RÉPONSE A ÉTÉ REFUSÉE DEUX FOIS PAR LE VALIDATEUR: " + err2 + " CORRIGE les erreurs MAIS garde intactes toutes les règles de la Constitution (zéro rabais implicite, zéro prix sous le plancher). Réponds UNIQUEMENT en JSON.").then((out3) => {
+            brain("deepseek-v4-pro", prompt + " TA RÉPONSE A ÉTÉ REFUSÉE DEUX FOIS PAR LE VALIDATEUR: " + err2 + " CORRIGE les erreurs MAIS garde intactes toutes les règles de la Constitution (zéro rabais implicite, zéro prix sous le plancher). Réponds UNIQUEMENT en JSON.", 0, "rescue").then((out3) => {
               const j3 = jsonBlock(out3);
               const it3 = tasksRead().tasks.find((x) => x.id === item.id);
               if (!it3 || it3.status !== "pending") return;
@@ -874,7 +878,7 @@ async function api(req, res, pathname) {
   if (pathname === "/api/settings/brain" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
     const pr = providersRead();
-    return send(res, 200, { fast: pr.fast || { baseUrl: BRAIN_BASE, model: "deepseek-flash" }, deep: pr.deep || { baseUrl: BRAIN_BASE, model: "deepseek-v4-pro" } });
+    return send(res, 200, { fast: pr.fast || { baseUrl: BRAIN_BASE, model: "deepseek-flash" }, deep: pr.deep || { baseUrl: BRAIN_BASE, model: "deepseek-v4-pro" }, rescue: pr.rescue || { baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-3.1-pro" } });
   }
   if (pathname === "/api/settings/brain" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
@@ -882,8 +886,9 @@ async function api(req, res, pathname) {
     const pr = providersRead();
     if (b.fast) pr.fast = { baseUrl: String(b.fast.baseUrl || BRAIN_BASE), key: String(b.fast.key || ""), model: String(b.fast.model || "deepseek-flash") };
     if (b.deep) pr.deep = { baseUrl: String(b.deep.baseUrl || BRAIN_BASE), key: String(b.deep.key || ""), model: String(b.deep.model || "deepseek-v4-pro") };
+    if (b.rescue) pr.rescue = { baseUrl: String(b.rescue.baseUrl || "https://generativelanguage.googleapis.com/v1beta/openai"), key: String(b.rescue.key || ""), model: String(b.rescue.model || "gemini-3.1-pro") };
     providersWrite(pr);
-    telemetryTick("action", { tier: "GREEN", what: "Brain router updated (fast: " + (pr.fast && pr.fast.model) + ", deep: " + (pr.deep && pr.deep.model) + ")" });
+    telemetryTick("action", { tier: "GREEN", what: "Brain router updated (fast: " + (pr.fast && pr.fast.model) + ", deep: " + (pr.deep && pr.deep.model) + ", rescue: " + (pr.rescue && pr.rescue.model) + ")" });
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/settings/balance" && req.method === "GET") {
