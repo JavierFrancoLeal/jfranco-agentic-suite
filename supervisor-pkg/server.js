@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.138";
+const VERSION = "1.0.139";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -488,6 +488,29 @@ function masteryRead() {
   catch (e) { return {}; }
 }
 function masteryWrite(m) { try { fs.writeFileSync(path.join(DATA_DIR, "capabilities.json"), JSON.stringify(m)); } catch (e) {} }
+const DOSSIER_TIERS = {
+  legal: { price: 25.0, tier: 1 }, accounting: { price: 25.0, tier: 1 }, finance: { price: 25.0, tier: 1 }, cybersecurity: { price: 25.0, tier: 1 }, healthadmin: { price: 25.0, tier: 1 },
+  realestate: { price: 14.0, tier: 2 }, insurance: { price: 14.0, tier: 2 }, importexport: { price: 14.0, tier: 2 }, hr: { price: 14.0, tier: 2 }, economics: { price: 14.0, tier: 2 },
+  auto: { price: 6.0, tier: 3 }, foodsafety: { price: 6.0, tier: 3 }, education: { price: 6.0, tier: 3 }, marketing: { price: 6.0, tier: 3 },
+};
+function computeDossierSymmetry(original, signed, basePrice) {
+  // La cláusula de simetría en CÓDIGO: la piel en el juego se mide al firmar, sin discusión humana.
+  const keys = Object.keys(original || {});
+  if (!keys.length) return { finalPrice: 0, deltaPct: 100, tier: "FREE_REJECTED" };
+  let w = 0;
+  for (const k of keys) {
+    const a = JSON.stringify(original[k] == null ? "" : original[k]).trim();
+    const b = JSON.stringify(signed[k] == null ? "" : signed[k]).trim();
+    if (a !== b) {
+      const maxLen = Math.max(a.length, b.length, 1);
+      w += Math.min(1, Math.abs(a.length - b.length) / maxLen + 0.35);
+    }
+  }
+  const deltaPct = Number(((w / keys.length) * 100).toFixed(1));
+  if (deltaPct <= 15) return { finalPrice: basePrice, deltaPct, tier: "FULL_100_PCT" };
+  if (deltaPct <= 35) return { finalPrice: Number((basePrice * 0.5).toFixed(2)), deltaPct, tier: "SYMMETRY_50_PCT" };
+  return { finalPrice: 0, deltaPct, tier: "SYMMETRY_FREE_0_PCT" };
+}
 const branchTelemetry = {};
 function recordRungAttempt(branch, rung, success, durationMs) {
   if (!branchTelemetry[branch]) branchTelemetry[branch] = { localWindow: [], stats: { local: { ok: 0, fail: 0, sterileMs: 0 }, deep: { ok: 0, fail: 0, sterileMs: 0 }, rescue: { ok: 0, fail: 0, sterileMs: 0 } }, bypassLocal: false, skippedSinceLastProbe: 0 };
@@ -1179,6 +1202,13 @@ async function api(req, res, pathname) {
     } catch (e) {
       return send(res, 200, { ok: true, serverSeesOllama: false, error: e.message });
     }
+  }
+  if (pathname === "/api/dossier/price" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const tier = DOSSIER_TIERS[String(b.branch || "")] || { price: 10.0, tier: 2 };
+    const sym = computeDossierSymmetry(b.original || {}, b.signed || b.original || {}, tier.price);
+    return send(res, 200, { basePrice: tier.price, ...sym, label: "Préparation et pré-validation documentaire pour professionnel certifié" });
   }
   if (pathname === "/api/ledger/search" && req.method === "GET") {
     if (!managerOnly(res, req)) return;

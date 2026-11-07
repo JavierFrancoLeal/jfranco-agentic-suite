@@ -70,3 +70,20 @@ certified professional validates.
 
 The rule is identical everywhere: PREPARE, EXPLAIN, CITE — the license
 signs. Each branch is a plug for the same organism.
+
+## The dossier pricing and the symmetry clause (Argon prompt-9, adopted)
+
+The price anchors at 10-15% of the professional's saved time (Québec
+rates), leaving the client a 7-10x return:
+
+| Level | Branches | Price per dossier |
+|---|---|---|
+| 1 (high collegiality) | legal, CPA, finance, cybersecurity, health | $22-29 CAD |
+| 2 (regulated management) | real estate, insurance, customs, HR, economics | $12-16 CAD |
+| 3 (technical compliance) | workshop, food safety, education, marketing | $4.50-7.50 CAD |
+
+The symmetry clause is DETERMINISTIC (computed at the signature):
+edition ≤15% → full price · 15-35% → 50% · >35% or rejected → $0
+(Fanal absorbs its own failure). The label is always "préparation et
+pré-validation documentaire pour professionnel certifié" — never a
+professional opinion (the Ordres professionnels).
