@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.116";
+const VERSION = "1.0.117";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -408,6 +408,13 @@ function validateDraft(j, itemText) {
   return errors.join(" ; ");
 }
 let STUDIO_BUSY = 0;
+const BRANCH_RULES = {
+  legal: "Rôle: préparer un document juridique — inclure TOUJOURS les clauses requises et terminer par «À valider par un avocat certifié». JAMAIS d'opinion juridique.",
+  accounting: "Rôle: préparer la comptabilité — chaque somme doit cadrer au centime (lignes = sous-total = total). JAMAIS de signature comptable.",
+  finance: "Rôle: préparer les finances — respecter le budget quotidien et le plancher de prix. JAMAIS de conseil d'investissement.",
+  marketing: "Rôle: préparer le marketing — ton de la maison, Loi 25 (jamais de données personnelles sans consentement).",
+  economics: "Rôle: préparer l'analyse économique — le prix minimum est la dernière option, l'offrir exige l'humain.",
+};
 function processStudio(item) {
   if (item._queuedAt === undefined) item._queuedAt = Date.now();
   if (STUDIO_BUSY >= 4) {
@@ -430,7 +437,8 @@ function processStudio(item) {
     STUDIO_BUSY = Math.max(0, STUDIO_BUSY - 1);
   }, 90000);
   const done1 = () => { clearTimeout(parachute); STUDIO_BUSY = Math.max(0, STUDIO_BUSY - 1); };
-  const prompt = "Decision center kitchen (Trasunto). " + constitutionCtx() + memoryCtx() + "The owner asked this task: " + String(item.text || "") + " Draft a short professional French response that RESPECTS the house rules above (tone, policies, discounts, minimum price, escalations) AND write in one sentence your reasoning. Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
+  const branchRule = BRANCH_RULES[item.type] || "";
+  const prompt = "Decision center kitchen (Trasunto). " + branchRule + " " + constitutionCtx() + memoryCtx() + "The owner asked this task: " + String(item.text || "") + " Draft a short professional French response that RESPECTS the house rules above (tone, policies, discounts, minimum price, escalations) AND write in one sentence your reasoning. Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
   brain("deepseek-flash", prompt).then((out) => {
     const j = jsonBlock(out);
     if (!j || !j.result) { done1(); return; }
