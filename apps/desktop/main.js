@@ -104,14 +104,17 @@ if (!app.requestSingleInstanceLock()) {
 
   function createWindow() {
     win = new BrowserWindow({
-      width: 1280,
-      height: 840,
+      width: 420,
+      height: 800,
+      minWidth: 360,
       kiosk: KIOSK,
       frame: !KIOSK,
       title: "Fanal",
-      backgroundColor: "#4D6BFE",
+      backgroundColor: "#0f172a",
+      transparent: false,
       icon: path.join(__dirname, "assets", "icon.png"),
       webPreferences: {
+        backgroundThrottling: true,
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
         nodeIntegration: false,

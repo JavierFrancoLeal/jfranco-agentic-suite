@@ -114,7 +114,8 @@ tbody tr:hover{background:rgba(77,107,254,.07)}
 .wiz-actions{display:flex;gap:10px;justify-content:center;margin-top:20px}
 .btn.ghost{background:rgba(15,23,42,.06);color:#101828;box-shadow:none}
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(165deg,#e8edff 0%,#f6f7fb 45%,#fdf1f8 100%);background-attachment:fixed;color:var(--ink);-webkit-tap-highlight-color:transparent}
+*{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+body{margin:0;overflow-x:hidden;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(165deg,#e8edff 0%,#f6f7fb 45%,#fdf1f8 100%);background-attachment:fixed;color:var(--ink);-webkit-tap-highlight-color:transparent}
 header{background:linear-gradient(135deg,#4D6BFE,#7c5cff);box-shadow:0 4px 18px rgba(77,107,254,.28);color:#fff;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
 header h1{margin:0;font-size:18px}
 header .who{font-size:13px;opacity:.9}
@@ -430,6 +431,7 @@ body.wall pre{max-height:40vh}
       </div>
       <div id="repondantResult"></div>
     </div>
+    <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -551,6 +553,7 @@ body.wall pre{max-height:40vh}
       </div>
       <div id="repondantResult"></div>
     </div>
+    <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -691,6 +694,7 @@ body.wall pre{max-height:40vh}
       </div>
       <div id="repondantResult"></div>
     </div>
+    <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -1134,6 +1138,7 @@ try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
 function viewToggle(){const simple=document.body.classList.toggle("simpleview");try{localStorage.setItem("dsh-simpleview",simple?"1":"0");}catch(e){}$("viewBtn").textContent=simple?"👁️🗨️":"👁️";$("viewBtn").title=simple?t("viewAdvanced"):t("viewSimple");}
+try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)setInterval(()=>{api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
 try{$("viewBtn").addEventListener("click",viewToggle);if(localStorage.getItem("dsh-simpleview")==="1"){document.body.classList.add("simpleview");$("viewBtn").textContent="👁️🗨️";}}catch(e){}
 function phoneLog(who,text){const l=$("phoneLog");if(l)l.innerHTML+="<div style=\"margin:4px 0\"><b>"+who+":</b> "+esc(text)+"</div>";l.scrollTop=l.scrollHeight;}
 async function phoneAnnounce(){const r=await api("/api/phone/announce");if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
@@ -1373,8 +1378,8 @@ $("toHomeBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 async function enter(){
   if(!PACK){PACK=await api("/api/sector");applyPack();}
   setWho();
-  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);pollKeyStatus();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done"))$("inboxView").style.display="flex";});});loadConstitution();loadMemory();loadBrain();pollKpi();setInterval(pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
-  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done"))$("inboxView").style.display="flex";});});if(kitchenPoll)clearInterval(kitchenPoll);kitchenPoll=setInterval(kitchenWatch,4000);}
+  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);pollKeyStatus();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});loadConstitution();loadMemory();loadBrain();pollKpi();setInterval(pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
+  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});if(kitchenPoll)clearInterval(kitchenPoll);kitchenPoll=setInterval(kitchenWatch,4000);}
   else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();if(livePoll)clearInterval(livePoll);livePoll=setInterval(()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
 let pwVisible=false;

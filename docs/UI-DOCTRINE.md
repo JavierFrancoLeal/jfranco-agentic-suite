@@ -41,3 +41,24 @@ Fanal is an app that works ALONGSIDE everything else. Its interface:
 Two questions for every screen: "could the owner explain it in one
 sentence?" AND "does it cost zero CPU when idle?" A screen that fails
 either is not finished.
+
+## The four usability metrics (Argon's answer, adopted — 2026-11-07)
+
+Measured by the founder with a stopwatch and the Activity Monitor:
+
+1. **Time-To-First-OK** — from the first click to the first signed
+   exception: target UNDER 6 seconds.
+2. **The 380-pixel stress test** — Fanal docked as a 380px strip while
+   Excel/Chrome stays open: zero horizontal scrollbars, zero cut text.
+3. **The parasite check** — after 10 s of inactivity: 0.0% CPU / 0.0%
+   GPU on the Fanal renderer process.
+4. **The owner's exit speed** — the good inbox sends the owner back to
+   work fast: 3 signatures in 18 seconds, not 3 minutes of searching.
+
+## The five light rules (the complete constitution)
+
+1. The one-sentence test per screen.
+2. Zero CPU / zero GPU at rest.
+3. The 380-420px side-strip rule (Fanal docks at the edge).
+4. GREEN silence (management by exception: only YELLOW/RED get space).
+5. The 1-key/1-click law (no modals over modals).
