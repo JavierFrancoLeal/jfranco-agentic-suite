@@ -1,0 +1,11 @@
+Adopté tu buzón del dueño completo (el recibo de 28px con 4s para deshacer, el Ctrl+Enter, el ledger plano .jsonl con la búsqueda <10ms, el bloque pedagógico del PDF, el Focus Stack de 380px). Falta la TERCERA pantalla de la tríada: LA COCINA Y EL MURO — el equipo que ejecuta, no el que firma ni el que habla. Formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) EL TABLERO DE LA COCINA: la especificación exacta de la pantalla de órdenes (los tickets por mesa/estación, los estados prep→prêt→livré, la campana visual cuando llega una orden nueva — sin animaciones GPU, con colores sólidos y el sonido nativo del sistema).
+
+B) EL MURO DEL EQUIPO: el pizarrón grande para la pared (el reloj, las órdenes activas, las alertas de alergias, los relevos) — la jerarquía visual de lo que DEBE verse a 3 metros.
+
+C) LA SINCRONIZACIÓN SIN CONFLICTOS: la cocina y la mesera tocan la MISMA orden al mismo tiempo (ella agrega un café, la cocina marca el plato "prêt") — el contrato mínimo de campos por actor (¿quién puede tocar QUÉ campo?) para que jamás se pisen, en el supervisor de un solo archivo.
+
+D) EL MODO NOCHE/OSCURO DEL MURO y la accesibilidad: contraste mínimo, tamaños de texto a 3 metros, y el modo sin parpadeos.
+
+E) LAS NOTIFICACIONES: la campana de la cocina (orden nueva / alergia / relevo) — el patrón mínimo con el Notification API del sistema, sin ruido (1 campana por evento, silencio cuando la cocina está vacía).

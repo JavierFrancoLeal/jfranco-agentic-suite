@@ -18,6 +18,19 @@ except Exception as e:
 doc = new_doc("RAPPORT DE JOURNÉE", "Trasunto · Fanal — rapport quotidien")
 section(doc, "", "Rapport du jour — Fanal", "Propriétaire · Gestionnaire", size=15)
 para(doc, "Le registre complet de la journée: chaque session, chaque conversation. Pour le propriétaire et le gestionnaire.", size=9, space_after=8)
+try:
+    import urllib.request as _u, json as _j
+    _tok=_j.loads(_u.urlopen(_u.Request(BASE+"/api/demo-login",data=b'{"role":"owner"}',headers={"Content-Type":"application/json"}),timeout=8).read()).get("token","")
+    _h={"Authorization":"Bearer "+_tok}
+    _led=_j.loads(_u.urlopen(_u.Request(BASE+"/api/ledger/search",headers=_h),timeout=8).read()).get("results",[])
+    _caps=_j.loads(_u.urlopen(_u.Request(BASE+"/api/capabilities",headers=_h),timeout=8).read())
+    _signs={"OWNER":0,"CLIENT":0,"HANDOFF":0}
+    for _r in _led: _signs[_r.get("signerRole","OWNER")]=_signs.get(_r.get("signerRole","OWNER"),0)+1
+    section(doc, "", "Balance de capital organisationnel", "Fanal · aujourd'hui", size=11)
+    para(doc, "Signatures du jour: "+str(_signs["OWNER"])+" proprietaire · "+str(_signs["CLIENT"])+" client · "+str(_signs["HANDOFF"])+" relevé. Capacités montrées: "+str(len(_caps.get("cards",[])))+" (le reste se découvre quand l'inbox est vide).", size=9, space_after=4)
+    rule(doc)
+except Exception as _e:
+    pass
 for line in report.split("\n"):
     if line.startswith("### "):
         section(doc, "", line[4:], "Session", size=11)
