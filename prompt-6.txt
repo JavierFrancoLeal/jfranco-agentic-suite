@@ -1,0 +1,13 @@
+Estoy atorado en UN problema y necesito tu mejor juicio. El contexto REAL (todo esto ya funciona y está probado): Fanal — capa de orquestación agéntica soberana para PYMEs de Québec. Un supervisor Node.js de un solo archivo, una app Electron (macOS/Windows), un dashboard web en 10 idiomas. La escalera de 4 cerebros (Ollama local → DeepSeek → Gemini 4 Argon → humano) con disyuntor, semáforo local, velo PII 2.1, elevador S, TFEP, 15 agentes de rama con sus dossiers para profesionales certificados, sesiones de tarea por trabajador con relevo de turno, y la Loi 25 integrada. Todo eso FUNCIONA.
+
+EL PROBLEMA: la interfaz. El fundador (no técnico) acaba de darse cuenta de algo que yo no vi: Fanal corre en una computadora OCUPADA (Chrome, música, otras apps abiertas), NO en una máquina virgen como el asistente de configuración de macOS — así que una interfaz "bonita y pesada estilo Mac" es el modelo equivocado. Nos ha costado tiempo y recursos y el resultado no es satisfactorio.
+
+Preguntas, con el formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) ¿Cuánto invierte la industria en la interfaz? Dame los benchmarks honestos de esfuerzo y presupuesto (el % del equipo/del costo que las empresas dedican a UI/UX vs el backend) y dime dónde se ubica un fundador único con una app como Fanal.
+
+B) La doctrina ligera: para una app que vive en una máquina ocupada, ¿cuáles son las 5 reglas de una interfaz RÁPIDA, ENFOCADA y SILENCIOSA? (yo tengo dos: el examen de una frase por pantalla, y cero CPU en reposo — ¿qué me falta?)
+
+C) El rediseño concreto: dame la estructura pantalla-por-pantalla para Fanal con patrones de apps ligeras reales (el trabajador como WhatsApp: lista de tareas + conversación; el dueño como buzón primero: "3 cosas necesitan tu OK" como pantalla de inicio; el asistente ligero sin cine). Para cada pantalla: el patrón, los elementos, y lo que PROHIBES.
+
+D) ¿Cómo MEDIR que la interfaz mejoró? (métricas de usabilidad simples que un fundador único puede medir sin un equipo de diseño).
