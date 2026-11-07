@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.134";
+const VERSION = "1.0.135";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1025,6 +1025,21 @@ async function api(req, res, pathname) {
     s2.status = "closed"; s2.closedAt = ts();
     liveWrite(l);
     telemetryTick("action", { tier: "GREEN", what: "Task session closed by " + u.name + (b.auto === true ? " (auto-NO after 10 s)" : "") });
+    return send(res, 200, { ok: true });
+  }
+  if (pathname === "/api/task/op" && req.method === "POST") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const l = liveRead();
+    const s2 = (l.sessions || []).find((x) => x.id === b.id && x.worker === u.name);
+    if (!s2 || s2.status !== "open") return send(res, 200, { ok: false, error: "session not open" });
+    s2.operational = s2.operational || { items: [], alerts: [], incidents: [], total: "" };
+    if (b.items !== undefined) s2.operational.items = b.items;
+    if (b.alerts !== undefined) s2.operational.alerts = b.alerts;
+    if (b.incidents !== undefined) s2.operational.incidents = b.incidents;
+    if (b.total !== undefined) s2.operational.total = b.total;
+    liveWrite(l);
+    telemetryTick("action", { tier: "GREEN", what: "Task operational state updated by " + u.name });
     return send(res, 200, { ok: true });
   }
   if (pathname === "/api/task/handoff" && req.method === "POST") {

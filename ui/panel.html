@@ -56,6 +56,7 @@ body.dark .tradread #tradDisplay{color:#e6ecf7}
 .langmini{display:flex;gap:6px;flex-wrap:wrap}
 .langmini .pill2{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;background:var(--card);color:var(--ink)}
 .langmini .pill2.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+@media (max-width:480px){#dayList{display:flex;flex-wrap:wrap;gap:4px}#dayList .dayItem{height:30px;border:1px solid var(--line);border-radius:6px;padding:0 6px;flex:1 1 auto;min-width:calc(50% - 8px)}}
 .sumcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
 .sumcard h3{margin:0 0 10px;font-size:16px}
 .sumcard .person{margin-bottom:10px}
@@ -134,6 +135,15 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
   <button class="primary" id="sendPhraseBtn" style="background:var(--blue);box-shadow:0 4px 14px rgba(77,107,254,.35);margin-top:8px">📤 Send phrase</button>
   <button class="primary" id="readForMeBtn" style="background:#7c5cff;box-shadow:0 4px 14px rgba(124,92,255,.35);padding:14px;font-size:16px">👁️ Traducir para leer</button>
 
+  <div class="sumcard" id="stateCard" style="display:none">
+    <div style="display:flex;flex-direction:column;gap:6px;text-align:left">
+      <div><small style="color:var(--mut)">1. COMMANDE</small><div id="lineItems" style="display:flex;flex-wrap:wrap;gap:4px"></div></div>
+      <div><small style="color:var(--mut)">2. ALLERGIES</small><div id="lineAlerts" style="display:flex;flex-wrap:wrap;gap:4px"></div></div>
+      <div><small style="color:var(--mut)">3. INCIDENT</small><div id="lineInc"></div></div>
+      <div><small style="color:var(--mut)">4. TOTAL</small><b id="lineTotal" style="font-family:monospace;color:#34d399"></b></div>
+    </div>
+    <button id="stateBack" style="background:var(--line2);color:var(--ink);margin-top:10px">← Retour</button>
+  </div>
   <div class="sumcard" id="dayCard" style="display:none">
     <h3 style="margin:0 0 10px">📅 Ma journée — mes tâches</h3>
     <div class="row" style="display:flex;gap:6px;margin-bottom:10px">
@@ -483,8 +493,20 @@ $("readForMeBtn").onclick=async()=>{if(tradOn&&convInput.value.trim())await tran
 $("tradClearBtn").onclick=()=>{$("tradDisplay").textContent="";};
 $("newConvBtn").onclick=async()=>{await fetch(SUP+"/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";$("tradReadBox").style.display="none";$("tradDisplay").textContent="";};
 let closeTimer=null,closeSessionId=null;
-async function loadMyDay(){try{const r=await fetch(SUP+"/api/task/mine");const j=await r.json();const ss=(j&&j.sessions)||[];$("dayList").innerHTML=ss.length?ss.map(x=>"<div class=\"dayItem\" data-id=\""+x.id+"\" style=\"padding:6px;border-bottom:1px solid var(--line2);display:flex;justify-content:space-between;align-items:center\"><span>"+(x.status==="open"?"🟢":"⚪")+" "+esc(x.label||x.id)+"</span>"+(x.status==="open"?"<button class=\"dayClose\" data-id=\""+x.id+"\" style=\"background:var(--blue)\">Clôturer</button>":"")+"</div>").join(""):"<p style=\"color:var(--mut)\">Aucune tâche aujourd'hui.</p>";
+async function loadMyDay(){try{const r=await fetch(SUP+"/api/task/mine");const j=await r.json();const ss=(j&&j.sessions)||[];
+  const open=ss.filter(x=>x.status==="open");
+  const urgent=open.filter(x=>(x.operational&&x.operational.alerts&&x.operational.alerts.length)||x.closing);
+  const rest=open.filter(x=>!urgent.includes(x)).sort((a,b)=>String(a.label||"").localeCompare(String(b.label||""),"fr",{numeric:true}));
+  const rows=urgent.concat(rest);
+  $("dayList").innerHTML=rows.length?rows.map(x=>{const op=x.operational||{};const badge=(op.alerts&&op.alerts.length)?"<span class=\"badge-al\">⚠️ "+(op.alerts[0]||"").slice(0,10)+"</span>":(x.closing?"<span class=\"badge-t\">⏱</span>":"");
+    return "<div class=\"dayItem\" data-id=\""+x.id+"\" style=\"height:44px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line2);cursor:pointer\"><span class=\"st-dot\" style=\"width:10px;height:10px;border-radius:50%;background:"+((op.alerts&&op.alerts.length)?"#dc2626":"#22c55e")+"\"></span><b style=\"font-family:monospace;width:52px\">"+esc(x.label||x.id)+"</b>"+badge+"<span style=\"margin-left:auto;color:var(--mut);font-family:monospace\">"+esc(op.total||"")+"</span></div>";}).join(""):"<p style=\"color:var(--mut)\">Aucune tâche aujourd'hui.</p>";
+  document.querySelectorAll(".dayItem").forEach(el=>el.onclick=()=>openLive(el.dataset.id));
   document.querySelectorAll(".dayClose").forEach(b=>b.onclick=()=>askClose(b.dataset.id));}catch(e){}}
+let liveSessionId=null;
+function openLive(id){liveSessionId=id;const r=null;api("/api/task/mine").then(j=>{const x=(j.sessions||[]).find(y=>y.id===id);if(!x)return;renderStateBox(x);$("dayCard").style.display="none";$("stateCard").style.display="block";});}
+async function renderStateBox(x){const op=x.operational||{items:[],alerts:[],incidents:[],total:""};$("lineItems").innerHTML=(op.items||[]).map((it,i)=>'<button class="pill" data-i="'+i+'">'+esc(it)+' −</button>').join("");$("lineAlerts").innerHTML=(op.alerts||[]).map(a=>'<span class="badge-al">⚠️ '+esc(a)+'</span>').join("");$("lineInc").textContent=(op.incidents||[]).join(" · ")||"Aucun";$("lineTotal").textContent=(op.total||"0,00 $");
+  document.querySelectorAll("#lineItems .pill").forEach(b=>b.onclick=()=>{op.items.splice(Number(b.dataset.i),1);saveOp(op);renderStateBox(x);});}
+async function saveOp(op){await fetch(SUP+"/api/task/op",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:liveSessionId,items:op.items,alerts:op.alerts,incidents:op.incidents,total:op.total})});}
 async function askClose(id){const r=await fetch(SUP+"/api/task/close-prompt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})});const j=await r.json();if(!j||!j.ok)return;closeSessionId=id;$("closePrompt").style.display="block";$("closeQuestion").textContent=j.question||"Désirez-vous faire autre chose ?";
   $("closeYes").onclick=()=>{clearTimeout(closeTimer);$("closePrompt").style.display="none";loadMyDay();};
   $("closeNo").onclick=async()=>{clearTimeout(closeTimer);await fetch(SUP+"/api/task/close",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:closeSessionId})});$("closePrompt").style.display="none";loadMyDay();};
@@ -492,6 +514,8 @@ async function askClose(id){const r=await fetch(SUP+"/api/task/close-prompt",{me
 $("taskOpen").onclick=async()=>{const label=$("taskLabel").value.trim();await fetch(SUP+"/api/task/open",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({label})});$("taskLabel").value="";loadMyDay();};
 $("dayBtn").onclick=()=>{$("dayCard").style.display="block";$("summaryCard").style.display="none";loadMyDay();};
 $("dayBack").onclick=()=>{$("dayCard").style.display="none";};
+$("stateBack").onclick=()=>{$("stateCard").style.display="none";$("dayCard").style.display="block";loadMyDay();};
+try{$("micBtn").addEventListener("mousedown",()=>{try{$("micBtn").style.background="#dc2626";$("micBtn").textContent="● ÉCOUTE…";}catch(e){}});}catch(e){}
 $("backBtn").onclick=()=>{summaryCard.style.display="none";};
 // ── The real field flow: phrase → transcript → FLASH summary → confirm ──
 const SUP=location.origin;

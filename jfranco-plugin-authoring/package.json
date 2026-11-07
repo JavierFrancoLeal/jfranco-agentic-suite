@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/plugin-authoring",
-  "version": "1.0.85",
+  "version": "1.0.86",
   "description": "Plugin-authoring skill for DeepSeek Harness: the distilled anatomy, client-UI recipe, slots, locale, theme tokens, install steps, gotchas, and validation checklist for building and publishing new DSH plugins.",
   "author": "J.Franco",
   "license": "MIT",
