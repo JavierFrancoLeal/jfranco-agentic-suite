@@ -1226,7 +1226,7 @@ function buildLangMenu(){
     const r=document.createElement("div");
     r.className="orow"+(l==="en"?" center":"");
     r.innerHTML='<span>'+LANGNAMES[l]+'</span><span class="sub">'+l.toUpperCase()+'</span>';
-    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";bootFlash(2600,()=>{document.body.classList.remove("firstboot");if(!showWizard())finishBoot();});};
+    r.onclick=()=>{cur=l;try{localStorage.setItem("dsh-lang",cur);}catch(e){}applyLang();$("langOverlay").style.display="none";markReel();$("langStep").style.display="none";bootFlash(900,()=>{document.body.classList.remove("firstboot");if(!showWizard())finishBoot();});};
     rows.appendChild(r);
     if(stepList){
       const b=document.createElement("button");
