@@ -49,3 +49,29 @@ deterministic code around probabilistic tokens.
 3. The multi-provider arbitration: the router already picks the
    cheapest brain per tier per task — the MSP's "buying" is the
    client's or Trasunto's key choice, documented per task.
+
+## The Gemini Argon Max comparison (2026-11-06)
+
+Gemini's "deterministic cage" is correct — and the organism already
+owned its core (the S-elevator, the brain router, the constitution as
+the business-invariant layer). What Gemini adds that Fanal adopted as
+NEW:
+
+1. **The pre-neural PII veil** — built today: names, phones and emails
+   of the memory's contacts are tokenized ([PER_1], [TEL_], [COURRIEL_])
+   BEFORE the brain call and re-hydrated after. The skeleton travels;
+   the skin stays in the silo. This is the Loi 25 killer feature: the
+   cloud brain never sees a real name.
+2. **The brain hot-swap in the S-elevator** — built today: two cheap
+   failures wake the DEEP brain for that ONE stuck step (senatorial
+   rescue), then the flow returns to the cheap brain. The cost math:
+   ~90% one pass at $0.002, ~9% one corrective retry, ~1% rescued by
+   the deep brain — the weighted cost stays near the cheap tier while
+   S compounds to ~99.9% per step.
+
+What Fanal deliberately does DIFFERENT from Gemini's TypeScript/Zod
+recipe: zero build chain, zero schema library — the deterministic
+checks are plain functions in the supervisor (validateDraft, the
+constitution's price floor, the veil's regexes). Frontier-private
+inspiration, open-source-universal programming: the cage is made of
+readable code any partner can audit in one sitting.

@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.108";
+const VERSION = "1.0.109";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -212,6 +212,40 @@ function memoryRead() {
   catch (e) { return { contacts: [] }; }
 }
 function memoryWrite(m) { try { fs.writeFileSync(path.join(DATA_DIR, "memory.json"), JSON.stringify(m)); } catch (e) {} }
+function veil(text) {
+  // Deterministic, local, zero dependencies: the client's skin never leaves the silo.
+  let t = String(text || "");
+  const m = memoryRead();
+  let n = 0;
+  for (const c of (m.contacts || []).slice(0, 40)) {
+    const names = [c.name];
+    if (c.ids) names.push(...String(c.ids).split(/[\s,;]+/).filter(Boolean));
+    for (const id of names) {
+      if (id && id.length > 2 && t.includes(id)) {
+        t = t.split(id).join("[PER_" + (++n) + "]");
+      }
+    }
+  }
+  t = t.replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, "[TEL_]");
+  t = t.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, "[COURRIEL_]");
+  return t;
+}
+function unveil(text) {
+  let t = String(text || "");
+  const m = memoryRead();
+  let n = 0;
+  for (const c of (m.contacts || []).slice(0, 40)) {
+    const names = [c.name];
+    if (c.ids) names.push(...String(c.ids).split(/[\s,;]+/).filter(Boolean));
+    for (const id of names) {
+      if (id && id.length > 2) {
+        const tok = "[PER_" + (++n) + "]";
+        if (t.includes(tok)) t = t.split(tok).join(id);
+      }
+    }
+  }
+  return t;
+}
 function constitutionCtx() {
   const c = constitutionRead();
   return "Constitution du client: " + [c.philosophy, c.tone, c.policies, c.discountRule, c.minPrice ? "prix minimum: " + c.minPrice : "", c.extremeDiscounts ? "conditions extrêmes du rabais (l'offre du prix minimum exige TOUJOURS l'humain): " + c.extremeDiscounts : "", c.escalation].filter(Boolean).join(" | ") + ". ";
@@ -336,8 +370,20 @@ function processStudio(item) {
             it2.result = String(j2.result); it2.rationale = String(j2.rationale || ""); it2.status = "done"; it2.doneAt = ts(); it2.validation = "passed after 1 retry"; tasksWrite(tasksRead());
             telemetryTick("action", { tier: "SEMI", what: "Studio draft passed after one corrective retry" });
           } else {
-            it2.result = String(j2 && j2.result || ""); it2.rationale = String(j2 && j2.rationale || "") + " (validé par l'humain — le validateur a signalé: " + err2 + ")"; it2.status = "done"; it2.doneAt = ts(); it2.validation = "human is the last validator"; tasksWrite(tasksRead());
-            telemetryTick("action", { tier: "YELLOW", what: "Studio draft escalated — the human is the last validator" });
+            // HOT-SWAP: el paso atascado despierta al cerebro profundo (solo este paso), luego vuelve el barato.
+            brain("deepseek-v4-pro", prompt + " TA RÉPONSE A ÉTÉ REFUSÉE DEUX FOIS PAR LE VALIDATEUR: " + err2 + " Corrige et réponds UNIQUEMENT en JSON.").then((out3) => {
+              const j3 = jsonBlock(out3);
+              const it3 = tasksRead().tasks.find((x) => x.id === item.id);
+              if (!it3 || it3.status !== "pending") return;
+              const err3 = validateDraft(j3, item.text);
+              if (!err3) {
+                it3.result = String(j3.result); it3.rationale = String(j3.rationale || ""); it3.status = "done"; it3.doneAt = ts(); it3.validation = "passed via brain hot-swap"; tasksWrite(tasksRead());
+                telemetryTick("action", { tier: "SEMI", what: "Studio draft passed via the brain hot-swap (deep brain rescued the step)" });
+              } else {
+                it3.result = String(j3 && j3.result || ""); it3.rationale = String(j3 && j3.rationale || "") + " (validé par l'humain — le validateur a signalé: " + err3 + ")"; it3.status = "done"; it3.doneAt = ts(); it3.validation = "human is the last validator"; tasksWrite(tasksRead());
+                telemetryTick("action", { tier: "YELLOW", what: "Studio draft escalated — the human is the last validator" });
+              }
+            }).catch((e) => console.error("deep studio rescue:", e.message));
           }
         }).catch((e) => console.error("flash studio retry:", e.message));
       }
@@ -679,11 +725,12 @@ async function api(req, res, pathname) {
       if (conv.length < 20) return send(res, 200, { ok: false, error: "nothing to read — open the conversation (Messenger, Gmail, Airbnb, Expedia…)" });
       telemetryTick("action", { tier: "GREEN", what: "Répondant read the visible conversation (" + String(page.h || "page") + ")" });
       if (!brainOn()) return send(res, 200, { ok: true, conv, reply: "", why: "", langName: "" });
+      const veiledConv = veil(conv);
       const pr = await brain("flash", "Le Répondant de Fanal. " + constitutionCtx() + memoryCtx() + "Site: " + String(page.h || "inconnu") + " (" + String(page.ti || "").slice(0, 80) + "). Conversation: " + conv.slice(-1200) + " 1) Détecte la langue parmi: es fr en de it pt zh ja ko ar. 2) Propose une réponse COURTE, polie et professionnelle DANS CETTE LANGUE. 3) Adapte le ton au site: airbnb → hôte professionnel; expedia/booking → gestionnaire de réservations; page de gestion de restaurant → professionnel de la restauration; sinon → réponse d'affaires. 4) why en FRANÇAIS, une phrase. 5) sender: identifie l'expéditeur visible de la conversation (nom + téléphone/courriel/compte). Si la Mémoire contient UN contact dont un identifiant correspond, réponds ce contact; si le NOM est ambigu (plusieurs personnes du même nom sans identifiant clair), réponds sender:\"ambigu\". Réponds UNIQUEMENT en JSON: {\"lang\":\"<code>\",\"reply\":\"...\",\"why\":\"...\",\"sender\":\"<identité ou ambigu>\"}", 800);
       let parsed = { lang: "", reply: "", why: "", sender: "" };
       try { parsed = JSON.parse(String(pr).match(/\{[\s\S]*\}/)?.[0] || "{}"); } catch (e) {}
       telemetryTick("action", { tier: "SEMI", what: "Répondant proposed a reply in " + String(parsed.lang || "?") + " (human sends)" });
-      return send(res, 200, { ok: true, conv: conv.slice(-900), reply: parsed.reply || "", why: parsed.why || "", langName: LANG_NAMES[parsed.lang] || parsed.lang || "", sender: parsed.sender || "" });
+      return send(res, 200, { ok: true, conv: conv.slice(-900), reply: unveil(parsed.reply || ""), why: parsed.why || "", langName: LANG_NAMES[parsed.lang] || parsed.lang || "", sender: unveil(parsed.sender || "") });
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
   }
   if (pathname === "/api/repondant/prepare" && req.method === "POST") {
