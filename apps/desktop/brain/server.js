@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.120";
+const VERSION = "1.0.121";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -181,19 +181,26 @@ async function brain(model, prompt, maxTokens, tierArg) {
   const rt = route(model, tierArg);
   const key = rt.key;
   if (!key) throw new Error("no API key");
+  if (!isBrainHealthy(rt.tier)) throw new Error("circuit open for " + rt.tier);
+  const isLocal = /localhost|127\.0\.0\.1/.test(String(rt.baseUrl || ""));
+  while (isLocal && LOCAL_BUSY >= 1) { await new Promise((rs) => setTimeout(rs, 200)); }
+  if (isLocal) LOCAL_BUSY++;
   let r = null;
+  const payload = { model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0 };
+  if (isLocal) { payload.format = "json"; payload.options = { num_ctx: 8192 }; payload.keep_alive = "15m"; }
   for (let netAttempt = 0; netAttempt <= 3; netAttempt++) {
     r = await fetch(rt.baseUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-      body: JSON.stringify({ model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0 }),
+      body: JSON.stringify(payload),
       signal: AbortSignal.timeout(Number(process.env.FANAL_PARACHUTE_MS || 90000)),
     });
     if ((r.status === 429 || r.status >= 500) && netAttempt < 3) { await new Promise((rs) => setTimeout(rs, Math.pow(2, netAttempt) * 1000 + Math.random() * 200)); continue; }
     break;
   }
   const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.choices) throw new Error((j.error && j.error.message) || ("HTTP " + r.status));
+  if (!r.ok || !j.choices) { recordBrainOutcome(rt.tier, false); if (isLocal) LOCAL_BUSY = Math.max(0, LOCAL_BUSY - 1); throw new Error((j.error && j.error.message) || ("HTTP " + r.status)); }
+  recordBrainOutcome(rt.tier, true); if (isLocal) LOCAL_BUSY = Math.max(0, LOCAL_BUSY - 1);
   try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, String(rt.model || model)); } catch {}
   try { telemetryTick("call", { model: String(rt.model || model), tokens: Number(j.usage && j.usage.total_tokens) || 0 }); } catch {}
   const m = j.choices[0].message || {};
@@ -409,6 +416,20 @@ function validateDraft(j, itemText) {
   return errors.join(" ; ");
 }
 let STUDIO_BUSY = 0;
+let LOCAL_BUSY = 0;
+const CIRCUITS = new Map(); // brainTier -> { failures, openUntil }
+function isBrainHealthy(tier) {
+  const st = CIRCUITS.get(tier);
+  if (!st) return true;
+  return Date.now() >= st.openUntil;
+}
+function recordBrainOutcome(tier, netOk) {
+  if (netOk) { CIRCUITS.delete(tier); return; }
+  const st = CIRCUITS.get(tier) || { failures: 0, openUntil: 0 };
+  st.failures++;
+  if (st.failures >= 3) st.openUntil = Date.now() + 120000;
+  CIRCUITS.set(tier, st);
+}
 const BRANCH_RULES = {
   legal: "Rôle: préparer un document juridique — inclure TOUJOURS les clauses requises et terminer par «À valider par un avocat certifié». JAMAIS d'opinion juridique.",
   accounting: "Rôle: préparer la comptabilité — chaque somme doit cadrer au centime (lignes = sous-total = total). JAMAIS de signature comptable.",
