@@ -54,3 +54,50 @@ client that pays for it.
 Apple runs the house, Google carries the pipes, DeepSeek does the
 thinking, Fanal holds the wheel — and the owner signs every paper.
 "L'IA travaille. L'humain veille, décide, révise."
+
+## The multi-brain bottlenecks and their solutions (2026-11-07)
+
+The bottlenecks of the multi-brain model, and the options:
+
+1. **The supervisor is a single point** — if the process dies, the
+   client stops. Options: the Electron watchdog (BUILT — the brain
+   rebirth), the standalone watchdog.sh, and for scale: the nodes
+   federation (the MESH) where a second machine takes over.
+2. **The queue ceiling (4 in flight)** — throughput. Options: raise it
+   when the provider is healthy (configurable), or distribute across
+   brains: the LOCAL brain takes the fast lane (milliseconds) and the
+   cloud takes the deep lane — two lanes, one queue.
+3. **No provider health-checks** — the router picks by tier, not by
+   health. Option: a health ping per configured brain (every 60 s);
+   unhealthy brains are skipped and the failover re-routes (the hot-swap
+   already covers the per-task case).
+4. **The daily budget is a hard stop** — a client at the limit loses
+   the cloud. Option: the local brain never hits the budget — the
+   hybrid makes the limit a soft wall (local continues, deep pauses).
+5. **One machine per client** — no horizontal scale. Option: the nodes
+   registry (BUILT, minimal) grows into the MESH: the kitchen tablet,
+   the owner's Mac and the front desk share one organism.
+
+The ladder that solves them all (already wired): LOCAL (instant, free,
+never down) → CLOUD CHEAP (flash) → CLOUD DEEP (v4-pro, budget-braked)
+→ HUMAN. The ladder IS the antifragility.
+
+## Real-time, finally (2026-11-07)
+
+Real-time translation (the earpiece mode) and live meeting summaries
+need LATENCY under a second. The cloud brain (1-3 s per chunk) makes
+sentence-level interpretation workable but choppy; the LOCAL brain
+answers in milliseconds — with the fast tier on Ollama, the interpreter
+becomes genuinely real-time, and the Téléphoniste can answer with
+SenseVoice (local STT) + the local brain + the OS voice: the whole
+voice loop inside the machine, zero cloud.
+
+## The nature check (2026-11-07)
+
+The model mirrors the nervous system: the spinal cord (the local brain)
+handles the reflexes instantly and free; the cortex (the deep cloud)
+ascends only for the novel and the hard; the two hemispheres are the
+two tiers; and the body never trusts ONE organ — it routes around
+damage. We improve on nature in ONE thing: the body cannot hot-swap a
+damaged cortex to another provider mid-thought — the router can
+(failover). Nature single-vendor; Fanal multi-vendor by design.
