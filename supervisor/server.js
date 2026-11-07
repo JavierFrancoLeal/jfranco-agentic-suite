@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.125";
+const VERSION = "1.0.126";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1050,6 +1050,15 @@ async function api(req, res, pathname) {
     const a = "Vous êtes accueilli par Fanal, l'assistant de " + String(st.bizName || "cette entreprise") + " — je peux réserver immédiatement avec toutes les données à jour, ou un humain vous répondra dans 15 à 30 minutes. Cet appel est enregistré. Comment puis-je vous aider ?";
     telemetryTick("action", { tier: "GREEN", what: "Téléphoniste announced itself (the audio badge)" });
     return send(res, 200, { ok: true, reply: a });
+  }
+  if (pathname === "/api/debug/local" && req.method === "GET") {
+    if (!ownerOnly(res, req)) return;
+    try {
+      const r = await fetch("http://localhost:11434/api/version", { signal: AbortSignal.timeout(5000) });
+      return send(res, 200, { ok: true, serverSeesOllama: true, status: r.status, body: await r.text() });
+    } catch (e) {
+      return send(res, 200, { ok: true, serverSeesOllama: false, error: e.message });
+    }
   }
   if (pathname === "/api/kpi" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
