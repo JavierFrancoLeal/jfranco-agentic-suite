@@ -1,0 +1,11 @@
+Adopté tu panel táctico de la mesera (el orden fijo, las píldoras de corrección, la cinta de 380px, el push-to-talk de color sólido). AHORA la otra mitad de la interfaz: EL DUEÑO. Tu boceto del buzón primero fue el esqueleto; necesito la especificación COMPLETA, con el formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) LA TARJETA DE DECISIÓN: la anatomía exacta de una tarjeta YELLOW/RED en el buzón del dueño (la etiqueta de rama + el semáforo, la razón en 1 línea, el cuadro editable, la barra de firma [Enter]/[Esc]) — con el estado de carga, el estado editado, y lo que pasa visualmente al firmar (¿la tarjeta se disuelve? ¿queda un recibo de 1 línea?).
+
+B) LA FIRMA BILATERAL EN PANTALLA: cuando el firmante es el CLIENTE (la reserva confirmada por teléfono) vs cuando es el DUEÑO (la factura) — ¿cómo se distinguen visualmente en el historial del buzón, y cómo el dueño ve QUIÉN firmó qué, con el hash del relevo/la decisión?
+
+C) EL PDF DIARIO COMO INSTRUMENTO PEDAGÓGICO: el recuadro "Capacidades que trabajaron para ti hoy" (las 4 llaves operativas + las capacidades usadas + las sin explorar) — dame el formato EXACTO de ese recuadro para que el dueño lo lea en 20 segundos y sienta el capital organizativo crecer.
+
+D) EL HISTORIAL Y LA BÚSQUEDA: cuando el dueño quiera ver "¿qué pasó con la reserva de ayer?" — el patrón mínimo de historial/búsqueda sin base de datos (los PDFs diarios como el archivo, la búsqueda por fecha/palabra).
+
+E) EL MODO 380px DEL DUEÑO: qué se colapsa primero en la franja lateral del dueño (¿la tira de pulso? ¿las tarjetas se apilan?) — para que firme 3 cosas sin maximizar la ventana.
