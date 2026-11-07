@@ -1,0 +1,9 @@
+Adopté tu última respuesta: el pre-vuelo multivendor (3 cerebros probados en <8s), la secuencia de voz en 3 semanas (el diapasón en seco <450ms antes de tocar el micrófono, el half-duplex, el /usr/bin/say nativo), y el trinquete de alergias + la barrera Loi 25 en la destilación del cierre de mesa. La escalera vive: OLLAMA llama3.2:3b → DEEPSEEK → GEMINI 4 ARGON → HUMANO.
+
+Tres frentes NUEVOS con el formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) LA CALIBRACIÓN S AHORA POSIBLE: con el cerebro LOCAL midiendo en milisegundos y sin costo, quiero la medición definitiva de S. Dame el protocolo EXACTO de una calibración de 100 tareas (60 limpias + 40 adversariales con fallos inyectados: precios bajo el piso en dígitos/palabras/formato Québec, trampas de descuento, acentos rotos, tokens huérfanos) que corra CONTRA el cerebro local sin saturar la cola (¿lotes de cuántas? ¿qué intervalo?), y la fórmula final de S, la TFEP y el costo ponderado que debo reportar al director.
+
+B) EL PRECIO DEL DOSSIER DE VALIDACIÓN: mis 15 agentes de rama preparan expedientes que el profesional certificado valida. ¿Cómo PRECIO ese trabajo preparado? Dame un modelo de precio por rama (el valor del tiempo del profesional ahorrado: una hora de abogado vs una hora de contador en Québec), con el rango honesto por dossier, y la cláusula de simetría (si el profesional corrige más del umbral, el dossier se descuenta) — para la Grille tarifaire.
+
+C) EL MESH MULTI-MÁQUINA: cuando un cliente tenga 2-3 equipos (la cocina, la recepción, la oficina del dueño), ¿cuál es la arquitectura mínima de federación SIN servidor central de Trasunto? (los nodos se descubren en la red local, un nodo elegido coordina el muro y las órdenes, y si muere, otro toma el relevo). Dame el protocolo de elección y el contrato de datos entre nodos, en funciones planas.
