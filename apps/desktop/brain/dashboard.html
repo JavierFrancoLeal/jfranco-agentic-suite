@@ -179,6 +179,7 @@ td,th{border-bottom:1px solid var(--line);padding:9px 6px;text-align:left}
 .langbtn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:12px 8px;color:#fff;cursor:pointer;font-size:15px;display:flex;flex-direction:column;gap:2px;align-items:center;transition:background .2s}
 .langbtn:hover{background:rgba(255,255,255,.28)}
 .langbtn small{opacity:.7;font-size:10.5px;letter-spacing:.12em}
+body.simpleview .adv-only{display:none}
 .langstep-inner{text-align:center}
 .langstep-hint{color:rgba(255,255,255,.9);font-size:14px;margin:18px 0 4px}
 .langstep-inner .langreel{width:min(340px,86vw);background:rgba(167,139,250,.55)!important;border:1px solid rgba(255,255,255,.6)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
@@ -345,6 +346,7 @@ body.wall pre{max-height:40vh}
   <div class="brand"><h1 id="appTitle"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="brand-words"><b>Fanal</b><small id="brandTag">TRASUNTO</small></span></h1><span class="tagline" id="headerTag"></span></div>
   <span class="who" id="who"></span>
   <span class="chip" id="idChip" style="display:none"></span>
+  <button class="btn small gray" id="viewBtn" title="Vue simple / avancée">👁️</button>
   <button class="btn small gray" id="darkBtn">🌙</button>
   <button class="btn small gray" id="notifBell" title="Notifications" style="position:relative">🔔<span id="notifBadge" class="hidden" style="position:absolute;top:-7px;right:-7px;background:#ef4444;color:#fff;border-radius:999px;min-width:19px;height:19px;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px;box-shadow:0 2px 6px rgba(239,68,68,.5)">0</span></button>
   <button class="btn small gray" id="soundBtn">🔊</button>
@@ -397,7 +399,7 @@ body.wall pre{max-height:40vh}
       <p class="hint" id="keyStatus"></p>
       <p class="hint" id="keyBalance"></p>
     </div>
-    <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
+    <div class="card adv-only"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
       <div class="row" style="display:flex;gap:8px">
         <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
@@ -518,7 +520,7 @@ body.wall pre{max-height:40vh}
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
     </div>
-    <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
+    <div class="card adv-only"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
       <div class="row" style="display:flex;gap:8px">
         <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
@@ -639,7 +641,7 @@ body.wall pre{max-height:40vh}
       <button class="btn small" id="keySave">Enregistrer la clé</button>
       <p class="hint" id="keyStatus"></p>
     </div>
-    <div class="card"><h2 id="browserTitle">🌐 Navigateur</h2>
+    <div class="card adv-only"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
       <div class="row" style="display:flex;gap:8px">
         <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
@@ -647,7 +649,7 @@ body.wall pre{max-height:40vh}
       </div>
       <p class="hint" id="browserStatus"></p>
     </div>
-    <div class="card"><h2 id="constitutionTitle">⚖️ Constitution</h2>
+    <div class="card adv-only"><h2 id="constitutionTitle">⚖️ Constitution</h2>
       <p class="hint" id="constitutionHint"></p>
       <textarea id="constitutionFields" rows="8" placeholder="philosophie · ton · politiques · règle de rabais · prix minimum · escalades"></textarea>
       <label class="hint" style="margin-top:4px;display:block">Conditions extrêmes du rabais (le prix minimum = DERNIÈRE option, l'offre exige toujours l'humain) :</label>
@@ -655,7 +657,7 @@ body.wall pre{max-height:40vh}
       <button class="btn small" id="constitutionSave" style="margin-top:6px">Enregistrer</button>
       <p class="hint" id="constitutionStatus"></p>
     </div>
-    <div class="card"><h2 id="memoryTitle">🗂️ Mémoire</h2>
+    <div class="card adv-only"><h2 id="memoryTitle">🗂️ Mémoire</h2>
       <p class="hint" id="memoryHint"></p>
       <div class="row" style="display:flex;gap:6px;flex-wrap:wrap">
         <input id="memName" placeholder="nom" style="flex:2;min-width:120px">
@@ -1131,6 +1133,8 @@ function showWizard(){
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
 function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
+function viewToggle(){const simple=document.body.classList.toggle("simpleview");try{localStorage.setItem("dsh-simpleview",simple?"1":"0");}catch(e){}$("viewBtn").textContent=simple?"👁️🗨️":"👁️";$("viewBtn").title=simple?t("viewAdvanced"):t("viewSimple");}
+try{$("viewBtn").addEventListener("click",viewToggle);if(localStorage.getItem("dsh-simpleview")==="1"){document.body.classList.add("simpleview");$("viewBtn").textContent="👁️🗨️";}}catch(e){}
 function phoneLog(who,text){const l=$("phoneLog");if(l)l.innerHTML+="<div style=\"margin:4px 0\"><b>"+who+":</b> "+esc(text)+"</div>";l.scrollTop=l.scrollHeight;}
 async function phoneAnnounce(){const r=await api("/api/phone/announce");if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
 async function phoneSend(){const v=$("phoneInput").value.trim();if(!v)return;phoneLog("🧍 Appelant",v);$("phoneInput").value="";const r=await api("/api/phone/call",{method:"POST",body:{text:v}});if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
