@@ -27,6 +27,16 @@ sh tools/drive-step.sh "leer pantalla" sh tools/screen-read.sh
 sh tools/drive-step.sh end
 ```
 
+## The hardware budget (added after the 70B-on-8GB crash, 2026-11-07)
+
+Rule 7. **Measure before you pull** — no local model is downloaded or
+loaded without tools/brain-preflight.sh first (RAM, recoverable
+memory, model size ≤ ~30% of RAM). Rule 8. **One heavy operation per
+turn** (a model pull, a large inference, a server restart) — the
+machine's stability beats the agent's speed. Rule 9. **Two identical
+reads and STOP** — the third read does not exist; report and hand the
+decision to the human.
+
 ## The verdict that birthed it
 
 The tool is the DISCIPLINE, not the automation: the loopholes of the

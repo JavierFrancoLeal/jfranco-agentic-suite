@@ -243,3 +243,10 @@ for whoever arrives later.*
 - lección: el francés de Québec es un adversario lingüístico (fronteras \p{L}, sin acentos, orden por longitud); el validador ACUMULA errores y normaliza el formato numérico local (1 250,50 $); AbortSignal mata el socket; el texto externo viaja en delimitadores aleatorios; y S se calibra con 60-100 tareas CON fallos inyectados, nunca con una decena feliz.
 - orden-correcta: "veil 2.0 + validateDraft v2 + AbortSignal + delimitadores — y la calibración v2 con 15 adversariales."
 - evidencia: supervisor v1.0.112, docs/ARGON-REVIEWS/2026-11-06-battery-a.md, esta entrada.
+
+## 2026-11-07 — The 70B on 8GB crash (lesson #34: measure before you pull)
+- concepto: hardware · disciplina
+- fricción: recomendé bajar llama3.3 SIN verificar su tamaño — es el modelo de 70B (~40 GB) y la MacBook Air de 8 GB lo mató por OOM; la máquina se trabó con el swap; y cuando la llamada local se colgó, POLEÉ el mismo estado 5 veces (sleep 30/45/40…) en vez de aplicar la regla #2 del DRIVER-PROTOCOL (jamás leer el mismo estado dos veces) y parar. El costo: ~35 minutos del director + la confianza.
+- lección: ANTES de tocar un modelo local: medir (RAM total, memoria recuperable, tamaño del modelo ≤ ~30% de la RAM) con tools/brain-preflight.sh; el límite de la casa: máximo UNA operación pesada por turno; y mi propio bucle se corta a la SEGUNDA lectura idéntica — la tercera no existe.
+- orden-correcta: "brain-preflight → una operación pesada → dos lecturas y parar."
+- evidencia: tools/brain-preflight.sh, esta entrada, el DRIVER-PROTOCOL actualizado.
