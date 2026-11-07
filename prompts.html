@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Trasunto — Prompts para Argon Max</title>
+<style>
+body{font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(160deg,#eef2ff,#fdf4ff);margin:0;padding:32px 16px;color:#0f172a}
+.wrap{max-width:820px;margin:0 auto}
+h1{font-size:24px;margin:0 0 4px}
+p.sub{color:#64748b;margin:0 0 20px;font-size:14px}
+textarea{width:100%;min-height:220px;border-radius:14px;border:1px solid #cbd5e1;padding:14px;font-size:14px;line-height:1.55;font-family:inherit;box-sizing:border-box}
+button{margin-top:10px;background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;border:none;border-radius:999px;padding:12px 26px;font-size:15px;font-weight:700;cursor:pointer}
+button.copied{background:#16a34a}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🎻 Prompts para Gemini Argon Max</h1>
+<p class="sub">Pega este prompt en la MISMA conversación de Gemini. Cada respuesta, cópiala y pégala en la sesión de Fanal.</p>
+<textarea id="p">Apliqué tus 5 parches y tu auditoría del velo. El velo ahora es v2.1: guardia toponímica (rue/boul./Saint-… nunca se tokenizan), anclas contextuales (cualquier nombre tras Bonjour/M./Mme/Signé: se captura aunque la Memoria esté vacía), mini-set de 50 apellidos quebequenses solo con Mayúscula inicial, fronteras con guion y apóstrofo (Jean-François ya no se parte), y el número cívico se enmascara. La bóveda viaja con CADA llamada (concurrencia resuelta) y barro los huérfanos cada hora.
+
+AHORA el siguiente piso: mi elevador S. Su estado real: validar (acumula errores: piso de precios en dígitos/palabras, formato de Québec "1 250,50 $", trampa de descuento, token huérfano) → 1 reintento con el error exacto → hot-swap al cerebro profundo (v4-pro) → paracaídas AbortSignal.timeout(90s) → humano. YA añadí una cola de máximo 4 cerebros en vuelo porque un lote de 60 tareas saturó al proveedor y el paracaídas disparó sobre tareas en espera.
+
+Estresa el elevador con ESTOS modos de falla concretos y dime para cada uno el arreglo mínimo en funciones planas (cero dependencias): (1) el proveedor devuelve HTTP 429 repetidamente — ¿backoff exponencial con jitter en el reintento, o la cola ya basta? (2) el hot-swap despierta al cerebro caro pero el PRESUPUESTO diario del cliente está al límite — ¿cómo decide el elevador entre gastar y escalar al humano? (3) la temperatura: ¿0.4 es correcta o debo bajar a 0 para el JSON del validador? (4) el reintento alimenta el error al prompt — ¿hay riesgo de que el modelo 'aprenda' a decir precios sobre el piso mientras el descuento se esconde en otra frase, y qué invariante lo atrapa? (5) con la cola de 4, ¿cuál es el tiempo máximo de espera aceptable para una tarea antes de declararla abandonada? Responde: VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números.</textarea><br>
+<button id="b" onclick="navigator.clipboard.writeText(document.getElementById('p').value).then(()=>{this.textContent='✔ ¡Copiado!';this.classList.add('copied');setTimeout(()=>{this.textContent='Copiar el prompt';this.classList.remove('copied');},2000)})">Copiar el prompt</button>
+</div>
+</body>
+</html>
