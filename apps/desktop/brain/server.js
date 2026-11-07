@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.116";
+const VERSION = "1.0.117";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -186,7 +186,7 @@ async function brain(model, prompt, maxTokens) {
       method: "POST",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
       body: JSON.stringify({ model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0 }),
-      signal: AbortSignal.timeout(90000),
+      signal: AbortSignal.timeout(Number(process.env.FANAL_PARACHUTE_MS || 90000)),
     });
     if ((r.status === 429 || r.status >= 500) && netAttempt < 3) { await new Promise((rs) => setTimeout(rs, Math.pow(2, netAttempt) * 1000 + Math.random() * 200)); continue; }
     break;
@@ -418,7 +418,7 @@ const BRANCH_RULES = {
 function processStudio(item) {
   if (item._queuedAt === undefined) item._queuedAt = Date.now();
   if (STUDIO_BUSY >= 4) {
-    if (Date.now() - item._queuedAt > 45000) {
+    if (Date.now() - item._queuedAt > Number(process.env.FANAL_QUEUE_CEILING_MS || 45000)) {
       const tkQ = tasksRead();
       const itQ = tkQ.tasks.find((x) => x.id === item.id);
       if (itQ && itQ.status === "pending") { itQ.status = "done"; itQ.doneAt = ts(); itQ.result = "File d'attente saturée — à relancer plus tard."; itQ.rationale = "Plus de 45 s en attente."; itQ.validation = "queue saturation — human"; tasksWrite(tkQ); }
@@ -435,7 +435,7 @@ function processStudio(item) {
       telemetryTick("action", { tier: "YELLOW", what: "Studio step timed out — handed to the human" });
     }
     STUDIO_BUSY = Math.max(0, STUDIO_BUSY - 1);
-  }, 90000);
+, Number(process.env.FANAL_PARACHUTE_MS || 90000));
   const done1 = () => { clearTimeout(parachute); STUDIO_BUSY = Math.max(0, STUDIO_BUSY - 1); };
   const branchRule = BRANCH_RULES[item.type] || "";
   const prompt = "Decision center kitchen (Trasunto). " + branchRule + " " + constitutionCtx() + memoryCtx() + "The owner asked this task: " + String(item.text || "") + " Draft a short professional French response that RESPECTS the house rules above (tone, policies, discounts, minimum price, escalations) AND write in one sentence your reasoning. Reply with ONLY one JSON object: {\"result\":\"<your draft>\",\"rationale\":\"<your reasoning>\"}";
