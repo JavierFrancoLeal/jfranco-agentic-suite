@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.109";
+const VERSION = "1.0.110";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -333,16 +333,24 @@ function processDeep(item) {
     liveWrite(s2);
   }).catch((e) => console.error("deep v4-pro:", e.message));
 }
+const WORD_NUMS = { un: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, six: 6, sept: 7, huit: 8, neuf: 9, dix: 10, onze: 11, douze: 12, treize: 13, quatorze: 14, quinze: 15, vingt: 20, trente: 30 };
 function validateDraft(j, itemText) {
   // The deterministic wrapper: the "S-elevator" around the probabilistic tokens.
   if (!j || !j.result || !String(j.result).trim()) return "empty or unparseable draft";
   const c = constitutionRead();
   if (c.minPrice) {
-    const nums = String(j.result).match(/\$?\d+(?:[.,]\d{2})?/g) || [];
+    const text = String(j.result);
+    const nums = text.match(/\$?\d+(?:[.,]\d{2})?/g) || [];
     const floor = parseFloat(String(c.minPrice).replace(/[^0-9.]/g, ""));
     for (const n of nums) {
       const v = parseFloat(n.replace(/[$,]/g, ""));
       if (!isNaN(v) && !isNaN(floor) && v < floor && v > 0) return "price below the constitutional minimum (" + c.minPrice + ")";
+    }
+    // Los precios EN PALABRAS (el hueco adversarial): "cinq dollars" también se atrapa.
+    if (/rabais|prix|dollars|coûte|dollar/i.test(text)) {
+      for (const w of Object.keys(WORD_NUMS)) {
+        if (WORD_NUMS[w] < floor && new RegExp("\\b" + w + "\\b", "i").test(text)) return "price in words below the constitutional minimum (" + c.minPrice + "): " + w;
+      }
     }
   }
   return "";
