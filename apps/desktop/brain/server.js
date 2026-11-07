@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.133";
+const VERSION = "1.0.134";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -448,6 +448,16 @@ const BRANCH_RULES = {
   education: "Rôle: préparer le matériel scolaire — plans de cours, communications aux parents. L'enseignant valide.",
   auto: "Rôle: préparer les dossiers d'atelier — devis types, historiques. JAMAIS de diagnostic final: le mécanicien certifié valide.",
 };
+const CAPABILITY_CATALOG = [
+  { id: "repondant_10lang", title: "Répondant (10 langues)", pitch: "Je réponds dans la langue du client, je respecte votre prix minimum et je cache les données privées.", cta: "Voir un exemple" },
+  { id: "secretaire_blanks", title: "Secrétaire (formulaires prudents)", pitch: "Je remplis l'évident avec votre Mémoire et je laisse le délicat pour votre signature.", cta: "Essayer avec un PDF" },
+  { id: "dossier_pro", title: "Dossiers de validation (15 branches)", pitch: "Je prépare l'expédient pour votre comptable, avocat ou inspecteur — le professionnel signe.", cta: "Explorer les branches" },
+];
+function masteryRead() {
+  try { const p = path.join(DATA_DIR, "capabilities.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
+  catch (e) { return {}; }
+}
+function masteryWrite(m) { try { fs.writeFileSync(path.join(DATA_DIR, "capabilities.json"), JSON.stringify(m)); } catch (e) {} }
 const branchTelemetry = {};
 function recordRungAttempt(branch, rung, success, durationMs) {
   if (!branchTelemetry[branch]) branchTelemetry[branch] = { localWindow: [], stats: { local: { ok: 0, fail: 0, sterileMs: 0 }, deep: { ok: 0, fail: 0, sterileMs: 0 }, rescue: { ok: 0, fail: 0, sterileMs: 0 } }, bypassLocal: false, skippedSinceLastProbe: 0 };
@@ -1088,6 +1098,25 @@ async function api(req, res, pathname) {
     } catch (e) {
       return send(res, 200, { ok: true, serverSeesOllama: false, error: e.message });
     }
+  }
+  if (pathname === "/api/capabilities" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const tk = tasksRead();
+    const pending = (tk.tasks || []).filter((x) => x.status === "done").length;
+    const mastery = masteryRead();
+    let cards = [];
+    if (pending === 0) {
+      cards = CAPABILITY_CATALOG.filter((c) => (mastery[c.id] || 0) < 3).slice(0, 2);
+    }
+    return send(res, 200, { pending, cards }, true);
+  }
+  if (pathname === "/api/capabilities/use" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const m = masteryRead();
+    m[String(b.id || "")] = (m[String(b.id || "")] || 0) + 1;
+    masteryWrite(m);
+    return send(res, 200, { ok: true });
   }
   if (pathname === "/api/kpi" && req.method === "GET") {
     if (!managerOnly(res, req)) return;

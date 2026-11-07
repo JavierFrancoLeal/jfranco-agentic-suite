@@ -432,6 +432,7 @@ body.wall pre{max-height:40vh}
       <div id="repondantResult"></div>
     </div>
     <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
+    <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -554,6 +555,7 @@ body.wall pre{max-height:40vh}
       <div id="repondantResult"></div>
     </div>
     <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
+    <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -695,6 +697,7 @@ body.wall pre{max-height:40vh}
       <div id="repondantResult"></div>
     </div>
     <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
+    <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
@@ -1139,6 +1142,8 @@ function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus
 try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
 function viewToggle(){const simple=document.body.classList.toggle("simpleview");try{localStorage.setItem("dsh-simpleview",simple?"1":"0");}catch(e){}$("viewBtn").textContent=simple?"👁️🗨️":"👁️";$("viewBtn").title=simple?t("viewAdvanced"):t("viewSimple");}
 try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)setInterval(()=>{api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
+async function pollDiscover(){try{const r=await api("/api/capabilities");if(!r||r.error)return;const dc=$("discoverCard");if(!dc)return;if(r.pending>0||!r.cards||!r.cards.length){dc.style.display="none";return;}dc.style.display="block";$("discoverList").innerHTML=r.cards.map(c=>'<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><b>'+esc(c.title)+'</b><p class="hint" style="margin:2px 0">'+esc(c.pitch)+'</p><button class="btn small" data-cap="'+esc(c.id)+'" style="background:#16a34a">'+esc(c.cta)+'</button></div>').join("");document.querySelectorAll("[data-cap]").forEach(b=>b.onclick=async()=>{await api("/api/capabilities/use",{method:"POST",body:{id:b.dataset.cap}});pollDiscover();});}catch(e){}}
+try{if(document.getElementById("discoverCard")){pollDiscover();setInterval(pollDiscover,20000);}}catch(e){}
 try{$("viewBtn").addEventListener("click",viewToggle);if(localStorage.getItem("dsh-simpleview")==="1"){document.body.classList.add("simpleview");$("viewBtn").textContent="👁️🗨️";}}catch(e){}
 function phoneLog(who,text){const l=$("phoneLog");if(l)l.innerHTML+="<div style=\"margin:4px 0\"><b>"+who+":</b> "+esc(text)+"</div>";l.scrollTop=l.scrollHeight;}
 async function phoneAnnounce(){const r=await api("/api/phone/announce");if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}

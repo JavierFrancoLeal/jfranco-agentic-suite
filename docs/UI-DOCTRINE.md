@@ -62,3 +62,22 @@ Measured by the founder with a stopwatch and the Activity Monitor:
 3. The 380-420px side-strip rule (Fanal docks at the edge).
 4. GREEN silence (management by exception: only YELLOW/RED get space).
 5. The 1-key/1-click law (no modals over modals).
+
+## The auto-extensible scaffolding (Argon's prompt-7 answer, adopted)
+
+The golden rule (the law of the scaffold that dissolves): TEACHING IS
+FORBIDDEN WHEN THE HUMAN IS BUSY; teaching is MANDATORY when the inbox
+is empty or a capability is used for the first time — and every
+explanation self-destructs after the third successful use.
+
+- The empty inbox IS the discovery menu: 2 capability cards, one line
+  each, one click to try (never the 15 branches at once).
+- The SEMI school: a new capability shows its receipt for the first 3
+  uses ("Mostrado para que veas cómo trabaja (2/3)"), then graduates to
+  silent GREEN.
+- The pedagogical semaphore: every color speaks the 3-block formula —
+  who acted + which rule was kept + why you intervene or not — with the
+  BENEFIT names, never the internal architecture (no Ollama, no TFEP,
+  no "velo regex": say "Escudo de Datos", "Cerebro Local Privado").
+- Zero noise when work is queued (pending > 0): the pedagogy switches
+  off at 100%.
