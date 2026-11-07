@@ -1,0 +1,7 @@
+Tres frentes que quedaron pendientes de una sesión anterior — los retomo AHORA con todo lo que ya adoptamos (el andamiaje, la doctrina ligera, la escalera de 4 cerebros con disyuntor y semáforo local). Formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) LA CALIBRACIÓN S DEFINITIVA: con el cerebro LOCAL midiendo en milisegundos y sin costo, dame el protocolo EXACTO de una calibración de 100 tareas (60 limpias + 40 adversariales con fallos inyectados: precios bajo el piso en dígitos/palabras/formato Québec, trampas de descuento, acentos rotos, tokens huérfanos) sin saturar la cola, y la fórmula final de S, la TFEP y el costo ponderado.
+
+B) EL PRECIO DEL DOSSIER DE VALIDACIÓN: mis 15 agentes de rama preparan expedientes que el profesional certificado valida. ¿Cómo PRECIO ese trabajo preparado? El modelo por rama (el valor del tiempo del profesional ahorrado: la hora del abogado vs la del contador en Québec), el rango honesto por dossier, y la cláusula de simetría (si el profesional corrige más del umbral, el dossier se descuenta) — para la Grille tarifaire.
+
+C) EL MESH MULTI-MÁQUINA: cuando un cliente tenga 2-3 equipos (cocina, recepción, oficina del dueño), la federación mínima SIN servidor central de Trasunto: los nodos se descubren en la red local, uno coordina el muro y las órdenes, y si muere otro toma el relevo. El protocolo de elección y el contrato de datos entre nodos, en funciones planas.

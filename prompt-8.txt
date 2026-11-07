@@ -1,0 +1,11 @@
+Adopté tu andamiaje auto-extensible (el buzón vacío enseña, la escuela SEMI, la regla de oro). El siguiente frente: LA PANTALLA DEL TRABAJADOR — la mesera. Hoy su panel es funcional pero no sigue tu patrón. Dame el rediseño COMPLETO pantalla-por-pantalla del trabajador de campo (la mesera con 10 mesas), con el formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+A) LA LISTA DE SESIONES: la especificación exacta de cada fila (44px): qué campos, qué estados (🟢🟡🔴), la etiqueta ALERGIA, el orden (¿la más reciente arriba? ¿las abiertas primero?).
+
+B) EL HILO VIVO: el recuadro fijo de 4 líneas con el Estado Operativo Destilado (artículos confirmados, alertas, incidentes, total parcial) — cómo se actualiza sin parpadeos, y cómo el trabajador lo CORRIGE (dijo mal una orden — ¿un toque en la línea?).
+
+C) EL CIERRE Y EL RELEVO: la banda amarilla del cierre (auto-NO en 10s) y el flujo del relevo de turno — ¿cómo se VE el acta de relevo en la pantalla de la mesera entrante (el snapshot de cada mesa + las alertas)?
+
+D) EL MODO DE 380px: todo lo anterior en la franja lateral — ¿qué se colapsa primero cuando la ventana se estrecha?
+
+E) EL DICTADO: el flujo de voz del trabajador (mantener Espacio, hablar, soltar) — el estado del micrófono sin ondas animadas (¿un punto fijo que cambia de color?), y qué pasa si el reconocimiento falla (¿cómo corrige SIN volver a dictar todo?).
