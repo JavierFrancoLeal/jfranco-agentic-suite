@@ -40,3 +40,17 @@ Never say "Ollama", "local LLM" or "graphics card" to the solo client:
 sell the "Modo Ultraligero en tu PC actual" (85 MB, zero GPU, the
 protection stays local). The skeptic tries it today on their own
 machine; the hardware decision comes at month 3, if they ask for it.
+
+## The fiduciary triage with source-pinning (Argon adopted, 2026-11-08)
+
+The professional never receives 40 pages to re-audit: the triage
+funnel shows the GREEN deterministic foundation collapsed into one
+line (48 invoices verified to the cent), the 3-5 YELLOW
+responsibility apices with the LITERAL quote pinned (sourcePin: the
+LLM only LOCATES the exact words; `includes()` verifies them
+character by character against the original — a paraphrase becomes 🔴
+RED), and the RED proof ruptures block the signature. The
+Ctrl+Enter stays DISABLED until every apex is touched (the
+rubber-stamping trap), and each touch is timestamped in the ledger —
+the proof of diligence before the Ordre. Target: 45-90 seconds per
+dossier instead of 35-50 minutes of defensive review.

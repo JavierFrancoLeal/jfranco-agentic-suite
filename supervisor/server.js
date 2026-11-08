@@ -48,6 +48,30 @@ function timingSafeEq(a, b) {
     return require("node:crypto").timingSafeEqual(A, B);
   } catch (e) { return String(a) === String(b); }
 }
+function triageDossierForAutonomous(payload, sources, con) {
+  const threshold = Number((con && con.materialityThresholdCad) || 500);
+  const sensitive = new Set((con && con.sensitiveTags) || ["peticion_juez", "contradiccion_cliente", "plazo_fatal", "clausula_penal", "gasto_accionista", "deduccion_50_pct", "activo_capitalizable", "riesgo_medico_qaap"]);
+  const green = [], yellow = [], red = [];
+  for (const item of (payload.items || [])) {
+    const src = sources[item.sourceDocId] || "";
+    const hasAnchor = !item.verbatimQuote || String(src).normalize("NFC").includes(String(item.verbatimQuote).normalize("NFC"));
+    if (item.requiresLiteralProof && !hasAnchor) {
+      red.push({ id: item.id, title: "🔴 CITA O MONTO NO LITERAL EN " + (item.sourceDocId || "?"), reason: "El extracto no coincide carácter por carácter con el documento original.", quote: item.verbatimQuote || "Sin extracto", verifiedByHuman: false });
+      continue;
+    }
+    const isMaterial = Math.abs(Number(item.amountCad || 0)) >= threshold;
+    const isSensitive = (item.tags || []).some((t) => sensitive.has(t));
+    if (isMaterial || isSensitive) {
+      yellow.push({ id: item.id, category: isMaterial ? ("Partida Material (" + item.amountCad + " $)") : "Revisión Crítica", essentialQuestion: item.decisionPrompt || "¿Confirmar el criterio propuesto?", options: item.options || ["Confirmar criterio propuesto", "Modificar imputación"], sourcePin: { docName: item.sourceDocId, page: item.pageNumber || 1, verbatimQuote: item.verbatimQuote || "" }, verifiedByHuman: false });
+    } else if (item.mathVerified === true) {
+      green.push(item);
+    } else {
+      red.push({ id: item.id, title: "🔴 FALTA COMPROBANTE O CUADRE (" + (item.label || item.id) + ")", reason: "Partida sin validación aritmética ni soporte adjunto.", verifiedByHuman: false });
+    }
+  }
+  const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
+  return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
+}
 function fanalIdentity() {
   try {
     const c = require("node:crypto");
@@ -147,7 +171,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.150";
+const VERSION = "1.0.151";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1419,6 +1443,11 @@ async function api(req, res, pathname) {
       }
     } catch (e) {}
     return send(res, 200, evaluatePilotActivation(rows), true);
+  }
+  if (pathname === "/api/triage" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, triageDossierForAutonomous(b.payload || {}, b.sources || {}, b.constitution || {}));
   }
   if (pathname === "/api/capsule/identity" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
