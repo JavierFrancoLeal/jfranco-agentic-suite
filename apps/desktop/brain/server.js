@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.140";
+const VERSION = "1.0.141";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -357,7 +357,13 @@ function evaluatePilotActivation(rows) {
   const governed = (rows || []).length;
   if (governed > 0 && last36.length === 0) return { status: "VISIT_REQUIRED_SILENCE_36H", reason: "Cero actividad en piso en 36h: el equipo volvió al papel." };
   if (rejections) return { status: "VISIT_REQUIRED_BAD_CONSTITUTION", reason: "3 rechazos seguidos del dueño: recalibrar el piso/el tono de la Constitución." };
-  return { status: "HEALTHY_PILOT", governedDecisions: governed, capabilitiesUsed: caps };
+  // LA HONESTIDAD MEDIBLE: con poco volumen, Fanal lo dice — no se vende para todos los casos.
+  const days = Math.max(1, (now - (rows[0] ? new Date(rows[0].ts).getTime() : now)) / 86400000);
+  const perDay = Math.round(governed / days);
+  let worth = "NOT_YET_WORTH_IT";
+  if (perDay >= 30) worth = "CLEARLY_WORTH_IT";
+  else if (perDay >= 8) worth = "WORTH_IT_ON_BUSY_DAYS";
+  return { status: "HEALTHY_PILOT", governedDecisions: governed, capabilitiesUsed: caps, decisionsPerDay: perDay, honestVerdict: worth, honestNote: worth === "NOT_YET_WORTH_IT" ? "Fanal aún no te ahorra más de lo que cuesta — vuelve cuando el volumen crezca (mesas llenas, mensajes, formularios)." : (worth === "CLEARLY_WORTH_IT" ? "Fanal es tu sistema nervioso: la mayoría de tus operaciones ya pasan por el ledger." : "Fanal te sirve en los días pesados; en los tranquilos se queda en silencio sin estorbar.") };
 }
 function searchLedger(q, dateFilter) {
   const dir = path.join(DATA_DIR, "archive");
