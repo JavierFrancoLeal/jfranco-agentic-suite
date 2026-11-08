@@ -48,6 +48,15 @@ function timingSafeEq(a, b) {
     return require("node:crypto").timingSafeEqual(A, B);
   } catch (e) { return String(a) === String(b); }
 }
+function decryptAtRest(raw, key) {
+  try {
+    const buf = Buffer.from(String(raw).replace(/^AESGCM:/, ""), "base64");
+    const iv = buf.subarray(0, 12), tag = buf.subarray(12, 28), enc = buf.subarray(28);
+    const d = require("node:crypto").createDecipheriv("aes-256-gcm", require("node:crypto").createHash("sha256").update(key).digest(), iv);
+    d.setAuthTag(tag);
+    return Buffer.concat([d.update(enc), d.final()]).toString("utf8");
+  } catch (e) { return null; }
+}
 function encryptAtRest(obj, key) {
   try {
     const iv = require("node:crypto").randomBytes(12);
@@ -96,7 +105,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.145";
+const VERSION = "1.0.146";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
