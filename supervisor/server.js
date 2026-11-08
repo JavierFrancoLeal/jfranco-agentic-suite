@@ -48,7 +48,68 @@ function timingSafeEq(a, b) {
     return require("node:crypto").timingSafeEqual(A, B);
   } catch (e) { return String(a) === String(b); }
 }
-function triageDossierForAutonomous(payload, sources, con) {
+const QUEBEC_APICES_REGISTRY = {
+  CPA_COMPTABLE: { title: "Comptable Professionnel Agréé (Ordre des CPA)", defaultMaterialityCad: 500, yellowApexTriggers: [
+    { tag: "avance_actionnaire", label: "Retiro / Gasto Mixto de Accionista (Art. 15(2) LIR)", requiresQuote: true },
+    { tag: "choix_dpa_cca", label: "Capitalización vs. Gasto (Elección de Clase DPA)", requiresQuote: false },
+    { tag: "repas_representation", label: "Deducción Limitada al 50% (Comidas / Vehículo)", requiresQuote: true } ],
+    redHardBlockers: ["missing_receipt_over_100", "invalid_tvq_number", "unbalanced_journal_entry"] },
+  AVOCAT_BARREAU: { title: "Avocat (Barreau du Québec)", defaultMaterialityCad: 0, yellowApexTriggers: [
+    { tag: "ordonnance_juge", label: "Orden Expresa del Juez / Plazo Fatal (Forclusion)", requiresQuote: true },
+    { tag: "contradiction_client", label: "Contradicción entre Declaración y Prueba Documental", requiresQuote: true },
+    { tag: "aveu_ou_conclusion", label: "Admisión de Hechos o Cuantía de Reclamación", requiresQuote: true } ],
+    redHardBlockers: ["unverified_jurisprudence_quote", "prescription_under_15_days"] },
+  NOTAIRE_CHAMBRE: { title: "Notaire (Chambre des notaires du Québec)", defaultMaterialityCad: 1, yellowApexTriggers: [
+    { tag: "charge_registre_foncier", label: "Hipoteca o Servidumbre Activa en Registre Foncier", requiresQuote: true },
+    { tag: "irreg_cert_localisation", label: "Empiètement / Irregularidad en Certificado de Localización", requiresQuote: true },
+    { tag: "debourser_fideicommis", label: "Orden de Desembolso de Cuenta en Fideicomiso", requiresQuote: true } ],
+    redHardBlockers: ["trust_balance_mismatch_1cent", "missing_spouse_consent_art401"] },
+  COURTIER_OACIQ: { title: "Courtier Immobilier (OACIQ)", defaultMaterialityCad: 500, yellowApexTriggers: [
+    { tag: "declaration_vendeur_oui", label: "Factor de Riesgo en Déclarations du Vendeur (Agua/Pirita/Vicio)", requiresQuote: true },
+    { tag: "delai_condition_pa", label: "Plazo de Condición Suspensiva (Financiamiento / Inspección)", requiresQuote: true },
+    { tag: "garantie_legale_exclusion", label: "Cláusula Sin Garantía Legal (Art. 1726 CCQ)", requiresQuote: true } ],
+    redHardBlockers: ["missing_coowner_signature", "expired_promise_deadline"] },
+  CLINICIEN_CNESST_SAAQ: { title: "Physiothérapeute / Ergothérapeute / Psychologue (OPPQ / OEQ / OPQ)", defaultMaterialityCad: 0, yellowApexTriggers: [
+    { tag: "capacite_retour_travail", label: "Dictamen de Regreso al Trabajo / Limitaciones Funcionales", requiresQuote: true },
+    { tag: "drapeau_rouge_clinique", label: "Bandera Roja Clínica o Agravamiento Reportado", requiresQuote: true },
+    { tag: "lien_causal_accident", label: "Declaración de Relación Causal con el Siniestro", requiresQuote: true } ],
+    redHardBlockers: ["unrelated_private_biography_leak_loi25"] },
+  GYM_PROPRIETAIRE_OPC: { title: "Propriétaire de Gym (OPC + Q-AAP)", defaultMaterialityCad: 50, yellowApexTriggers: [
+    { tag: "resiliation_opc_art199", label: "Cálculo Legal de Rescisión OPC (Regla 1/10 vs. Prorrata)", requiresQuote: true },
+    { tag: "alerte_medicale_qaap", label: "Respuesta Positiva en Cuestionario Médico Q-AAP / PAR-Q+", requiresQuote: true },
+    { tag: "gel_abonnement_exception", label: "Solicitud de Congelamiento o Descuento Fuera de Regla", requiresQuote: false } ],
+    redHardBlockers: ["contract_exceeds_12_months_opc", "cardiac_flag_without_medical_clearance"] },
+  PLEX_PROPRIETAIRE_TAL: { title: "Propriétaire de Plex (TAL + Relevé 31)", defaultMaterialityCad: 250, yellowApexTriggers: [
+    { tag: "refus_augmentation_tal", label: "Rechazo de Aumento por Inquilino (Plazo Fatal 30 días TAL)", requiresQuote: true },
+    { tag: "calcul_grille_tal", label: "Imputación de Obras Mayores en Grille de Calcul TAL", requiresQuote: true },
+    { tag: "urgence_chauffage_eau", label: "Emergencia Mayor de Habitabilidad (Calefacción / Infiltración)", requiresQuote: true } ],
+    redHardBlockers: ["missed_tal_notice_window", "deposit_request_illegal_in_quebec"] },
+};
+function triageDossierForAutonomous(payload, sources, con, profession) {
+  const reg = QUEBEC_APICES_REGISTRY[profession] || null;
+  if (reg) {
+    const threshold = Number((con && con.materialityThresholdCad) || reg.defaultMaterialityCad || 500);
+    const sensitive = new Set((reg.yellowApexTriggers || []).map((t) => t.tag));
+    const green = [], yellow = [], red = [];
+    for (const item of (payload.items || [])) {
+      const src = sources[item.sourceDocId] || "";
+      const needsQuote = (reg.yellowApexTriggers || []).some((t) => t.tag === (item.tags || [])[0] && t.requiresQuote);
+      const hasAnchor = !item.verbatimQuote || String(src).normalize("NFC").includes(String(item.verbatimQuote).normalize("NFC"));
+      if (needsQuote && !hasAnchor) { red.push({ id: item.id, title: "🔴 CITA NO LITERAL EN " + (item.sourceDocId || "?"), reason: "El extracto no coincide carácter por carácter con el documento original.", quote: item.verbatimQuote || "", verifiedByHuman: false }); continue; }
+      if ((reg.redHardBlockers || []).some((b) => (item.blockers || []).includes(b))) { red.push({ id: item.id, title: "🔴 " + ((item.blockers || []).join(", ")), reason: "Regla imperativa de Québec violada — el flujo se bloquea.", verifiedByHuman: false }); continue; }
+      const isMaterial = Math.abs(Number(item.amountCad || 0)) >= threshold;
+      const isSensitive = (item.tags || []).some((t) => sensitive.has(t));
+      if (isMaterial || isSensitive) {
+        const trig = (reg.yellowApexTriggers || []).find((t) => t.tag === (item.tags || [])[0]);
+        yellow.push({ id: item.id, category: trig ? trig.label : ("Partida Material (" + item.amountCad + " $)"), essentialQuestion: item.decisionPrompt || "¿Confirmar el criterio propuesto?", options: item.options || ["Confirmar criterio propuesto", "Modificar"], sourcePin: { docName: item.sourceDocId, page: item.pageNumber || 1, verbatimQuote: item.verbatimQuote || "" }, verifiedByHuman: false });
+      } else if (item.mathVerified === true) { green.push(item); }
+      else { red.push({ id: item.id, title: "🔴 FALTA COMPROBANTE (" + (item.label || item.id) + ")", reason: "Partida sin validación aritmética ni soporte.", verifiedByHuman: false }); }
+    }
+    const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
+    const apices = yellow.slice(0, 5); // jamás más de 5 a la vez (la fatiga = leer el PDF crudo)
+    return { profession: reg.title, canSignImmediately: apices.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas", yellowApices: apices, moreApices: yellow.length - apices.length, redBlockers: red };
+  }
+  const threshold = Number((con && con.materialityThresholdCad) || 500);
   const threshold = Number((con && con.materialityThresholdCad) || 500);
   const sensitive = new Set((con && con.sensitiveTags) || ["peticion_juez", "contradiccion_cliente", "plazo_fatal", "clausula_penal", "gasto_accionista", "deduccion_50_pct", "activo_capitalizable", "riesgo_medico_qaap"]);
   const green = [], yellow = [], red = [];
@@ -171,7 +232,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.151";
+const VERSION = "1.0.152";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
