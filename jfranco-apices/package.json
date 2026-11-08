@@ -1,0 +1,33 @@
+{
+  "name": "@javierfrancoleal/apices",
+  "version": "1.0.0",
+  "description": "The fiduciary triage for Quebec autonomous professionals: the four universal responsibility triggers, the literal sourcePin verification, the max-5 apices rule, the signature locked until every apex is touched. DORMANT — awaiting the Beta demand.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": ["icon.svg", "locale/*.json", "lib/index.js", "assets"],
+  "peerDependencies": { "@deepseek-ai/dsh-skill": ">=0.1.0" },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "nodejsRange": ">=20",
+      "dshRange": ">=0.2.1-rc.0",
+      "dshReleases": {
+        "0.2.2-alpha.2": "unknown",
+        "0.2.2-alpha.3": "unknown",
+        "0.2.2-rc.1": "unknown"
+      }
+    }
+  }
+}

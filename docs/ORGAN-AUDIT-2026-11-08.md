@@ -16,12 +16,11 @@ demand decides the activation: nothing grows without a client's money.
 
 ## 1. New plugins needed? — ONE candidate, deferred by the law
 
-- CANDIDATE: the `apices` organ — the Quebec registry + the fiduciary
-  triage as the agent's reflex when PREPARING a professional dossier
-  in a DSH session (the CPA's profile, the sourcePin discipline).
-  VERDICT: deferred to the Beta's demand — the registry already lives
-  in the server; the organ form arrives when a client's dossier flow
-  requires the agent to apply the apices outside Fanal.
+- CANDIDATE: the `apices` organ — CREATED AND RESTING: published
+  (@javierfrancoleal/apices@1.0.0) with the four universal triggers,
+  the literal sourcePin doctrine, the max-5 rule and the locked
+  signature — dormant in the vestigial genome until the Beta's demand
+  activates it. The registry itself already lives in the server.
 - NOT ORGANS (they belong to the body): the .fanal capsule and the key
   recovery (the server's crypto), the armor (the server's guard), the
   qualifier and the micro-market (tools + endpoints), the zero-
