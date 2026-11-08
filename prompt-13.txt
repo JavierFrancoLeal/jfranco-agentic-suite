@@ -1,0 +1,13 @@
+Es la ÚLTIMA batería de esta etapa — la ARMADURA. Todo lo anterior ya está adoptado y en código (la doctrina ligera, el andamiaje, las 3 pantallas, el contrato atómico, el ledger, el velo 2.1, la escalera de 4 cerebros, la Loi 25). Formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+AUDITORÍA DE SEGURIDAD ADVERSARIA COMPLETA de Fanal:
+
+A) LA APP ELECTRON: el supervisor corre como proceso hijo con ELECTRON_RUN_AS_NODE, el dashboard se sirve en un puerto local con token-gate (cookie HttpOnly + SameSite Strict), contextIsolation está pendiente (mi main.js no lo configura todavía). Dame los 5 agujeros más probables que un atacante en la MISMA red local (el Wi-Fi del restaurante) explotaría, y el orden exacto para cerrarlos con funciones planas.
+
+B) LOS ENDPOINTS: mi supervisor tiene ~40 rutas (owner/manager/worker). El auth se basa en tokens firmados y cookies. Audita el patrón de autorización: ¿dónde está el hueco más probable (parámetros, timing, tokens predecibles) y cuál es el invariante mínimo que blindaría TODAS las rutas?
+
+C) EL LEDGER Y LA BÓVEDA: el ledger.jsonl (modo 600) y la bóveda del velo viven en el silo del cliente. ¿Qué debe cifrarse, qué no, y cuál es el riesgo real de un atacante con acceso físico a la máquina? (sin caer en paranoia: la PYME no es un banco).
+
+D) LA LOI 25 COMO ESCUDO: ¿qué evidencia mínima debe poder mostrar Trasunto ante la CAI tras un incidente (los logs, el journal, el protocolo) y qué falta en mi diseño para que la respuesta sea "cumplimos" en vez de "improvisamos"?
+
+E) EL MESH FUTURO: cuando actives el MESH UDP (broadcast + epoch), ¿qué 3 ataques locales (suplantación de nodo, replay de paquetes, DoS de broadcast) y sus contramedidas mínimas?
