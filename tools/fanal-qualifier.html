@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Fanal · Filtro Antifrágil de Admisión (60s)</title>
+<style>
+  * { box-sizing: border-box; backdrop-filter: none !important; transition: none !important; animation: none !important; }
+  body { margin: 0; padding: 10px; width: 100%; max-width: 420px; background: #0f172a; color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; line-height: 1.35; }
+  .header { border-bottom: 2px solid #1e293b; padding-bottom: 6px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: baseline; }
+  .header h1 { font-size: 14px; margin: 0; color: #38bdf8; }
+  .header span { font-family: monospace; font-size: 11px; color: #64748b; }
+  .q-row { background: #1e293b; border: 1px solid #334155; border-radius: 4px; padding: 7px 8px; margin-bottom: 6px; }
+  .q-label { display: flex; justify-content: space-between; font-weight: 600; font-size: 12px; margin-bottom: 4px; color: #e2e8f0; }
+  .q-val { font-family: monospace; color: #38bdf8; }
+  select, input[type="range"] { width: 100%; background: #090d16; color: #f8fafc; border: 1px solid #475569; border-radius: 3px; padding: 5px; font-size: 12px; font-family: inherit; }
+  .verdict-box { border-radius: 4px; padding: 10px; margin-top: 8px; border-left: 5px solid #64748b; background: #020617; }
+  .verdict-box.GREEN { border-left-color: #10b981; background: #064e3b; }
+  .verdict-box.YELLOW { border-left-color: #f59e0b; background: #451a03; }
+  .verdict-box.RED { border-left-color: #ef4444; background: #450a0a; }
+  .v-title { font-family: monospace; font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+  .v-reason { font-size: 12px; color: #f1f5f9; margin-bottom: 8px; }
+  .metrics-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; background: #090d16; padding: 6px; border-radius: 3px; font-family: monospace; font-size: 11px; text-align: center; }
+  .m-num { font-size: 13px; font-weight: 700; display: block; color: #38bdf8; }
+  .script-box { margin-top: 8px; background: #090d16; border: 1px solid #334155; border-radius: 3px; padding: 7px; font-family: monospace; font-size: 11px; color: #cbd5e1; white-space: pre-wrap; }
+  .btn-copy { margin-top: 6px; width: 100%; background: #334155; color: #fff; border: none; padding: 7px; border-radius: 3px; font-weight: 700; font-size: 12px; cursor: pointer; }
+</style>
+</head>
+<body>
+<header class="header"><h1>FANAL · ADMISIÓN ANTIFRÁGIL</h1><span>60s · Cero Humo</span></header>
+<div class="q-row"><div class="q-label"><span>1. Empleados activos en operación</span><span id="val-emp" class="q-val">6 emp.</span></div><input id="in-emp" type="range" min="1" max="35" value="6" oninput="recalc()" /></div>
+<div class="q-row"><div class="q-label"><span>2. Relevos de turno / semana + Riesgo</span></div><select id="in-rel" onchange="recalc()"><option value="0">0 — Mismo turno siempre, sin alertas críticas</option><option value="3">2 a 4 relevos/sem — Poca pérdida de contexto</option><option value="7" selected>5 a 10 relevos/sem — Mesas/taller con alertas</option><option value="14">10+ relevos/sem — Alta rotación + seguridad crítica</option></select></div>
+<div class="q-row"><div class="q-label"><span>3. Clientes en otro idioma o llamadas/día</span></div><select id="in-lang" onchange="recalc()"><option value="0">Solo francés local, pocas llamadas</option><option value="12">Bilingüe FR/EN moderado</option><option value="25" selected>Turismo / 3+ idiomas / teléfono saturado</option></select></div>
+<div class="q-row"><div class="q-label"><span>4. Dossiers (CPA/Legal/MAPAQ/Taller) / mes</span><span id="val-dos" class="q-val">8 /mes</span></div><input id="in-dos" type="range" min="0" max="40" value="8" oninput="recalc()" /></div>
+<div class="q-row"><div class="q-label"><span>5. Sistema actual (Riesgo de doble captura)</span></div><select id="in-saas" onchange="recalc()"><option value="OPEN">Papel / Excel / Acomba / QuickBooks / Jobber (acepta CSV o Tab)</option><option value="POS_BUSY" selected>POS Cerrado (Maitre'D / Veloce / GEM-CAR) CON hora pico</option><option value="POS_EMPTY">POS Cerrado en local TRANQUILO / semivacío</option><option value="RAMQ_LOCKED">Sistema Estatal Exclusivo sin dossiers externos</option></select></div>
+<section id="verdict-card" class="verdict-box GREEN">
+  <div id="v-title" class="v-title"></div>
+  <div id="v-reason" class="v-reason"></div>
+  <div class="metrics-strip"><div>Índice Entropía<span id="m-score" class="m-num">0/100</span></div><div>Ahorro Neto/Mes<span id="m-hours" class="m-num">0h</span></div><div>Valor Neta CAD<span id="m-cad" class="m-num">0 $</span></div></div>
+</section>
+<div id="fr-script" class="script-box"></div>
+<button class="btn-copy" onclick="copyDiagnosis()">📋 Copiar Diagnóstico Honesto (FR-QC)</button>
+<script>
+function qualifyPilotProspect(input) {
+  const employees = Number(input.employees), handoffs = Number(input.handoffsPerWeek), lang = Number(input.langFrictionScore), dossiers = Number(input.dossiersPerMonth), saas = String(input.saasMode);
+  const agency = employees <= 2 ? 0.25 : employees <= 4 ? 0.75 : 1.0 + Math.min(0.4, (employees - 5) * 0.02);
+  const penalty = { OPEN: 0, POS_BUSY: 12, POS_EMPTY: 55, RAMQ_LOCKED: 65 }[saas] || 0;
+  const saved = (handoffs * 4.3) * 0.22 + (lang / 25) * 9.5 + dossiers * 0.65;
+  const lost = (penalty / 10) * 2.8;
+  const netHours = Math.max(-8, Number(((saved * agency) - lost).toFixed(1)));
+  const entropy = Math.max(0, Math.min(100, Math.round(((employees * 2.2) + (handoffs * 2.8) + lang + (dossiers * 1.9)) * agency - penalty)));
+  const value = Math.round((netHours * 45) + (dossiers * 60));
+  let verdict = "RED", label = "🔴 RECHAZAR PILOTO — Entropía Insuficiente";
+  let pitch = "DIAGNOSTIC HONNÊTE FANAL : Votre gain net estimé (" + netHours + " h/mois) est sous notre seuil d'intégrité de 10 h/mois. Vous n'avez pas besoin de Fanal pour l'instant.";
+  if (employees <= 2 && dossiers < 4) { label = "🔴 RECHAZAR PILOTO — Sin Fricción de Agencia"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Nous refusons ce pilote pour vous protéger. Avec " + employees + " employé(s) et peu de dossiers complexes, votre opération directe est plus rapide que n'importe quelle IA."; }
+  else if (saas === "POS_EMPTY" && dossiers < 6 && lang < 20) { label = "🔴 RECHAZAR PILOTO — Fricción de Doble Captura"; pitch = "DIAGNOSTIC HONNÊTE FANAL : À votre volume actuel par quart, dicter dans Fanal puis ressaisir dans votre caisse créerait une double saisie inutile. Nous préférons ne pas vous vendre de pilote aujourd'hui."; }
+  else if (saas === "POS_BUSY" || (entropy >= 28 && entropy < 48)) { verdict = "YELLOW"; label = "🟡 PILOTO ACOTADO — Prohibido en Órdenes Simples"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Pilote recommandé UNIQUEMENT sur vos goulots (Téléphoniste multilingue, transferts signés, alertes d'allergies et " + dossiers + " dossiers/mois). En période calme, Fanal reste en veille automatique."; }
+  else if (entropy >= 48 && netHours >= 10) { verdict = "GREEN"; label = "🟢 ADMITIR PILOTO COMPLETO — Alto Retorno"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Votre PME est un cas idéal. Fanal vous rendra ~" + netHours + " h/mois (valeur ~" + value + " $ CAD/mois), sous notre Garantie de Symétrie."; }
+  return { verdict, label, entropyScore: entropy, netHoursSavedMonth: netHours, netCadValueMonth: value, frenchPitch: pitch };
+}
+function recalc() {
+  const employees = Number(document.getElementById('in-emp').value);
+  const handoffs = Number(document.getElementById('in-rel').value);
+  const lang = Number(document.getElementById('in-lang').value);
+  const dossiers = Number(document.getElementById('in-dos').value);
+  const saas = document.getElementById('in-saas').value;
+  document.getElementById('val-emp').textContent = employees + " emp.";
+  document.getElementById('val-dos').textContent = dossiers + " /mes";
+  const res = qualifyPilotProspect({ employees, handoffsPerWeek: handoffs, langFrictionScore: lang, dossiersPerMonth: dossiers, saasMode: saas });
+  const card = document.getElementById('verdict-card');
+  card.className = "verdict-box " + res.verdict;
+  document.getElementById('v-title').textContent = res.label;
+  document.getElementById('v-reason').textContent = res.reason || "";
+  document.getElementById('m-score').textContent = res.entropyScore + "/100";
+  document.getElementById('m-hours').textContent = (res.netHoursSavedMonth > 0 ? "+" : "") + res.netHoursSavedMonth + "h";
+  document.getElementById('m-cad').textContent = res.netCadValueMonth + " $";
+  document.getElementById('fr-script').textContent = res.frenchPitch;
+}
+function copyDiagnosis() {
+  const text = document.getElementById('fr-script').textContent;
+  if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).catch(function(){}); }
+  const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+}
+recalc();
+</script>
+</body>
+</html>
