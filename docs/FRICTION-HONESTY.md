@@ -45,3 +45,22 @@ keeps it silent on the quiet ones — and the honest verdict tells them
 which is which. Adoption = only where the relief is measurable; the
 friction cases are told to wait. That honesty compounds: every client
 knows we will never sell them a uniform for a day they do not have.
+
+## The low-entropy standby and the target filter (Argon's answer, adopted)
+
+- The CALM_STANDBY mode (built): with ≤2 open sessions and no alert or
+  handoff, Fanal says it out loud ("no dictes aquí — usa tu flujo
+  directo; Fanal vigila el teléfono y los relevos") and gets out of the
+  way. The shield activates for the asymmetric risks (a foreign
+  language, a critical allergy, a handoff) regardless of the volume.
+- The clipboard bridge (built): for the closed SaaS without an API, the
+  [⚡ inject] button formats the payload (TAB-separated cells or the
+  structured note) so ONE Ctrl+V fills the legacy system — zero double
+  capture.
+- The target filter: pilot clients need ≥3 employees, ≥25
+  transactions/day or ≥5 dossiers/week. The micro-business (the owner
+  alone with 3 tables) is told honestly: "no necesitas Fanal".
+- The brutal honesty line: the daily PDF reports the hours in calm mode
+  ("3.5 h where your team operated directly without the AI") — when the
+  owner sees we never inflate the quiet hours, they believe the 4.2
+  saved hours of the Friday peak at 100%.

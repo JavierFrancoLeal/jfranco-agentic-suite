@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.141";
+const VERSION = "1.0.142";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1253,6 +1253,22 @@ async function api(req, res, pathname) {
       return send(res, 200, { ok: true, serverSeesOllama: false, error: e.message });
     }
   }
+  if (pathname === "/api/friction/state" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const l = liveRead();
+    const open = (l.sessions || []).filter((x) => x.status === "open");
+    const hasAlert = open.some((x) => x.operational && x.operational.alerts && x.operational.alerts.length);
+    const hasForeign = false; // el Téléphoniste lo detectará; por ahora el semáforo de alergia decide
+    const handoff = l.notices && l.notices.some((n) => /relev|handoff/i.test(String(n.text || "")));
+    let mode = "FULL_TACTICAL", banner = null;
+    if (open.length <= 2 && !hasAlert && !handoff) {
+      mode = "CALM_STANDBY";
+      banner = "🟢 Carga baja (≤2 mesas): no dictes órdenes simples aquí — usa tu flujo directo; Fanal vigila el teléfono y los relevos.";
+    } else if (hasAlert || handoff) {
+      mode = "ACTIVE_SHIELD";
+    }
+    return send(res, 200, { mode, banner, openSessions: open.length }, true);
+  }
   if (pathname === "/api/pilot/health" && req.method === "GET") {
     if (!ownerOnly(res, req)) return;
     const rows = [];
@@ -1263,6 +1279,21 @@ async function api(req, res, pathname) {
       }
     } catch (e) {}
     return send(res, 200, evaluatePilotActivation(rows), true);
+  }
+  if (pathname === "/api/bridge/clipboard" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const items = b.items || [];
+    let payload = "";
+    if (b.profile === "CLINICAL_OR_LEGAL_NOTE") {
+      payload = ["[PRÉ-VALIDÉ FANAL #" + String(b.hash || "OK").slice(0, 6) + "]",
+        "Éléments: " + items.map((i) => i.qty + "x " + i.name).join(", "),
+        "Alertes: " + ((b.alerts || []).join(", ") || "Aucune"),
+        "Total vérifié: " + Number(b.total || 0).toFixed(2).replace(".", ",") + " $"].join("\n");
+    } else {
+      payload = items.map((i) => [i.name, i.qty, Number(i.unitPrice || 0).toFixed(2).replace(".", ",")].join("\t")).join("\r\n");
+    }
+    return send(res, 200, { ok: true, payload, hint: "Péguez avec Ctrl+V dans le système actuel — une seule capture." });
   }
   if (pathname === "/api/migrate/import" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
