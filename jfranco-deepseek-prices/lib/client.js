@@ -35,7 +35,7 @@ window.__ModuleLoader__.load({
 		// ── canonical pricing snapshot (verified 2026-11-03) ─────────────────────
 		const PRICING = {
 			verifiedAt: "2026-11-03",
-			source: "https://api-docs.deepseek.com/quick_start/pricing",
+			source: "https://api-docs.deepseek.com/quick_start/pricing/",
 			peakWindowsUtc: [
 				{ start: "01:00", end: "04:00" },
 				{ start: "06:00", end: "10:00" }

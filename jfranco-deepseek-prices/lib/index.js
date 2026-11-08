@@ -15,11 +15,11 @@ import { join } from "node:path";
 const name = "jfranco-deepseek-prices";
 
 // Canonical pricing snapshot.
-// Verified 2026-11-03 against https://api-docs.deepseek.com/quick_start/pricing
-// (prices are USD per 1M tokens; off-peak is half of peak).
+// Verified 2026-11-08 against https://api-docs.deepseek.com/quick_start/pricing/
+// (con barra final: sin ella, Docusaurus cae en "Your First API Call").
 export const PRICING = {
   verifiedAt: "2026-11-03",
-  source: "https://api-docs.deepseek.com/quick_start/pricing",
+  source: "https://api-docs.deepseek.com/quick_start/pricing/",
   // Peak hours are 01:00-04:00 and 06:00-10:00 UTC, Monday-Friday, excluding
   // Chinese public holidays. Everything else is off-peak (50% of peak).
   peakWindowsUtc: [
