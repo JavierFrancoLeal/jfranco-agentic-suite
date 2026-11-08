@@ -147,7 +147,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.148";
+const VERSION = "1.0.149";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1364,6 +1364,34 @@ async function api(req, res, pathname) {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, qualifyPilotProspect(b));
+  }
+  if (pathname === "/api/profile" && req.method === "GET") {
+    const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
+    const con = constitutionRead();
+    const staff = Number((con && con.staffCount) || 1);
+    const local = providersRead().local || {};
+    const localDisabled = local.enabled === false;
+    let localUp = !localDisabled;
+    if (!localDisabled && local && local.baseUrl) {
+      try {
+        const t = await fetch(String(local.baseUrl).replace(/\/$/, "") + "/models", { signal: AbortSignal.timeout(600) });
+        localUp = t.ok;
+      } catch (e) { localUp = false; }
+    }
+    const solo = staff === 1;
+    return send(res, 200, {
+      hardwareMode: localUp ? "HYBRID_LOCAL" : "ZERO_HARDWARE_LIGHT",
+      ladder: localUp ? ["local", "deep", "rescue", "human"] : ["deep", "rescue", "human"],
+      uiProfile: {
+        showOwnerInbox380px: true,
+        showSecretaireAndDossiers: true,
+        showTelephoniste24x7: true,
+        showWall3Meters: !solo,
+        showShiftHandoffButton: !solo,
+        enableUdpMesh: !solo,
+        zeroHardwareNote: !localUp ? "Modo Ultraligero: el velo y los validadores corren 100% en esta PC; el primer cerebro es la nube." : null,
+      },
+    });
   }
   if (pathname === "/api/friction/state" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
