@@ -48,3 +48,45 @@ with the qualifier; each pilot passes the DDG threshold by day 14.
 NO-GO (the honest stop) if: both pilots fall silent after 36 hours
 (the team went back to paper) or the owner rejects 3 cards in a row —
 the numbers decide, and saying "no" to ourselves is also an answer.
+
+
+## The joint verdict with Argon (the pieces adopted, 2026-11-08)
+
+Where we AGREE: necessity is the wrong bar; the original idea (the
+facilitator over Claude/DSH) is a dead wrapper; the moat is the
+governance (the constitutional douane, the sovereignty, the skin).
+Where Argon EXTENDED us (adopted):
+
+1. **The three structural barriers the giants cannot cross** — the
+   token-arbitrage conflict (they will never route to a free local
+   brain or a rival), the jurisdictional blindness (they will never
+   code the Loi 25, the TPS/TVQ, the Ordres formats), the
+   disclaimer-vs-skin (they sell "the AI may err"; Fanal sells the
+   deterministic invariants + the symmetry guarantee).
+2. **The real business vehicle: the AI-MSP exoskeleton** — not a
+   $49/mo self-serve download, but the triple revenue: the paid
+   implantation (the Constitution coded), the monthly governance
+   (the veil, the ladder, the CAI register alive), the dossier toll
+   ($4.50-$29 CAD, >98% margin).
+3. **The three natural stages** — Stage 1 (months 1-12): the
+   operational wedge in 10-25 qualified clients. Stage 2 (12-24): the
+   INVERSE network — the certified professionals (CPA, lawyer,
+   inspector) receive the dossiers, earn double per hour, and become
+   the channel that installs Fanal in their 150 client SMEs. Stage 3
+   (years 2-4): the edge fiduciary system — 3 years of constitution
+   and bilateral signatures in ledger.jsonl make the model swappable
+   in 10 seconds and Fanal irreplaceable.
+4. **The house metaphor: Fanal is Watt's flyball governor** — the LLMs
+   are the raw steam boiler (brute force, stochastic, no brake); Fanal
+   is the tiny centrifugal regulator that lets the machinery work
+   without exploding. Without the deterministic layer, 90% of SMEs can
+   never connect autonomous agents to their real operation.
+
+## The investment rule (the freeze — adopted)
+
+FREEZE the code at v1.0: no fifth brain, no more CSS, no architecture
+until 3 real pilots are installed and the first dossiers are paid. The
+only two build items before the freeze: the final .dmg (the frozen
+artifact) and the SADC selling kit (the script + the one-pager + the
+qualifier). Then the Tuesday-at-4pm test decides everything: what the
+waitress and the accountant actually do with Fanal in their hands.
