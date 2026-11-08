@@ -76,3 +76,30 @@ that feeds them. "Fanal does more" is true in ONE dimension: the LABOR
 (the 15 agents, the bilateral accountability, the semáforo, the
 multi-brain ladder, the sovereignty) — no SaaS sells that. In the
 RECORD dimension, the incumbents stay — by design.
+
+## The 80/20 verdict and the strangulation playbook (Argon's answer, adopted)
+
+Argon confirmed and quantified the species verdict: Fanal substitutes
+80-100% of the OPERATIONAL layer (orders, kitchen, reservations,
+shifts, handoffs, translation, dossiers) and COMPLEMENTS the closed
+state/bank rails (MEV-WEB, RAMQ/DSQ, the OEM diagrams, EDI/Centris) —
+it never certifies them (8-18 months of bureaucracy for zero revenue).
+
+The playbook: Week 1 = shadow mode at 380px beside the old SaaS (no
+deletion asked) · Week 3 = cancel the satellite licenses (shifts,
+reservations, capture, extra seats — the 65-85% savings pays Fanal) ·
+Month 2+ = full substitution in the unregulated sectors (the old SaaS
+becomes a dumb fiscal printer).
+
+The migration bridge (built): the client drops their old CSV (any
+separator, any language) and Fanal feeds the Memory + the catalog in
+seconds; every evening Fanal exports the accounting CSV with the exact
+TPS/TVQ to the cent for Acomba/QuickBooks — the accountant keeps their
+format, the client keeps their history, Fanal keeps the labor.
+
+The psychological truth: the technical migration takes 15 minutes; the
+human adaptation takes 3 shifts (72 hours) — the clean screen feels
+like "they took the steering wheel", until the receipts and the pills
+prove the work is saved. Never say "throw away your Acomba": say "we
+import your catalog in 30 seconds and every evening your accountant
+gets the CSV squared to the cent."

@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.139";
+const VERSION = "1.0.140";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -305,6 +305,38 @@ function unveil(text, vaultArg) {
 function constitutionCtx() {
   const c = constitutionRead();
   return "Constitution du client: " + [c.philosophy, c.tone, c.policies, c.discountRule, c.minPrice ? "prix minimum: " + c.minPrice : "", c.extremeDiscounts ? "conditions extrêmes du rabais (l'offre du prix minimum exige TOUJOURS l'humain): " + c.extremeDiscounts : "", c.escalation].filter(Boolean).join(" | ") + ". ";
+}
+function importLegacyCsv(text) {
+  const raw = String(text || "").replace(/^\uFEFF/, "");
+  const lines = raw.split(/\r?\n/).filter((l) => l.trim().length > 0);
+  if (lines.length < 2) return { importedCount: 0, clientNames: [], catalog: [] };
+  const sep = lines[0].includes(";") ? ";" : ",";
+  const headers = lines[0].split(sep).map((h) => h.replace(/^"|"$/g, "").trim().toLowerCase());
+  const clientNames = new Set();
+  const catalog = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(sep).map((c) => c.replace(/^"|"$/g, "").trim());
+    const row = {};
+    headers.forEach((h, idx) => { row[h] = cols[idx] || ""; });
+    const name = row.nom || row.name || row.client || row.raison_sociale || row.customer;
+    if (name && name.length > 2) clientNames.add(name);
+    const item = row.article || row.item || row.description || row.service;
+    const price = parseFloat(String(row.prix || row.price || row.montant || "0").replace(/\s/g, "").replace(",", "."));
+    if (item && price > 0) catalog.push({ name: item, unitPrice: price });
+  }
+  return { importedCount: lines.length - 1, clientNames: [...clientNames], catalog };
+}
+function exportAccountingCsv() {
+  const l = liveRead();
+  const TPS = 0.05, TVQ = 0.09975;
+  const rows = ["Date;SessionID;Responsable;SousTotal_CAD;TPS_5pct;TVQ_9_975pct;Total_CAD;Hash"];
+  for (const s of (l.sessions || []).filter((x) => x.status === "closed")) {
+    const st = Number((s.operational && s.operational.total && parseFloat(String(s.operational.total).replace(/[^0-9.]/g, ""))) || 0);
+    const tps = +(st * TPS).toFixed(2), tvq = +(st * TVQ).toFixed(2), tot = +(st + tps + tvq).toFixed(2);
+    const f = (n) => n.toFixed(2).replace(".", ",");
+    rows.push([String(s.closedAt || "").slice(0, 10), s.id, s.worker, f(st), f(tps), f(tvq), f(tot), "GREEN_AUTO"].join(";"));
+  }
+  return "\uFEFF" + rows.join("\r\n");
 }
 function appendLedger(entry) {
   try {
@@ -1225,6 +1257,19 @@ async function api(req, res, pathname) {
       }
     } catch (e) {}
     return send(res, 200, evaluatePilotActivation(rows), true);
+  }
+  if (pathname === "/api/migrate/import" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const r = importLegacyCsv(b.csv || "");
+    telemetryTick("action", { tier: "GREEN", what: "Legacy SaaS CSV imported (" + r.importedCount + " lines)" });
+    return send(res, 200, r);
+  }
+  if (pathname === "/api/migrate/export" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=fanal_jour.csv");
+    return res.end(exportAccountingCsv());
   }
   if (pathname === "/api/dossier/price" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
