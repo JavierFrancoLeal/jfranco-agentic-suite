@@ -59,7 +59,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.138";
+const VERSION = "1.0.139";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -314,6 +314,18 @@ function appendLedger(entry) {
     const rec = { ts: new Date().toISOString(), id: entry.id || "", branch: entry.branch || "", signerRole: entry.signerRole || "OWNER", signerName: entry.signerName || "", summary: entry.summary || "", hash: entry.hash || "", pdfFile: "fanal_" + new Date().toISOString().slice(0, 10) + ".pdf" };
     fs.appendFileSync(f, JSON.stringify(rec) + "\n", { mode: 0o600 });
   } catch (e) {}
+}
+function evaluatePilotActivation(rows) {
+  const now = Date.now();
+  const last36 = (rows || []).filter((r) => now - new Date(r.ts).getTime() <= 36 * 3600 * 1000);
+  const caps = new Set((rows || []).map((r) => r.branch || "")).size;
+  const owner = (rows || []).filter((r) => r.signerRole === "OWNER");
+  const last3 = owner.slice(-3);
+  const rejections = last3.length === 3 && last3.every((c) => c.deltaPct && c.deltaPct > 35);
+  const governed = (rows || []).length;
+  if (governed > 0 && last36.length === 0) return { status: "VISIT_REQUIRED_SILENCE_36H", reason: "Cero actividad en piso en 36h: el equipo volvió al papel." };
+  if (rejections) return { status: "VISIT_REQUIRED_BAD_CONSTITUTION", reason: "3 rechazos seguidos del dueño: recalibrar el piso/el tono de la Constitución." };
+  return { status: "HEALTHY_PILOT", governedDecisions: governed, capabilitiesUsed: caps };
 }
 function searchLedger(q, dateFilter) {
   const dir = path.join(DATA_DIR, "archive");
@@ -1202,6 +1214,17 @@ async function api(req, res, pathname) {
     } catch (e) {
       return send(res, 200, { ok: true, serverSeesOllama: false, error: e.message });
     }
+  }
+  if (pathname === "/api/pilot/health" && req.method === "GET") {
+    if (!ownerOnly(res, req)) return;
+    const rows = [];
+    try {
+      const dir = path.join(DATA_DIR, "archive");
+      for (const f of fs.readdirSync(dir).filter((x) => x.startsWith("ledger_") && x.endsWith(".jsonl"))) {
+        for (const line of fs.readFileSync(path.join(dir, f), "utf8").trim().split("\n")) { if (line) { try { rows.push(JSON.parse(line)); } catch (e) {} } }
+      }
+    } catch (e) {}
+    return send(res, 200, evaluatePilotActivation(rows), true);
   }
   if (pathname === "/api/dossier/price" && req.method === "POST") {
     if (!managerOnly(res, req)) return;

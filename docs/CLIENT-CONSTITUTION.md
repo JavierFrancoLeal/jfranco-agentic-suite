@@ -115,3 +115,20 @@ outcome.
 The rule: every brain call and every organ that proposes or grades must
 READ the constitution first; every record must SAY which rule it
 followed. The constitution is the client's law inside Fanal.
+
+## The pilot activation (Argon prompt-10, adopted — 2026-11-07)
+
+The pilot becomes operationally irreversible in the FIRST 7 days: the
+goal is not 70% of the 15 branches (a restaurant never uses Customs) —
+it is 4 of the 5 capabilities of the client's SECTOR PACK (80% in week
+1). Day 1: 2/5 (the pre-loaded cards + the first real sessions) · Day
+2: 3/5 (the first cryptographic handoff + one real Secrétaire form) ·
+Day 7: 4/5 (the SEMI graduation + the first real Dossier).
+
+The ONE adoption metric: the DDG — the share of daily transactions
+sealed in ledger.jsonl by 2+ roles. The intervention triggers: 36
+silent hours (the team went back to paper) or 3 consecutive owner
+rejections (the Constitution is mis-calibrated) — the founder visits
+within 24h, never waits for the month-end. The internal network
+effect: the GREEN work is never anonymous — the pulse strip and the
+PDF name the workers ("Julie: 85 sessions, 0 incidents").
