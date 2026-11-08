@@ -110,7 +110,6 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
     return { profession: reg.title, canSignImmediately: apices.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas", yellowApices: apices, moreApices: yellow.length - apices.length, redBlockers: red };
   }
   const threshold = Number((con && con.materialityThresholdCad) || 500);
-  const threshold = Number((con && con.materialityThresholdCad) || 500);
   const sensitive = new Set((con && con.sensitiveTags) || ["peticion_juez", "contradiccion_cliente", "plazo_fatal", "clausula_penal", "gasto_accionista", "deduccion_50_pct", "activo_capitalizable", "riesgo_medico_qaap"]);
   const green = [], yellow = [], red = [];
   for (const item of (payload.items || [])) {
@@ -232,7 +231,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.152";
+const VERSION = "1.0.153";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
