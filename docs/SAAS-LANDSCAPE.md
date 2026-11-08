@@ -50,3 +50,29 @@ and the Canadian POS rankings (CleverPays 2026).*
 devant — le feu de circulation qui empêche l'erreur d'entrer dans vos
 livres, et les quinze mains qui préparent le travail pour le
 professionnel certifié."
+
+## The species verdict (2026-11-07): substitute, complement, or sit in front
+
+The direct question: does Fanal substitute and complement ALL the SaaS
+services? The honest answer: Fanal is a DIFFERENT SPECIES — it is not a
+system of record, it is the LABOR LAYER. A system of record holds the
+canonical data, the money trail and the compliance (TPS/TVQ, the
+Barreau, the payment rails); Fanal holds NONE of that — it prepares,
+guards and proposes AROUND the records.
+
+| The SaaS | Fanal's verdict |
+|---|---|
+| QuickBooks/Acomba (the books, the tax filing) | COMPLEMENT — Fanal prepares the entries; the books stay theirs |
+| Lightspeed/Maitre D (the POS, the payments) | SITS IN FRONT — the semáforo guards what enters the POS |
+| Clio (the Barreau case system) | COMPLEMENT — Fanal drafts the dossiers; Clio stays the record |
+| Cloudbeds/Booking (the channels) | SITS IN FRONT — Fanal answers the guests; the PMS stays |
+| Calendly/Notion-lite (the light tools) | SUBSTITUTE — the pack absorbs them when it makes sense |
+
+Could a client accustomed to SaaS migrate easily? NO — and that is the
+MOAT: Fanal requires ZERO migration because it does not replace the
+system of record. The client keeps QuickBooks and the POS (their 10-20
+hours of migration stays untouched) and Fanal becomes the workforce
+that feeds them. "Fanal does more" is true in ONE dimension: the LABOR
+(the 15 agents, the bilateral accountability, the semáforo, the
+multi-brain ladder, the sovereignty) — no SaaS sells that. In the
+RECORD dimension, the incumbents stay — by design.
