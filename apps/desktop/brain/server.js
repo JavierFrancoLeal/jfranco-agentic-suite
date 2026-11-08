@@ -105,7 +105,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.146";
+const VERSION = "1.0.147";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -395,7 +395,8 @@ function appendLedger(entry) {
 }
 function qualifyPilotProspect(input) {
   const employees = Number(input.employees || 0), handoffs = Number(input.handoffsPerWeek || 0), lang = Number(input.langFrictionScore || 0), dossiers = Number(input.dossiersPerMonth || 0), saas = String(input.saasMode || "OPEN");
-  const agency = employees <= 2 ? 0.25 : employees <= 4 ? 0.75 : 1.0 + Math.min(0.4, (employees - 5) * 0.02);
+  const soloPro = employees <= 1 && (dossiers >= 4 || lang >= 12); // el abogado/CPA autónomo = Fanal Solo 24/7
+  const agency = soloPro ? 1.0 : employees <= 2 ? 0.25 : employees <= 4 ? 0.75 : 1.0 + Math.min(0.4, (employees - 5) * 0.02);
   const penalty = { OPEN: 0, POS_BUSY: 12, POS_EMPTY: 55, RAMQ_LOCKED: 65 }[saas] || 0;
   const saved = (handoffs * 4.3) * 0.22 + (lang / 25) * 9.5 + dossiers * 0.65;
   const lost = (penalty / 10) * 2.8;
@@ -404,6 +405,7 @@ function qualifyPilotProspect(input) {
   const value = Math.round((netHours * 45) + (dossiers * 60));
   let verdict = "RED", label = "🔴 RECHAZAR PILOTO — Entropía Insuficiente";
   let pitch = "DIAGNOSTIC HONNÊTE FANAL : Votre gain net estimé (" + netHours + " h/mois) est sous notre seuil d'intégrité de 10 h/mois. Vous n'avez pas besoin de Fanal pour l'instant.";
+  if (soloPro) { verdict = "GREEN"; label = "🟢 ADMITIR PILOTO — Modalidad Fanal Solo 24/7"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Professionnel autonome avec " + dossiers + " dossiers/mois : Fanal Solo 24/7 remplace votre secrétaire de nuit — " + netHours + " h/mois récupérées (valeur ~" + value + " $ CAD), sous la Garantie de Symétrie."; return { verdict, label, entropyScore: entropy, netHoursSavedMonth: netHours, netCadValueMonth: value, frenchPitch: pitch }; }
   if (employees <= 2 && dossiers < 4) { label = "🔴 RECHAZAR PILOTO — Sin Fricción de Agencia"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Nous refusons ce pilote pour vous protéger. Avec " + employees + " employé(s) et peu de dossiers complexes, votre opération directe est plus rapide que n'importe quelle IA."; }
   else if (saas === "POS_EMPTY" && dossiers < 6 && lang < 20) { label = "🔴 RECHAZAR PILOTO — Fricción de Doble Captura"; pitch = "DIAGNOSTIC HONNÊTE FANAL : À votre volume actuel par quart, dicter dans Fanal puis ressaisir dans votre caisse créerait une double saisie inutile. Nous préférons ne pas vous vendre de pilote aujourd'hui."; }
   else if (saas === "POS_BUSY" || (entropy >= 28 && entropy < 48)) { verdict = "YELLOW"; label = "🟡 PILOTO ACOTADO — Prohibido en Órdenes Simples"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Pilote recommandé UNIQUEMENT sur vos goulots (Téléphoniste multilingue, transferts signés, alertes d'allergies et " + dossiers + " dossiers/mois). En période calme, Fanal reste en veille automatique."; }

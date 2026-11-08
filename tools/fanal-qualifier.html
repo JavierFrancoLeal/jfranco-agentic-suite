@@ -42,7 +42,8 @@
 <script>
 function qualifyPilotProspect(input) {
   const employees = Number(input.employees), handoffs = Number(input.handoffsPerWeek), lang = Number(input.langFrictionScore), dossiers = Number(input.dossiersPerMonth), saas = String(input.saasMode);
-  const agency = employees <= 2 ? 0.25 : employees <= 4 ? 0.75 : 1.0 + Math.min(0.4, (employees - 5) * 0.02);
+  const soloPro = employees <= 1 && (dossiers >= 4 || lang >= 12);
+  const agency = soloPro ? 1.0 : employees <= 2 ? 0.25 : employees <= 4 ? 0.75 : 1.0 + Math.min(0.4, (employees - 5) * 0.02);
   const penalty = { OPEN: 0, POS_BUSY: 12, POS_EMPTY: 55, RAMQ_LOCKED: 65 }[saas] || 0;
   const saved = (handoffs * 4.3) * 0.22 + (lang / 25) * 9.5 + dossiers * 0.65;
   const lost = (penalty / 10) * 2.8;
@@ -50,6 +51,7 @@ function qualifyPilotProspect(input) {
   const entropy = Math.max(0, Math.min(100, Math.round(((employees * 2.2) + (handoffs * 2.8) + lang + (dossiers * 1.9)) * agency - penalty)));
   const value = Math.round((netHours * 45) + (dossiers * 60));
   let verdict = "RED", label = "🔴 RECHAZAR PILOTO — Entropía Insuficiente";
+  if (soloPro) { verdict = "GREEN"; label = "🟢 ADMITIR PILOTO — Modalidad Fanal Solo 24/7"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Professionnel autonome avec " + dossiers + " dossiers/mois : Fanal Solo 24/7 remplace votre secrétaire de nuit. Votre gain net est de " + netHours + " h/mois, sous la Garantie de Symétrie."; return { verdict, label, entropyScore: entropy, netHoursSavedMonth: netHours, netCadValueMonth: value, frenchPitch: pitch }; }
   let pitch = "DIAGNOSTIC HONNÊTE FANAL : Votre gain net estimé (" + netHours + " h/mois) est sous notre seuil d'intégrité de 10 h/mois. Vous n'avez pas besoin de Fanal pour l'instant.";
   if (employees <= 2 && dossiers < 4) { label = "🔴 RECHAZAR PILOTO — Sin Fricción de Agencia"; pitch = "DIAGNOSTIC HONNÊTE FANAL : Nous refusons ce pilote pour vous protéger. Avec " + employees + " employé(s) et peu de dossiers complexes, votre opération directe est plus rapide que n'importe quelle IA."; }
   else if (saas === "POS_EMPTY" && dossiers < 6 && lang < 20) { label = "🔴 RECHAZAR PILOTO — Fricción de Doble Captura"; pitch = "DIAGNOSTIC HONNÊTE FANAL : À votre volume actuel par quart, dicter dans Fanal puis ressaisir dans votre caisse créerait une double saisie inutile. Nous préférons ne pas vous vendre de pilote aujourd'hui."; }
