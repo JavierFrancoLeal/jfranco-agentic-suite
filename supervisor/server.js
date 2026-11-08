@@ -41,6 +41,43 @@ const DECISIONS_FILE = path.join(DATA_DIR, "decisions.md");
 const DB_FILE = path.join(DATA_DIR, "supervisor.db");
 const USAGE_FILE = path.join(DATA_DIR, "usage.md");
 const LIVE_FILE = path.join(DATA_DIR, "live.json");
+function timingSafeEq(a, b) {
+  try {
+    const A = Buffer.from(String(a)); const B = Buffer.from(String(b));
+    if (A.length !== B.length) return false;
+    return require("node:crypto").timingSafeEqual(A, B);
+  } catch (e) { return String(a) === String(b); }
+}
+function encryptAtRest(obj, key) {
+  try {
+    const iv = require("node:crypto").randomBytes(12);
+    const c = require("node:crypto").createCipheriv("aes-256-gcm", key, iv);
+    const enc = Buffer.concat([c.update(JSON.stringify(obj), "utf8"), c.final()]);
+    return Buffer.concat([iv, c.getAuthTag(), enc]).toString("base64");
+  } catch (e) { return null; }
+}
+function recordLoi25Event(ev) {
+  try {
+    const dir = path.join(DATA_DIR, "archive");
+    fs.mkdirSync(dir, { recursive: true });
+    if (ev.type === "PII_VAULT_PURGED") {
+      const line = JSON.stringify({ ts: new Date().toISOString(), taskId: ev.taskId, tokensDestroyedCount: ev.count, proofHash: require("node:crypto").createHash("sha256").update(String(ev.taskId) + ":" + String(ev.count)).digest("hex").slice(0, 16) });
+      fs.appendFileSync(path.join(dir, "loi25_purge_proofs.jsonl"), line + "\n", { mode: 0o600 });
+    } else {
+      const rec = { dateDetection: new Date().toISOString(), circumstances: ev.circumstances || "", natureOfPersonalInfo: ev.piiCategories || [], personsAffectedCount: ev.affectedCount || 0, seriousHarmRiskAssessed: !!ev.seriousHarm, notifiedCaiAndPersonsAt: ev.notifiedAt || null, mitigationMeasuresTaken: ev.mitigation || "" };
+      fs.appendFileSync(path.join(dir, "registre_incidents_loi25.jsonl"), JSON.stringify(rec) + "\n", { mode: 0o600 });
+    }
+  } catch (e) {}
+}
+function armorGuard(req, res) {
+  // A. El filtro de Host (bloquea el DNS rebinding). En el demo (sandbox) avisa sin bloquear.
+  const host = String((req.headers.host || "")).split(":")[0];
+  const okHosts = ["127.0.0.1", "localhost", "::1"];
+  if (!okHosts.includes(host) && !DEMO) { res.writeHead(403); res.end("HOST_FORBIDDEN"); return false; }
+  // B. El CSRF: toda mutación exige la cabecera propia. En el demo avisa sin bloquear.
+  if (req.method !== "GET" && req.headers["x-fanal-csrf"] !== "1" && !DEMO) { res.writeHead(403); res.end("CSRF_BLOCKED"); return false; }
+  return true;
+}
 const SECTOR_FILE = path.join(DATA_DIR, "sector.json");
 const REG_FILE = path.join(DATA_DIR, "register.json");
 const ALERTS_FILE = path.join(DATA_DIR, "alerts.json");
@@ -59,7 +96,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.144";
+const VERSION = "1.0.145";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1693,6 +1730,7 @@ function serveStatic(req, res, pathname) {
 }
 
 const handler = (req, res) => {
+  if (!armorGuard(req, res)) return;
   const pathname = new URL(req.url, "http://x").pathname;
   if (pathname.startsWith("/api/")) return api(req, res, pathname);
   serveStatic(req, res, pathname);

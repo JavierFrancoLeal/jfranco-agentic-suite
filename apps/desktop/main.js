@@ -50,13 +50,10 @@ async function ensureBrain() {
   if (!LOCAL || await portOpen(TARGET.host, TARGET.port)) return true;
   const serverJs = path.join(__dirname, "brain", "server.js");
   const packs = path.join(__dirname, "brain", "sector-packs");
+  const cleanEnv = { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DATA: path.join(os.homedir(), ".dsh", "supervisor-data"), DSH_SECTOR_PACKS_DIR: packs };
+  delete cleanEnv.NODE_OPTIONS; delete cleanEnv.NODE_PATH; delete cleanEnv.ELECTRON_RUN_AS_NODE_POLL;
   brain = spawn(process.execPath, [serverJs, "--lan"], {
-    env: {
-      ...process.env,
-      ELECTRON_RUN_AS_NODE: "1",
-      DSH_SUPERVISOR_DATA: path.join(os.homedir(), ".dsh", "supervisor-data"),
-      DSH_SECTOR_PACKS_DIR: packs,
-    },
+    env: cleanEnv,
     stdio: "ignore",
     detached: false,
   });
@@ -114,6 +111,9 @@ if (!app.requestSingleInstanceLock()) {
       transparent: false,
       icon: path.join(__dirname, "assets", "icon.png"),
       webPreferences: {
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
         backgroundThrottling: true,
         preload: path.join(__dirname, "preload.js"),
         contextIsolation: true,
