@@ -48,6 +48,48 @@ function timingSafeEq(a, b) {
     return require("node:crypto").timingSafeEqual(A, B);
   } catch (e) { return String(a) === String(b); }
 }
+function fanalIdentity() {
+  try {
+    const c = require("node:crypto");
+    const sign = c.generateKeyPairSync("ed25519");
+    const box = c.generateKeyPairSync("x25519");
+    return {
+      signPublicB64: sign.publicKey.export({ type: "spki", format: "der" }).toString("base64url"),
+      signPrivatePem: sign.privateKey.export({ type: "pkcs8", format: "pem" }),
+      boxPublicB64: box.publicKey.export({ type: "spki", format: "der" }).toString("base64url"),
+      boxPrivatePem: box.privateKey.export({ type: "pkcs8", format: "pem" }),
+    };
+  } catch (e) { return null; }
+}
+function packFanalCapsule(data, id) {
+  try {
+    const c = require("node:crypto");
+    const eph = c.generateKeyPairSync("x25519");
+    const rec = c.createPublicKey({ key: Buffer.from(id.boxPublicB64, "base64url"), format: "der", type: "spki" });
+    const shared = c.diffieHellman({ privateKey: eph.privateKey, publicKey: rec });
+    const key = c.hkdfSync("sha256", shared, Buffer.alloc(0), Buffer.from("FANAL_B2B_CAPSULE_V1"), 32);
+    const body = JSON.stringify({ version: "1.0", sentAt: new Date().toISOString(), bodyHash: c.createHash("sha256").update(JSON.stringify(data)).digest("hex"), data });
+    const sig = c.sign(null, Buffer.from(body, "utf8"), c.createPrivateKey(id.signPrivatePem)).toString("base64url");
+    const iv = c.randomBytes(12);
+    const ci = c.createCipheriv("aes-256-gcm", key, iv);
+    const enc = Buffer.concat([ci.update(body, "utf8"), ci.final()]);
+    return { fanalCapsule: "v1", ephemeralPubB64: eph.publicKey.export({ type: "spki", format: "der" }).toString("base64url"), senderSignPubB64: id.signPublicB64, signatureB64: sig, ivB64: iv.toString("base64url"), tagB64: ci.getAuthTag().toString("base64url"), payloadB64: enc.toString("base64url") };
+  } catch (e) { return { error: String(e.message) }; }
+}
+function unpackFanalCapsule(cap, id) {
+  try {
+    const c = require("node:crypto");
+    const eph = c.createPublicKey({ key: Buffer.from(cap.ephemeralPubB64, "base64url"), format: "der", type: "spki" });
+    const shared = c.diffieHellman({ privateKey: c.createPrivateKey(id.boxPrivatePem), publicKey: eph });
+    const key = c.hkdfSync("sha256", shared, Buffer.alloc(0), Buffer.from("FANAL_B2B_CAPSULE_V1"), 32);
+    const d = c.createDecipheriv("aes-256-gcm", key, Buffer.from(cap.ivB64, "base64url"));
+    d.setAuthTag(Buffer.from(cap.tagB64, "base64url"));
+    const body = Buffer.concat([d.update(Buffer.from(cap.payloadB64, "base64url")), d.final()]).toString("utf8");
+    const ok = c.verify(null, Buffer.from(body, "utf8"), c.createPublicKey({ key: Buffer.from(cap.senderSignPubB64, "base64url"), format: "der", type: "spki" }), Buffer.from(cap.signatureB64, "base64url"));
+    if (!ok) return { error: "FIRMA_BILATERAL_INVALIDA" };
+    return JSON.parse(body);
+  } catch (e) { return { error: "CAPSULA_ILEGIBLE" }; }
+}
 function decryptAtRest(raw, key) {
   try {
     const buf = Buffer.from(String(raw).replace(/^AESGCM:/, ""), "base64");
@@ -105,7 +147,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.147";
+const VERSION = "1.0.148";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1349,6 +1391,30 @@ async function api(req, res, pathname) {
       }
     } catch (e) {}
     return send(res, 200, evaluatePilotActivation(rows), true);
+  }
+  if (pathname === "/api/capsule/identity" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    try {
+      const idFile = path.join(DATA_DIR, "fanal-identity.json");
+      let id = null;
+      try { id = JSON.parse(fs.readFileSync(idFile, "utf8")); } catch (e) {}
+      if (!id || !id.boxPublicB64) { id = fanalIdentity(); if (id) fs.writeFileSync(idFile, JSON.stringify({ boxPublicB64: id.boxPublicB64, signPublicB64: id.signPublicB64 }), { mode: 0o600 }); }
+      return send(res, 200, { ok: true, public: { boxPublicB64: id.boxPublicB64, signPublicB64: id.signPublicB64 } });
+    } catch (e) { return send(res, 200, { ok: false, error: String(e.message) }); }
+  }
+  if (pathname === "/api/capsule/pack" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const idFile = path.join(DATA_DIR, "fanal-identity.json");
+    const pub = JSON.parse(fs.readFileSync(idFile, "utf8"));
+    const caps = packFanalCapsule(b.data || {}, { boxPublicB64: pub.boxPublicB64, signPublicB64: pub.signPublicB64, signPrivatePem: (JSON.parse(fs.readFileSync(idFile, "utf8"))).signPrivatePem || null });
+    if (!caps || caps.error) return send(res, 200, { ok: false, error: "La identidad solo guarda la parte pública; firma con la llave local completa (instalación real)." });
+    return send(res, 200, { ok: true, capsule: caps, sizeBytes: JSON.stringify(caps).length });
+  }
+  if (pathname === "/api/capsule/unpack" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, unpackFanalCapsule(b.capsule || {}, { boxPrivatePem: b.boxPrivatePem || "" }) );
   }
   if (pathname === "/api/bridge/clipboard" && req.method === "POST") {
     if (!managerOnly(res, req)) return;

@@ -103,3 +103,23 @@ like "they took the steering wheel", until the receipts and the pills
 prove the work is saved. Never say "throw away your Acomba": say "we
 import your catalog in 30 seconds and every evening your accountant
 gets the CSV squared to the cent."
+
+## The engarce protocol (Argon adopted, 2026-11-08): two Fanals working together
+
+- PYME ↔ autonomous professional (Internet): the .fanal sovereign
+  capsule — X25519 + Ed25519, AES-256-GCM, end-to-end. The packet (12-25
+  KB) travels by email/shared folder/replay; whoever intercepts it sees
+  mathematical noise. The CPA's Fanal verifies the SME's signature and
+  decrypts in RAM only. ZERO Trasunto central servers: we never become
+  the custodian of client data in transit (the Loi 25 stance).
+- Cells of one company (LAN): the cellId isolation + the
+  CELL_BRIDGE_EVENT baton pass between cell leaders, with the
+  bridgeHash stamped as OUT in the sender's ledger and IN in the
+  receiver's (double-entry cryptography).
+- The commercial lever: the professional's "reception préférentielle"
+  seal — "Clients PME qui transmettent via capsule .fanal bénéficient
+  d'un traitement prioritaire" — the CPA refers the SME warm (45-65%
+  conversion vs 5-10% cold).
+- The re-hydration rule: the veil exists to deceive the cloud APIs,
+  NOT the client's own certified professional — the capsule travels
+  re-hydrated but encrypted.

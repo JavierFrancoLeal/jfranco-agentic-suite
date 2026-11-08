@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/decision-router",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "description": "Agentic-workflow stage 2: route every decision through pre-trained GREEN/YELLOW/RED tiers and keep an audit trail.",
   "author": "J.Franco",
   "license": "MIT",
