@@ -81,3 +81,21 @@ professionals validate it), the key recovery (the forgotten rung of
 the capsule). Argon thinks like an architect; the house adds the
 builder's corrections. Two brains, one verdict: the direction is
 right; the execution details are ours.
+
+## The two new iterations (2026-11-10): the 2×2 matrix and the identity anchor
+
+1. The 2×2 decoupling (computeMode × topologyMode) — CONFIRM the
+principle, and NOTE: our /api/profile (v1.0.150) ALREADY separates the
+axes (the hardware mode from the Ollama ping, the uiProfile from the
+staff count). Argon's "seats > 1 ? CELL : SOLO" is the same logic
+read from the license; the one refinement adopted: the topology must
+come from the LICENSE seats, not only the constitution — and the four
+quadrants are served by ONE executable, zero duplication.
+2. The identity anchor ("the human at the entrance, the machine at the
+exit") — CONFIRM and IMPLEMENTED: the 2-column letter-diff mirror
+(only the differing letters glow, the identical fields collapse into
+one green line), the sealed client identity anchor (the hash), and the
+backward audit that scans every generated document for the exact
+anchor values AND for the rejected typos/old addresses — 0.1 ms,
+zero human friction. The MRZ check digits note is a future
+enhancement (the passport line has mathematical check digits).

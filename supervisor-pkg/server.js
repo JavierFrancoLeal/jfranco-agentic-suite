@@ -132,6 +132,40 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
   const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
   return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
 }
+function highlightCharDiff(strPrimary, strReference) {
+  const esc = (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] || c);
+  let out = "";
+  for (let i = 0; i < strPrimary.length; i++) {
+    const ch = strPrimary[i];
+    out += ch !== strReference[i] ? '<mark style="background:#dc2626;color:#fff;padding:0 2px;border-radius:2px;font-weight:800">' + esc(ch) + "</mark>" : esc(ch);
+  }
+  return out || "<em>(Vacío)</em>";
+}
+function compareClientIdentityColumns(clientWritten, officialExtracted) {
+  const fields = ["fullName", "birthDate", "docNumber", "civilStatus", "address"];
+  const diffRows = [];
+  let identical = 0;
+  for (const key of fields) {
+    const colA = String((clientWritten && clientWritten[key]) || "").trim();
+    const colB = String((officialExtracted && officialExtracted[key]) || "").trim();
+    if (colA === colB && colA !== "") { identical++; continue; }
+    diffRows.push({ field: key, colA_ClientInput: colA, colB_OfficialDoc: colB, charDiffHtmlA: highlightCharDiff(colA, colB), charDiffHtmlB: highlightCharDiff(colB, colA), isYearOverYearChange: Boolean(clientWritten && clientWritten.isPriorYear && key === "address") });
+  }
+  return { needsHumanTriage: diffRows.length > 0, greenCollapsedText: "🟢 " + identical + " datos generales idénticos al documento oficial (ocultos)", twoColumnDiffs: diffRows };
+}
+function verifyBackwardIdentityIntegrity(generatedDocs, anchor) {
+  const errors = [];
+  const critical = [ { label: "Nombre Oficial", val: anchor.fullName }, { label: "ID / Pasaporte / NAS", val: anchor.docNumber }, { label: "Fecha Nacimiento", val: anchor.birthDate } ];
+  for (const doc of generatedDocs || []) {
+    for (const crit of critical) {
+      if (crit.val && !String(doc.contentText || "").includes(crit.val)) errors.push({ docName: doc.name, missingOrCorruptedField: crit.label, expectedExact: crit.val });
+    }
+    for (const bad of (anchor.rejectedTyposAndOldValues || [])) {
+      if (bad && String(doc.contentText || "").includes(bad)) errors.push({ docName: doc.name, contaminatingOldValue: bad, reason: "Aparece un error de dedo o una dirección antigua descartada en la Ficha Base." });
+    }
+  }
+  return { passedBackwardAudit: errors.length === 0, anchorHash: require("node:crypto").createHash("sha256").update(JSON.stringify(anchor)).digest("hex").slice(0, 12), errors };
+}
 function fanalIdentity() {
   try {
     const c = require("node:crypto");
@@ -231,7 +265,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.153";
+const VERSION = "1.0.154";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1503,6 +1537,28 @@ async function api(req, res, pathname) {
       }
     } catch (e) {}
     return send(res, 200, evaluatePilotActivation(rows), true);
+  }
+  if (pathname === "/api/identity/compare" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, compareClientIdentityColumns(b.clientWritten || {}, b.officialExtracted || {}));
+  }
+  if (pathname === "/api/identity/seal" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    try {
+      const f = path.join(DATA_DIR, "identity-anchors.json");
+      let m = {}; try { m = JSON.parse(fs.readFileSync(f, "utf8")); } catch (e) {}
+      const anchor = { fullName: b.fullName || "", birthDate: b.birthDate || "", docNumber: b.docNumber || "", civilStatus: b.civilStatus || "", address: b.address || "", rejectedTyposAndOldValues: b.rejected || [], sealedAt: new Date().toISOString(), hash: require("node:crypto").createHash("sha256").update(JSON.stringify(b)).digest("hex").slice(0, 12) };
+      m[b.clientId || "default"] = anchor;
+      fs.writeFileSync(f, JSON.stringify(m), { mode: 0o600 });
+      return send(res, 200, { ok: true, hash: anchor.hash });
+    } catch (e) { return send(res, 200, { ok: false, error: String(e.message) }); }
+  }
+  if (pathname === "/api/identity/audit" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, verifyBackwardIdentityIntegrity(b.docs || [], b.anchor || {}));
   }
   if (pathname === "/api/triage" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
