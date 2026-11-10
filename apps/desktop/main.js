@@ -14,6 +14,7 @@ const path = require("node:path");
 const os = require("node:os");
 const net = require("node:net");
 const { spawn } = require("node:child_process");
+const { globalShortcut, ipcMain } = require("electron");
 const fs = require("node:fs");
 const DATA_DIR = path.join(os.homedir(), ".dsh", "supervisor-data");
 const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
@@ -50,7 +51,22 @@ async function ensureBrain() {
   if (!LOCAL || await portOpen(TARGET.host, TARGET.port)) return true;
   const serverJs = path.join(__dirname, "brain", "server.js");
   const packs = path.join(__dirname, "brain", "sector-packs");
-  const cleanEnv = { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DATA: path.join(os.homedir(), ".dsh", "supervisor-data"), DSH_SECTOR_PACKS_DIR: packs };
+  // La invocación instantánea (estilo Gemini): la franja aparece y desaparece sin perder el hilo
+app.whenReady().then(() => {
+  try {
+    globalShortcut.register("Alt+Space", () => {
+      if (!win || win.isDestroyed()) return;
+      if (win.isVisible() && win.isFocused()) win.hide();
+      else { win.show(); win.focus(); }
+    });
+  } catch (e) {}
+});
+// El sandbox de la carpeta conectada (el chip [📁]): Fanal solo toca el expediente activo
+let allowedClientFolder = null;
+try {
+  ipcMain.handle("fanal:set-connected-folder", (_e, p) => { const r = path.resolve(p); allowedClientFolder = r; return { activeFolderChip: path.basename(r), fullPath: r }; });
+} catch (e) {}
+const cleanEnv = { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DATA: path.join(os.homedir(), ".dsh", "supervisor-data"), DSH_SECTOR_PACKS_DIR: packs };
   delete cleanEnv.NODE_OPTIONS; delete cleanEnv.NODE_PATH; delete cleanEnv.ELECTRON_RUN_AS_NODE_POLL;
   brain = spawn(process.execPath, [serverJs, "--lan"], {
     env: cleanEnv,

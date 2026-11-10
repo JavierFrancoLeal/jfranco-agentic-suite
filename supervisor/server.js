@@ -132,6 +132,16 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
   const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
   return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
 }
+function buildOfficialVerificationLinks(domain, code, article, keywords) {
+  const q = encodeURIComponent((code + " " + (article || "") + " " + (keywords || "")).trim());
+  const legisMap = { CCQ: "CCQ-1991", CPC: "C-25.01", LPC: "P-40.1", LI: "I-3", LATMP: "A-3.001" };
+  const links = [];
+  if (legisMap[code] && article) links.push({ label: "📜 Ver Art. " + article + " " + code + " en LégisQuébec", url: "https://www.legisquebec.gouv.qc.ca/fr/document/lc/" + legisMap[code] + "#se:" + article });
+  links.push({ label: "⚖️ Ver sentencias en CanLII (" + (article || keywords || code) + ")", url: "https://www.canlii.org/fr/qc/#search/text=" + q });
+  links.push({ label: "🏛️ Consultar el portal SOQUIJ", url: "https://citoyens.soquij.qc.ca/" });
+  if (domain === "CPA_COMPTABLE") links.push({ label: "🧮 Guía oficial Revenu Québec", url: "https://www.revenuquebec.ca/fr/recherche/?q=" + q });
+  return links;
+}
 function highlightCharDiff(strPrimary, strReference) {
   const esc = (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] || c);
   let out = "";
@@ -265,7 +275,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.154";
+const VERSION = "1.0.155";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1537,6 +1547,11 @@ async function api(req, res, pathname) {
       }
     } catch (e) {}
     return send(res, 200, evaluatePilotActivation(rows), true);
+  }
+  if (pathname === "/api/links" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, { links: buildOfficialVerificationLinks(b.domain || "", b.code || "", b.article || "", b.keywords || "") });
   }
   if (pathname === "/api/identity/compare" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
