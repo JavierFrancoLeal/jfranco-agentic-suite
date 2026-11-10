@@ -132,6 +132,26 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
   const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
   return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
 }
+function buildMonthlyClientInvoice(profile, rows) {
+  const TPS = 0.05, TVQ = 0.09975;
+  const setupFee = profile.isFirstMonth ? (profile.tier === "SOLO" ? 350.0 : 750.0) : 0.0;
+  const retainerFee = profile.tier === "SOLO" ? 165.0 : 290.0;
+  let gross = 0, credit = 0, full = 0, half = 0, free = 0;
+  for (const row of (rows || []).filter((r) => r.type === "DOSSIER_SIGNED")) {
+    const base = Number(row.basePriceCad || 16.0);
+    gross += base;
+    if (row.deltaPct <= 15.0) full++;
+    else if (row.deltaPct <= 35.0) { half++; credit += +(base * 0.5).toFixed(2); }
+    else { free++; credit += base; }
+  }
+  const dossiersNet = +((gross - credit).toFixed(2));
+  const subtotal = +((setupFee + retainerFee + dossiersNet).toFixed(2));
+  const tps = +((subtotal * TPS).toFixed(2));
+  const tvq = +((subtotal * TVQ).toFixed(2));
+  const ttc = +((subtotal + tps + tvq).toFixed(2));
+  const apiCost = +((rows || []).reduce((s2, r) => s2 + Number(r.apiCostCad || 0), 0).toFixed(2));
+  return { clientId: profile.id, clientName: profile.name, billingPeriod: new Date().toISOString().slice(0, 7), lines: { setupFee, retainerFee, dossiersSummary: (full + half + free) + " Dossiers (" + full + " al 100%, " + half + " al 50%, " + free + " gratis)", dossiersGross: +gross.toFixed(2), symmetryCredit: -credit, dossiersNet }, taxes: { subtotalCad: subtotal, tpsCad: tps, tvqCad: tvq, totalTtcCad: ttc }, trasuntoInternalAudit: { internalApiCostCad: apiCost, padFeeCad: 1.5, netCashMarginCad: +((subtotal - apiCost - 1.5).toFixed(2)) } };
+}
 function buildOfficialVerificationLinks(domain, code, article, keywords) {
   const q = encodeURIComponent((code + " " + (article || "") + " " + (keywords || "")).trim());
   const legisMap = { CCQ: "CCQ-1991", CPC: "C-25.01", LPC: "P-40.1", LI: "I-3", LATMP: "A-3.001" };
@@ -275,7 +295,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.156";
+const VERSION = "1.0.157";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1547,6 +1567,11 @@ async function api(req, res, pathname) {
       }
     } catch (e) {}
     return send(res, 200, evaluatePilotActivation(rows), true);
+  }
+  if (pathname === "/api/invoice" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, buildMonthlyClientInvoice(b.profile || {}, b.rows || []));
   }
   if (pathname === "/api/links" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
