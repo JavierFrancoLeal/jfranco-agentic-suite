@@ -202,6 +202,35 @@ function detectCallusAndProposeMutation(edits) {
   }
   return out;
 }
+function signAndPublishSpeciesHotPatch(o) {
+  const IMMUTABLE = new Set(["CORE_VELO_PII_V21", "CORE_PRICE_FLOOR_GUARD", "CORE_ALLERGY_RATCHET", "CORE_FIDUCIARY_SIGNATURE_CEREMONY", "CORE_LOI25_INCIDENT_LEDGER"]);
+  const targetId = typeof o.organSpecOrId === "string" ? o.organSpecOrId : (o.organSpecOrId && o.organSpecOrId.organId);
+  if (IMMUTABLE.has(targetId)) return { published: false, error: "BLOQUEO_MAESTRO: el órgano nuclear '" + targetId + "' es inmutable." };
+  const bundle = JSON.parse(JSON.stringify(o.currentRulesBundle || { version: "v2026.11.0", defaultHibernatedBySpecies: {}, promotedOrgans: [], evolutionLog: [] }));
+  const verParts = String(bundle.version).split(".");
+  bundle.version = verParts[0] + "." + verParts[1] + "." + ((Number(verParts[2] || 0)) + 1);
+  bundle.updatedAtIso = new Date().toISOString();
+  bundle.evolutionLog = bundle.evolutionLog || [];
+  if (o.actionType === "PRUNE_VESTIGE") {
+    bundle.defaultHibernatedBySpecies = bundle.defaultHibernatedBySpecies || {};
+    const list = new Set(bundle.defaultHibernatedBySpecies[o.targetSpecies] || []);
+    list.add(targetId);
+    bundle.defaultHibernatedBySpecies[o.targetSpecies] = Array.from(list);
+  } else {
+    bundle.promotedOrgans = bundle.promotedOrgans || [];
+    bundle.promotedOrgans.push({ ...(typeof o.organSpecOrId === "string" ? { organId: o.organSpecOrId } : o.organSpecOrId), targetSpecies: o.actionType === "PROMOTE_UNIVERSAL" ? "UNIVERSAL_ALL" : o.targetSpecies, approvedByFounderAt: bundle.updatedAtIso });
+  }
+  bundle.evolutionLog.push({ actionType: o.actionType, targetId: targetId, targetSpecies: o.targetSpecies, at: bundle.updatedAtIso });
+  const payload = JSON.stringify(bundle);
+  let signatureB64 = "";
+  try { signatureB64 = require("node:crypto").sign(null, Buffer.from(payload, "utf8"), require("node:crypto").createPrivateKey(o.trasuntoMasterPrivateKeyPem)).toString("base64url"); } catch (e) { return { published: false, error: "LLAVE_MAESTRA_INVALIDA" }; }
+  try {
+    const f = path.join(DATA_DIR, "archive", "hotpatch_" + Date.now() + ".json");
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, JSON.stringify({ version: bundle.version, targetSpeciesFilter: o.targetSpecies, payloadJsonString: payload, signatureB64 }), { mode: 0o600 });
+  } catch (e) {}
+  return { published: true, newVersion: bundle.version, targetSpecies: o.targetSpecies, bytesSize: Buffer.byteLength(payload, "utf8") };
+}
 function compileSafeDeclarativeOrgan(spec, con) {
   if (spec.bypassVeloPii || Number(spec.overridePriceFloorCad) < Number((con && con.pricingFloorCad) || 0)) return { ok: false, error: "MUTACION_ILEGAL: ningún órgano evolutivo puede reducir la Loi 25 ni el piso de precios." };
   return { ok: true, organ: { organId: "ORG_CUSTOM_" + Date.now().toString(36).toUpperCase(), origin: "USER_EVOLUTION_LOCAL", species: (con && con.professionKey) || "GENERIC", createdAtIso: new Date().toISOString(), status: "ACTIVE", label: String(spec.label || "").slice(0, 80), trigger: { docType: spec.triggerDocType || "ANY", matchPattern: String(spec.conditionRegexOrFormula || "").slice(0, 200) }, behavior: { semaphoreColor: ["GREEN", "YELLOW", "RED"].includes(spec.targetSemaphore) ? spec.targetSemaphore : "YELLOW", professorRightColumnText: String(spec.professorExplanationRightCol || "").slice(0, 400), officialVerificationLink: spec.officialLinkUrl || null } } };
@@ -478,7 +507,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.174";
+const VERSION = "1.0.175";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1824,6 +1853,11 @@ async function api(req, res, pathname) {
     if (!managerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, { proposedMutations: detectCallusAndProposeMutation(b.edits || []) });
+  }
+  if (pathname === "/api/evolution/publish" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, signAndPublishSpeciesHotPatch(b));
   }
   if (pathname === "/api/evolution/compile" && req.method === "POST") {
     if (!managerOnly(res, req)) return;

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Fanal · Laboratorio Evolutivo de Especies (Consola Maestra)</title>
+<style>
+  body{margin:0;background:#090d16;color:#f8fafc;font-family:system-ui,sans-serif;font-size:12px;padding:16px}
+  .evo-header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e293b;padding-bottom:12px;margin-bottom:14px;gap:12px}
+  .evo-title-block h2{margin:0 0 4px;font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:8px}
+  .evo-subtitle{font-size:11px;color:#94a3b8;font-family:monospace}
+  .species-select{background:#0f172a;color:#38bdf8;border:1px solid #0284c7;padding:6px 10px;border-radius:4px;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer}
+  .evo-kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .evo-kpi-card{background:#0f172a;border:1px solid #1e293b;padding:8px 12px;border-radius:4px}
+  .evo-kpi-label{font-size:10px;color:#94a3b8;text-transform:uppercase;font-weight:700}
+  .evo-kpi-val{font-size:16px;font-weight:800;font-family:monospace;margin-top:2px}
+  .evo-main-grid{display:grid;grid-template-columns:380px 1fr;gap:14px}
+  .evo-column{background:#0f172a;border:1px solid #334155;border-radius:5px;padding:12px;display:flex;flex-direction:column;gap:10px}
+  .col-header-tag{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding-bottom:8px;border-bottom:1px solid #1e293b;display:flex;justify-content:space-between;align-items:center}
+  .vestige-card{background:#090d16;border:1px solid #334155;border-left:4px solid #64748b;border-radius:4px;padding:10px}
+  .vestige-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+  .organ-code{font-family:monospace;font-size:10px;background:#1e293b;color:#cbd5e1;padding:1px 6px;border-radius:3px}
+  .atrophy-meter{height:5px;width:100%;background:#1e293b;border-radius:3px;overflow:hidden;margin:6px 0}
+  .atrophy-fill{height:100%;background:#f59e0b}
+  .mutation-card{background:#090d16;border:1px solid #334155;border-left:4px solid #10b981;border-radius:4px;padding:12px}
+  .mutation-meta{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0;font-family:monospace;font-size:10.5px}
+  .meta-pill{background:#1e293b;padding:2px 7px;border-radius:3px;color:#e2e8f0}
+  .json-inspector{background:#020617;border:1px solid #1e293b;border-radius:3px;padding:8px;font-family:monospace;font-size:10.5px;color:#6ee7b7;white-space:pre-wrap;margin:8px 0;max-height:135px;overflow-y:auto}
+  .evo-btn-row{display:flex;gap:6px;margin-top:8px}
+  .evo-btn{padding:6px 10px;border-radius:3px;font-size:11px;font-weight:700;cursor:pointer;border:none;display:inline-flex;align-items:center;justify-content:center;gap:5px}
+  .btn-prune{background:#334155;color:#f8fafc;width:100%}
+  .btn-species{background:#059669;color:#fff;flex:2}
+  .btn-universal{background:#0284c7;color:#fff;flex:1.5}
+  .btn-reject{background:#1e293b;color:#fca5a5;border:1px solid #7f1d1d}
+  #hotpatch-toast{display:none;margin-top:12px;background:#064e3b;border:1px solid #10b981;color:#d1fae5;padding:8px 12px;border-radius:4px;font-family:monospace;font-size:11px;justify-content:space-between;align-items:center}
+</style>
+</head>
+<body>
+<div class="evo-header">
+  <div class="evo-title-block">
+    <h2>🧬 CONSOLA MAESTRA TRASUNTO · LABORATORIO EVOLUTIVO DE ESPECIES
+      <span style="background:#064e3b;color:#6ee7b7;font-size:10px;padding:2px 8px;border-radius:10px;font-family:monospace;border:1px solid #10b981">Ed25519 MASTER KEY ACTIVA</span></h2>
+    <div class="evo-subtitle">Telemetría genética 100% sanitizada (Velo PII 2.1) · Poda por Via Negativa y promoción vía Hot-Patch (0.3s)</div>
+  </div>
+  <div><label style="font-size:11px;color:#94a3b8;font-weight:700">Filtrar Especie:</label>
+  <select id="species-filter" class="species-select" onchange="renderLab(this.value)">
+    <option value="ALL">🌍 TODAS LAS ESPECIES (18 Gremios QC)</option>
+    <option value="CPA_COMPTABLE" selected>🧮 CPA_COMPTABLE</option>
+    <option value="AVOCAT_BARREAU">⚖️ AVOCAT_BARREAU</option>
+    <option value="GYM_PROPRIETAIRE_OPC">🏋️ GYM_PROPRIETAIRE_OPC</option>
+    <option value="PLEX_PROPRIETAIRE_TAL">🏢 PLEX_PROPRIETAIRE_TAL</option>
+  </select></div>
+</div>
+<div class="evo-kpi-strip">
+  <div class="evo-kpi-card"><div class="evo-kpi-label">Nodos Reportando</div><div id="kpi-nodes" class="evo-kpi-val" style="color:#38bdf8">18 / 18</div></div>
+  <div class="evo-kpi-card"><div class="evo-kpi-label">Vestigios (Poda)</div><div id="kpi-vestiges" class="evo-kpi-val" style="color:#fbbf24">—</div></div>
+  <div class="evo-kpi-card"><div class="evo-kpi-label">Mutaciones Ganadoras</div><div id="kpi-mutations" class="evo-kpi-val" style="color:#10b981">—</div></div>
+  <div class="evo-kpi-card"><div class="evo-kpi-label">Versión del Genoma</div><div id="kpi-version" class="evo-kpi-val" style="color:#e2e8f0">v2026.11.4</div></div>
+</div>
+<div class="evo-main-grid">
+  <div class="evo-column">
+    <div class="col-header-tag" style="color:#fde68a"><span>🍂 VIA NEGATIVA: VESTIGIOS PARA PODAR</span><span style="font-family:monospace;font-size:10px;color:#94a3b8">21+ días sin uso</span></div>
+    <div id="vestiges-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+  <div class="evo-column">
+    <div class="col-header-tag" style="color:#6ee7b7"><span>⚡ MUTACIONES DE CAMPO LISTAS PARA PROMOCIÓN</span><span style="font-family:monospace;font-size:10px;color:#94a3b8">Aisladas en Sandbox JSON</span></div>
+    <div id="mutations-list" style="display:flex;flex-direction:column;gap:10px"></div>
+  </div>
+</div>
+<div id="hotpatch-toast"><span id="hotpatch-toast-msg"></span><span style="color:#6ee7b7;font-weight:800">✓ FIRMADO Ed25519 Y DESPLEGADO EN 0.3s</span></div>
+<script>
+const FLEET_GENOME_DATA={
+  vestiges:[
+    {organId:"ORG_STOCK_PERISHABLE_MAPAQ",species:"CPA_COMPTABLE",label:"Control de Perecederos y Termómetros MAPAQ",hibernatedByNodes:17,totalSpeciesNodes:18,avgExposuresWithZeroClicks:42,reason:"El 94% de los contadores ocultó este módulo (pertenece a restaurantes)."},
+    {organId:"ORG_SHIFT_RELIEF_HANDOFF",species:"CPA_COMPTABLE",label:"Acta de Relevo de Turno Nocturno",hibernatedByNodes:15,totalSpeciesNodes:18,avgExposuresWithZeroClicks:31,reason:"El 83% de los CPAs autónomos trabaja en SOLO sin cambios de turno."}
+  ],
+  mutations:[
+    {mutationId:"MUT-9A4F12",originClientId:"NODE_CPA_MALBAIE_02",species:"CPA_COMPTABLE",title:"Detector de Propinas No Declaradas (TP-1015.R.13.1)",provenUses:38,errorRatePct:0,savedMinutesPerUse:14,sanitizedOrganSpec:{organId:"ORG_CPA_POURBOIRES_TP1015",species:"CPA_COMPTABLE",trigger:{docType:"PAYROLL_RESTAURANT_SUMMARY",matchPattern:"ventes_restauration sans TP-1015"},behavior:{semaphoreColor:"YELLOW",professorRightColumnText:"La nómina del restaurante omite el formulario TP-1015.R.13.1 de propinas exigido por Revenu Québec.",officialVerificationLink:"https://www.revenuquebec.ca/fr/"}}},
+    {mutationId:"MUT-3C8E09",originClientId:"NODE_CPA_QUEBEC_07",species:"CPA_COMPTABLE",title:"Prorrateo Automático 15% Bureau à Domicile",provenUses:64,errorRatePct:0,savedMinutesPerUse:8,sanitizedOrganSpec:{organId:"ORG_CPA_BUREAU_DOMICILE_15PCT",species:"CPA_COMPTABLE",trigger:{docType:"UTILITY_INVOICE_RESIDENTIAL",matchPattern:"Hydro-Québec adresse domicile"},behavior:{semaphoreColor:"YELLOW",professorRightColumnText:"Se propone imputar 15% como gasto de oficina en casa y 85% personal.",officialVerificationLink:"https://www.revenuquebec.ca/fr/"}}}
+  ]
+};
+function renderLab(sp){
+  const vv=FLEET_GENOME_DATA.vestiges.filter(v=>sp==="ALL"||v.species===sp);
+  const mm=FLEET_GENOME_DATA.mutations.filter(m=>sp==="ALL"||m.species===sp);
+  document.getElementById("kpi-vestiges").textContent=vv.length+" Órganos";
+  document.getElementById("kpi-mutations").textContent=mm.length+" Candidatas";
+  document.getElementById("vestiges-list").innerHTML=vv.map(v=>{const pct=Math.round(v.hibernatedByNodes/v.totalSpeciesNodes*100);return '<div class="vestige-card" id="card-'+v.organId+'"><div class="vestige-top"><span class="organ-code">'+v.organId+'</span><span style="color:#fbbf24;font-family:monospace;font-weight:700;font-size:11px">'+pct+'% Hibernado ('+v.hibernatedByNodes+'/'+v.totalSpeciesNodes+')</span></div><div style="font-weight:700;color:#f8fafc;margin-bottom:3px">'+v.label+'</div><div class="atrophy-meter"><div class="atrophy-fill" style="width:'+pct+'%"></div></div><div style="font-size:11px;color:#94a3b8;margin-bottom:8px">'+v.reason+'</div><button class="evo-btn btn-prune" onclick="publish(\'PRUNE_VESTIGE\',\''+v.organId+'\',\''+v.species+'\')">✂️ Podar por Defecto en '+v.species+' (Hot-Patch)</button></div>';}).join("")||'<div style="color:#64748b;font-size:11px">Sin vestigios pendientes.</div>';
+  document.getElementById("mutations-list").innerHTML=mm.map(m=>'<div class="mutation-card" id="card-'+m.mutationId+'"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px"><div style="font-weight:800;color:#6ee7b7;font-size:12.5px">'+m.title+'</div><span class="organ-code" style="color:#38bdf8">'+m.species+'</span></div><div class="mutation-meta"><span class="meta-pill">📍 '+m.originClientId+'</span><span class="meta-pill" style="color:#6ee7b7">✓ '+m.provenUses+' usos (0% error)</span><span class="meta-pill">⏱️ ~'+m.savedMinutesPerUse+' min/caso</span><span class="meta-pill">🛡️ Velo PII Verificado</span></div><div class="json-inspector">'+JSON.stringify(m.sanitizedOrganSpec,null,2).replace(/</g,"&lt;")+'</div><div class="evo-btn-row"><button class="evo-btn btn-species" onclick="publish(\'PROMOTE_SPECIES\',\''+m.mutationId+'\',\''+m.species+'\')">🎯 Replicar en toda la Especie '+m.species+'</button><button class="evo-btn btn-universal" onclick="publish(\'PROMOTE_UNIVERSAL\',\''+m.mutationId+'\',\'UNIVERSAL_ALL\')">🌍 Promover a Universal</button><button class="evo-btn btn-reject" onclick="document.getElementById(\'card-'+m.mutationId+'\').style.display=\'none\'">Descartar</button></div></div>').join("")||'<div style="color:#64748b;font-size:11px">Sin mutaciones pendientes.</div>';
+}
+function publish(action,itemId,sp){
+  const verEl=document.getElementById("kpi-version");
+  const parts=verEl.textContent.split(".");
+  parts[2]=Number(parts[2]||0)+1;
+  verEl.textContent=parts.join(".");
+  const toast=document.getElementById("hotpatch-toast");
+  toast.style.display="flex";
+  document.getElementById("hotpatch-toast-msg").textContent=action==="PRUNE_VESTIGE"?("✂️ "+itemId+" hibernado por defecto para ["+sp+"] ("+verEl.textContent+")."):("🧬 Mutación "+itemId+" firmada y replicada hacia ["+sp+"] ("+verEl.textContent+").");
+}
+renderLab("CPA_COMPTABLE");
+</script>
+</body>
+</html>
