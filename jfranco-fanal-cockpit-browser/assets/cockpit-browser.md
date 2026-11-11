@@ -1,10 +1,16 @@
-# Cockpit Browser — EL NAVEGADOR DE CABINA
+# Fanal Cockpit Browser — EL NAVEGADOR DE CABINA (doctrina)
 
-The internal browser that lives inside DeepSeek Harness's Electron shell: a
-Claude Cowork–style cockpit where the agent and the human share the same
-`WebContentsView`, and the human's hand stays on the wheel. This skill teaches
-you how to configure it — with the Fanal-proven building blocks, not invented
-APIs.
+The internal browser that lives inside **Fanal's desktop Electron shell**
+(`apps/desktop/main.js`): a Claude Cowork–style cockpit where the agent and the
+human share the same `WebContentsView`, and the human's hand stays on the wheel.
+
+> **Scope — read this first.** This is a *doctrine* for Fanal, not for DeepSeek
+> Harness. It teaches the agent how Fanal's cockpit is built and operated. It
+> ships **no Electron code**, it does **not** create a browser inside DeepSeek
+> Harness, and it does **not** make a DSH session open Facebook, Google or any
+> portal. The code it describes lives in Fanal's `apps/desktop/main.js`, with
+> Fanal's own identifiers (`persist:fanal-client-workspace`, `fanal:*` IPC
+> channels).
 
 ## The contract (read first)
 
@@ -13,10 +19,11 @@ APIs.
 > (**Envoyer / Soumettre / Payer / Transmettre**) is ALWAYS the human's click.
 > This is not enforced by trust; it is enforced by code.
 
-The cockpit is a **host-side Electron concern**. It runs in the main process
-(`WebContentsView`, `screen`, `safeStorage`, `webRequest`) — never in the Web
-GUI's renderer, never in a plugin's `lib/client.js`. The agent drives it through
-`executeJavaScript` and the IPC channels the shell exposes.
+The cockpit is a **host-side Electron concern**. It runs in Fanal's Electron
+main process (`WebContentsView`, `screen`, `safeStorage`, `webRequest`) — never
+in the Web GUI's renderer, never in a DSH plugin's `lib/client.js`. The agent
+drives it through `executeJavaScript` and the IPC channels Fanal's shell exposes
+(`fanal:run-synced-step`, `fanal:open-in-right-drawer`, `fanal:hud-state-change`).
 
 ## The six pillars
 
@@ -101,7 +108,8 @@ agent touched and can undo it in one glance. Trust, made visible.
 
 ## The recipes
 
-The exact, verified Electron snippets — the copy-paste building blocks — live in
-[`recipes.md`](recipes.md). Open it and lift the code directly. Do NOT invent new
-APIs or guess flags; the recipes are the ground truth. When a recipe needs a
-value you don't have, stop and ask the human instead of guessing.
+The exact, verified Electron snippets — the copy-paste building blocks for
+Fanal's shell — live in [`recipes.md`](recipes.md). Open it and lift the code
+directly. Do NOT invent new APIs or guess flags; the recipes are the ground
+truth. When a recipe needs a value you don't have, stop and ask the human
+instead of guessing.

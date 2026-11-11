@@ -1,7 +1,7 @@
 {
-  "name": "@javierfrancoleal/cockpit-browser",
+  "name": "@javierfrancoleal/fanal-cockpit-browser",
   "version": "1.0.0",
-  "description": "EL NAVEGADOR DE CABINA: the Claude-Cowork-style internal browser for DeepSeek Harness's WebContentsView — the persistent encrypted session (persist:fanal-client-workspace + Keychain/DPAPI), the double isolation (no file:// in, no bytes out), the constitutional brake (the agent fills, the human clicks the final button), the 36px HUD (⚡ AGENTE / 🖐️ VOLANTE HUMANO / 🛑 FRENO), the dual-monitor without data loss, and the golden rule.",
+  "description": "The DOCTRINE of Fanal's cockpit browser — the Claude Cowork-style internal browser that lives in Fanal's desktop Electron shell (apps/desktop/main.js), NOT in DeepSeek Harness. A host-only skill that teaches the agent the six pillars: the persistent encrypted session (persist:fanal-client-workspace + Keychain/DPAPI), the double isolation (no file:// in, no bytes out), the constitutional brake (the agent fills, the human clicks the final button), the 36px HUD (⚡ AGENTE / 🖐️ VOLANTE HUMANO / 🛑 FRENO), the dual-monitor without data loss, and the golden rule.",
   "author": "J.Franco",
   "license": "MIT",
   "type": "module",
