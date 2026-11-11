@@ -545,12 +545,15 @@ if (!app.requestSingleInstanceLock()) {
     }
     if (win && !win.isDestroyed()) win.loadURL(TARGET_URL + (TARGET_URL.includes("?") ? "&" : "?") + "lang=" + encodeURIComponent(String(p.lang || "en")));
   })
-  setupCoworkRightDrawer(win);
-  watchMonitorPlugEvents(win, rightDrawerView);
-  bindMonitor2Events(win);
+  // (los montajes de la cabina/el visor/el doble monitor viven DENTRO del whenReady — véase arriba)
   app.whenReady().then(async () => {
     const ok = await ensureBrain();
     createWindow();
+    // La cabina, el visor y los eventos del sistema se montan AQUÍ (el hilo de la UI está listo) —
+    // jamás al nivel del módulo: el chequeo del hilo de Chromium lo exige (la lección #36).
+    setupCoworkRightDrawer(win);
+    watchMonitorPlugEvents(win, rightDrawerView);
+    bindMonitor2Events(win);
     if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
     try {
       const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));

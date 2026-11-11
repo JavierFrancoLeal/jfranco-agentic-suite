@@ -11,7 +11,7 @@
     "dist": "electron-builder --mac --win --linux"
   },
   "devDependencies": {
-    "electron": "^37.0.0",
+    "electron": "^45.3.0",
     "electron-builder": "^26.0.0"
   },
   "build": {
@@ -62,5 +62,8 @@
   },
   "allowScripts": {
     "electron@37.10.3": true
+  },
+  "dependencies": {
+    "@electron-internal/extract-zip": "^1.0.8"
   }
 }

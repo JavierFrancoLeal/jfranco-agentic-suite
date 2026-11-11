@@ -1,6 +1,0 @@
-# @javierfrancoleal/fanal-cockpit-browser — the DOCTRINE of Fanal's cockpit
-# browser (apps/desktop/main.js). A skill for the agent, NOT a DSH browser.
-# Zero dependencies, zero eval, security first.
-- insert:
-    - id: fanal-cockpit-browser
-      name: '@javierfrancoleal/fanal-cockpit-browser'
