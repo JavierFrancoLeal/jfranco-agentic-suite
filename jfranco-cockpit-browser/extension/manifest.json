@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Cockpit Browser — DSH hands",
+  "version": "1.0.0",
+  "description": "The hands of the J.Franco cockpit: lets the DeepSeek Harness agent read, fill, and click in YOUR Chrome (with your sessions), under the guardrails. The final Send/Pay/Confirm click is always yours.",
+  "permissions": ["tabs", "activeTab", "scripting", "alarms", "debugger"],
+  "host_permissions": [
+    "https://*.google.com/*",
+    "https://*.facebook.com/*",
+    "http://127.0.0.1:9334/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.google.com/*",
+        "https://*.facebook.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

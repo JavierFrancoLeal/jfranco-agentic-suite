@@ -1,1 +1,6 @@
-{"cockpit-browser.name":"コックピットブラウザー","cockpit-browser.description":"DSH エージェントが CDP で制御する本物の Chromium ブラウザー：永続セッション、憲法ブレーキ、エメラルド枠、36px HUD。"}
+{
+  "meta": {
+    "title": "コックピットブラウザー",
+    "description": "DSH エージェントが CDP で制御する本物の Chromium ブラウザー：永続セッション、憲法ブレーキ、エメラルド枠、36px HUD とガードレール階層。"
+  }
+}

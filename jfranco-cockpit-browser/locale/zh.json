@@ -1,1 +1,6 @@
-{"cockpit-browser.name":"驾驶舱浏览器","cockpit-browser.description":"DSH 代理通过 CDP 控制的真实 Chromium 浏览器：持久会话、宪法刹车、翠绿边框、36 像素 HUD。"}
+{
+  "meta": {
+    "title": "驾驶舱浏览器",
+    "description": "DSH 代理通过 CDP 控制的真实 Chromium 浏览器：持久会话、宪法刹车、翠绿边框、36 像素 HUD 与护栏层级。"
+  }
+}

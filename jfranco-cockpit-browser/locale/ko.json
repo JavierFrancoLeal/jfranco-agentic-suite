@@ -1,1 +1,6 @@
-{"cockpit-browser.name":"칵핏 브라우저","cockpit-browser.description":"DSH 에이전트가 CDP로 제어하는 실제 Chromium 브라우저: 영구 세션, 헌법 브레이크, 에메랄드 테두리, 36px HUD."}
+{
+  "meta": {
+    "title": "칵핏 브라우저",
+    "description": "DSH 에이전트가 CDP로 제어하는 실제 Chromium 브라우저: 영구 세션, 헌법 브레이크, 에메랄드 테두리, 36px HUD 및 가드레일 계층."
+  }
+}

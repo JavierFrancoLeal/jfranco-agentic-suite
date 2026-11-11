@@ -1,1 +1,6 @@
-{"cockpit-browser.name":"Cockpit-Browser","cockpit-browser.description":"Ein echter Chromium-Browser, den der DSH-Agent per CDP steuert: persistente Sitzung, konstitutionelle Bremse, Smaragdrand, 36-px-HUD."}
+{
+  "meta": {
+    "title": "Cockpit-Browser",
+    "description": "Ein echter Chromium-Browser, den der DSH-Agent per CDP steuert: persistente Sitzung, konstitutionelle Bremse, Smaragdrand, 36-px-HUD und Guardrail-Stufen."
+  }
+}

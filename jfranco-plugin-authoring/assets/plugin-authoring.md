@@ -139,6 +139,29 @@ Rules:
 
 `ctx.slots.inject(slot, () => ctx.slots.register(opts, Component))` is deferred.
 
+## Naming & display (the convention — read before creating a plugin)
+
+- **`cordis.patch.yml`** → `id` is the SHORT name (`cockpit-browser`, no `@scope/`);
+  `name` is the scoped npm package (`@javierfrancoleal/cockpit-browser`).
+- **`lib/index.js`** → `const name = "<short>"` (matches the `id`); export it with
+  `inject` and `apply`.
+- **`package.json`** → `name` is the scoped package.
+- **The Plugins-section title/description comes from `locale/*.json`** in the
+  NESTED shape (this is what the plugin manager reads via `readPluginMeta`):
+
+  ```json
+  { "meta": { "title": "Cockpit Browser", "description": "…" } }
+  ```
+
+  **Do NOT use the flat `"<id>.name"` / `"<id>.description"` shape.** That legacy
+  format (doctrine, forensic-contracts, constitution) carries no `meta`, so the
+  Plugins section falls back to showing the raw scoped package name
+  `@scope/name`. `meta.title` is translated per locale (es "Navegador de Cabina",
+  fr "Navigateur de Cockpit", …).
+- **All shared content is English** — `package.json` description, README, docs, and
+  runtime strings. `locale/*.json` are the translations (canonical is `en.json`).
+  Regexes that match real-world button labels (`FORBIDDEN`) may stay multilingual.
+
 ## Locale & theme
 
 - `ctx.locale.register(ns, { zh, en })` — **both** dictionaries required.

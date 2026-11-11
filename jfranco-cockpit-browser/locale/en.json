@@ -1,1 +1,6 @@
-{"cockpit-browser.name":"Cockpit Browser","cockpit-browser.description":"A real Chromium browser the DSH agent controls over CDP: persistent session, constitutional brake, emerald border, 36px HUD."}
+{
+  "meta": {
+    "title": "Cockpit Browser",
+    "description": "A real Chromium browser the DSH agent controls over CDP: persistent session, constitutional brake, emerald border, 36px HUD, and the guardrail tiers."
+  }
+}

@@ -31,3 +31,9 @@ constitution; this skill is the ACTIVE subset the agent applies.
    consequences; the human signs what does. The skin follows the
    signature; the bilateral accountability extends to the certified
    professional.
+8. **The one house language** — every plugin, doc, commit message, and
+   shared artifact is written in English. Runtime strings facing the
+   human may be localized through `locale/*.json`, but the canonical
+   source is English. Never ship Spanish (or French) in a shared
+   package. Regexes that match real-world button labels (the cockpit's
+   `FORBIDDEN` set) are the one exception — they stay multilingual.

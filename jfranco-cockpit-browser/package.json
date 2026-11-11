@@ -1,24 +1,52 @@
 {
   "name": "@javierfrancoleal/cockpit-browser",
   "version": "1.0.0",
-  "description": "EL NAVEGADOR DE CABINA for DeepSeek Harness: a real Chromium browser the agent controls over the Chrome DevTools Protocol, with the Fanal safety rails — persistent encrypted session, no file://, the constitutional brake before Envoyer/Soumettre/Payer/Transmettre, the emerald border on every agent touch, the 36px HUD, and physical-mouse detection. Zero npm dependencies, zero eval.",
+  "description": "The cockpit browser — the hands of the J.Franco agentic suite for DeepSeek Harness. Two transports for one brain: a CDP-driven Chromium, or a Chrome extension that drives YOUR Chrome (your sessions) over a zero-dependency WebSocket bridge. Governed by the guardrail plugins (decision-router tiers GREEN / SEMI-AUTOMATIC ⚑ / RED / YELLOW, accountability-auditor report, autonomy-grader). Finds elements inside iframes, fills <select>, changes any light with /cockpit tier, measures efficiency with /cockpit kpi. Zero npm dependencies, zero eval. See SUITE.md.",
   "author": "J.Franco",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
     ".": "./lib/index.js",
+    "./client": "./lib/client.js",
     "./cordis.patch.yml": "./cordis.patch.yml",
     "./package.json": "./package.json",
     "./locale/*.json": "./locale/*.json"
   },
   "icon": "./icon.svg",
-  "files": ["icon.svg", "locale/*.json", "lib/index.js", "assets"],
-  "peerDependencies": { "@deepseek-ai/dsh-skill": ">=0.1.0" },
+  "files": ["icon.svg", "locale/*.json", "lib/index.js", "lib/client.js", "lib/ws-bridge.js", "cordis.patch.yml", "assets", "extension", "SUITE.md", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "directory": "jfranco-cockpit-browser"
+  },
+  "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
+  "keywords": [
+    "deepseek-harness",
+    "plugin",
+    "cockpit",
+    "browser-automation",
+    "cdp",
+    "chromium",
+    "guardrails",
+    "agentic",
+    "autonomy",
+    "decision-router",
+    "accountability",
+    "kpi"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/dsh-skill": ">=0.1.0",
+    "@deepseek-ai/dsh-typert-protocol": ">=0.2.1-rc.0"
+  },
   "dsh": {
     "manifestVersion": 1,
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": []
     },
     "compatibility": {
       "nodejsRange": ">=20",

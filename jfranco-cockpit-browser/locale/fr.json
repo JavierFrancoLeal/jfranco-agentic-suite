@@ -1,1 +1,6 @@
-{"cockpit-browser.name":"Navigateur de Cockpit","cockpit-browser.description":"Un vrai navigateur Chromium piloté par l'agent DSH via CDP : session persistante, frein constitutionnel, bordure émeraude, HUD 36 px."}
+{
+  "meta": {
+    "title": "Navigateur de Cockpit",
+    "description": "Un vrai navigateur Chromium piloté par l'agent DSH via CDP : session persistante, frein constitutionnel, bordure émeraude, HUD 36 px et niveaux de garde-fou."
+  }
+}
