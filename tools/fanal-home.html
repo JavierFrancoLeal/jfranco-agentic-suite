@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Fanal · El Faro de Despacho (Pantalla de Inicio 380px)</title>
+<style>
+  body{margin:0;background:#020617;display:flex;justify-content:center;padding:16px}
+  .fanal-home-shell{background:#090d16;color:#f8fafc;font-family:system-ui,-apple-system,sans-serif;font-size:12px;width:380px;min-height:640px;border:1px solid #334155;border-radius:6px;display:flex;flex-direction:column;justify-content:space-between;padding:10px;box-sizing:border-box;user-select:none}
+  .home-top-header{display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid #1e293b;margin-bottom:8px}
+  .brand-pill{display:flex;align-items:center;gap:6px;font-weight:800;font-size:12px;color:#fff}
+  .monitor-status{font-family:monospace;font-size:10px;background:#064e3b;color:#6ee7b7;border:1px solid #10b981;padding:2px 6px;border-radius:10px}
+  .night-watch-card{background:#0f172a;border:1px solid #1e293b;border-left:3px solid #38bdf8;border-radius:4px;padding:8px;margin-bottom:10px}
+  .watch-title{font-size:10px;font-weight:800;color:#38bdf8;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between}
+  .watch-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11px;color:#cbd5e1}
+  .watch-stat-box{background:#020617;padding:5px 7px;border-radius:3px;font-family:monospace;font-size:10.5px}
+  .silo-zone{background:#172033;border:1px dashed #38bdf8;border-radius:4px;padding:8px;margin-bottom:10px}
+  .silo-active-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .folder-badge{font-family:monospace;font-size:11px;font-weight:700;color:#bae6fd}
+  .mission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+  .mission-btn{background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:3px;padding:6px 4px;font-size:10px;font-weight:700;cursor:pointer;text-align:center}
+  .triage-queue-title{font-size:10px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;display:flex;justify-content:space-between}
+  .green-collapsed-bar{background:#064e3b;border:1px solid #10b981;color:#a7f3d0;padding:6px 8px;border-radius:4px;font-family:monospace;font-size:11px;font-weight:700;display:flex;justify-content:space-between;cursor:pointer;margin-bottom:8px}
+  .apex-queue-item{background:#0f172a;border:1px solid #334155;border-radius:4px;padding:8px;margin-bottom:6px;cursor:pointer}
+  .apex-queue-item.red{border-left:4px solid #ef4444}
+  .apex-queue-item.yellow{border-left:4px solid #f59e0b}
+  .apex-row-top{display:flex;justify-content:space-between;font-weight:700;font-size:11.5px;margin-bottom:3px}
+  .apex-row-sub{font-size:10.5px;color:#94a3b8;margin-bottom:6px}
+  .apex-open-btn{width:100%;background:#1e293b;color:#38bdf8;border:1px solid #334155;padding:5px;border-radius:3px;font-size:10.5px;font-weight:700;cursor:pointer}
+  .bottom-drawer-bar{margin-top:8px;background:#0f172a;border:1px solid #334155;border-radius:4px;padding:7px 8px}
+  .drawer-trigger-row{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#94a3b8}
+  .drawer-input-quick{width:100%;box-sizing:border-box;margin-top:6px;background:#020617;color:#fff;border:1px solid #475569;border-radius:3px;padding:6px 8px;font-size:11px;font-family:monospace}
+</style>
+</head>
+<body>
+<div class="fanal-home-shell">
+  <div>
+    <div class="home-top-header">
+      <div class="brand-pill"><span>🛡️ FANAL SOLO 24/7</span><span style="color:#64748b">·</span><span style="color:#38bdf8;font-family:monospace;font-size:11px">CPA_COMPTABLE</span></div>
+      <span class="monitor-status" title="Monitor 2 listo">🖥️ Cabina 2 Pantallas OK</span>
+    </div>
+    <div class="night-watch-card">
+      <div class="watch-title"><span>⚡ REPORTE DE GUARDIA (ÚLTIMAS 12H)</span><span style="color:#6ee7b7">Velo Loi 25 Activo</span></div>
+      <div class="watch-stats">
+        <div class="watch-stat-box">📞 <strong>Téléphoniste:</strong><br><span style="color:#6ee7b7">6 llamadas</span> · 2 citas agendadas</div>
+        <div class="watch-stat-box">🗂️ <strong>Secrétaire:</strong><br><span style="color:#38bdf8">38 facturas</span> cuadradas al centavo</div>
+      </div>
+    </div>
+    <div class="silo-zone">
+      <div class="silo-active-row"><span class="folder-badge">📁 Silo: Cliente_Boulangerie_StLaurent</span><button style="background:none;border:1px solid #475569;color:#cbd5e1;border-radius:3px;font-size:10px;padding:2px 6px;cursor:pointer">Cambiar / Soltar</button></div>
+      <div class="mission-grid">
+        <button class="mission-btn">🫆 Espejo ID<br><span style="color:#94a3b8;font-weight:400">Pasaporte/SAAQ</span></button>
+        <button class="mission-btn">🌐 Agente Web<br><span style="color:#94a3b8;font-weight:400">ClicSÉQUR / RQ</span></button>
+        <button class="mission-btn">🛡️ Firmar Mes<br><span style="color:#94a3b8;font-weight:400">PIN + Iniciales</span></button>
+      </div>
+    </div>
+    <div class="triage-queue-title"><span>🎯 DECISIONES PARA TU FIRMA HOY (3)</span><span style="color:#fde68a;font-family:monospace">~90 seg estimados</span></div>
+    <div class="green-collapsed-bar"><span>🟢 38 partidas cuadradas TPS/TVQ (14 280,00 $)</span><span>[▾ Ver]</span></div>
+    <div class="apex-queue-item red">
+      <div class="apex-row-top"><span style="color:#fca5a5">🔴 1. Factura $1,450 sin Nº de TVQ válido</span><span style="font-family:monospace;font-size:10px;color:#cbd5e1">Pág. 3</span></div>
+      <div class="apex-row-sub">Proveedor omite inscripción TQ0001. Riesgo de rechazo de RTI.</div>
+      <button class="apex-open-btn">🎓 Abrir Profesor de 2 Columnas + Enlace Revenu QC ➔</button>
+    </div>
+    <div class="apex-queue-item yellow">
+      <div class="apex-row-top"><span style="color:#fde68a">🟡 2. Gasto Mixto: Hydro-Québec Domicilio ($310)</span><span style="font-family:monospace;font-size:10px;color:#cbd5e1">Pág. 7</span></div>
+      <div class="apex-row-sub">Coincide con la dirección residencial del accionista (prorrateo 15%).</div>
+      <button class="apex-open-btn">🎓 Contrastar en 2 Columnas y Elegir Imputación [1/2] ➔</button>
+    </div>
+  </div>
+  <div class="bottom-drawer-bar">
+    <div class="drawer-trigger-row"><span>💬 <strong>Asistente Secundario</strong> (Ayuda, Dudas o Crear Órgano)</span><span style="font-family:monospace;font-size:10px;color:#38bdf8">[Ctrl+K]</span></div>
+    <input class="drawer-input-quick" placeholder="Pregunta algo, pega un código FNL-XXX o crea una regla..."/>
+  </div>
+</div>
+</body>
+</html>
