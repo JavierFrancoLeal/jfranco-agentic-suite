@@ -198,7 +198,7 @@ function detectCallusAndProposeMutation(edits) {
   }
   const out = [];
   for (const [key, data] of counts) {
-    if (data.count >= 3) out.push({ mutationCandidateId: "MUT-" + require("node:crypto").createHash("sha256").update(key).digest("hex").slice(0, 6).toUpperCase(), detectedRepetitions: data.count, humanPrompt: "🧬 Fanal notó que aplicaste " + data.count + " veces el criterio "" + (data.sample.ruleAppliedOrPattern || "") + "" en documentos tipo "" + (data.sample.docType || "") + "". ¿Quieres convertirlo en un Órgano Automático?", draftOrganSpec: { label: (data.sample.suggestedTitle || ("Regla personalizada: " + (data.sample.fieldChanged || ""))), triggerDocType: data.sample.docType, conditionRegexOrFormula: data.sample.conditionPattern, targetSemaphore: data.sample.preferredColor || "YELLOW", professorExplanationRightCol: data.sample.humanNote || "Criterio personalizado establecido por el titular.", officialLinkUrl: data.sample.referenceUrl || null } });
+    if (data.count >= 3) out.push({ mutationCandidateId: "MUT-" + require("node:crypto").createHash("sha256").update(key).digest("hex").slice(0, 6).toUpperCase(), detectedRepetitions: data.count, humanPrompt: "🧬 Fanal notó que aplicaste " + data.count + " veces el criterio '" + (data.sample.ruleAppliedOrPattern || "") + "' en documentos tipo '" + (data.sample.docType || "") + "'. ¿Quieres convertirlo en un Órgano Automático?", draftOrganSpec: { label: (data.sample.suggestedTitle || ("Regla personalizada: " + (data.sample.fieldChanged || ""))), triggerDocType: data.sample.docType, conditionRegexOrFormula: data.sample.conditionPattern, targetSemaphore: data.sample.preferredColor || "YELLOW", professorExplanationRightCol: data.sample.humanNote || "Criterio personalizado establecido por el titular.", officialLinkUrl: data.sample.referenceUrl || null } });
   }
   return out;
 }
@@ -478,7 +478,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.169";
+const VERSION = "1.0.170";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
