@@ -401,16 +401,6 @@ async function ensureBrain() {
   if (!LOCAL || await portOpen(TARGET.host, TARGET.port)) return true;
   const serverJs = path.join(__dirname, "brain", "server.js");
   const packs = path.join(__dirname, "brain", "sector-packs");
-  // La invocación instantánea (estilo Gemini): la franja aparece y desaparece sin perder el hilo
-app.whenReady().then(() => {
-  try {
-    globalShortcut.register("Alt+Space", () => {
-      if (!win || win.isDestroyed()) return;
-      if (win.isVisible() && win.isFocused()) win.hide();
-      else { win.show(); win.focus(); }
-    });
-  } catch (e) {}
-});
 // El sandbox de la carpeta conectada (el chip [📁]): Fanal solo toca el expediente activo
 let allowedClientFolder = null;
 try {
@@ -458,6 +448,12 @@ function errorPage() {
 </div></body></html>`);
 }
 
+// El registro de arranque (el regalo forense): cualquier error del proceso principal
+// queda escrito en ~/.dsh/fanal-startup.log — jamás un silencio sin diagnóstico.
+try {
+  process.on("uncaughtException", (e) => { try { require("node:fs").appendFileSync(require("node:path").join(require("node:os").homedir(), ".dsh", "fanal-startup.log"), new Date().toISOString() + " UNCAUGHT: " + String(e && e.stack || e) + "\n"); } catch (_) {} });
+  process.on("unhandledRejection", (e) => { try { require("node:fs").appendFileSync(require("node:path").join(require("node:os").homedir(), ".dsh", "fanal-startup.log"), new Date().toISOString() + " REJECTION: " + String(e && e.stack || e) + "\n"); } catch (_) {} });
+} catch (e) {}
 let shuttingDown = false;
 app.on("before-quit", () => { shuttingDown = true; armWatchdog(); if (brain) { try { brain.kill(); } catch {} } });
 if (!app.requestSingleInstanceLock()) {
@@ -482,10 +478,6 @@ if (!app.requestSingleInstanceLock()) {
         sandbox: true,
         backgroundThrottling: true,
         preload: path.join(__dirname, "preload.js"),
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: true,
-        backgroundThrottling: false,
       },
     });
     win.on("closed", () => { win = null; });
