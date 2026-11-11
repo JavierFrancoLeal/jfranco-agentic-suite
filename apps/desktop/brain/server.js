@@ -132,6 +132,31 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
   const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
   return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
 }
+function verifySignedHotPatch(pkg, masterPubB64) {
+  try {
+    const c = require("node:crypto");
+    const ok = c.verify(null, Buffer.from(String(pkg.payloadJsonString || ""), "utf8"), c.createPublicKey({ key: Buffer.from(masterPubB64, "base64url"), format: "der", type: "spki" }), Buffer.from(String(pkg.signatureB64 || ""), "base64url"));
+    return { ok, version: ok ? pkg.version : null };
+  } catch (e) { return { ok: false, version: null, error: String(e.message) }; }
+}
+function buildSanitizedSupportTicket(o) {
+  const v = (t) => { try { return veil(String(t || "")); } catch (e) { return String(t || ""); } };
+  const safeMsg = v(o.userProblemDescription);
+  const safeDoc = o.failingDocumentRawText ? v(String(o.failingDocumentRawText).slice(0, 2500)) : null;
+  const safeLogs = (o.lastLogLinesArray || []).slice(-15).map((l) => v(String(l)));
+  return {
+    ticketId: "BUG-" + Date.now().toString(36).toUpperCase(),
+    createdAtIso: new Date().toISOString(),
+    clientId: (o.clientProfile && o.clientProfile.id) || "",
+    professionProfile: (o.clientProfile && o.clientProfile.professionKey) || "",
+    environment: { platform: process.platform, osRelease: require("node:os").release(), arch: process.arch, ramFreeMb: Math.round(require("node:os").freemem() / 1048576), computeMode: (o.activeScreenState && o.activeScreenState.computeMode) || "", appBinaryVersion: (o.activeScreenState && o.activeScreenState.appVersion) || "", rulesBundleVersion: (o.activeScreenState && o.activeScreenState.rulesVersion) || "" },
+    uiContext: { currentMode: (o.activeScreenState && o.activeScreenState.mode) || "", activeApicesCount: (o.activeScreenState && o.activeScreenState.yellowCount) || 0, activeRedBlockersCount: (o.activeScreenState && o.activeScreenState.redCount) || 0, lastErrorCode: (o.activeScreenState && o.activeScreenState.lastErrorCode) || "NONE" },
+    sanitizedUserReport: safeMsg,
+    sanitizedDocStructureSample: safeDoc,
+    sanitizedRecentLogs: safeLogs,
+    loi25AttestationHash: require("node:crypto").createHash("sha256").update(safeMsg + (safeDoc || "")).digest("hex").slice(0, 16),
+  };
+}
 function verifyOfficialIdImageAgainstForm(ocrText, form) {
   const clean = String(ocrText || "").toUpperCase();
   const discrepancies = [];
@@ -344,7 +369,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.159";
+const VERSION = "1.0.160";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1635,6 +1660,21 @@ async function api(req, res, pathname) {
       appendLedger({ id: b.dossierId, branch: "dossier", signerRole: "OWNER", signerName: (b.professionalProfile && b.professionalProfile.fullName) || "", summary: r.printableSealLine, hash: r.cryptographicSealB64.slice(0, 12) });
     }
     return send(res, 200, r);
+  }
+  if (pathname === "/api/support/ticket" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const t = buildSanitizedSupportTicket(b);
+    try {
+      const f = path.join(DATA_DIR, "support-tickets.jsonl");
+      fs.appendFileSync(f, JSON.stringify(t) + "\n", { mode: 0o600 });
+    } catch (e) {}
+    return send(res, 200, { ok: true, ticketId: t.ticketId });
+  }
+  if (pathname === "/api/update/hotpatch-verify" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, verifySignedHotPatch(b.pkg || {}, b.masterPubB64 || ""));
   }
   if (pathname === "/api/links" && req.method === "POST") {
     if (!managerOnly(res, req)) return;

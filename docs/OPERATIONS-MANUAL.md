@@ -80,3 +80,28 @@ click" kills the lock-in fear forever.
    in the OS keychain — Trasunto never touches the password), the
    automatic 380→1040px expansion, the PDF page jump, the image zoom
    viewer, the CSV/text renderer — the Claude Cowork pattern.
+
+## The inverted modes, the blind support and the two-lane updater (2026-11-11)
+
+1. Fanal INVERTS the AI apps: the Execution/Dossier mode is the
+   permanent front stage (90% — the work arrives as decision cards,
+   the human decides and signs), the conversational drawer is the
+   secondary 10% (the ? key): three chambers — A the local help base
+   (0 tokens, 0 ms), B the "ask this file" (the veil on), C the
+   general assistant (the same ladder). The chat NEVER touches the
+   ledger: it explains and offers [↗ send to the Execution mode to
+   validate with the semaphore] — the Execution mode is the only door
+   that signs.
+2. The blind diagnostic capsule (BUILT): /api/support/ticket — the
+   user's report, the failing document's skeleton and the last 15 log
+   lines ALL pass through the veil 2.1 BEFORE leaving the machine; the
+   founder receives the radiography, never the biography. Never
+   Sentry/Datadog/LogRocket (the third-party telemetry would leak the
+   forms' text to US servers).
+3. The two-lane updater: Lane 1 the signed hot-patch (50 KB, Ed25519
+   verified — BUILT as /api/update/hotpatch-verify; the beta's current
+   mechanism is the sync, the signed patch formalizes it); Lane 2 the
+   binary electron-updater with .blockmap differential, autoInstallOnAppQuit
+   (never a mid-day forced restart during a signature ceremony) —
+   active AFTER the signing: $119 CAD/year Apple Developer ID +
+   ~$156 CAD/year Azure Trusted Signing (~$275 total).
