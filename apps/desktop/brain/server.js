@@ -172,6 +172,40 @@ function sealFirstBootConstitution(o) {
   constitutionWrite(constitution);
   return { ok: true, topologyAssigned: compiled.topologyMode, genesisHash: constitution.coResponsibilityPact.sharedGenesisHash };
 }
+const IMMUTABLE_CORE_ORGANS = new Set(["CORE_VELO_PII_V21", "CORE_PRICE_FLOOR_GUARD", "CORE_ALLERGY_RATCHET", "CORE_FIDUCIARY_SIGNATURE_CEREMONY", "CORE_LOI25_INCIDENT_LEDGER"]);
+function auditOrganMetabolism(registry, usage, nowMs) {
+  const out = [];
+  const DAYS21 = 21 * 24 * 3600 * 1000;
+  for (const organId of Object.keys(registry || {})) {
+    const def = registry[organId];
+    if (IMMUTABLE_CORE_ORGANS.has(organId) || (def && def.status === "HIBERNATED")) continue;
+    const st = (usage && usage[organId]) || { exposures: 0, activations: 0, manualDismissals: 0, installedAtMs: nowMs };
+    const age = nowMs - (st.installedAtMs || nowMs);
+    const byExposure = st.exposures >= 25 && st.activations === 0;
+    const byTime = age >= DAYS21 && st.activations === 0;
+    const byUser = st.manualDismissals >= 3;
+    if (byExposure || byTime || byUser) out.push({ organId, label: (def && def.label) || organId, reason: byUser ? "Ocultado manualmente 3 veces" : "0 usos en " + st.exposures + " apariciones", suggestion: "Hibernar para limpiar la pantalla (reactivación en 1 clic)." });
+  }
+  return out;
+}
+function detectCallusAndProposeMutation(edits) {
+  const counts = new Map();
+  for (const e of edits || []) {
+    const key = (e.docType || "?") + "|" + (e.fieldChanged || "?") + "|" + (e.ruleAppliedOrPattern || "?");
+    const prev = counts.get(key) || { count: 0, sample: e };
+    prev.count += 1;
+    counts.set(key, prev);
+  }
+  const out = [];
+  for (const [key, data] of counts) {
+    if (data.count >= 3) out.push({ mutationCandidateId: "MUT-" + require("node:crypto").createHash("sha256").update(key).digest("hex").slice(0, 6).toUpperCase(), detectedRepetitions: data.count, humanPrompt: "🧬 Fanal notó que aplicaste " + data.count + " veces el criterio "" + (data.sample.ruleAppliedOrPattern || "") + "" en documentos tipo "" + (data.sample.docType || "") + "". ¿Quieres convertirlo en un Órgano Automático?", draftOrganSpec: { label: (data.sample.suggestedTitle || ("Regla personalizada: " + (data.sample.fieldChanged || ""))), triggerDocType: data.sample.docType, conditionRegexOrFormula: data.sample.conditionPattern, targetSemaphore: data.sample.preferredColor || "YELLOW", professorExplanationRightCol: data.sample.humanNote || "Criterio personalizado establecido por el titular.", officialLinkUrl: data.sample.referenceUrl || null } });
+  }
+  return out;
+}
+function compileSafeDeclarativeOrgan(spec, con) {
+  if (spec.bypassVeloPii || Number(spec.overridePriceFloorCad) < Number((con && con.pricingFloorCad) || 0)) return { ok: false, error: "MUTACION_ILEGAL: ningún órgano evolutivo puede reducir la Loi 25 ni el piso de precios." };
+  return { ok: true, organ: { organId: "ORG_CUSTOM_" + Date.now().toString(36).toUpperCase(), origin: "USER_EVOLUTION_LOCAL", species: (con && con.professionKey) || "GENERIC", createdAtIso: new Date().toISOString(), status: "ACTIVE", label: String(spec.label || "").slice(0, 80), trigger: { docType: spec.triggerDocType || "ANY", matchPattern: String(spec.conditionRegexOrFormula || "").slice(0, 200) }, behavior: { semaphoreColor: ["GREEN", "YELLOW", "RED"].includes(spec.targetSemaphore) ? spec.targetSemaphore : "YELLOW", professorRightColumnText: String(spec.professorExplanationRightCol || "").slice(0, 400), officialVerificationLink: spec.officialLinkUrl || null } } };
+}
 function verifyClientFanalPassport(headerB64, masterPubDer) {
   try {
     const c = require("node:crypto");
@@ -444,7 +478,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.168";
+const VERSION = "1.0.169";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1780,6 +1814,22 @@ async function api(req, res, pathname) {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, sealFirstBootConstitution(b));
+  }
+  if (pathname === "/api/evolution/audit" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, { vestigialCandidates: auditOrganMetabolism(b.registry || {}, b.usage || {}, Date.now()) });
+  }
+  if (pathname === "/api/evolution/propose" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, { proposedMutations: detectCallusAndProposeMutation(b.edits || []) });
+  }
+  if (pathname === "/api/evolution/compile" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const con = constitutionRead();
+    return send(res, 200, compileSafeDeclarativeOrgan(b.spec || {}, { pricingFloorCad: (con && con.economicInvariants && con.economicInvariants.pricingFloorCad) || (con && con.pricingFloorCad) || 0, professionKey: (con && con.legalIdentity && con.legalIdentity.professionKey) || (con && con.professionKey) || "GENERIC" }));
   }
   if (pathname === "/api/links" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
