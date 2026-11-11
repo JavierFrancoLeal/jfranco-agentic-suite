@@ -92,3 +92,14 @@ locally by the creator stays in the creator's language.
 This standard is not theory: it was born from ONE real session where every
 error was recorded, every lesson was learned, and every solution became
 code. The first generation to apply it is also its proof of knowledge.
+
+## 35. El paquete no es el vuelo — jamás enviar sin la prueba de ARRANQUE real (2026-11-11)
+El .dmg verificaba el asar (todo adentro) pero nadie lanzó la app de
+verdad: dos bugs del main.js (las llaves duplicadas del webPreferences
++ el bloque del Alt+Espacio dentro de ensureBrain) y la app no abría
+nada. Además: las shells de la sesión llevan ELECTRON_RUN_AS_NODE=1 —
+lanzar la app desde ellas corre NODE sin ventana (el falso "no se
+abre"). Las 3 defensas nuevas: (1) el registro forense de arranque
+(~/.dsh/fanal-startup.log — cada excepción queda escrita), (2) la
+prueba de lanzamiento real en el verify-app con la variable limpia,
+(3) el órgano lessons que recuerda.

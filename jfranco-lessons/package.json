@@ -1,0 +1,14 @@
+{
+  "name": "@javierfrancoleal/lessons",
+  "version": "1.0.0",
+  "description": "The learning organ (the GENOME): the active lessons of the house — the build must be LAUNCHED before it ships, the session env must be checked before launching Electron (ELECTRON_RUN_AS_NODE), quoted strings are patched with the direct edit never the heredoc, and every failure becomes a numbered lesson and a guard. ACTIVE.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": { ".": "./lib/index.js", "./cordis.patch.yml": "./cordis.patch.yml", "./package.json": "./package.json", "./locale/*.json": "./locale/*.json" },
+  "icon": "./icon.svg",
+  "files": ["icon.svg", "locale/*.json", "lib/index.js", "assets"],
+  "peerDependencies": { "@deepseek-ai/dsh-skill": ">=0.1.0" },
+  "dsh": { "manifestVersion": 1, "bundle": { "patch": "./cordis.patch.yml" }, "compatibility": { "nodejsRange": ">=20", "dshRange": ">=0.2.1-rc.0", "dshReleases": { "0.2.2-alpha.2": "unknown", "0.2.2-alpha.3": "unknown", "0.2.2-rc.1": "unknown" } } }
+}
