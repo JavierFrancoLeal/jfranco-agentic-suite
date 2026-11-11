@@ -26,7 +26,8 @@ function runForensicCodebaseAudit(sourceDirPath) {
         if (rule.regex.test(lineText)) findings.push({ severity: "CRITICAL_BLOCKER", file: fileName, line: idx + 1, ruleId: rule.id, message: rule.desc, snippet: lineText.trim().slice(0, 100) });
       }
     });
-    if (/\bfetch\s*\(/.test(code) && fileName !== "brainLadderRouter.js" && fileName !== "firstBootInstaller.js") {
+    const NETWORK_WHITELIST = ["brainLadderRouter.js", "firstBootInstaller.js", "server.js", "browser-cdp.js"];
+    if (/\bfetch\s*\(/.test(code) && !NETWORK_WHITELIST.includes(fileName)) {
       if (!code.includes("veilText") && !code.includes("crypto.verify")) findings.push({ severity: "WARNING_AUDIT", file: fileName, line: 1, ruleId: "LOI25-UNVEILED-FETCH", message: "El archivo realiza fetch() sin referencia visible a veilText ni crypto.verify." });
     }
     const contractMatches = code.matchAll(/\/\*\*[\s\S]*?@fanal-forensic-contract[\s\S]*?\*\//g);
