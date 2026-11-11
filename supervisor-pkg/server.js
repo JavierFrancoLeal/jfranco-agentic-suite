@@ -141,7 +141,7 @@ function verifyOfficialIdImageAgainstForm(ocrText, form) {
     idType = "PERMIS_SAAQ_QUEBEC";
     const firstLetter = saaq[1], dd = saaq[3], mm = saaq[4];
     const formInitial = String((form && form.lastName) || "").trim().toUpperCase()[0];
-    if (formInitial && firstLetter !== formInitial) discrepancies.push({ field: "Apellido vs. Licencia SAAQ", formValue: form.lastName, idValue: "La licencia empieza con "" + firstLetter + """ });
+    if (formInitial && firstLetter !== formInitial) discrepancies.push({ field: "Apellido vs. Licencia SAAQ", formValue: form.lastName, idValue: "La licencia empieza con '" + firstLetter + "'" });
     const formBirth = String((form && form.birthDate) || "");
     if (formBirth && !formBirth.endsWith(mm + "-" + dd) && !formBirth.endsWith(dd + "-" + mm)) discrepancies.push({ field: "Fecha de nacimiento vs. Licencia SAAQ", formValue: formBirth, idValue: "Los dígitos SAAQ indican día " + dd + " / mes " + mm });
   }
@@ -344,7 +344,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.158";
+const VERSION = "1.0.159";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
