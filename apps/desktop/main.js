@@ -23,6 +23,46 @@ let isVaultLocked = true;
 let idleTimer = null;
 const IDLE_TIMEOUT_SECONDS = 300;
 const cryptoV = require("node:crypto");
+const osV = require("node:os");
+function guardVaultUnlockAttempt(o) {
+  const stateFile = path.join(o.archiveDir, "vault_guard_state.json");
+  const loi25File = path.join(o.archiveDir, "registre_incidents_loi25.jsonl");
+  const nowMs = Date.now();
+  let state = { failedAttempts: 0, lockedUntilMs: 0, lastFailIso: null };
+  if (fs.existsSync(stateFile)) {
+    try {
+      const raw = JSON.parse(fs.readFileSync(stateFile, "utf8"));
+      const payloadStr = raw.failedAttempts + ":" + raw.lockedUntilMs + ":" + raw.lastFailIso;
+      const expectedHmac = cryptoV.createHmac("sha256", o.machineBindingSecret).update(payloadStr).digest("hex");
+      if (raw.hmac === expectedHmac) { state = { failedAttempts: raw.failedAttempts, lockedUntilMs: raw.lockedUntilMs, lastFailIso: raw.lastFailIso }; }
+      else { state = { failedAttempts: 6, lockedUntilMs: nowMs + 900000, lastFailIso: new Date(nowMs).toISOString() }; }
+    } catch (e) { state = { failedAttempts: 3, lockedUntilMs: nowMs + 60000, lastFailIso: new Date(nowMs).toISOString() }; }
+  }
+  if (nowMs < state.lockedUntilMs) {
+    const waitSeconds = Math.ceil((state.lockedUntilMs - nowMs) / 1000);
+    return { ok: false, status: "COOLDOWN_ACTIVE", failedAttempts: state.failedAttempts, waitSeconds, uiMessage: "⏳ Protección activa: espera " + waitSeconds + " s antes de volver a intentar." };
+  }
+  const isUnlocked = Boolean(o.verifyCredentialsFn && o.verifyCredentialsFn());
+  if (isUnlocked) {
+    if (state.failedAttempts > 0 && fs.existsSync(stateFile)) { try { fs.unlinkSync(stateFile); } catch (e) {} }
+    return { ok: true, status: "UNLOCKED", failedAttempts: 0, waitSeconds: 0 };
+  }
+  state.failedAttempts += 1;
+  state.lastFailIso = new Date(nowMs).toISOString();
+  let penaltySeconds = 0;
+  if (state.failedAttempts >= 3) {
+    penaltySeconds = Math.min(3600, 30 * Math.pow(2, state.failedAttempts - 3));
+    state.lockedUntilMs = nowMs + penaltySeconds * 1000;
+  }
+  const newPayloadStr = state.failedAttempts + ":" + state.lockedUntilMs + ":" + state.lastFailIso;
+  const hmac = cryptoV.createHmac("sha256", o.machineBindingSecret).update(newPayloadStr).digest("hex");
+  try { fs.writeFileSync(stateFile, JSON.stringify({ failedAttempts: state.failedAttempts, lockedUntilMs: state.lockedUntilMs, lastFailIso: state.lastFailIso, hmac: hmac }), { mode: 0o600 }); } catch (e) {}
+  if (state.failedAttempts >= 3) {
+    const rec = { dateDetection: state.lastFailIso, circumstances: "Intento de desbloqueo físico no autorizado #" + state.failedAttempts + " vía " + (o.attemptMethod || "MASTER_PASSWORD") + " en sesión OS '" + osV.userInfo().username + "' (" + osV.hostname() + ").", natureOfPersonalInfo: ["Bóveda local cifrada AES-256-GCM (0 bytes expuestos)"], personsAffectedCount: 0, seriousHarmRiskAssessed: false, notifiedCaiAndPersonsAt: null, mitigationMeasuresTaken: "Bloqueo exponencial activado por " + penaltySeconds + " segundos y llave maestra purgada de memoria RAM." };
+    try { fs.appendFileSync(loi25File, JSON.stringify(rec) + "\n", { mode: 0o600 }); } catch (e) {}
+  }
+  return { ok: false, status: state.failedAttempts >= 3 ? "INTRUSION_LOCKOUT_LOGGED" : "INVALID_CREDENTIAL", failedAttempts: state.failedAttempts, waitSeconds: penaltySeconds, uiMessage: penaltySeconds > 0 ? ("🔒 Intento #" + state.failedAttempts + " fallido. Bóveda bloqueada por " + penaltySeconds + " s (Registrado en la bitácora Loi 25).") : ("Clave incorrecta (" + (3 - state.failedAttempts) + " intento(s) antes del bloqueo temporal).") };
+}
 function deriveKeyFromMasterPassword(plain, saltHex) {
   try {
     return cryptoV.scryptSync(String(plain).normalize("NFKC"), Buffer.from(saltHex, "hex"), 32, { N: 65536, r: 8, p: 1, maxmem: 128 * 1024 * 1024 });

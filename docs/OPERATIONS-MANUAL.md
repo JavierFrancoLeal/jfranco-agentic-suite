@@ -120,3 +120,18 @@ Control / Alt+Tab) from photographing the windows. The biometric
 unlock reaches its full form after the Apple signing; the scrypt path
 works today. The curtain is a top-level layer: ZERO changes to the
 existing screens.
+
+## The unlock guard (2026-11-11, adopted)
+
+The exponential persistent guard: the failed-attempts counter and the
+lockedUntil timestamp live in DISK (vault_guard_state.json) sealed
+with an HMAC bound to the machine — restarting the app does NOT reset
+the penalty, and a tampered file triggers a preventive 15-minute
+cooldown. The cooldown check runs in 0.01 ms BEFORE the scrypt (no CPU
+exhaustion during the penalty). Attempts 1-2 = 0 seconds (the owner's
+typo tolerance); from attempt 3: 30s, 60s, 120s... capped at 3,600 s.
+Every attempt ≥3 is recorded in registre_incidents_loi25.jsonl with
+the CAI's 7 fields — the typed password is NEVER logged (only the
+method and the length). The biometric failures follow the same ramp.
+No file self-destruction ever (the owner's child pressing Enter 15
+times must not kill the business's books).
