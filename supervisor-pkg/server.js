@@ -172,7 +172,7 @@ function resolveDiagnosticToken(text) {
   const snap = localDiagnosticSnapshots.get(token);
   const cat = snap ? FANAL_DIAGNOSTIC_CATALOG[snap.code] : null;
   if (!snap || !cat) return { isDiagnosticResolution: true, token, known: false, botReplyTitle: "🔎 Código desconocido en esta sesión", botReplyBody: "El código se generó en otra sesión o ya expiró. Describe el problema y [🛟] envíalo al soporte." };
-  return { isDiagnosticResolution: true, token, known: true, botReplyTitle: "🔧 Diagnóstico Automático para " + token + ": " + cat.title, botReplyBody: "Fanal se detuvo para no inventar un dato en "" + (snap.fileName || "la tarea") + "" (" + (snap.detail || "verifique el archivo") + ").", primaryActionBtn: { label: cat.autoFixLabel, actionCode: cat.autoFixAction, targetFile: snap.fileName || "" }, escalateBtnLabel: "🛟 Si el problema continúa, enviar código sanitizado a Soporte Fanal" };
+  return { isDiagnosticResolution: true, token, known: true, botReplyTitle: "🔧 Diagnóstico Automático para " + token + ": " + cat.title, botReplyBody: "Fanal se detuvo para no inventar un dato en '" + (snap.fileName || "la tarea") + "' (" + (snap.detail || "verifique el archivo") + ").", primaryActionBtn: { label: cat.autoFixLabel, actionCode: cat.autoFixAction, targetFile: snap.fileName || "" }, escalateBtnLabel: "🛟 Si el problema continúa, enviar código sanitizado a Soporte Fanal" };
 }
 function buildSanitizedSupportTicket(o) {
   const v = (t) => { try { return veil(String(t || "")); } catch (e) { return String(t || ""); } };
@@ -404,7 +404,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.162";
+const VERSION = "1.0.163";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
