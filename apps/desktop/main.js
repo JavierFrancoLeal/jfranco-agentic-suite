@@ -66,6 +66,97 @@ function syncDualMonitorLayout(primaryWin, view) {
     return { layoutMode: "SINGLE_MONITOR_DOCKED", monitorsDetected: 1 };
   } catch (e) { return { layoutMode: "SINGLE_MONITOR_DOCKED", error: String(e.message) }; }
 }
+let agentPortalView = null;
+let sourceDocView = null;
+let monitor2Window = null;
+let currentSplitRatio = 0.5;
+let activeSingleMonitorTab = "PORTAL";
+const TOP_BAR_HEIGHT = 40;
+const MONITOR1_COMPACT_W = 420;
+const MONITOR1_EXPANDED_W = 1080;
+function initDualSynchronizedViews() {
+  try {
+    agentPortalView = new WebContentsView({ webPreferences: { partition: "persist:fanal-client-workspace", contextIsolation: true, nodeIntegration: false, sandbox: true } });
+    agentPortalView.webContents.on("will-navigate", (ev, url) => { if (String(url).startsWith("file://")) ev.preventDefault(); });
+    sourceDocView = new WebContentsView({ webPreferences: { partition: "in-memory-local-proof-viewer", contextIsolation: true, nodeIntegration: false, sandbox: true, plugins: true } });
+    sourceDocView.webContents.session.webRequest.onBeforeRequest((details, callback) => {
+      const local = String(details.url).startsWith("file://") || String(details.url).startsWith("data:") || String(details.url).startsWith("chrome-extension://");
+      callback({ cancel: !local });
+    });
+  } catch (e) {}
+}
+function applyDualScreenSplitLayout(primaryWin, ratio) {
+  try {
+    currentSplitRatio = Math.min(0.75, Math.max(0.25, Number(ratio || 0.5)));
+    const displays = screen.getAllDisplays();
+    const primary = screen.getPrimaryDisplay();
+    const m2 = displays.find((d) => d.id !== primary.id);
+    if (m2) {
+      const pWork = primary.workArea;
+      primaryWin.setBounds({ x: pWork.x + pWork.width - MONITOR1_COMPACT_W, y: pWork.y, width: MONITOR1_COMPACT_W, height: pWork.height });
+      try { primaryWin.contentView.removeChildView(agentPortalView); primaryWin.contentView.removeChildView(sourceDocView); } catch (e) {}
+      const m2Work = m2.workArea;
+      if (!monitor2Window || monitor2Window.isDestroyed()) {
+        monitor2Window = new BrowserWindow({ x: m2Work.x, y: m2Work.y, width: m2Work.width, height: m2Work.height, title: "Fanal · Cabina Sincronizada", backgroundColor: "#090d16", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
+        const header = "<html><body style='margin:0;background:#0f172a;color:#f8fafc;font-family:system-ui;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid #334155;font-size:12px'><span style='color:#6ee7b7;font-family:monospace;font-weight:700'>🌐 IZQUIERDA: PORTAL / AGENTE</span><span style='color:#38bdf8;font-family:monospace;font-size:11px'>⇄ sincronizado en vivo con la prueba</span><span style='color:#fde68a;font-family:monospace;font-weight:700'>📄 DERECHA: DOCUMENTO ORIGINAL</span></body></html>";
+        monitor2Window.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(header));
+      } else { monitor2Window.setBounds(m2Work); }
+      const contentHeight = m2Work.height - TOP_BAR_HEIGHT;
+      const leftWidth = Math.round(m2Work.width * currentSplitRatio);
+      const rightWidth = m2Work.width - leftWidth;
+      monitor2Window.contentView.addChildView(agentPortalView);
+      monitor2Window.contentView.addChildView(sourceDocView);
+      agentPortalView.setBounds({ x: 0, y: TOP_BAR_HEIGHT, width: leftWidth - 2, height: contentHeight });
+      sourceDocView.setBounds({ x: leftWidth + 2, y: TOP_BAR_HEIGHT, width: rightWidth - 2, height: contentHeight });
+      monitor2Window.show();
+      return { mode: "MONITOR_2_SPLIT_SYNC", leftWidth, rightWidth };
+    }
+    if (monitor2Window && !monitor2Window.isDestroyed()) {
+      try { monitor2Window.contentView.removeChildView(agentPortalView); monitor2Window.contentView.removeChildView(sourceDocView); } catch (e) {}
+      monitor2Window.close(); monitor2Window = null;
+    }
+    const pb = primaryWin.getBounds();
+    const active = activeSingleMonitorTab === "PORTAL" ? agentPortalView : sourceDocView;
+    const inactive = activeSingleMonitorTab === "PORTAL" ? sourceDocView : agentPortalView;
+    try { primaryWin.contentView.removeChildView(inactive); } catch (e) {}
+    primaryWin.contentView.addChildView(active);
+    active.setBounds({ x: MONITOR1_COMPACT_W, y: TOP_BAR_HEIGHT, width: MONITOR1_EXPANDED_W - MONITOR1_COMPACT_W, height: pb.height - TOP_BAR_HEIGHT });
+    return { mode: "MONITOR_1_TABBED_FALLBACK", activeTab: activeSingleMonitorTab };
+  } catch (e) { return { mode: "ERROR", error: String(e.message) }; }
+}
+async function executeSynchronizedStepOnMonitor2(step, connectedFolderPath) {
+  try {
+    const safePath = path.resolve(connectedFolderPath, path.basename(String(step.sourceFileName || "")));
+    if (!safePath.startsWith(path.resolve(connectedFolderPath))) return { status: "FNL-SANDBOX-502" };
+    const ext = path.extname(safePath).toLowerCase();
+    const fileUrl = "file://" + safePath;
+    if (ext === ".pdf") {
+      const pageNum = Number(step.sourcePage || 1);
+      const searchParam = step.verbatimQuote ? ("&search=" + encodeURIComponent(String(step.verbatimQuote).slice(0, 32))) : "";
+      await sourceDocView.webContents.loadURL(fileUrl + "#page=" + pageNum + "&view=FitH" + searchParam);
+    } else if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
+      const label = String(step.fieldLabel || "").replace(/[<>&"]/g, "");
+      const val = String(step.valueToFill || "").replace(/[<>&"]/g, "");
+      const html = "<html><body style='margin:0;background:#020617;color:#f8fafc;font-family:system-ui;display:flex;flex-direction:column;height:100vh'><div style='background:#064e3b;color:#a7f3d0;padding:8px 12px;font-family:monospace;font-size:12px;border-bottom:2px solid #10b981'>📌 ORIGEN EN IDENTIFICACIÓN OFICIAL → " + label + "</div><div style='flex:1;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto'><img src='" + fileUrl + "' style='max-width:98%;max-height:94%;object-fit:contain;border:2px solid #38bdf8;border-radius:4px'/></div></body></html>";
+      await sourceDocView.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
+    }
+    const forbidden = /envoyer|soumettre|transmettre|payer|signer|submit|pay/i;
+    if (step.action === "CLICK" && forbidden.test(String(step.fieldLabel || ""))) return { status: "PAUSED_BEFORE_SUBMIT" };
+    await agentPortalView.webContents.executeJavaScript("(() => { const input = document.querySelector(" + JSON.stringify(step.cssSelector) + "); if (!input) return false; input.scrollIntoView({ behavior: 'smooth', block: 'center' }); input.focus(); input.value = " + JSON.stringify(String(step.valueToFill)) + "; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); input.style.outline = '3px solid #38bdf8'; input.style.backgroundColor = 'rgba(56, 189, 248, 0.12)'; return true; })()");
+    return { status: "SYNCED_LEFT_AND_RIGHT", filledSelector: step.cssSelector, proofOpened: path.basename(safePath), proofPage: step.sourcePage || 1 };
+  } catch (e) { return { status: "ERROR", reason: String(e.message) }; }
+}
+function bindMonitor2Events(primaryWin) {
+  try {
+    initDualSynchronizedViews();
+    const refresh = () => applyDualScreenSplitLayout(primaryWin, currentSplitRatio);
+    screen.on("display-added", refresh);
+    screen.on("display-removed", refresh);
+    screen.on("display-metrics-changed", refresh);
+    ipcMain.handle("fanal:set-monitor2-split", (_ev, ratioNumber) => applyDualScreenSplitLayout(primaryWin, ratioNumber));
+    ipcMain.handle("fanal:run-synced-step", (_ev, payload) => executeSynchronizedStepOnMonitor2((payload && payload.step) || {}, (payload && payload.connectedFolderPath) || ""));
+  } catch (e) {}
+}
 function watchMonitorPlugEvents(primaryWin, view) {
   try {
     const refresh = () => syncDualMonitorLayout(primaryWin, view);

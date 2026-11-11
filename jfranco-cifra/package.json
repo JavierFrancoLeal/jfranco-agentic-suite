@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/cifra",
-  "version": "1.0.35",
+  "version": "1.0.36",
   "description": "Cifra — the host-signature organ of the J.Franco agentic workflow: detects the host (OS + form factor), adapts texts/instructions/layout per platform, and audits the signature visibly. Created by J.Franco.",
   "author": "J.Franco",
   "license": "MIT",
