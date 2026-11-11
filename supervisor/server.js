@@ -202,6 +202,78 @@ function detectCallusAndProposeMutation(edits) {
   }
   return out;
 }
+const QUEBEC_OFFICIAL_LINKS = { REVENU_QC_TVQ_VALIDATION: "https://www.revenuquebec.ca/fr/services-en-ligne/outils/validation-dun-numero-dinscription-au-fichier-de-la-tvq/", REVENU_QC_FACTURES_CTI_RTI: "https://www.revenuquebec.ca/fr/entreprises/taxes/tpstvq-et-autres-taxes/credits-de-taxe-sur-les-intrants-et-remboursements-de-la-taxe-sur-les-intrants/", OPC_CONTRATS_GYM: "https://www.opc.gouv.qc.ca/consommateur/bien-service/cours-entrainement/entrainement-poids/", TAL_BAIL_LOGEMENT: "https://www.tal.gouv.qc.ca/fr/reconduction-du-bail-et-fixation-de-loyer/augmentation-de-loyer", LEGISQUEBEC_CCQ: "https://www.legisquebec.gouv.qc.ca/fr/document/lc/CCQ-1991", CNESST_RAPPORTS: "https://www.cnesst.gouv.qc.ca/fr/demarches-et-formulaires" };
+const QUEBEC_STANDARD_REGEX = { TVQ_NUMBER: /\b\d{10}\s?TQ\s?\d{4}\b/i, TPS_NUMBER: /\b\d{9}\s?RT\s?\d{4}\b/i, NEQ_NUMBER: /\b(11|22|33|88)\d{8}\b/ };
+function assertSafeRegexPattern(patternStr) {
+  if (!patternStr) return true;
+  if (patternStr.length > 220) return { error: "FNL-FORGE-01: patrón demasiado largo (máximo 220 caracteres)." };
+  if (/\([^)]*[+*][^)]*\)[+*]/.test(patternStr)) return { error: "FNL-FORGE-02: patrón rechazado por riesgo de bloqueo de CPU (cuantificador anidado)." };
+  try {
+    const vm = require("node:vm");
+    const stress = "Facture fournisseur 850,00 $ TPS TVQ 1234567890TQ0001 ".repeat(60);
+    new vm.Script("new RegExp(" + JSON.stringify(patternStr) + ", 'i').test(sample)").runInNewContext({ sample: stress }, { timeout: 5 });
+  } catch (e) { return { error: "FNL-FORGE-03: el patrón agotó el tiempo de prueba (ReDoS)." }; }
+  return true;
+}
+function parseNaturalLanguageRuleDeterministically(text, con) {
+  const txt = String(text).toLowerCase();
+  let color = "YELLOW";
+  if (/\b(rojo|rouge|bloquea|bloquer|prohibido|interdit)\b/i.test(txt)) color = "RED";
+  else if (/\b(verde|vert|colapsa|ocultar)\b/i.test(txt)) color = "GREEN";
+  let docType = "ANY_DOCUMENT";
+  if (/\b(factura|facture|recibo|proveedor|fournisseur)\b/i.test(txt)) docType = "SUPPLIER_INVOICE";
+  else if (/\b(contrato|contrat|bail|arrendamiento)\b/i.test(txt)) docType = "CONTRACT_OR_LEASE";
+  else if (/\b(nomina|paie|pourboire|propina)\b/i.test(txt)) docType = "PAYROLL_SUMMARY";
+  else if (/\b(sentencia|jugement|declaracion|déclaration)\b/i.test(txt)) docType = "LEGAL_DECLARATION";
+  const amt = text.match(/(?:supere|mayor\s+a|mas\s+de|plus\s+de|depasse|>)\s*(?:los\s*)?\$?\s*(\d+(?:[.,]\d{1,2})?)\s*\$?/i);
+  const threshold = amt ? Number(amt[1].replace(",", ".")) : null;
+  const missing = [];
+  if (/\b(sin|no\s+traiga|falte|sans|manque|aucun)\b.*\b(tvq)\b/i.test(txt)) missing.push("TVQ_NUMBER");
+  if (/\b(sin|no\s+traiga|falte|sans|manque|aucun)\b.*\b(tps)\b/i.test(txt)) missing.push("TPS_NUMBER");
+  if (/\b(sin|no\s+traiga|falte|sans|manque|aucun)\b.*\b(neq)\b/i.test(txt)) missing.push("NEQ_NUMBER");
+  let linkKey = "REVENU_QC_FACTURES_CTI_RTI";
+  if (missing.includes("TVQ_NUMBER")) linkKey = "REVENU_QC_TVQ_VALIDATION";
+  else if ((con && con.professionKey) === "GYM_PROPRIETAIRE_OPC") linkKey = "OPC_CONTRATS_GYM";
+  else if ((con && con.professionKey) === "PLEX_PROPRIETAIRE_TAL") linkKey = "TAL_BAIL_LOGEMENT";
+  const parts = [];
+  if (threshold !== null) parts.push("supera el umbral de " + threshold.toFixed(2).replace(".", ",") + " $ CAD");
+  if (missing.includes("TVQ_NUMBER")) parts.push("omite el número de TVQ obligatorio");
+  if (missing.includes("TPS_NUMBER")) parts.push("omite el número de TPS");
+  const reason = parts.length ? parts.join(" o ") : "cumple la condición personalizada";
+  return { title: (docType === "SUPPLIER_INVOICE" ? "Filtro de Factura: " : "Regla Personalizada: ") + (parts.join(" / ") || "Verificación Titular"), docType, logicCombine: /\b(o|ou)\b/i.test(txt) ? "OR" : "AND", numericRule: threshold !== null ? { field: "amountCad", operator: "GT", valueCad: threshold } : null, missingFieldChecks: missing, matchPattern: missing.includes("TVQ_NUMBER") ? "^(?![\\s\\S]*\\b\\d{10}\\s?TQ\\s?\\d{4}\\b)[\\s\\S]*$" : "", semaphoreColor: color, professorRightColumnText: "Regla evolucionada por el titular: este documento " + reason + ". En Québec, reclamar un RTI/CTI sin número válido o superar tu umbral de control exige validación expresa antes de firmar.", officialLinkKey: linkKey };
+}
+function forgeOrganFromNaturalLanguage(o) {
+  const veiled = o.userRawSentence ? String(o.userRawSentence) : "";
+  const clean = veiled.trim();
+  if (clean.length < 8) return { ok: false, error: "FNL-FORGE-00: explica en al menos una frase qué documento y qué condición quieres vigilar." };
+  const con = o.clientConstitution || { professionKey: "CPA_COMPTABLE", materialityThresholdCad: 500 };
+  const draft = parseNaturalLanguageRuleDeterministically(clean, con);
+  if (draft.semaphoreColor === "GREEN" && draft.numericRule && draft.numericRule.valueCad > Number(con.materialityThresholdCad || 500)) return { ok: false, error: "BLOQUEO_CONSTITUCIONAL: no puedes ocultar en VERDE partidas que superan tu umbral de materialidad." };
+  const rx = assertSafeRegexPattern(draft.matchPattern);
+  if (rx !== true) return { ok: false, error: rx.error || "regex inseguro" };
+  const shortHash = require("node:crypto").createHash("sha256").update(clean).digest("hex").slice(0, 6).toUpperCase();
+  const organ = { organId: "ORG_" + String(con.professionKey || "CPA").split("_")[0] + "_" + shortHash, species: con.professionKey || "CPA_COMPTABLE", title: String(draft.title).slice(0, 95), createdFromPrompt: clean, createdAtIso: new Date().toISOString(), telemetry: { provenUses: 0, errorRatePct: 0, savedMinutesPerUse: 9, readyForFounderLab: false }, trigger: { docType: draft.docType, logicCombine: draft.logicCombine === "AND" ? "AND" : "OR", matchPattern: draft.matchPattern || "", numericRule: draft.numericRule || null, missingFieldChecks: draft.missingFieldChecks || [] }, behavior: { semaphoreColor: ["YELLOW", "RED", "GREEN"].includes(draft.semaphoreColor) ? draft.semaphoreColor : "YELLOW", professorRightColumnText: String(draft.professorRightColumnText).slice(0, 420), officialVerificationLink: QUEBEC_OFFICIAL_LINKS[draft.officialLinkKey] || QUEBEC_OFFICIAL_LINKS.REVENU_QC_FACTURES_CTI_RTI } };
+  return { ok: true, organ };
+}
+function evaluateCustomOrganOnDocument(organ, doc) {
+  if (organ.trigger.docType !== "ANY_DOCUMENT" && doc.docType !== organ.trigger.docType) return { triggered: false };
+  const hits = [];
+  const num = organ.trigger.numericRule;
+  if (num && typeof doc.amountCad === "number") {
+    const amt = doc.amountCad;
+    const matched = (num.operator === "GT" && amt > num.valueCad) || (num.operator === "GTE" && amt >= num.valueCad) || (num.operator === "LT" && amt < num.valueCad);
+    if (matched) hits.push("Monto del documento (" + amt.toFixed(2).replace(".", ",") + " $) supera el límite de " + num.valueCad + " $");
+  }
+  const raw = String(doc.rawText || "");
+  for (const fk of (organ.trigger.missingFieldChecks || [])) { const rx = QUEBEC_STANDARD_REGEX[fk]; if (rx && !rx.test(raw)) hits.push("No se encontró un " + fk.replace("_NUMBER", "") + " válido en el documento"); }
+  if (organ.trigger.matchPattern && hits.length === 0) { try { if (new RegExp(organ.trigger.matchPattern, "i").test(raw)) hits.push("Patrón textual detectado"); } catch (e) {} }
+  const needed = (num ? 1 : 0) + ((organ.trigger.missingFieldChecks || []).length);
+  const triggered = organ.trigger.logicCombine === "AND" ? hits.length >= needed : hits.length > 0;
+  if (!triggered) return { triggered: false };
+  organ.telemetry.provenUses += 1;
+  if (organ.telemetry.provenUses >= 10 && organ.telemetry.errorRatePct === 0) organ.telemetry.readyForFounderLab = true;
+  return { triggered: true, semaphoreColor: organ.behavior.semaphoreColor, leftColumnWhatIs: { docName: doc.fileName || "", detectedReasons: hits, verbatimQuote: doc.verbatimExcerpt || raw.slice(0, 140) }, rightColumnProfessor: { organTitle: organ.title, explanation: organ.behavior.professorRightColumnText, officialVerificationLink: organ.behavior.officialVerificationLink }, telemetry: organ.telemetry };
+}
 function signAndPublishSpeciesHotPatch(o) {
   const IMMUTABLE = new Set(["CORE_VELO_PII_V21", "CORE_PRICE_FLOOR_GUARD", "CORE_ALLERGY_RATCHET", "CORE_FIDUCIARY_SIGNATURE_CEREMONY", "CORE_LOI25_INCIDENT_LEDGER"]);
   const targetId = typeof o.organSpecOrId === "string" ? o.organSpecOrId : (o.organSpecOrId && o.organSpecOrId.organId);
@@ -507,7 +579,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.175";
+const VERSION = "1.0.176";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1853,6 +1925,17 @@ async function api(req, res, pathname) {
     if (!managerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, { proposedMutations: detectCallusAndProposeMutation(b.edits || []) });
+  }
+  if (pathname === "/api/evolution/forge" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const con = constitutionRead();
+    return send(res, 200, forgeOrganFromNaturalLanguage({ userRawSentence: b.sentence || "", clientConstitution: { professionKey: (con && con.legalIdentity && con.legalIdentity.professionKey) || "CPA_COMPTABLE", materialityThresholdCad: (con && con.economicInvariants && con.economicInvariants.materialityThresholdCad) || 500 } }));
+  }
+  if (pathname === "/api/evolution/evaluate" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, evaluateCustomOrganOnDocument(b.organ || {}, b.document || {}));
   }
   if (pathname === "/api/evolution/publish" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
