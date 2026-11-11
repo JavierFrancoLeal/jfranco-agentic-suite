@@ -132,12 +132,47 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
   const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
   return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
 }
+function verifyClientFanalPassport(headerB64, masterPubDer) {
+  try {
+    const c = require("node:crypto");
+    const parts = String(headerB64 || "").split(".");
+    if (parts.length !== 2) return null;
+    const ok = c.verify(null, Buffer.from(parts[0], "utf8"), c.createPublicKey({ key: masterPubDer, format: "der", type: "spki" }), Buffer.from(parts[1], "base64url"));
+    if (!ok) return null;
+    const lic = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
+    if (lic.exp < Date.now()) return null;
+    return { clientId: lic.sub, tier: lic.tier, monthlyCapUsd: lic.cap || 5.0 };
+  } catch (e) { return null; }
+}
 function verifySignedHotPatch(pkg, masterPubB64) {
   try {
     const c = require("node:crypto");
     const ok = c.verify(null, Buffer.from(String(pkg.payloadJsonString || ""), "utf8"), c.createPublicKey({ key: Buffer.from(masterPubB64, "base64url"), format: "der", type: "spki" }), Buffer.from(String(pkg.signatureB64 || ""), "base64url"));
     return { ok, version: ok ? pkg.version : null };
   } catch (e) { return { ok: false, version: null, error: String(e.message) }; }
+}
+const FANAL_DIAGNOSTIC_CATALOG = {
+  "FNL-OCR-101": { title: "Imagen de Identificación Borrosa o Incompleta", autoFixLabel: "🔆 Aplicar filtro de alto contraste local y re-intentar OCR", autoFixAction: "RETRY_OCR_HIGH_CONTRAST" },
+  "FNL-PDF-203": { title: "Documento PDF Protegido o Sin Capa de Texto", autoFixLabel: "🔍 Forzar lectura visual página por página (OCR Profundo)", autoFixAction: "FORCE_PDF_VISION_OCR" },
+  "FNL-TAX-305": { title: "Error de Suma en la Factura Original del Proveedor", autoFixLabel: "⚖️ Aislar en Ápice Amarillo con nota contable automática", autoFixAction: "PIN_AS_TAX_DISCREPANCY_APEX" },
+  "FNL-NET-408": { title: "Interrupción Momentánea de Red con el Cerebro Principal", autoFixLabel: "⚡ Conmutar esta tarea al Cerebro de Rescate ahora", autoFixAction: "SWITCH_TO_RESCUE_BRAIN" },
+  "FNL-SANDBOX-502": { title: "Permiso Denegado por el Sistema Operativo", autoFixLabel: "📁 Revisar la Carpeta Conectada y reintentar", autoFixAction: "RECHECK_CONNECTED_FOLDER" },
+};
+const localDiagnosticSnapshots = new Map();
+function raiseSelfAwareDiagnostic(codeKey, ctx) {
+  const shortHash = require("node:crypto").randomBytes(2).toString("hex").toUpperCase();
+  const token = codeKey + "#" + shortHash;
+  localDiagnosticSnapshots.set(token, { code: codeKey, token, ts: new Date().toISOString(), ...(ctx || {}) });
+  return { diagnosticToken: token, bannerTitle: "⚠️ Atención requerida (" + token + ")", bannerPrompt: 'Fanal detectó un obstáculo en "' + ((ctx && ctx.fileName) || "la tarea actual") + '". Copia y pega el código ' + token + " en el Modo Conversacional para solucionarlo." };
+}
+function resolveDiagnosticToken(text) {
+  const m = String(text || "").trim().toUpperCase().match(/\b(FNL-[A-Z]+-\d{3}#[A-Z0-9]{4})\b/);
+  if (!m) return { isDiagnosticResolution: false };
+  const token = m[1];
+  const snap = localDiagnosticSnapshots.get(token);
+  const cat = snap ? FANAL_DIAGNOSTIC_CATALOG[snap.code] : null;
+  if (!snap || !cat) return { isDiagnosticResolution: true, token, known: false, botReplyTitle: "🔎 Código desconocido en esta sesión", botReplyBody: "El código se generó en otra sesión o ya expiró. Describe el problema y [🛟] envíalo al soporte." };
+  return { isDiagnosticResolution: true, token, known: true, botReplyTitle: "🔧 Diagnóstico Automático para " + token + ": " + cat.title, botReplyBody: "Fanal se detuvo para no inventar un dato en "" + (snap.fileName || "la tarea") + "" (" + (snap.detail || "verifique el archivo") + ").", primaryActionBtn: { label: cat.autoFixLabel, actionCode: cat.autoFixAction, targetFile: snap.fileName || "" }, escalateBtnLabel: "🛟 Si el problema continúa, enviar código sanitizado a Soporte Fanal" };
 }
 function buildSanitizedSupportTicket(o) {
   const v = (t) => { try { return veil(String(t || "")); } catch (e) { return String(t || ""); } };
@@ -369,7 +404,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.161";
+const VERSION = "1.0.162";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1675,6 +1710,21 @@ async function api(req, res, pathname) {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, verifySignedHotPatch(b.pkg || {}, b.masterPubB64 || ""));
+  }
+  if (pathname === "/api/diagnostic/raise" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, raiseSelfAwareDiagnostic(b.code || "FNL-NET-408", b.context || {}));
+  }
+  if (pathname === "/api/diagnostic/resolve" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, resolveDiagnosticToken(b.text || ""));
+  }
+  if (pathname === "/api/passport/verify" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, { valid: verifyClientFanalPassport(b.headerB64 || "", b.masterPubDer || "") });
   }
   if (pathname === "/api/links" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
