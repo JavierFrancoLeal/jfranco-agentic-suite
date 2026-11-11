@@ -1,0 +1,9 @@
+Crea un plugin DSH completo (patrón host-only: package.json con el manifiesto dsh.bundle + cordis.patch.yml + lib/index.js con CANDIDATE y registerProvider + assets/*.md + locale ×10 + icon.svg) llamado @javierfrancoleal/darwin — EL MOTOR DARWINIANO de Fanal. El contexto de la casa (reglas obligatorias): cero dependencias (solo node:crypto/node:fs/node:vm), el código no usa eval ni new Function, las funciones son puras (objeto entra, objeto sale, cero red), y toda la telemetría pasa por el Velo PII antes de salir.
+
+El skill (assets/darwin.md) debe enseñar al agente de DSH la doctrina de las 3 leyes, inspirada en Tesla (el modo sombra: el coche vigila cuándo el conductor corrige al piloto automático) y en la biología:
+
+1. LA PODA POR VÍA NEGATIVA: un órgano/función con 21 días o 25 apariciones con 0 usos (o 3 descartes manuales) se propone para hibernación — jamás se borra (el cajón lo revive). El tronco encefálico inmutable: el velo PII, el piso de precios, el trinquete de alergias, la ceremonia de firma, el ledger Loi 25 — NINGUNA mutación los toca.
+2. LA MUTACIÓN POR CALLO OPERATIVO: el medidor de simetría observa las correcciones del humano; 3 ediciones idénticas → la propuesta "¿Convierto tu criterio en un órgano automático?". El forjador convierte frases en lenguaje natural en CARTUCHOS DECLARATIVOS JSON (jamás código libre), con el guardián anti-ReDoS (el patrón se prueba en una jaula vm con timeout de 5 ms) y los enlaces oficiales deterministas (jamás URLs inventadas por el LLM).
+3. LA TRANSFERENCIA GENÉTICA POR ESPECIE: la mutación nace LOCAL (USER_EVOLUTION_LOCAL), viaja ANONIMIZADA al laboratorio del fundador (mínimo 10 usos con 0% de error), y se replica SOLO con la firma Ed25519 del fundador — por especie (CPA_COMPTABLE) o universal.
+
+El skill termina con el ciclo: la calle propone, el fundador firma, la especie evoluciona.

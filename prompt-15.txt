@@ -1,0 +1,10 @@
+Crea un plugin DSH completo (patrón host-only: package.json con el manifiesto dsh.bundle + cordis.patch.yml + lib/index.js con CANDIDATE y registerProvider + assets/*.md + locale ×10 + icon.svg) llamado @javierfrancoleal/cockpit-browser — EL NAVEGADOR DE CABINA para el WebContentsView de DeepSeek Harness, con las funcionalidades probadas de Fanal. El contexto de la casa: cero dependencias, cero eval, la seguridad primero.
+
+El skill (assets/cockpit-browser.md) debe enseñar al agente de DSH cómo configurar un navegador interno estilo Claude Cowork dentro de la app Electron del harness, con:
+
+1. LA SESIÓN PERSISTENTE CIFRADA: el partition persist:fanal-client-workspace — las contraseñas de Google/Microsoft/portales viven en el llavero del SISTEMA (Keychain/DPAPI), jamás en el código.
+2. EL AISLAMIENTO DOBLE: el panel web NO abre file:// (will-navigate lo bloquea); el panel de documentos tiene la INTERNET CANCELADA (onBeforeRequest solo file:///data:) — ningún archivo local se filtra a la red.
+3. EL FRENO CONSTITUCIONAL: el agente llena las casillas (executeJavaScript + los eventos input/change) y JAMÁS hace clic en Envoyer/Soumettre/Payer/Transmettre — se detiene antes del botón final y el humano da el clic legal.
+4. EL HUD DE 36px: los 3 estados (⚡ AGENTE / 🖐️ VOLANTE HUMANO / 🛑 FRENO) con el botón de pausa, el +1 casilla (el depurador paso a paso), y la DETECCIÓN AUTOMÁTICA del ratón físico (before-input-event → el volante pasa al humano sin tocar el botón).
+5. EL DOBLE MONITOR SIN PERDER DATOS: screen.on(display-added/removed) muda las vistas vivas con removeChildView/addChildView — el formulario a medio llenar queda INTACTO (15 ms, sin recargar). Al desconectar el cable, el rescate pliega las vistas en pestañas.
+6. LA REGLA DE ORO: el usuario manda, el agente asiste — y cada clic del agente deja el borde esmeralda para que el humano VEA lo que hizo.
