@@ -1,0 +1,16 @@
+DOSSIER DE LOCATION — DÉCLARATIONS DU LOCATAIRE
+
+DÉCLARATION INITIALE (page 4) :
+« J'ai cessé d'occuper le logement le 1er mai 2026 suite au dégât d'eau. »
+
+ANNEXE P-6 — REMISE DES CLÉS (page 12) :
+« J'ai remis les clés et quitté les lieux le 18 juin 2026. »
+
+REÇU DE DÉMÉNAGEMENT P-7 (page 15) :
+« Livraison complétée le 18 juin 2026. »
+
+NOTE POUR LA DÉMO FANAL:
+- La déclaration initiale et l'annexe P-6 se contredisent de 48 jours.
+- Le reçu P-7 confirme la date réelle: 18 juin 2026.
+→ Fanal doit déclencher l'ÁPICE JAUNE "Contradiction interne" avec les
+  deux extraits littéraux côte à côte et le bouton [✓ Corriger à 18 juin].

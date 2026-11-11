@@ -1,0 +1,16 @@
+FACTURE FOURNISSEUR — ÉQUIPEMENTS NORD LTÉE
+Date: 2026-10-28
+Client: [CLIENT_NOM] — 142 Rue Saint-Jean, Québec
+
+ARTICLE: Système de ventilation commercial
+MONTANT: 1 450,00 $ CAD
+
+TPS (5%):     72,50 $
+TVQ (9,975%):  —
+TOTAL:        1 522,50 $
+
+NOTE POUR LA DÉMO FANAL:
+- Le fournisseur n'a PAS inscrit son numéro de TVQ (10 chiffres + TQ0001).
+- Le montant dépasse le seuil de matérialité du client (500 $).
+→ Fanal doit déclencher le BLOQUEUR ROUGE "TVQ manquant" avec le lien
+  direct vers l'outil de validation de Revenu Québec.

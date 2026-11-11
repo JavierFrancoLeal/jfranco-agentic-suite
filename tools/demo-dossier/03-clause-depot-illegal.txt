@@ -1,0 +1,13 @@
+PROJET DE BAIL RÉSIDENTIEL — CLAUSE À VÉRIFIER
+
+Article 12 — Dépôt de garantie :
+« En vertu de l'article 1904 alinéa 3 du Code civil du Québec,
+ le locateur exige un dépôt de garantie équivalant à deux mois
+ de loyer pour couvrir les bris éventuels. »
+
+NOTE POUR LA DÉMO FANAL:
+- L'alinéa 3 cité N'EXISTE PAS dans l'Art. 1904 CCQ.
+- Exiger un dépôt de garantie en location résidentielle est
+  EXPRESSÉMENT ILLÉGAL au Québec (Art. 1904 CCQ).
+→ Fanal doit déclencher le BLOQUEUR ROUGE avec le texte réel de la loi
+  et le lien LégisQuébec / CanLII. Le bouton final exige le clic humain.
