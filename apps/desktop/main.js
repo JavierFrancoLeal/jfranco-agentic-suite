@@ -27,7 +27,7 @@ async function runAgenticTaskInRightDrawer(view, plan, anchor) {
     if (!wc.debugger.isAttached()) wc.debugger.attach("1.3");
     for (const step of plan || []) {
       if (step.type === "CLICK" && FORBIDDEN_BUTTON_WORDS.test(String(step.targetLabel || ""))) {
-        report.push({ stepId: step.id, status: "STOPPED_FOR_HUMAN_SKIN_IN_THE_GAME", reason: "Fanal llenó el formulario y se detuvo antes del botón "" + step.targetLabel + "" para que TÚ verifiques y envíes." });
+        report.push({ stepId: step.id, status: "STOPPED_FOR_HUMAN_SKIN_IN_THE_GAME", reason: "Fanal llenó el formulario y se detuvo antes del botón '" + step.targetLabel + "' para que TÚ verifiques y envíes." });
         break;
       }
       if (step.type === "FILL_FIELD") {
