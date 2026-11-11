@@ -14,10 +14,66 @@ const path = require("node:path");
 const os = require("node:os");
 const net = require("node:net");
 const { spawn } = require("node:child_process");
-const { globalShortcut, WebContentsView } = require("electron");
+const { globalShortcut, WebContentsView, screen } = require("electron");
 const fs = require("node:fs");
 const fsx = require("node:fs");
 let rightDrawerView = null;
+let secondMonitorWindow = null;
+const FORBIDDEN_BUTTON_WORDS = /envoyer|soumettre|transmettre|payer|signer|supprimer|submit|pay|delete/i;
+async function runAgenticTaskInRightDrawer(view, plan, anchor) {
+  const wc = view.webContents;
+  const report = [];
+  try {
+    if (!wc.debugger.isAttached()) wc.debugger.attach("1.3");
+    for (const step of plan || []) {
+      if (step.type === "CLICK" && FORBIDDEN_BUTTON_WORDS.test(String(step.targetLabel || ""))) {
+        report.push({ stepId: step.id, status: "STOPPED_FOR_HUMAN_SKIN_IN_THE_GAME", reason: "Fanal llenó el formulario y se detuvo antes del botón "" + step.targetLabel + "" para que TÚ verifiques y envíes." });
+        break;
+      }
+      if (step.type === "FILL_FIELD") {
+        const exactValue = (anchor && anchor[step.anchorFieldKey] !== undefined) ? anchor[step.anchorFieldKey] : step.value;
+        await wc.executeJavaScript('(() => { const el = document.querySelector(' + JSON.stringify(step.cssSelector) + '); if (!el) return false; el.focus(); el.value = ' + JSON.stringify(String(exactValue)) + '; el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); el.style.outline = "2px solid #10b981"; el.style.backgroundColor = "rgba(16, 185, 129, 0.08)"; return true; })()');
+        report.push({ stepId: step.id, field: step.cssSelector, status: "FILLED_AND_HIGHLIGHTED" });
+      }
+    }
+  } catch (e) { report.push({ status: "ERROR", reason: String(e.message) }); }
+  return { completedInInternalChromium: true, stepsExecuted: report };
+}
+function syncDualMonitorLayout(primaryWin, view) {
+  try {
+    const displays = screen.getAllDisplays();
+    const primary = screen.getPrimaryDisplay();
+    const external = displays.find((d) => d.id !== primary.id);
+    if (external) {
+      const pArea = primary.workArea;
+      primaryWin.setBounds({ x: pArea.x + pArea.width - 440, y: pArea.y, width: 440, height: pArea.height });
+      const eArea = external.workArea;
+      if (!secondMonitorWindow || secondMonitorWindow.isDestroyed()) {
+        secondMonitorWindow = new BrowserWindow({ x: eArea.x, y: eArea.y, width: eArea.width, height: eArea.height, title: "Fanal · Lienzo Agéntico (Pantalla 2)", backgroundColor: "#090d16", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
+      } else { secondMonitorWindow.setBounds(eArea); }
+      try { primaryWin.contentView.removeChildView(view); } catch (e) {}
+      secondMonitorWindow.contentView.addChildView(view);
+      view.setBounds({ x: 0, y: 0, width: eArea.width, height: eArea.height });
+      secondMonitorWindow.show();
+      return { layoutMode: "DUAL_MONITOR_COCKPIT", monitorsDetected: displays.length };
+    }
+    if (secondMonitorWindow && !secondMonitorWindow.isDestroyed()) {
+      try { secondMonitorWindow.contentView.removeChildView(view); } catch (e) {}
+      secondMonitorWindow.close();
+      secondMonitorWindow = null;
+    }
+    primaryWin.contentView.addChildView(view);
+    return { layoutMode: "SINGLE_MONITOR_DOCKED", monitorsDetected: 1 };
+  } catch (e) { return { layoutMode: "SINGLE_MONITOR_DOCKED", error: String(e.message) }; }
+}
+function watchMonitorPlugEvents(primaryWin, view) {
+  try {
+    const refresh = () => syncDualMonitorLayout(primaryWin, view);
+    screen.on("display-added", refresh);
+    screen.on("display-removed", refresh);
+    screen.on("display-metrics-changed", refresh);
+  } catch (e) {}
+}
 const COMPACT_WIDTH = 380;
 const EXPANDED_WIDTH = 1040;
 function setupCoworkRightDrawer(mainWindow) {
