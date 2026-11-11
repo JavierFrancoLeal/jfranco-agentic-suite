@@ -1,0 +1,6 @@
+# @javierfrancoleal/cockpit-browser — EL NAVEGADOR DE CABINA: the internal
+# Claude-Cowork-style browser for DeepSeek Harness's WebContentsView.
+# Zero dependencies, zero eval, security first.
+- insert:
+    - id: cockpit-browser
+      name: '@javierfrancoleal/cockpit-browser'
