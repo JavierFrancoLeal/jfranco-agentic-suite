@@ -14,8 +14,56 @@ const path = require("node:path");
 const os = require("node:os");
 const net = require("node:net");
 const { spawn } = require("node:child_process");
-const { globalShortcut } = require("electron");
+const { globalShortcut, WebContentsView } = require("electron");
 const fs = require("node:fs");
+const fsx = require("node:fs");
+let rightDrawerView = null;
+const COMPACT_WIDTH = 380;
+const EXPANDED_WIDTH = 1040;
+function setupCoworkRightDrawer(mainWindow) {
+  try {
+    rightDrawerView = new WebContentsView({
+      webPreferences: {
+        partition: "persist:fanal-client-workspace",
+        contextIsolation: true,
+        nodeIntegration: false,
+        sandbox: true,
+        plugins: true,
+      },
+    });
+    rightDrawerView.webContents.setWindowOpenHandler(({ url }) => {
+      if (String(url).startsWith("https://") || String(url).startsWith("http://127.0.0.1")) { try { rightDrawerView.webContents.loadURL(url); } catch (e) {} }
+      return { action: "deny" };
+    });
+    ipcMain.handle("fanal:open-in-right-drawer", async (_e, target, pageNumber) => {
+      const bounds = mainWindow.getBounds();
+      if (bounds.width < EXPANDED_WIDTH) {
+        mainWindow.setBounds({ x: Math.max(0, bounds.x - (EXPANDED_WIDTH - COMPACT_WIDTH)), y: bounds.y, width: EXPANDED_WIDTH, height: bounds.height });
+      }
+      mainWindow.contentView.addChildView(rightDrawerView);
+      rightDrawerView.setBounds({ x: COMPACT_WIDTH, y: 36, width: EXPANDED_WIDTH - COMPACT_WIDTH, height: bounds.height - 36 });
+      const t = String(target || "");
+      try {
+        if (/^https?:\/\//i.test(t)) { await rightDrawerView.webContents.loadURL(t); return { opened: true, mode: "WEB_ECOSYSTEM" }; }
+        const ext = path.extname(t).toLowerCase();
+        const fileUrl = "file://" + path.resolve(t);
+        if (ext === ".pdf") { await rightDrawerView.webContents.loadURL(fileUrl + "#page=" + (pageNumber || 1) + "&view=FitH"); }
+        else if ([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".bmp"].includes(ext)) { const html = "<html><body style='margin:0;background:#090d16;display:flex;align-items:center;justify-content:center;height:100vh'><img src='" + fileUrl + "' style='max-width:96%;max-height:96%;object-fit:contain'/></body></html>"; await rightDrawerView.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html)); }
+        else if ([".csv", ".tsv", ".txt", ".jsonl", ".md"].includes(ext)) { const raw = fsx.readFileSync(t, "utf8").slice(0, 100000).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); const html = "<html><body style='margin:0;padding:14px;background:#090d16;color:#e2e8f0;font-family:monospace;font-size:12px;white-space:pre-wrap'>" + raw + "</body></html>"; await rightDrawerView.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html)); }
+        else { await rightDrawerView.webContents.loadURL(fileUrl); }
+      } catch (e) {}
+      return { opened: true, mode: "LOCAL_FILE", ext };
+    });
+    ipcMain.handle("fanal:close-right-drawer", () => {
+      try {
+        const bounds = mainWindow.getBounds();
+        mainWindow.contentView.removeChildView(rightDrawerView);
+        if (bounds.width > COMPACT_WIDTH) { mainWindow.setBounds({ x: bounds.x + (bounds.width - COMPACT_WIDTH), y: bounds.y, width: COMPACT_WIDTH, height: bounds.height }); }
+      } catch (e) {}
+      return { closed: true };
+    });
+  } catch (e) {}
+}
 const DATA_DIR = path.join(os.homedir(), ".dsh", "supervisor-data");
 const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
 const bundledDsh = () => { const c = path.join(process.resourcesPath, "runtime", "cli", "bin", "dsh"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
@@ -202,7 +250,8 @@ if (!app.requestSingleInstanceLock()) {
       }
     }
     if (win && !win.isDestroyed()) win.loadURL(TARGET_URL + (TARGET_URL.includes("?") ? "&" : "?") + "lang=" + encodeURIComponent(String(p.lang || "en")));
-  });
+  })
+  setupCoworkRightDrawer(win);;
   app.whenReady().then(async () => {
     const ok = await ensureBrain();
     createWindow();

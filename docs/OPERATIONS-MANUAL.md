@@ -54,3 +54,29 @@ vault, stamps the last Loi 25 purge proof, deletes the API sub-key
 from the keychain, and removes the executable with no ghost processes.
 Saying on Day 1 "if you leave, you take 100% of your data in one
 click" kills the lock-in fear forever.
+
+## The Founder Mode, the Prestige scale and the right drawer (2026-11-11)
+
+1. The founder uses the SAME executable; the master key unlocks the
+   fourth hidden view (Cmd+Shift+M): the fleet (one 44px row per
+   client with the health light), the machine room (the sub-keys with
+   the $5 hard caps), the master invoicer (the PAD + the TPS/TVQ) and
+   the apices laboratory. The endpoints exist; the console UI is the
+   beta-period build.
+2. The Prestige scale (the price-quality bias — CONFIRMED with the
+   honest counsel): $500 setup + $295/month Solo, $950 + $490/month
+   Équipe as the PUBLIC list. The BETA recommends the founding tier
+   ($249 Solo / $420 Équipe, announced from day 1 as "founding price,
+   rises to the public list at the launch") — the anchor creates the
+   perception, the discount protects the beta. The 6-month beta with
+   2 clients/month = 14 founding clients, ~$31.5K invoiced, ~$6.9K
+   MRR at the exit.
+3. The car/driver: Google/Microsoft is the car (the folders sync, the
+   docs, the email — their responsibility); Fanal is the driver (the
+   governance, the semaphore, the dossiers). Never build a word
+   processor or a mail server.
+4. The right drawer (BUILT in main.js): the WebContentsView with the
+   persistent encrypted partition (the Google/Microsoft session lives
+   in the OS keychain — Trasunto never touches the password), the
+   automatic 380→1040px expansion, the PDF page jump, the image zoom
+   viewer, the CSV/text renderer — the Claude Cowork pattern.
