@@ -265,6 +265,13 @@ function bindMonitor2Events(primaryWin) {
     screen.on("display-metrics-changed", refresh);
     ipcMain.handle("fanal:set-monitor2-split", (_ev, ratioNumber) => applyDualScreenSplitLayout(primaryWin, ratioNumber));
     ipcMain.handle("fanal:run-synced-step", (_ev, payload) => executeSynchronizedStepOnMonitor2((payload && payload.step) || {}, (payload && payload.connectedFolderPath) || ""));
+    ipcMain.handle("fanal:link-biometric", async () => {
+      try {
+        if (process.platform === "darwin") { await systemPreferences.promptTouchID("vincular la biometría a la bóveda Fanal (Loi 25)"); return { success: true }; }
+        if (process.platform === "win32") { return safeStorage.isEncryptionAvailable() ? { success: true } : { success: false, error: "WINDOWS_HELLO_UNAVAILABLE" }; }
+        return { success: false, error: "PLATAFORMA_SIN_BIOMETRIA" };
+      } catch (e) { return { success: false, error: String(e.message) }; }
+    });
   } catch (e) {}
 }
 function watchMonitorPlugEvents(primaryWin, view) {
