@@ -14,10 +14,80 @@ const path = require("node:path");
 const os = require("node:os");
 const net = require("node:net");
 const { spawn } = require("node:child_process");
-const { globalShortcut, WebContentsView, screen } = require("electron");
+const { globalShortcut, WebContentsView, screen, powerMonitor, systemPreferences, safeStorage } = require("electron");
 const fs = require("node:fs");
 const fsx = require("node:fs");
 let rightDrawerView = null;
+let activeMasterKeyBuf = null;
+let isVaultLocked = true;
+let idleTimer = null;
+const IDLE_TIMEOUT_SECONDS = 300;
+const cryptoV = require("node:crypto");
+function deriveKeyFromMasterPassword(plain, saltHex) {
+  try {
+    return cryptoV.scryptSync(String(plain).normalize("NFKC"), Buffer.from(saltHex, "hex"), 32, { N: 65536, r: 8, p: 1, maxmem: 128 * 1024 * 1024 });
+  } catch (e) { return null; }
+}
+function verifyMasterPassword(plain, stored) {
+  try {
+    const cand = deriveKeyFromMasterPassword(plain, stored.saltHex);
+    if (!cand) return null;
+    const verifier = cryptoV.createHmac("sha256", cand).update("FANAL_VAULT_VERIFIER_V1").digest();
+    const expected = Buffer.from(stored.verifierHmacHex, "hex");
+    if (verifier.length !== expected.length || !cryptoV.timingSafeEqual(verifier, expected)) { cand.fill(0); return null; }
+    return cand;
+  } catch (e) { return null; }
+}
+function lockFanalVaultNow(ctx, reason) {
+  if (isVaultLocked) return;
+  isVaultLocked = true;
+  if (activeMasterKeyBuf && Buffer.isBuffer(activeMasterKeyBuf)) { activeMasterKeyBuf.fill(0); activeMasterKeyBuf = null; }
+  try {
+    if (ctx.monitor2Window && !ctx.monitor2Window.isDestroyed()) {
+      ctx.monitor2Window.contentView.removeChildView(ctx.agentPortalView);
+      ctx.monitor2Window.contentView.removeChildView(ctx.sourceDocView);
+      ctx.monitor2Window.hide();
+    } else if (ctx.primaryWindow && !ctx.primaryWindow.isDestroyed()) {
+      ctx.primaryWindow.contentView.removeChildView(ctx.agentPortalView);
+      ctx.primaryWindow.contentView.removeChildView(ctx.sourceDocView);
+    }
+  } catch (e) {}
+  try { if (ctx.primaryWindow && !ctx.primaryWindow.isDestroyed()) ctx.primaryWindow.webContents.send("fanal:vault-locked", { reason: reason || "IDLE_TIMEOUT", lockedAtIso: new Date().toISOString() }); } catch (e) {}
+}
+async function unlockFanalVault(o) {
+  try {
+    if (o.method === "BIOMETRIC") {
+      if (process.platform === "darwin") { await systemPreferences.promptTouchID("déverrouiller la voûte fiduciaire Fanal (Loi 25)"); }
+      else if (process.platform === "win32") { if (!safeStorage.isEncryptionAvailable()) throw new Error("WINDOWS_HELLO_UNAVAILABLE"); }
+      const encBuf = Buffer.from(o.storedVaultAuth.osProtectedKeyB64, "base64");
+      const hexKey = safeStorage.decryptString(encBuf);
+      activeMasterKeyBuf = Buffer.from(hexKey, "hex");
+    } else {
+      const derived = verifyMasterPassword(o.passwordInput, o.storedVaultAuth);
+      if (!derived) return { ok: false, error: "Contraseña maestra incorrecta." };
+      activeMasterKeyBuf = derived;
+    }
+    isVaultLocked = false;
+    try { o.restoreDualScreenFn(); } catch (e) {}
+    try { o.primaryWindow.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
+    return { ok: true };
+  } catch (e) { return { ok: false, error: "Biometría cancelada o no reconocida. Usa tu Contraseña Maestra." }; }
+}
+function startBankGradeSecurityWatchdog(ctx) {
+  try {
+    ctx.primaryWindow.setContentProtection(true);
+    if (ctx.monitor2Window && !ctx.monitor2Window.isDestroyed()) ctx.monitor2Window.setContentProtection(true);
+    powerMonitor.on("suspend", () => lockFanalVaultNow(ctx, "LAPTOP_LID_CLOSED"));
+    powerMonitor.on("lock-screen", () => lockFanalVaultNow(ctx, "OS_SCREEN_LOCKED"));
+    idleTimer = setInterval(() => {
+      if (isVaultLocked) return;
+      try {
+        const idleSecs = powerMonitor.getSystemIdleTime();
+        if (idleSecs >= IDLE_TIMEOUT_SECONDS && !(ctx.isAgentActivelyTyping && ctx.isAgentActivelyTyping())) lockFanalVaultNow(ctx, "INACTIVITY_5_MIN");
+      } catch (e) {}
+    }, 5000);
+  } catch (e) {}
+}
 let secondMonitorWindow = null;
 const FORBIDDEN_BUTTON_WORDS = /envoyer|soumettre|transmettre|payer|signer|supprimer|submit|pay|delete/i;
 async function runAgenticTaskInRightDrawer(view, plan, anchor) {

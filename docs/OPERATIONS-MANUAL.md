@@ -105,3 +105,18 @@ click" kills the lock-in fear forever.
    (never a mid-day forced restart during a signature ceremony) —
    active AFTER the signing: $119 CAD/year Apple Developer ID +
    ~$156 CAD/year Azure Trusted Signing (~$275 total).
+
+## The vault freeze (2026-11-11, adopted)
+
+The 1Password/Signal pattern, never the bank's reload: 5 minutes of
+idle (or the lid closed, or the OS lock, or the Cmd+Shift+L panic
+shortcut) → the two monitors hide in ~2 ms, the master key is
+ZEROIZED in RAM (fill(0)), the curtain overlays the DOM WITHOUT
+reloading (the work stays intact) — the unlock via Touch ID / Windows
+Hello or the scrypt master password (N=65536, r=8, p=1, the 64 MB
+per-attempt cost) restores the exact same page and field in 0.4 s.
+The setContentProtection(true) blocks the OS thumbnails (Mission
+Control / Alt+Tab) from photographing the windows. The biometric
+unlock reaches its full form after the Apple signing; the scrypt path
+works today. The curtain is a top-level layer: ZERO changes to the
+existing screens.

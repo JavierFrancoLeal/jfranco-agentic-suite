@@ -1464,5 +1464,17 @@ if(location.search.indexOf("wall=1")>=0){
   wallTick();setInterval(wallTick,30000);
 }
 </script>
+<div id="fanal-lock-curtain" style="display:none;flex-direction:column;justify-content:center;align-items:center;position:fixed;inset:0;z-index:999999;background:#090d16;color:#f8fafc;font-family:system-ui,sans-serif;padding:20px;text-align:center;user-select:none">
+  <div style="background:#0f172a;border:1px solid #334155;border-top:4px solid #38bdf8;border-radius:6px;padding:20px;width:100%;max-width:320px">
+    <div style="font-size:28px;margin-bottom:6px">🔒</div>
+    <div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px">BÓVEDA FANAL CONGELADA</div>
+    <div id="lock-reason-label" style="font-size:11px;color:#94a3b8;font-family:monospace;margin-bottom:14px">Protección Loi 25 por inactividad · Tu expediente sigue intacto</div>
+    <button onclick="triggerBiometricUnlock()" style="width:100%;background:#0284c7;color:#fff;border:none;padding:10px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer;margin-bottom:10px">🫆 Desbloquear con Touch ID / Windows Hello</button>
+    <div style="font-size:10px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700">— O usa tu Contraseña Maestra —</div>
+    <input id="vault-master-pwd" type="password" placeholder="Contraseña Maestra de Fanal..." style="width:100%;box-sizing:border-box;background:#020617;color:#fff;border:1px solid #475569;padding:8px;border-radius:4px;font-family:monospace;font-size:12px;margin-bottom:8px"/>
+    <button onclick="triggerPasswordUnlock()" style="width:100%;background:#059669;color:#fff;border:none;padding:8px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer">Desbloquear y Continuar donde estaba</button>
+  </div>
+  <div style="margin-top:12px;font-size:10px;color:#475569;font-family:monospace">Llave AES-256-GCM purgada de RAM · Pantallas 1 y 2 protegidas</div>
+</div>
 </body>
 </html>
