@@ -398,7 +398,9 @@ if (!app.requestSingleInstanceLock()) {
     }
     if (win && !win.isDestroyed()) win.loadURL(TARGET_URL + (TARGET_URL.includes("?") ? "&" : "?") + "lang=" + encodeURIComponent(String(p.lang || "en")));
   })
-  setupCoworkRightDrawer(win);;
+  setupCoworkRightDrawer(win);
+  watchMonitorPlugEvents(win, rightDrawerView);
+  bindMonitor2Events(win);
   app.whenReady().then(async () => {
     const ok = await ensureBrain();
     createWindow();
