@@ -135,3 +135,32 @@ the CAI's 7 fields — the typed password is NEVER logged (only the
 method and the length). The biometric failures follow the same ramp.
 No file self-destruction ever (the owner's child pressing Enter 15
 times must not kill the business's books).
+
+## The UI beta decision (2026-11-11, my suggestions for the director)
+
+The master prototype (tools/fanal-ui-master-prototype.html) is the
+BETA REFERENCE — the 6 lifecycle stages in one file with the founder's
+simulation bar. MY suggestions, with the reasons:
+
+ACCEPT AS-IS: the 6-stage flow (the 4-hands install → the lighthouse
+→ the identity mirror → the Professor → the signature+the symmetry →
+the sovereign exit); the 380→1060px drawer with the HUD; the FNL
+diagnostic banner; the symmetry slider.
+
+MODIFY (my honest corrections):
+1. The simulation bar stays ONLY in the demo/prototype — the
+   production console is the Cmd+Shift+M view (the founder's tools
+   never ship to the client).
+2. The demo password shortcut ("Fanal2026!" or length>=8) MUST NOT
+   ship — the production path is the real scrypt verifier already in
+   main.js. The prototype's shortcut exists only to demo the
+   exponential cooldown.
+3. The production UI is the EXISTING dashboard (v1.0.176) with the
+   already-integrated pieces (the HUD, the curtain, the entropy meter,
+   the vault lock); the prototype is the SPEC + the sales demo, not a
+   second app — one codebase, never two.
+
+SIMPLIFY (the beta rule): no decorative graphs, no empty menus — every
+pixel shows either real work done by the agents or a button to a
+signature. The i18n: the prototype speaks Spanish; the production
+carries the 10 locales of the house.

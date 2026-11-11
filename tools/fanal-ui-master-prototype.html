@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fanal Solo & Équipe 24/7 — Interfaz Completa del Ciclo de Vida (Sugerencia Maestra)</title>
+  <style>
+    :root { --bg-void:#05080f; --bg-obsidian:#090d16; --bg-slate:#0f172a; --bg-card:#172033; --bg-input:#020617; --border-dim:#1e293b; --border-mid:#334155; --border-bright:#475569; --text-main:#f8fafc; --text-muted:#94a3b8; --text-dim:#64748b; --green-bg:#064e3b; --green-border:#10b981; --green-text:#6ee7b7; --yellow-bg:#451a03; --yellow-border:#f59e0b; --yellow-text:#fde68a; --red-bg:#450a0a; --red-border:#ef4444; --red-text:#fca5a5; --cyan-bg:#0c4a6e; --cyan-border:#38bdf8; --cyan-text:#bae6fd; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:0; background:var(--bg-void); color:var(--text-main); font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; font-size:12px; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+    .founder-sim-bar { width:100%; background:#111827; border-bottom:1px solid var(--cyan-border); padding:8px 14px; display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px; z-index:1000; }
+    .sim-title { font-family:monospace; font-size:11px; font-weight:800; color:var(--cyan-text); display:flex; align-items:center; gap:6px; }
+    .sim-stages { display:flex; flex-wrap:wrap; gap:4px; }
+    .sim-btn { background:var(--bg-slate); color:var(--text-muted); border:1px solid var(--border-mid); padding:4px 8px; border-radius:3px; font-size:10.5px; font-weight:700; cursor:pointer; transition:all .12s; }
+    .sim-btn:hover { color:#fff; border-color:var(--cyan-border); }
+    .sim-btn.active { background:var(--cyan-bg); color:#fff; border-color:var(--cyan-border); }
+    .fanal-desktop-Stage { margin:16px auto; display:flex; align-items:stretch; border:1px solid var(--border-mid); border-radius:6px; background:var(--bg-obsidian); box-shadow:0 24px 48px rgba(0,0,0,.75); overflow:hidden; transition:width .18s ease; position:relative; min-height:700px; }
+    .fanal-desktop-Stage[data-drawer="CLOSED"] { width:400px; }
+    .fanal-desktop-Stage[data-drawer="OPEN"] { width:1060px; }
+    .fanal-desktop-Stage[data-topology="SOLO"] .team-only { display:none !important; }
+    .fanal-left-spine { width:400px; flex-shrink:0; display:flex; flex-direction:column; justify-content:space-between; border-right:1px solid var(--border-dim); background:var(--bg-obsidian); position:relative; }
+    .client-top-bar { padding:8px 10px; background:var(--bg-slate); border-bottom:1px solid var(--border-dim); display:flex; justify-content:space-between; align-items:center; }
+    .client-brand { display:flex; align-items:center; gap:6px; font-weight:800; font-size:11.5px; }
+    .badge-mono { font-family:monospace; font-size:10px; padding:2px 6px; border-radius:10px; font-weight:700; }
+    .google-diag-banner { display:none; background:#2e1065; border-bottom:2px solid #a855f7; padding:8px 10px; font-size:11px; color:#f3e8ff; }
+    .google-diag-banner.visible { display:block; }
+    .stage-view-body { flex:1; padding:10px; overflow-y:auto; display:none; }
+    .stage-view-body.active { display:block; }
+    .section-card { background:var(--bg-slate); border:1px solid var(--border-dim); border-radius:4px; padding:9px; margin-bottom:9px; }
+    .section-label { font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.4px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; }
+    .input-std { width:100%; background:var(--bg-input); color:#fff; border:1px solid var(--border-mid); padding:6px 7px; border-radius:3px; font-size:11px; font-family:monospace; }
+    .btn-primary { width:100%; background:#059669; color:#fff; border:none; padding:8px 10px; border-radius:4px; font-weight:800; font-size:11.5px; cursor:pointer; }
+    .btn-secondary { background:var(--bg-card); color:var(--text-main); border:1px solid var(--border-mid); padding:5px 8px; border-radius:3px; font-size:10.5px; font-weight:700; cursor:pointer; }
+    .btn-primary:hover,.btn-secondary:hover { filter:brightness(1.12); }
+    .green-shield-box { background:var(--green-bg); border:1px solid var(--green-border); border-radius:4px; margin-bottom:8px; overflow:hidden; }
+    .green-shield-summary { padding:6px 8px; font-family:monospace; font-size:11px; font-weight:700; color:#a7f3d0; display:flex; justify-content:space-between; cursor:pointer; }
+    .green-shield-details { display:none; background:#022c22; padding:7px 8px; border-top:1px solid #059669; font-size:10.5px; color:#d1fae5; line-height:1.45; }
+    .green-shield-box.open .green-shield-details { display:block; }
+    .professor-2col-grid { display:grid; grid-template-columns:1fr 1fr; border:1px solid var(--border-mid); border-radius:4px; overflow:hidden; margin-bottom:8px; }
+    .prof-col-left { background:var(--bg-input); padding:8px; border-right:1px solid var(--border-mid); font-size:11px; }
+    .prof-col-right { background:var(--bg-card); padding:8px; font-size:11px; }
+    .verbatim-quote { font-family:monospace; font-size:10.5px; background:#090d16; padding:6px; border-left:2px solid var(--border-bright); border-radius:2px; margin-top:4px; color:#e2e8f0; }
+    .law-chip-link { display:inline-block; background:#0284c7; color:#fff; text-decoration:none; padding:3px 6px; border-radius:3px; font-size:10px; font-weight:700; margin:4px 3px 0 0; cursor:pointer; border:none; }
+    .secondary-conv-drawer { background:var(--bg-slate); border-top:1px solid var(--border-mid); transition:max-height .2s ease; }
+    .conv-header-bar { padding:7px 10px; display:flex; justify-content:space-between; align-items:center; cursor:pointer; font-size:11px; color:var(--cyan-text); font-weight:700; background:#0b1324; }
+    .conv-body { display:none; padding:8px 10px; border-top:1px solid var(--border-dim); }
+    .secondary-conv-drawer.open .conv-body { display:block; }
+    .conv-tabs { display:flex; gap:4px; margin-bottom:6px; }
+    .conv-tab { flex:1; background:var(--bg-input); color:var(--text-muted); border:1px solid var(--border-dim); padding:4px; font-size:10px; font-weight:700; border-radius:3px; cursor:pointer; text-align:center; }
+    .conv-tab.active { background:var(--cyan-bg); color:#fff; border-color:var(--cyan-border); }
+    .conv-output-log { background:var(--bg-input); border:1px solid var(--border-dim); border-radius:3px; padding:7px; font-size:11px; max-height:130px; overflow-y:auto; margin-bottom:6px; line-height:1.4; }
+    .fanal-right-drawer { width:660px; flex-shrink:0; background:var(--bg-void); display:none; flex-direction:column; }
+    .fanal-desktop-Stage[data-drawer="OPEN"] .fanal-right-drawer { display:flex; }
+    .agent-hud-36 { height:36px; background:#061814; border-bottom:1px solid var(--green-border); padding:0 10px; display:flex; align-items:center; justify-content:space-between; font-size:11px; }
+    .agent-hud-36[data-pilot="MANUAL"] { background:#081629; border-bottom-color:var(--cyan-border); }
+    .agent-hud-36[data-pilot="BRAKED"] { background:#1c1305; border-bottom-color:var(--yellow-border); }
+    .pulse-dot { width:8px; height:8px; border-radius:50%; background:var(--green-border); box-shadow:0 0 8px var(--green-border); display:inline-block; }
+    .right-split-workspace { flex:1; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; }
+    .portal-pane { background:#0b111e; border-right:1px solid var(--border-mid); padding:12px; display:flex; flex-direction:column; gap:8px; }
+    .proof-pane { background:#050811; padding:12px; display:flex; flex-direction:column; gap:8px; }
+    .agent-filled-input { width:100%; background:rgba(16,185,129,.09); border:2px solid var(--green-border); color:#fff; padding:5px 7px; border-radius:3px; font-family:monospace; font-size:11px; }
+    .vault-lock-curtain { display:none; position:absolute; inset:0; z-index:9999; background:rgba(5,8,15,.96); backdrop-filter:blur(20px); flex-direction:column; justify-content:center; align-items:center; padding:20px; text-align:center; }
+    .vault-lock-curtain.locked { display:flex; }
+  </style>
+</head>
+<body>
+  <div class="founder-sim-bar">
+    <div class="sim-title"><span>🧭 SIMULADOR DE CICLO DE VIDA FANAL (PARA DECISIÓN DE JAVIER)</span></div>
+    <div class="sim-stages">
+      <button class="sim-btn" onclick="switchStage('STAGE_1_INSTALL', this)">1. Autoinstalación (4 Manos)</button>
+      <button class="sim-btn active" onclick="switchStage('STAGE_2_HOME', this)">2. Faro Inicio (Triage)</button>
+      <button class="sim-btn" onclick="switchStage('STAGE_3_ID_MIRROR', this)">3. Espejo ID (Pasaporte/SAAQ)</button>
+      <button class="sim-btn" onclick="switchStage('STAGE_4_PROFESSOR', this)">4. Profesor 2 Columnas (🟡/🔴)</button>
+      <button class="sim-btn" onclick="switchStage('STAGE_5_SIGNATURE', this)">5. Ceremonia Firma + Simetría</button>
+      <button class="sim-btn" onclick="switchStage('STAGE_6_UNINSTALL', this)">6. Salida Soberana</button>
+    </div>
+    <div class="sim-stages">
+      <button class="sim-btn" onclick="toggleRightDrawer()" style="border-color:#10b981;color:#6ee7b7;">⇄ Abrir/Cerrar Ventana Derecha (Monitor 2)</button>
+      <button class="sim-btn" onclick="triggerSelfAwareError()" style="border-color:#a855f7;color:#e9d5ff;">⚠️ Simular Error FNL-OCR-101</button>
+      <button class="sim-btn" onclick="lockVaultCurtain('MANUAL_PANIC_KEY')" style="border-color:#f59e0b;color:#fde68a;">🔒 Bloquear Bóveda</button>
+    </div>
+  </div>
+
+  <div id="fanal-stage" class="fanal-desktop-Stage" data-drawer="CLOSED" data-topology="SOLO">
+    <div id="vault-curtain" class="vault-lock-curtain">
+      <div style="background:var(--bg-slate);border:1px solid var(--border-mid);border-top:4px solid var(--cyan-border);border-radius:6px;padding:20px;width:100%;max-width:330px;">
+        <div style="font-size:26px;margin-bottom:4px;">🔒</div>
+        <div style="font-weight:800;font-size:14px;">BÓVEDA FANAL CONGELADA</div>
+        <div id="lock-status-msg" style="font-size:10.5px;color:var(--text-muted);font-family:monospace;margin:6px 0 14px 0;">Llave AES-256-GCM purgada de RAM (.fill(0)) · Expediente intacto</div>
+        <button class="btn-primary" style="background:#0284c7;margin-bottom:8px;" onclick="unlockVaultBiometric()">🫆 Desbloquear con Touch ID / Windows Hello (0.4s)</button>
+        <div style="font-size:9.5px;color:var(--text-dim);margin:6px 0;text-transform:uppercase;font-weight:700;">— O Contraseña Maestra (scrypt 64MB) —</div>
+        <input id="unlock-pwd-input" type="password" class="input-std" placeholder="Escribe contraseña (prueba fallar 3 veces)..." style="margin-bottom:8px;" />
+        <button id="btn-pwd-unlock" class="btn-primary" onclick="unlockVaultPassword()">Desbloquear y Retomar Trabajo</button>
+      </div>
+    </div>
+
+    <div class="fanal-left-spine">
+      <div>
+        <div class="client-top-bar">
+          <div class="client-brand">
+            <span>🛡️ FANAL</span>
+            <span id="ui-topology-badge" class="badge-mono" style="background:#1e293b;color:#38bdf8;">SOLO 24/7</span>
+            <span id="ui-prof-badge" class="badge-mono" style="background:#064e3b;color:#6ee7b7;">CPA_COMPTABLE</span>
+          </div>
+          <button class="btn-secondary" style="padding:2px 6px;font-size:10px;" onclick="toggleRightDrawer()" title="Abrir documento original o navegador agéntico">📄 Rayos X / Web ➔</button>
+        </div>
+
+        <div id="google-error-banner" class="google-diag-banner">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+            <strong>⚠️ Obstáculo Detectado: <code id="diag-code-token">FNL-OCR-101#A9F2</code></strong>
+            <span style="font-size:10px;font-family:monospace;">Auto-Consciente</span>
+          </div>
+          <div style="font-size:10.5px;margin-bottom:6px;">Reflejo de luz en dígitos verificadores de <code>Permis_SAAQ_Client.jpg</code>. Fanal se detuvo para no inventar datos.</div>
+          <button class="btn-secondary" style="width:100%;background:#581c87;border-color:#c084fc;color:#fff;" onclick="copyErrorToConversationalDrawer()">📋 Copiar Código FNL-OCR-101#A9F2 y Solucionar en Asistente ➔</button>
+        </div>
+
+        <div id="STAGE_1_INSTALL" class="stage-view-body">
+          <div class="section-card" style="border-left:3px solid var(--cyan-border);">
+            <div class="section-label" style="color:var(--cyan-text);"><span>👤 TURNO DEL CLIENTE (PASOS 1 A 3)</span><span>Co-Responsabilidad</span></div>
+            <label style="font-size:10px;color:var(--text-muted);">1. Escala Organizativa (Define Topología):</label>
+            <select id="inst-scale" class="input-std" style="margin-bottom:6px;" onchange="previewTopologyChange(this.value)">
+              <option value="SOLO">Trabajador Autónomo (1 profesional: CPA, Abogado...)</option>
+              <option value="SOLO_MICRO">Microempresa de 1 Dueño (Gym OPC, Plex TAL...)</option>
+              <option value="CELL">PYME o Célula en Gran Empresa (2 a 35+ empleados)</option>
+            </select>
+            <label style="font-size:10px;color:var(--text-muted);">2. Giro Regulado en Québec:</label>
+            <select id="inst-prof" class="input-std" style="margin-bottom:6px;" onchange="document.getElementById('ui-prof-badge').textContent=this.value">
+              <option value="CPA_COMPTABLE">Contador Público (Ordre des CPA)</option>
+              <option value="AVOCAT_BARREAU">Abogado (Barreau du Québec)</option>
+              <option value="CRIC_IMMIGRATION">Consultor Inmigración (MIFI / IRCC)</option>
+              <option value="GYM_PROPRIETAIRE_OPC">Dueño de Gimnasio (OPC + Q-AAP)</option>
+              <option value="PLEX_PROPRIETAIRE_TAL">Propietario de Plex (TAL + Relevé 31)</option>
+            </select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:6px;">
+              <input id="inst-neq" class="input-std" placeholder="NEQ (1122334455)" value="1178901234" />
+              <input id="inst-tvq" class="input-std" placeholder="TVQ (10 díg+TQ0001)" value="1234567890TQ0001" />
+            </div>
+            <label style="font-size:10px;color:var(--text-muted);">3. Tu Misión, Visión y Trato Humano (Alimenta al Répondant):</label>
+            <textarea id="inst-mission" rows="2" class="input-std" style="margin-bottom:6px;">Trato cálido y respetuoso (vouvoiement). Priorizar la tranquilidad del cliente y jamás prometer descuentos fuera de tarifa.</textarea>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;text-align:center;margin-bottom:8px;">
+              <div style="background:var(--bg-card);border:1px dashed var(--cyan-border);padding:5px;border-radius:3px;font-size:9.5px;cursor:pointer;" onclick="this.style.borderColor='#10b981';this.innerHTML='✓ <strong>Logo.png</strong><br>Cargado'">🖼️ Subir Logo<br><span style="color:var(--text-muted);">Membrete PDF</span></div>
+              <div style="background:var(--bg-card);border:1px dashed var(--green-border);padding:5px;border-radius:3px;font-size:9.5px;cursor:pointer;" onclick="this.style.borderColor='#10b981';this.innerHTML='✓ <strong>Organigrama</strong><br>1 Titular'">👥 Organigrama<br><span style="color:var(--text-muted);">Roles/Célula</span></div>
+              <div style="background:var(--bg-card);border:1px dashed var(--yellow-border);padding:5px;border-radius:3px;font-size:9.5px;cursor:pointer;" onclick="this.style.borderColor='#10b981';this.innerHTML='✓ <strong>Clientes.csv</strong><br>Velo PII Listo'">📊 Catálogo CSV<br><span style="color:var(--text-muted);">Velo PII 2.1</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:6px;">
+              <input id="inst-floor" class="input-std" placeholder="Piso ($ CAD)" value="150.00" />
+              <input id="inst-pin" type="password" maxlength="4" class="input-std" placeholder="PIN (4 díg)" value="2486" />
+              <input id="inst-init" class="input-std" placeholder="Iniciales" value="JFL-CPA" />
+            </div>
+            <label style="font-size:10px;color:var(--cyan-text);font-weight:700;">4. Contraseña Maestra (scrypt) + Biometría:</label>
+            <input type="password" class="input-std" placeholder="Mínimo 12 caracteres, símbolos y números..." oninput="updateInstallEntropy(this.value)" style="margin-bottom:4px;" />
+            <div style="height:4px;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:4px;"><div id="inst-entropy-bar" style="height:100%;width:85%;background:#10b981;"></div></div>
+            <div id="inst-entropy-txt" style="font-size:9.5px;color:var(--green-text);font-family:monospace;">✓ Bóveda Fuerte + Touch ID / Windows Hello vinculado</div>
+          </div>
+          <div class="section-card" style="border:1px solid var(--cyan-border);background:#111c30;">
+            <div class="section-label" style="color:var(--cyan-text);"><span>🔧 PASO 4: TURNO DEL INSTALADOR (JAVIER)</span><span style="color:var(--green-text);">SafeStorage OK</span></div>
+            <input type="password" class="input-std" value="dsh_subkey_client01_cap5usd" style="margin-bottom:6px;color:var(--green-text);" />
+            <button class="btn-primary" onclick="completeInstallationWizard()">🛡️ Sellar Constitución Bilateral (#GEN-9F2A) y Abrir Fanal</button>
+          </div>
+        </div>
+
+        <div id="STAGE_2_HOME" class="stage-view-body active">
+          <div class="section-card" style="border-left:3px solid var(--cyan-border);">
+            <div class="section-label" style="color:var(--cyan-text);"><span>⚡ PARTE DE GUARDIA (ÚLTIMAS 12 HORAS)</span><span style="color:var(--green-text);">Velo Loi 25 Activo</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-family:monospace;font-size:10.5px;">
+              <div style="background:var(--bg-input);padding:5px;border-radius:3px;">📞 <strong>Téléphoniste:</strong><br><span style="color:var(--green-text);">5 llamadas</span> · 2 citas listas</div>
+              <div style="background:var(--bg-input);padding:5px;border-radius:3px;">🗂️ <strong>Secrétaire:</strong><br><span style="color:var(--cyan-text);">38 facturas</span> cuadradas</div>
+            </div>
+          </div>
+          <div class="section-card" style="border:1px dashed var(--cyan-border);background:var(--bg-card);">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-family:monospace;font-size:11px;font-weight:700;color:var(--cyan-text);">📁 Dossier: Boulangerie_StLaurent_2026</span>
+              <span style="font-size:9.5px;color:var(--green-text);font-family:monospace;">Sandbox Activo</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;">
+              <button class="btn-secondary" onclick="switchStage('STAGE_3_ID_MIRROR')">🫆 Espejo ID<br><span style="font-size:9px;color:var(--text-muted);">Pasaporte/SAAQ</span></button>
+              <button class="btn-secondary" onclick="openPortalWithAgent()">🌐 Agente Web<br><span style="font-size:9px;color:var(--text-muted);">ClicSÉQUR</span></button>
+              <button class="btn-secondary" onclick="switchStage('STAGE_5_SIGNATURE')">🛡️ Firmar Mes<br><span style="font-size:9px;color:var(--text-muted);">PIN + Simetría</span></button>
+            </div>
+          </div>
+          <div id="home-green-box" class="green-shield-box">
+            <div class="green-shield-summary" onclick="document.getElementById('home-green-box').classList.toggle('open')"><span>🟢 38 partidas cuadradas TPS/TVQ (14 280,00 $)</span><span>[▾ Inspeccionar]</span></div>
+            <div class="green-shield-details">
+              <div>✓ Identidad MRZ Pasaporte vs Ficha Base: 100% idéntica (0 errores de dedo)</div>
+              <div>✓ 36 facturas con número de TPS (5%) y TVQ (9,975%) verificadas al centavo</div>
+              <div>✓ Conciliación bancaria Desjardins cerrada sin diferencias</div>
+              <button class="btn-secondary" style="width:100%;margin-top:5px;" onclick="toggleRightDrawer()">📄 Ver las 42 páginas originales en Visor Derecho</button>
+            </div>
+          </div>
+          <div class="section-label" style="color:var(--yellow-text);margin-top:8px;"><span>🎯 ÁPICES QUE REQUIEREN TU JUICIO HUMANO HOY (2)</span><span>~60 s</span></div>
+          <div class="section-card" style="border-left:4px solid var(--red-border);cursor:pointer;" onclick="switchStage('STAGE_4_PROFESSOR')">
+            <div style="display:flex;justify-content:space-between;font-weight:800;color:var(--red-text);margin-bottom:3px;"><span>🔴 1. Cita Legal Ilegal (Art. 1904 CCQ) / Falta TVQ</span><span style="font-family:monospace;font-size:10px;">Pág. 9</span></div>
+            <div style="font-size:10.5px;color:var(--text-muted);margin-bottom:6px;">El borrador exige depósito de garantía prohibido en Québec y factura de $1,450 omite TVQ.</div>
+            <button class="btn-secondary" style="width:100%;color:var(--cyan-text);">🎓 Abrir Profesor de 2 Columnas + LégisQuébec ➔</button>
+          </div>
+          <div class="section-card" style="border-left:4px solid var(--yellow-border);cursor:pointer;" onclick="switchStage('STAGE_4_PROFESSOR')">
+            <div style="display:flex;justify-content:space-between;font-weight:800;color:var(--yellow-text);margin-bottom:3px;"><span>🟡 2. Contradicción de Fechas (48 días de diferencia)</span><span style="font-family:monospace;font-size:10px;">Págs. 4 y 12</span></div>
+            <div style="font-size:10.5px;color:var(--text-muted);margin-bottom:6px;">Declaración inicial dice « 1er mai 2026 » pero el Anexo P-6 declara « 18 juin 2026 ».</div>
+            <button class="btn-secondary" style="width:100%;color:var(--cyan-text);">🎓 Contrastar en 2 Columnas y Elegir Fecha ➔</button>
+          </div>
+          <div id="vestige-pill" class="section-card" style="background:#131c2e;border-left:3px solid var(--text-muted);display:flex;justify-content:space-between;align-items:center;gap:6px;">
+            <div style="font-size:10.5px;color:var(--text-muted);">🍂 <strong>Poda Evolutiva:</strong> Llevas 21 días sin usar <em>« Control Termómetros MAPAQ »</em>. ¿Lo ocultamos?</div>
+            <button class="btn-secondary" style="white-space:nowrap;" onclick="document.getElementById('vestige-pill').style.display='none'">Ocultar</button>
+          </div>
+        </div>
+
+        <div id="STAGE_3_ID_MIRROR" class="stage-view-body">
+          <div class="green-shield-box"><div class="green-shield-summary"><span>✓ Fecha Nac., Nº Pasaporte y Licencia SAAQ cuadran (4/6 OK)</span></div></div>
+          <div class="section-label" style="color:var(--yellow-text);"><span>🫆 ESPEJO DE IDENTIDAD (SE VERIFICA 1 SOLA VEZ AL AÑO)</span></div>
+          <div class="section-card" style="border-left:3px solid var(--red-border);">
+            <div style="font-size:10px;font-weight:800;color:var(--red-text);margin-bottom:5px;">1. ERROR DE DEDO DETECTADO EN APELLIDO (1 LETRA DISTINTA):</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button class="btn-secondary" style="text-align:left;font-family:monospace;" onclick="selectIdAnchor('CLIENT')"><div style="font-size:9px;color:var(--cyan-text);">[A] ESCRITO POR CLIENTE:</div>ABDELKADER BENMEN<mark style="background:#dc2626;color:#fff;padding:0 2px;">S</mark>OUR</button>
+              <button id="btn-mrz-choice" class="btn-secondary" style="text-align:left;font-family:monospace;border:2px solid var(--green-border);background:var(--green-bg);" onclick="selectIdAnchor('MRZ')"><div style="font-size:9px;color:var(--green-text);">[B] PASAPORTE MRZ ✓:</div>ABDELKADER BENMEN<mark style="background:#f59e0b;color:#000;padding:0 2px;">Z</mark>OUR</button>
+            </div>
+          </div>
+          <div class="section-card" style="border-left:3px solid var(--yellow-border);">
+            <div style="font-size:10px;font-weight:800;color:var(--yellow-text);margin-bottom:5px;">2. CAMBIO DE DIRECCIÓN RESPECTO AL AÑO ANTERIOR:</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+              <button class="btn-secondary" style="text-align:left;font-family:monospace;color:var(--text-muted);"><div style="font-size:9px;">[A] FICHA 2025:</div>142 Rue Saint-Jean, QC</button>
+              <button class="btn-secondary" style="text-align:left;font-family:monospace;border:2px solid var(--cyan-border);"><div style="font-size:9px;color:var(--cyan-text);">[B] PERMIS SAAQ 2026 ✓:</div>88 Ch. des Falaises, La Malbaie</button>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="sealIdentityAndRunBackwardAudit()">🛡️ Sellar Ficha Constitucional y Auditar 15 PDFs Hacia Atrás (0.1 ms)</button>
+          <div id="backward-audit-result" style="display:none;margin-top:8px;padding:7px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:4px;font-family:monospace;font-size:10.5px;color:#d1fae5;">✓ Ancla #ID-9F2A sellada. Barrido hacia atrás completado en 0.12 ms: « ABDELKADER BENMENZOUR » verificado en los 15 formularios y 0 rastros del error « BENMENSOUR ».</div>
+        </div>
+
+        <div id="STAGE_4_PROFESSOR" class="stage-view-body">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span style="font-weight:800;color:var(--yellow-text);font-size:11px;">🎓 MESA DE CONTRASTE PEDAGÓGICO (2 COLUMNAS)</span><button class="btn-secondary" style="padding:2px 6px;font-size:10px;" onclick="switchStage('STAGE_2_HOME')">◀ Volver</button></div>
+          <div style="font-size:10.5px;font-weight:800;color:var(--yellow-text);margin-bottom:4px;">🟡 ÁPICE 1: CONTRADICCIÓN INTERNA EN DECLARACIONES</div>
+          <div class="professor-2col-grid">
+            <div class="prof-col-left">
+              <div style="font-size:9px;font-weight:800;color:var(--yellow-text);">📄 LO QUE DICE EL EXPEDIENTE:</div>
+              <div class="verbatim-quote"><strong>Pág. 4:</strong> « J'ai quitté le logement le <mark style="background:#f59e0b;color:#000;">1er mai 2026</mark>. »</div>
+              <div class="verbatim-quote"><strong>Anexo P-6 (Pág. 12):</strong> « Clés remises le <mark style="background:#f59e0b;color:#000;">18 juin 2026</mark>. »</div>
+            </div>
+            <div class="prof-col-right">
+              <div style="font-size:9px;font-weight:800;color:var(--cyan-text);">🎓 POR QUÉ SALTÓ EL AMARILLO:</div>
+              <p style="margin:3px 0 6px 0;font-size:10.5px;">Ambas fechas difieren por <strong>48 días</strong> y alteran en <strong>1 850 $ CAD</strong> el reclamo. El recibo de mudanza (P-7) confirma el <strong>18 de junio</strong>.</p>
+              <button class="btn-primary" style="padding:5px;font-size:10px;" onclick="resolveApexItem(1, '18 juin 2026')">✓ Corregir a « 18 juin 2026 »</button>
+            </div>
+          </div>
+          <div style="font-size:10.5px;font-weight:800;color:var(--red-text);margin-bottom:4px;">🔴 BLOQUEO 2: CITA NO CUADRA CON LA LEY VIGENTE EN QUÉBEC</div>
+          <div class="professor-2col-grid">
+            <div class="prof-col-left">
+              <div style="font-size:9px;font-weight:800;color:var(--red-text);">📄 LO QUE ESTÁ ESCRITO (Pág. 9):</div>
+              <div class="verbatim-quote">« En vertu de <mark style="background:#dc2626;color:#fff;">l'art. 1904 al. 3 CCQ</mark>, un dépôt de garantie de deux mois est exigé. »</div>
+            </div>
+            <div class="prof-col-right">
+              <div style="font-size:9px;font-weight:800;color:var(--cyan-text);">🎓 FUNDAMENTO Y ENLACES:</div>
+              <p style="margin:3px 0 5px 0;font-size:10.5px;">El alinéa 3 citado <strong>no existe</strong> y el <strong>Art. 1904 CCQ prohíbe expresamente</strong> exigir depósitos de garantía aparte del alquiler en Québec.</p>
+              <div>
+                <button class="law-chip-link" onclick="openOfficialLawInRightDrawer('https://www.legisquebec.gouv.qc.ca/fr/document/lc/CCQ-1991#se:1904', 'Art. 1904 CCQ — LégisQuébec')">🔗 Art. 1904 LégisQuébec</button>
+                <button class="law-chip-link" onclick="openOfficialLawInRightDrawer('https://www.canlii.org/fr/qc/', 'Jurisprudencia CanLII QC')">⚖️ CanLII</button>
+              </div>
+              <button class="btn-primary" style="padding:5px;font-size:10px;margin-top:6px;background:#dc2626;" onclick="resolveApexItem(2, 'Cláusula ajustada al Art. 1904 CCQ')">✓ Reemplazar por Cláusula Legal CCQ</button>
+            </div>
+          </div>
+          <button class="btn-primary" onclick="switchStage('STAGE_5_SIGNATURE')">Ir a Ceremonia de Firma Fiduciaria (Grado 2) ➔</button>
+        </div>
+
+        <div id="STAGE_5_SIGNATURE" class="stage-view-body">
+          <div class="section-card" style="border-left:3px solid var(--green-border);">
+            <div class="section-label" style="color:var(--green-text);"><span>⚖️ MEDIDOR EN VIVO DE GARANTÍA DE SIMETRÍA (35%)</span></div>
+            <label style="font-size:10px;color:var(--text-muted);">Simula cuánto tuviste que editar del borrador de Fanal (%):</label>
+            <input id="sym-slider" type="range" min="0" max="50" value="8" style="width:100%;margin:6px 0;" oninput="updateSymmetryCalculator(this.value)" />
+            <div id="sym-readout" style="background:var(--bg-input);padding:7px;border-radius:3px;font-family:monospace;font-size:11px;color:var(--green-text);">Edición humana: <strong>8%</strong> (≤15%) → Fanal hizo el trabajo limpio.<br>Cargo del Dossier: <strong>18,00 $ CAD</strong> (Descuento Simetría: 0,00 $).</div>
+          </div>
+          <div class="section-card" style="border:1px solid var(--yellow-border);">
+            <div class="section-label" style="color:var(--yellow-text);"><span>🛡️ CEREMONIA DE SELLO FIDUCIARIO (LCCJTI QUÉBEC)</span></div>
+            <div style="font-size:10.5px;color:var(--text-muted);margin-bottom:8px;"><code>Ctrl+Enter</code> está bloqueado en Dossiers críticos. Confirma tu segunda capa para emitir el Certificado Tripartito de Accountability Compartida:</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;">
+              <input id="sig-pin" type="password" maxlength="4" class="input-std" placeholder="PIN Fiduciario (2486)" value="2486" />
+              <input id="sig-init" class="input-std" placeholder="Iniciales (JFL-CPA)" value="JFL-CPA" />
+            </div>
+            <button class="btn-primary" onclick="executeTripartiteSignature()">🫆 Estampar Biometría + PIN y Emitir Sello Tripartito Ed25519</button>
+          </div>
+          <div id="tripartite-cert-box" style="display:none;background:#022c22;border:1px solid var(--green-border);border-radius:4px;padding:9px;font-family:monospace;font-size:10px;color:#d1fae5;line-height:1.45;">
+            <strong style="color:#fff;font-size:11px;">📜 CERTIFICADO TRIPARTITO DE ACCOUNTABILITY (#Ed25519-8F3A):</strong><br>
+            • <strong>1. Origen Cliente:</strong> Hash SHA-256 de 4 documentos aportados por el cliente sellado.<br>
+            • <strong>2. Garantía Fanal:</strong> Velo Loi 25, MRZ/SAAQ y aritmética TPS/TVQ verificados al 100%.<br>
+            • <strong>3. Juicio Profesional:</strong> 2 Ápices validados por <strong>JFL-CPA</strong> con PIN/Biometría.<br>
+            <span style="color:var(--yellow-text);">✓ Asentado en ledger.jsonl y listo para exportar a PDF/A.</span>
+          </div>
+        </div>
+
+        <div id="STAGE_6_UNINSTALL" class="stage-view-body">
+          <div class="section-card" style="border-left:3px solid var(--cyan-border);">
+            <div class="section-label" style="color:var(--cyan-text);"><span>📦 SALIDA SOBERANA Y LIBERTAD TOTAL DE DATOS</span></div>
+            <p style="margin:0 0 8px 0;font-size:11px;color:var(--text-muted);">En Fanal tus datos jamás son rehenes. Antes de desinstalar o cambiar de equipo, descarga tu archivo íntegro en formatos universales abiertos:</p>
+            <button class="btn-primary" style="background:#0284c7;margin-bottom:8px;" onclick="runSovereignExport()">📥 1. Exportar todos mis PDFs, CSVs (Acomba/QuickBooks) y Ledger al Escritorio</button>
+            <button class="btn-secondary" style="width:100%;border-color:var(--red-border);color:var(--red-text);" onclick="runCleanUninstallPurge()">🗑️ 2. Purgar Bóveda RAM/Disco (destroyVaultSafe) y Emitir Certificado Final Loi 25</button>
+          </div>
+          <div id="uninstall-log" style="display:none;background:var(--bg-input);border:1px solid var(--green-border);padding:8px;border-radius:4px;font-family:monospace;font-size:10.5px;color:var(--green-text);line-height:1.5;"></div>
+        </div>
+      </div>
+
+      <div id="conv-drawer" class="secondary-conv-drawer">
+        <div class="conv-header-bar" onclick="document.getElementById('conv-drawer').classList.toggle('open')"><span>💬 MODO CONVERSACIONAL SECUNDARIO (Ayuda · Códigos FNL · Crear Órgano)</span><span>[▲ / ▼]</span></div>
+        <div class="conv-body">
+          <div class="conv-tabs">
+            <button class="conv-tab active" onclick="setConvTab('TAB_DIAG_FORGE', this)">🧬 Forjar Órgano / Código FNL</button>
+            <button class="conv-tab" onclick="setConvTab('TAB_DOC_ASK', this)">🔍 Dudas del Expediente</button>
+            <button class="conv-tab" onclick="setConvTab('TAB_HELP', this)">📘 Ayuda Fanal (0 ms)</button>
+          </div>
+          <div id="conv-log" class="conv-output-log"><span style="color:var(--text-muted);">💡 <em>Modo secundario de solo-lectura:</em> Pega aquí un código de error <strong>FNL-...</strong> o escribe una regla en lenguaje natural (ej. <em>« Avísame en amarillo cuando una factura supere los $800 o no traiga TVQ »</em>).</span></div>
+          <div style="display:flex;gap:5px;"><input id="conv-input" class="input-std" placeholder="Pega FNL-OCR-101#A9F2 o escribe nueva regla..." onkeydown="if(event.key==='Enter')handleConvSubmit()" /><button class="btn-primary" style="width:auto;padding:0 12px;" onclick="handleConvSubmit()">Enviar</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="fanal-right-drawer">
+      <div id="agent-hud-bar" class="agent-hud-36" data-pilot="RUNNING">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="pulse-dot"></span>
+          <span id="hud-pilot-badge" class="badge-mono" style="background:var(--green-bg);color:var(--green-text);border:1px solid var(--green-border);">⚡ AGENTE FANAL</span>
+          <span id="hud-step-label" style="font-family:monospace;color:#e2e8f0;">[Paso 3/4] Llenando casilla « Montant TVQ » · Sincronizado con Pág. 9</span>
+        </div>
+        <div style="display:flex;gap:5px;">
+          <button class="btn-secondary" style="padding:2px 7px;font-size:10px;" onclick="setPilotMode('MANUAL')">🖐️ Tomar el Volante</button>
+          <button class="btn-secondary" style="padding:2px 7px;font-size:10px;background:#78350f;color:#fde68a;" onclick="setPilotMode('BRAKED')">🛑 Ver Freno antes de Enviar</button>
+          <button class="btn-secondary" style="padding:2px 7px;font-size:10px;" onclick="toggleRightDrawer()">✕</button>
+        </div>
+      </div>
+      <div class="right-split-workspace">
+        <div class="portal-pane">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-dim);padding-bottom:6px;"><span style="font-family:monospace;font-size:10.5px;color:var(--cyan-text);font-weight:700;">🌐 PORTAL ACTIVO (Sesión Persistente OS)</span><span id="portal-url-pill" style="font-family:monospace;font-size:9.5px;background:var(--bg-slate);padding:2px 6px;border-radius:3px;color:var(--green-text);">🔒 revenuquebec.ca / legisquebec</span></div>
+          <div id="portal-live-box" style="background:var(--bg-slate);border:1px solid var(--border-mid);border-radius:4px;padding:10px;flex:1;">
+            <div style="font-size:11px;font-weight:800;margin-bottom:8px;color:#fff;">Formulario Oficial FPZ-500 (TPS/TVQ) — Pre-llenado por Agente Fanal:</div>
+            <label style="font-size:9.5px;color:var(--text-muted);">Razón Social Titular (Desde Ancla #ID-9F2A):</label>
+            <input class="agent-filled-input" value="BOULANGERIE ST-LAURENT INC." readonly style="margin-bottom:8px;" />
+            <label style="font-size:9.5px;color:var(--text-muted);">Número de Inscripción TVQ Verificado:</label>
+            <input class="agent-filled-input" value="1234567890TQ0001" readonly style="margin-bottom:8px;" />
+            <label style="font-size:9.5px;color:var(--text-muted);">Ventas Gravables del Período ($ CAD):</label>
+            <input class="agent-filled-input" value="14 280,00 $" readonly style="margin-bottom:12px;" />
+            <div style="background:#1c1305;border:1px dashed var(--yellow-border);padding:8px;border-radius:4px;font-size:10.5px;color:var(--yellow-text);">🛑 <strong>Freno Constitucional Fanal:</strong> El Agente llenó las casillas verificadas y se detuvo antes del botón oficial <em>« Transmettre la déclaration »</em> para que tú des el clic definitivo.</div>
+          </div>
+        </div>
+        <div class="proof-pane">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-dim);padding-bottom:6px;"><span style="font-family:monospace;font-size:10.5px;color:var(--yellow-text);font-weight:700;">📄 PRUEBA DOCUMENTAL CON RAYOS X (0% Internet)</span><span style="font-family:monospace;font-size:9.5px;color:var(--text-muted);">Salto automático #page=9</span></div>
+          <div style="background:var(--bg-slate);border:1px solid var(--border-mid);border-radius:4px;padding:10px;flex:1;font-family:monospace;font-size:11px;line-height:1.5;">
+            <div style="border-left:4px solid var(--green-border);padding-left:8px;margin-bottom:10px;color:var(--text-muted);"><strong style="color:var(--green-text);">[🟢 Párrafo 1 — Verificado]</strong><br>Le loyer mensuel convenu est de 1 450,00 $ CAD payable le premier jour de chaque mois.</div>
+            <div style="border-left:4px solid var(--yellow-border);background:rgba(245,158,11,.08);padding:6px 8px;margin-bottom:10px;"><strong style="color:var(--yellow-text);">[🟡 Párrafo 2 — Ápice Fecha Contradictoria]</strong><br>Le locataire déclare avoir remis les clés le <strong>18 juin 2026</strong> conformément au reçu P-7.</div>
+            <div style="border-left:4px solid var(--red-border);background:rgba(239,68,68,.1);padding:6px 8px;"><strong style="color:var(--red-text);">[🔴 Párrafo 3 — Bloqueo Art. 1904 CCQ]</strong><br>« En vertu de l'article 1904 alinéa 3 CCQ, un dépôt de garantie de deux mois est exigé... »</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let failedUnlockCount = 0;
+    let cooldownTimer = null;
+    function switchStage(stageId, btnEl) {
+      document.querySelectorAll('.stage-view-body').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById(stageId);
+      if (target) target.classList.add('active');
+      if (btnEl) { document.querySelectorAll('.founder-sim-bar .sim-btn').forEach(b => b.classList.remove('active')); btnEl.classList.add('active'); }
+    }
+    function toggleRightDrawer() {
+      const stage = document.getElementById('fanal-stage');
+      const current = stage.getAttribute('data-drawer');
+      stage.setAttribute('data-drawer', current === 'OPEN' ? 'CLOSED' : 'OPEN');
+    }
+    function openPortalWithAgent() { document.getElementById('fanal-stage').setAttribute('data-drawer', 'OPEN'); setPilotMode('RUNNING'); }
+    function openOfficialLawInRightDrawer(url, lawTitle) {
+      document.getElementById('fanal-stage').setAttribute('data-drawer', 'OPEN');
+      document.getElementById('portal-url-pill').textContent = '🔒 ' + url.slice(0, 38) + '...';
+      document.getElementById('hud-step-label').textContent = '📜 Fuente Oficial Abierta: ' + lawTitle;
+    }
+    function setPilotMode(mode) {
+      const hud = document.getElementById('agent-hud-bar');
+      const badge = document.getElementById('hud-pilot-badge');
+      const label = document.getElementById('hud-step-label');
+      hud.setAttribute('data-pilot', mode);
+      if (mode === 'RUNNING') { badge.textContent = '⚡ AGENTE FANAL'; badge.style.background = '#064e3b'; badge.style.color = '#6ee7b7'; label.textContent = '[Paso 3/4] Llenando casillas verificadas desde Ancla #ID-9F2A...'; }
+      else if (mode === 'MANUAL') { badge.textContent = '🖐️ VOLANTE HUMANO'; badge.style.background = '#0c4a6e'; badge.style.color = '#bae6fd'; label.textContent = 'Agente en pausa · Tienes el control total del ratón y teclado.'; }
+      else { badge.textContent = '🛑 FRENO FIDUCIARIO'; badge.style.background = '#78350f'; badge.style.color = '#fde68a'; label.textContent = 'Detenido antes del botón « Transmettre / Payer ». Revisa y envía tú mismo.'; }
+    }
+    function previewTopologyChange(scaleVal) {
+      const topo = scaleVal === 'CELL' ? 'CELL' : 'SOLO';
+      document.getElementById('fanal-stage').setAttribute('data-topology', topo);
+      document.getElementById('ui-topology-badge').textContent = topo === 'CELL' ? 'ÉQUIPE / CÉLULA' : 'SOLO 24/7';
+    }
+    function updateInstallEntropy(pwd) {
+      const bar = document.getElementById('inst-entropy-bar');
+      const txt = document.getElementById('inst-entropy-txt');
+      let score = 0;
+      if (pwd.length >= 12) score += 40;
+      if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd)) score += 30;
+      if (/[^A-Za-z0-9]/.test(pwd)) score += 30;
+      bar.style.width = String(Math.max(15, score)) + '%';
+      bar.style.background = score >= 70 ? '#10b981' : '#f59e0b';
+      txt.textContent = score >= 70 ? '✓ Entropía fuerte (scrypt 64MB listo) + Biometría vinculada' : '⚠️ Añade al menos 12 caracteres, números y un símbolo.';
+    }
+    function completeInstallationWizard() {
+      const neq = document.getElementById('inst-neq').value.trim();
+      if (!/^(11|22|33|88)\d{8}$/.test(neq)) { alert('ERR_NEQ_INVALIDO: El NEQ de Québec debe tener 10 dígitos y empezar con 11, 22, 33 u 88.'); return; }
+      switchStage('STAGE_2_HOME');
+    }
+    function selectIdAnchor(source) { document.getElementById('btn-mrz-choice').style.border = source === 'MRZ' ? '2px solid #10b981' : '1px solid #475569'; }
+    function sealIdentityAndRunBackwardAudit() { document.getElementById('backward-audit-result').style.display = 'block'; }
+    function resolveApexItem(num, chosenResolution) { alert('✓ Ápice #' + num + ' verificado por el titular: "' + chosenResolution + '".'); }
+    function updateSymmetryCalculator(deltaPct) {
+      const pct = Number(deltaPct);
+      const basePrice = 18.00;
+      const readout = document.getElementById('sym-readout');
+      if (pct <= 15) { readout.style.color = '#6ee7b7'; readout.innerHTML = 'Edición humana: <strong>' + pct + '%</strong> (≤15%) → Fanal entregó el Dossier listo.<br>Cargo del Dossier: <strong>18,00 $ CAD</strong> (Descuento Simetría: 0,00 $).'; }
+      else if (pct <= 35) { readout.style.color = '#fde68a'; readout.innerHTML = 'Edición humana: <strong>' + pct + '%</strong> (15,1% a 35%) → <strong>50% Descuento Automático</strong>.<br>Cargo del Dossier: <strong>9,00 $ CAD</strong> (Ahorro por Simetría: <strong>-9,00 $ CAD</strong>).'; }
+      else { readout.style.color = '#fca5a5'; readout.innerHTML = 'Edición humana: <strong>' + pct + '%</strong> (>35%) → <strong>100% GRATIS por Garantía de Simetría</strong>.<br>Cargo del Dossier: <strong>0,00 $ CAD</strong> (Ahorro por Simetría: <strong>-18,00 $ CAD</strong>).'; }
+    }
+    function executeTripartiteSignature() {
+      const pin = document.getElementById('sig-pin').value.trim();
+      const init = document.getElementById('sig-init').value.trim();
+      if (pin.length !== 4 || init.length < 2) { alert('SEGUNDA_CAPA_REQUERIDA: Ingresa tu PIN Fiduciario de 4 dígitos y tus iniciales profesionales.'); return; }
+      document.getElementById('tripartite-cert-box').style.display = 'block';
+    }
+    function runSovereignExport() {
+      const log = document.getElementById('uninstall-log');
+      log.style.display = 'block';
+      log.innerHTML = '✓ Exportados 48 PDFs firmados + contabilidad_acomba.csv + ledger.jsonl en ~/Desktop/Export_Souverain_Fanal.';
+    }
+    function runCleanUninstallPurge() {
+      const log = document.getElementById('uninstall-log');
+      log.style.display = 'block';
+      log.innerHTML = '✓ Llave maestra en RAM sobrescrita con ceros (.fill(0)).<br>✓ Sub-llave API eliminada del llavero safeStorage del sistema operativo.<br>✓ Certificado final de purga Loi 25 #PURGE-88A1 estampado. Desinstalación limpia completada.';
+    }
+    function triggerSelfAwareError() { document.getElementById('google-error-banner').classList.add('visible'); }
+    function copyErrorToConversationalDrawer() {
+      const drawer = document.getElementById('conv-drawer');
+      drawer.classList.add('open');
+      const input = document.getElementById('conv-input');
+      input.value = 'FNL-OCR-101#A9F2';
+      handleConvSubmit();
+    }
+    function setConvTab(tabId, btnEl) {
+      document.querySelectorAll('.conv-tab').forEach(b => b.classList.remove('active'));
+      btnEl.classList.add('active');
+      const log = document.getElementById('conv-log');
+      if (tabId === 'TAB_HELP') { log.innerHTML = '📘 <strong>Ayuda Local Fanal (0 ms, $0 tokens):</strong><br>• Pulsa <code>Alt+Espacio</code> para mostrar/ocultar Fanal.<br>• Pulsa <code>Cmd+Shift+L</code> para congelar la bóveda al instante.'; }
+      else if (tabId === 'TAB_DOC_ASK') { log.innerHTML = '🔍 <strong>Consulta Segura sobre « Boulangerie_StLaurent_2026 »:</strong><br>Pregunta cualquier dato del expediente (protegido por Velo PII 2.1).'; }
+    }
+    function handleConvSubmit() {
+      const input = document.getElementById('conv-input');
+      const val = input.value.trim();
+      const log = document.getElementById('conv-log');
+      if (!val) return;
+      if (/FNL-[A-Z]+-\d{3}#[A-Z0-9]{4}/i.test(val)) {
+        log.innerHTML = '<div style="color:#e9d5ff;">🔧 <strong>Diagnóstico Automático para ' + val.toUpperCase() + ':</strong><br>La foto <code>Permis_SAAQ_Client.jpg</code> tiene brillo sobre los dígitos de fecha de nacimiento.<br><button class="btn-primary" style="margin-top:5px;padding:4px 8px;font-size:10px;" onclick="fixOcrIssueNow()">🔆 Aplicar Filtro Alto Contraste y Re-Escanear en Local (1 clic)</button></div>';
+        input.value = '';
+        return;
+      }
+      const amtMatch = val.match(/\$?\s*(\d+)/);
+      const threshold = amtMatch ? Number(amtMatch[1]) : 800;
+      const forgedOrgan = { organId: 'ORG_CPA_CUSTOM_01', species: document.getElementById('ui-prof-badge').textContent, trigger: { docType: 'SUPPLIER_INVOICE', logic: 'OR', amountGt: threshold, missingFields: ['TVQ_NUMBER'] }, behavior: { semaphore: 'YELLOW', link: 'revenuquebec.ca/validation-tvq' } };
+      log.innerHTML = '<div style="color:#6ee7b7;">🧬 <strong>Nuevo Órgano Compilado en Sandbox JSON (0% eval):</strong><br><code style="font-size:10px;color:#bae6fd;">' + JSON.stringify(forgedOrgan) + '</code><br>✓ Activo en tu Fanal. Tras 10 usos con 0% error se enviará sanitizado al Laboratorio de Javier.</div>';
+      input.value = '';
+    }
+    function fixOcrIssueNow() { document.getElementById('google-error-banner').classList.remove('visible'); document.getElementById('conv-log').innerHTML = '<span style="color:#6ee7b7;">✓ Imagen corregida en local: Licencia SAAQ leída al 100% de nitidez.</span>'; }
+    function lockVaultCurtain(reason) { document.getElementById('vault-curtain').classList.add('locked'); document.getElementById('lock-status-msg').textContent = 'Bloqueo activo (' + reason + ') · Llave purgada de RAM'; }
+    function unlockVaultBiometric() { failedUnlockCount = 0; document.getElementById('vault-curtain').classList.remove('locked'); }
+    function unlockVaultPassword() {
+      const pwd = document.getElementById('unlock-pwd-input').value;
+      const msg = document.getElementById('lock-status-msg');
+      const btn = document.getElementById('btn-pwd-unlock');
+      if (pwd === 'Fanal2026!' || pwd.length >= 8) { failedUnlockCount = 0; document.getElementById('unlock-pwd-input').value = ''; document.getElementById('vault-curtain').classList.remove('locked'); return; }
+      failedUnlockCount += 1;
+      document.getElementById('unlock-pwd-input').value = '';
+      if (failedUnlockCount >= 3) {
+        let waitSecs = 30 * Math.pow(2, failedUnlockCount - 3);
+        btn.disabled = true;
+        msg.style.color = '#fbbf24';
+        msg.textContent = '🔒 Intento #' + failedUnlockCount + ' fallido. Espera ' + waitSecs + 's (Asentado en registre_incidents_loi25.jsonl)';
+        clearInterval(cooldownTimer);
+        cooldownTimer = setInterval(() => {
+          waitSecs -= 1;
+          if (waitSecs <= 0) { clearInterval(cooldownTimer); btn.disabled = false; msg.textContent = 'Enfriamiento concluido. Puedes volver a intentar.'; }
+          else { msg.textContent = '🔒 Enfriamiento activo: espera ' + waitSecs + 's (Auditado CAI Loi 25)'; }
+        }, 1000);
+      } else { msg.style.color = '#fca5a5'; msg.textContent = 'Contraseña incorrecta (' + (3 - failedUnlockCount) + ' intento(s) antes del bloqueo exponencial).'; }
+    }
+  </script>
+</body>
+</html>
