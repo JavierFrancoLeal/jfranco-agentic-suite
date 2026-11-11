@@ -132,6 +132,46 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
   const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
   return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
 }
+function validateClientOnboardingInput(p) {
+  const errors = [];
+  if (p.neq && !/^(11|22|33|88)\d{8}$/.test(String(p.neq).trim())) errors.push("ERR_NEQ_INVALIDO: el NEQ de Québec debe tener 10 dígitos y comenzar con 11, 22, 33 u 88.");
+  if (p.tpsNumber && !/^\d{9}RT\d{4}$/i.test(String(p.tpsNumber).replace(/\s+/g, ""))) errors.push("ERR_TPS_FORMATO: 123456789RT0001.");
+  if (p.tvqNumber && !/^\d{10}TQ\d{4}$/i.test(String(p.tvqNumber).replace(/\s+/g, ""))) errors.push("ERR_TVQ_FORMATO: 1234567890TQ0001.");
+  if (!p.rprpName || !p.rprpEmail || !String(p.rprpEmail).includes("@")) errors.push("ERR_LOI25_RPRP: se requiere el nombre y el correo del Responsable (Loi 25).");
+  if (Number(p.pricingFloorCad) <= 0 || Number.isNaN(Number(p.pricingFloorCad))) errors.push("ERR_PISO_PRECIO: el piso mínimo debe ser un número mayor a 0 $ CAD.");
+  if (!/^\d{4}$/.test(String(p.fiduciaryPin || ""))) errors.push("ERR_PIN_DEBIL: el PIN Fiduciario debe ser de 4 dígitos.");
+  if (!p.signerInitials || String(p.signerInitials).trim().length < 2) errors.push("ERR_INICIALES: registra tus iniciales profesionales (ej. JFL-CPA).");
+  return { valid: errors.length === 0, errors };
+}
+function compileUploadedIdentityIntoRules(missionText, organigram, scaleType) {
+  const clean = String(missionText || "").trim();
+  const tut = /\btu\b|\btutoiement\b|\bfamilier\b|\bproche\b/i.test(clean);
+  const warmth = { formalityRegister: tut ? "TUTOIEMENT_CHALEUREUX" : "VOUVOIEMENT_RESPECTUEUX", coreMissionExcerpt: clean.slice(0, 420) || "Prioriser le contact humain et la précision fiduciaire.", neverPromiseWithoutApproval: ["rabais hors grille", "délai garanti sans vérification", "avis juridique définitif"] };
+  const staff = (Array.isArray(organigram) && organigram.length > 0) ? organigram : [{ name: "Titulaire Principal", role: "owner", cellId: "CELL_MAIN" }];
+  const solo = scaleType === "AUTONOMOUS_SOLO" || scaleType === "MICRO_SINGLE_OWNER" || staff.length === 1;
+  return { topologyMode: solo ? "SOLO" : "CELL", isEnterpriseMultiCell: scaleType === "LARGE_ENTERPRISE_CELL", activeCellId: (staff[0] && staff[0].cellId) || "CELL_MAIN", humanWarmthCharter: warmth, compiledStaffRoles: staff.map((m, idx) => ({ workerId: "USR_" + (idx + 1), fullName: m.name, role: ["owner", "manager", "worker"].includes(m.role) ? m.role : "worker", departmentCell: m.cellId || "CELL_MAIN" })) };
+}
+function sealFirstBootConstitution(o) {
+  const check = validateClientOnboardingInput(o.clientData || {});
+  if (!check.valid) return { ok: false, stage: "CLIENT_VALIDATION", errors: check.errors };
+  if (!o.installerTechData || !o.installerTechData.apiSubKey || !o.installerTechData.installerBadgeId) return { ok: false, stage: "INSTALLER_CABLES", errors: ["ERR_FALTA_INSTALADOR: el instalador debe inyectar la sub-llave y su código de técnico."] };
+  const c = o.clientData;
+  const compiled = compileUploadedIdentityIntoRules(c.missionVisionText, c.organigramList, c.businessScaleType);
+  const now = new Date().toISOString();
+  const constitution = {
+    schemaVersion: "FANAL-CONSTITUTION-V2",
+    createdAtIso: now,
+    legalIdentity: { businessName: String(c.businessName || "").trim(), neq: String(c.neq || "").trim(), tpsNumber: String(c.tpsNumber || "").trim(), tvqNumber: String(c.tvqNumber || "").trim(), professionKey: c.professionKey || "", businessScaleType: c.businessScaleType || "", loi25Rprp: { name: String(c.rprpName || "").trim(), email: String(c.rprpEmail || "").trim() } },
+    brandingAndSoul: { logoLocalPath: (o.uploadedAssetsPaths && o.uploadedAssetsPaths.logoPath) || null, missionVisionDocPath: (o.uploadedAssetsPaths && o.uploadedAssetsPaths.missionDocPath) || null, organigramDocPath: (o.uploadedAssetsPaths && o.uploadedAssetsPaths.organigramDocPath) || null, humanWarmthCharter: compiled.humanWarmthCharter },
+    topologyAndAccess: { topologyMode: compiled.topologyMode, activeCellId: compiled.activeCellId, preferDualMonitor: Boolean(o.installerTechData && o.installerTechData.dualMonitorVerified), staffRoster: compiled.compiledStaffRoles },
+    economicInvariants: { pricingFloorCad: Number(c.pricingFloorCad), materialityThresholdCad: Number(c.materialityThresholdCad || 500), maxAutoDiscountPct: 0 },
+    fiduciarySignatureConfig: { storedPinSha256Hex: require("node:crypto").createHash("sha256").update(String(c.fiduciaryPin)).digest("hex"), requiredInitials: String(c.signerInitials || "").trim().toUpperCase() },
+    coResponsibilityPact: { clientAttestation: "Yo, " + c.rprpName + ", certifico que los pisos, los números fiscales, el organigrama y los documentos base ingresados por mí son exactos.", clientSignedWithInitials: String(c.signerInitials || "").trim().toUpperCase(), installerAttestation: "Instalación técnica, cifrado safeStorage y blindaje Loi 25 verificados por el instalador " + o.installerTechData.installerBadgeId + ".", sharedGenesisHash: "" },
+  };
+  constitution.coResponsibilityPact.sharedGenesisHash = require("node:crypto").createHash("sha256").update(JSON.stringify(constitution.legalIdentity) + JSON.stringify(constitution.economicInvariants)).digest("hex").slice(0, 16);
+  constitutionWrite(constitution);
+  return { ok: true, topologyAssigned: compiled.topologyMode, genesisHash: constitution.coResponsibilityPact.sharedGenesisHash };
+}
 function verifyClientFanalPassport(headerB64, masterPubDer) {
   try {
     const c = require("node:crypto");
@@ -404,7 +444,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.167";
+const VERSION = "1.0.168";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1725,6 +1765,21 @@ async function api(req, res, pathname) {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, { valid: verifyClientFanalPassport(b.headerB64 || "", b.masterPubDer || "") });
+  }
+  if (pathname === "/api/onboard/validate" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, validateClientOnboardingInput(b));
+  }
+  if (pathname === "/api/onboard/compile" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, compileUploadedIdentityIntoRules(b.missionText || "", b.organigram || [], b.scaleType || ""));
+  }
+  if (pathname === "/api/onboard/seal" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, sealFirstBootConstitution(b));
   }
   if (pathname === "/api/links" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
