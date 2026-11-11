@@ -265,6 +265,16 @@ function bindMonitor2Events(primaryWin) {
     screen.on("display-metrics-changed", refresh);
     ipcMain.handle("fanal:set-monitor2-split", (_ev, ratioNumber) => applyDualScreenSplitLayout(primaryWin, ratioNumber));
     ipcMain.handle("fanal:run-synced-step", (_ev, payload) => executeSynchronizedStepOnMonitor2((payload && payload.step) || {}, (payload && payload.connectedFolderPath) || ""));
+    ipcMain.handle("fanal:set-agent-control", (_ev, payload) => { agentPilotState.mode = String((payload && payload.mode) || "RUNNING"); return { ok: true, activeMode: agentPilotState.mode }; });
+    ipcMain.handle("fanal:step-agent-once", () => { agentPilotState.allowSingleStep = true; return { ok: true }; });
+    ipcMain.handle("fanal:run-agent-plan", (_ev, payload) => runHudGovernedAgentPlan(primaryWin.webContents, agentPortalView, (payload && payload.connectedFolderPath) || "", (payload && payload.plan) || []));
+    try {
+      if (agentPortalView && agentPortalView.webContents) {
+        agentPortalView.webContents.on("before-input-event", (_ev, input) => {
+          if (input.type === "keyDown" || input.type === "mouseDown") { agentPilotState.mode = "MANUAL"; try { primaryWin.webContents.send("fanal:hud-state-change", { state: "MANUAL", reason: "HUMAN_TOUCHED_PAGE" }); } catch (e) {} }
+        });
+      }
+    } catch (e) {}
     ipcMain.handle("fanal:link-biometric", async () => {
       try {
         if (process.platform === "darwin") { await systemPreferences.promptTouchID("vincular la biometría a la bóveda Fanal (Loi 25)"); return { success: true }; }
@@ -273,6 +283,34 @@ function bindMonitor2Events(primaryWin) {
       } catch (e) { return { success: false, error: String(e.message) }; }
     });
   } catch (e) {}
+}
+const agentPilotState = { mode: "RUNNING", stepCursor: 0, currentPlan: [], allowSingleStep: false };
+function waitUntilAgentAllowedToProceed() {
+  return new Promise((resolve) => {
+    const check = () => {
+      if (agentPilotState.mode === "RUNNING") return resolve("CONTINUE");
+      if (agentPilotState.allowSingleStep) { agentPilotState.allowSingleStep = false; return resolve("SINGLE_STEP"); }
+      setTimeout(check, 60);
+    };
+    check();
+  });
+}
+async function runHudGovernedAgentPlan(hudWc, view, folder, plan) {
+  agentPilotState.currentPlan = plan || [];
+  agentPilotState.stepCursor = 0;
+  agentPilotState.mode = "RUNNING";
+  for (let i = 0; i < (plan || []).length; i++) {
+    await waitUntilAgentAllowedToProceed();
+    agentPilotState.stepCursor = i + 1;
+    const step = plan[i];
+    if (step.action === "CLICK" && /envoyer|soumettre|transmettre|payer|signer|submit|pay/i.test(String(step.fieldLabel || ""))) {
+      agentPilotState.mode = "BRAKED";
+      try { hudWc.send("fanal:hud-state-change", { state: "BRAKED", stoppedAtLabel: step.fieldLabel }); } catch (e) {}
+      break;
+    }
+    try { hudWc.send("fanal:hud-step-tick", { currentStep: i + 1, totalSteps: plan.length, fieldLabel: step.fieldLabel, anchorRef: step.anchorFieldKey || "Verificado", proofPage: step.sourcePage || 1 }); } catch (e) {}
+    await executeSynchronizedStepOnMonitor2(step, folder);
+  }
 }
 function watchMonitorPlugEvents(primaryWin, view) {
   try {

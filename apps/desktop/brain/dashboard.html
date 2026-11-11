@@ -1163,6 +1163,21 @@ async function linkBiometricOneClick(){
     else{toast("Simulación: Touch ID / Windows Hello vinculado al llavero seguro local.");}
   }catch(e){toast("⚠️ No se pudo vincular la biometría.");}
 }
+function setAgentHudState(st,reason){
+  const hud=$("fanal-agent-hud");if(!hud)return;
+  hud.setAttribute("data-state",st);
+  const badge=$("hud-mode-badge"),text=$("hud-step-text");
+  if(st==="RUNNING"){badge.textContent="⚡ AGENTE FANAL";$("btn-hud-pause").style.display="inline-flex";$("btn-hud-takeover").style.display="inline-flex";$("btn-hud-resume").style.display="none";$("btn-hud-step-once").style.display="none";}
+  else if(st==="MANUAL"){badge.textContent="🖐️ VOLANTE HUMANO";text.textContent="Agente en pausa · Puedes editar o navegar libremente.";$("btn-hud-pause").style.display="none";$("btn-hud-takeover").style.display="none";$("btn-hud-resume").style.display="inline-flex";$("btn-hud-step-once").style.display="inline-flex";}
+  else if(st==="BRAKED"){badge.textContent="🛑 FRENO FIDUCIARIO";text.textContent="Todas las casillas listas · Fanal se detuvo antes del botón de envío. Revisa y haz clic tú mismo.";$("btn-hud-pause").style.display="none";$("btn-hud-takeover").style.display="none";$("btn-hud-resume").style.display="none";$("btn-hud-step-once").style.display="none";}
+  try{if(window.fanalIPC&&window.fanalIPC.setAgentControl)window.fanalIPC.setAgentControl({mode:st,reason:reason||""});}catch(e){}
+}
+function updateHudStepProgress(p){if(!p)return;const pct=p.totalSteps>0?Math.round(p.currentStep/p.totalSteps*100):0;$("hud-progress-bar").style.width=pct+"%";$("hud-step-text").textContent="["+p.currentStep+"/"+p.totalSteps+"] Llenando « "+p.fieldLabel+" » · Prueba Pág. "+p.proofPage;}
+function triggerSingleStep(){try{if(window.fanalIPC&&window.fanalIPC.stepAgentOnce)window.fanalIPC.stepAgentOnce();}catch(e){}}
+let splitIdx=0;const splitPresets=[{ratio:0.5,label:"⇄ 50|50"},{ratio:0.65,label:"⇄ 65|35"},{ratio:0.35,label:"⇄ 35|65"}];
+function cycleMonitorSplit(btn){splitIdx=(splitIdx+1)%splitPresets.length;const p=splitPresets[splitIdx];btn.textContent=p.label;try{if(window.fanalIPC&&window.fanalIPC.setMonitor2Split)window.fanalIPC.setMonitor2Split(p.ratio);}catch(e){}}
+function closeRightDrawer(){try{if(window.fanalIPC&&window.fanalIPC.closeRightDrawer)window.fanalIPC.closeRightDrawer();}catch(e){}}
+try{const ipc=window.electronAPI||window.fanalIPC||null;if(ipc&&ipc.on){ipc.on("fanal:hud-state-change",(e,d)=>{if(d&&d.state)setAgentHudState(d.state,d.reason||"");});ipc.on("fanal:hud-step-tick",(e,d)=>updateHudStepProgress(d));}}catch(e){}
 function viewToggle(){const simple=document.body.classList.toggle("simpleview");try{localStorage.setItem("dsh-simpleview",simple?"1":"0");}catch(e){}$("viewBtn").textContent=simple?"👁️🗨️":"👁️";$("viewBtn").title=simple?t("viewAdvanced"):t("viewSimple");}
 try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)setInterval(()=>{api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
 async function pollDiscover(){try{const r=await api("/api/capabilities");if(!r||r.error)return;const dc=$("discoverCard");if(!dc)return;if(r.pending>0||!r.cards||!r.cards.length){dc.style.display="none";return;}dc.style.display="block";$("discoverList").innerHTML=r.cards.map(c=>'<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><b>'+esc(c.title)+'</b><p class="hint" style="margin:2px 0">'+esc(c.pitch)+'</p><button class="btn small" data-cap="'+esc(c.id)+'" style="background:#16a34a">'+esc(c.cta)+'</button></div>').join("");document.querySelectorAll("[data-cap]").forEach(b=>b.onclick=async()=>{await api("/api/capabilities/use",{method:"POST",body:{id:b.dataset.cap}});pollDiscover();});}catch(e){}}
@@ -1487,6 +1502,42 @@ if(location.search.indexOf("wall=1")>=0){
   wallTick();setInterval(wallTick,30000);
 }
 </script>
+<style>
+  .fanal-agent-hud{box-sizing:border-box;height:36px;width:100%;background:#090d16;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;color:#f8fafc;user-select:none;overflow:hidden}
+  .fanal-agent-hud[data-state="RUNNING"]{border-bottom-color:#10b981;background:#061814}
+  .fanal-agent-hud[data-state="MANUAL"]{border-bottom-color:#38bdf8;background:#081629}
+  .fanal-agent-hud[data-state="BRAKED"]{border-bottom-color:#f59e0b;background:#1c1305}
+  .hud-left{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+  .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+  .fanal-agent-hud[data-state="RUNNING"] .status-dot{background:#10b981;box-shadow:0 0 8px #10b981;animation:fanalPulse 1.1s infinite ease-in-out}
+  .fanal-agent-hud[data-state="MANUAL"] .status-dot{background:#38bdf8}
+  .fanal-agent-hud[data-state="BRAKED"] .status-dot{background:#f59e0b;box-shadow:0 0 8px #f59e0b}
+  @keyframes fanalPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.55}}
+  .hud-badge{font-family:monospace;font-size:10px;font-weight:800;padding:2px 6px;border-radius:3px;letter-spacing:.3px;white-space:nowrap}
+  .fanal-agent-hud[data-state="RUNNING"] .hud-badge{background:#064e3b;color:#6ee7b7;border:1px solid #059669}
+  .fanal-agent-hud[data-state="MANUAL"] .hud-badge{background:#0c4a6e;color:#bae6fd;border:1px solid #0284c7}
+  .fanal-agent-hud[data-state="BRAKED"] .hud-badge{background:#78350f;color:#fde68a;border:1px solid #d97706}
+  .hud-step-ticker{font-family:monospace;font-size:11px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hud-progress-track{width:54px;height:5px;background:#1e293b;border-radius:3px;overflow:hidden;flex-shrink:0}
+  .hud-progress-fill{height:100%;width:0%;background:#10b981;transition:width .2s ease}
+  .hud-controls{display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:8px}
+  .hud-btn{height:24px;padding:0 8px;border-radius:3px;font-size:10.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:1px solid transparent}
+  .btn-pause{background:#1e293b;color:#f8fafc;border-color:#475569}
+  .btn-wheel{background:#0284c7;color:#fff;border-color:#38bdf8}
+  .btn-resume{background:#059669;color:#fff;border-color:#10b981}
+  .btn-ratio{background:#0f172a;color:#94a3b8;border-color:#334155;font-family:monospace;font-size:10px}
+</style>
+<div id="fanal-agent-hud" class="fanal-agent-hud" data-state="RUNNING" style="display:none">
+  <div class="hud-left"><span class="status-dot"></span><span id="hud-mode-badge" class="hud-badge">⚡ AGENTE FANAL</span><div class="hud-progress-track"><div id="hud-progress-bar" class="hud-progress-fill"></div></div><span id="hud-step-text" class="hud-step-ticker">[—/—] Listo para conducir</span></div>
+  <div class="hud-controls">
+    <button id="btn-hud-pause" class="hud-btn btn-pause" onclick="setAgentHudState('MANUAL','PAUSED_BY_USER')">⏸️ Pausar</button>
+    <button id="btn-hud-takeover" class="hud-btn btn-wheel" onclick="setAgentHudState('MANUAL','TAKE_WHEEL')">🖐️ Tomar el Volante</button>
+    <button id="btn-hud-resume" class="hud-btn btn-resume" style="display:none" onclick="setAgentHudState('RUNNING','RESUME_AGENT')">▶️ Devolver Volante</button>
+    <button id="btn-hud-step-once" class="hud-btn btn-pause" style="display:none" onclick="triggerSingleStep()">⏭️ +1 Casilla</button>
+    <button class="hud-btn btn-ratio" onclick="cycleMonitorSplit(this)">⇄ 50|50</button>
+    <button class="hud-btn btn-ratio" onclick="closeRightDrawer()">✕</button>
+  </div>
+</div>
 <div id="fanal-lock-curtain" style="display:none;flex-direction:column;justify-content:center;align-items:center;position:fixed;inset:0;z-index:999999;background:#090d16;color:#f8fafc;font-family:system-ui,sans-serif;padding:20px;text-align:center;user-select:none">
   <div style="background:#0f172a;border:1px solid #334155;border-top:4px solid #38bdf8;border-radius:6px;padding:20px;width:100%;max-width:320px">
     <div style="font-size:28px;margin-bottom:6px">🔒</div>
