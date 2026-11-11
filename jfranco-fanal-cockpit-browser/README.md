@@ -1,11 +1,13 @@
-# @javierfrancoleal/cockpit-browser — EL NAVEGADOR DE CABINA
+# @javierfrancoleal/fanal-cockpit-browser — EL NAVEGADOR DE CABINA (doctrina)
 
-> ⚡ **Super Agent Ready** — the internal Claude Cowork–style browser for DeepSeek
-> Harness's `WebContentsView`, with the Fanal-proven safety rails.
+> ⚡ **Super Agent Ready** — the doctrine of Fanal's cockpit browser: the Claude
+> Cowork–style internal browser that lives in Fanal's desktop Electron shell
+> (`apps/desktop/main.js`).
 
-The cockpit browser opens the client's web ecosystems (Google, Microsoft, the
-portals) inside the Electron shell while the agent fills the forms and the human
-keeps the wheel. Zero dependencies, zero `eval`, security first.
+**Scope: this is a skill, not a browser.** It teaches the agent how Fanal's
+cockpit is built and operated. It ships no Electron code and does **not** create
+a browser inside DeepSeek Harness. Zero dependencies, zero `eval`, security
+first.
 
 - **Persistent encrypted session** — `partition: persist:fanal-client-workspace`;
   passwords live in the SYSTEM keychain (macOS Keychain / Windows DPAPI) via
@@ -24,7 +26,7 @@ keeps the wheel. Zero dependencies, zero `eval`, security first.
 ## Install
 
 ```bash
-dsh plugin --profile <perfil> add @javierfrancoleal/cockpit-browser
+dsh plugin --profile <perfil> add @javierfrancoleal/fanal-cockpit-browser
 ```
 
 Restart the app after install. See `assets/cockpit-browser.md` for the skill the

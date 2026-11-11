@@ -1,10 +1,12 @@
-# Cockpit Browser — the recipes
+# Fanal Cockpit Browser — the recipes
 
 Verified Electron building blocks for the Claude Cowork–style cockpit. These are
 lifted from the Fanal desktop shell (`apps/desktop/main.js`), which runs them in
-production. Copy, adapt the identifiers, and keep the security flags exactly as
-written. CommonJS is used here because Electron main-process code is CommonJS in
-the proven shell; do not add a bundler.
+production. **They target Fanal's Electron shell, not DeepSeek Harness** — the
+identifiers (`persist:fanal-client-workspace`, `fanal:*` IPC) belong to Fanal.
+Copy, adapt the identifiers, and keep the security flags exactly as written.
+CommonJS is used here because Electron main-process code is CommonJS in the
+proven shell; do not add a bundler.
 
 ```js
 const { app, BrowserWindow, WebContentsView, screen, safeStorage } = require("electron");
