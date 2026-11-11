@@ -1,0 +1,33 @@
+{
+  "name": "@javierfrancoleal/cockpit-browser",
+  "version": "1.0.0",
+  "description": "EL NAVEGADOR DE CABINA for DeepSeek Harness: a real Chromium browser the agent controls over the Chrome DevTools Protocol, with the Fanal safety rails — persistent encrypted session, no file://, the constitutional brake before Envoyer/Soumettre/Payer/Transmettre, the emerald border on every agent touch, the 36px HUD, and physical-mouse detection. Zero npm dependencies, zero eval.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": ["icon.svg", "locale/*.json", "lib/index.js", "assets"],
+  "peerDependencies": { "@deepseek-ai/dsh-skill": ">=0.1.0" },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "nodejsRange": ">=20",
+      "dshRange": ">=0.2.1-rc.0",
+      "dshReleases": {
+        "0.2.2-alpha.2": "unknown",
+        "0.2.2-alpha.3": "unknown",
+        "0.2.2-rc.1": "unknown"
+      }
+    }
+  }
+}

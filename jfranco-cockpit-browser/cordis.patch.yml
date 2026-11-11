@@ -1,0 +1,6 @@
+# @javierfrancoleal/cockpit-browser — EL NAVEGADOR DE CABINA: a real Chromium
+# browser the DSH agent controls over CDP, with the Fanal safety rails.
+# Zero dependencies, zero eval, security first.
+- insert:
+    - id: cockpit-browser
+      name: '@javierfrancoleal/cockpit-browser'

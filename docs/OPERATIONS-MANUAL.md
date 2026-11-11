@@ -164,3 +164,10 @@ SIMPLIFY (the beta rule): no decorative graphs, no empty menus — every
 pixel shows either real work done by the agents or a button to a
 signature. The i18n: the prototype speaks Spanish; the production
 carries the 10 locales of the house.
+
+## The founder as the first client (2026-11-11)
+Trasunto manages Fanal WITH Fanal: the founder is client #1. The
+fresh-boot reset: quit Fanal, rename ~/.dsh/supervisor-data (the app's
+silo) — the virgin wizard appears on the next launch (the language
+card → the 8 steps). The founder's constitution lives in
+docs/FONDATEUR-CONSTITUTION.md (the exact texts for each wizard step).
