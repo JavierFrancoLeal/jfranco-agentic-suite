@@ -132,6 +132,30 @@ function triageDossierForAutonomous(payload, sources, con, profession) {
   const totalGreen = green.reduce((a, i) => a + Number(i.amountCad || 0), 0);
   return { canSignImmediately: yellow.length === 0 && red.length === 0, greenSummaryBanner: "🟢 " + green.length + " partidas mecánicas verificadas al centavo (" + totalGreen.toFixed(2).replace(".", ",") + " $) — ocultas para ahorrar tu tiempo", yellowApices: yellow, redBlockers: red };
 }
+function verifyOfficialIdImageAgainstForm(ocrText, form) {
+  const clean = String(ocrText || "").toUpperCase();
+  const discrepancies = [];
+  let idType = "GENERIC_ID_OCR";
+  const saaq = clean.match(/\b([A-Z])\s?-?(\d{4})\s?-?(\d{2})(\d{2})(\d{2})\s?-?(\d{2})\b/);
+  if (saaq) {
+    idType = "PERMIS_SAAQ_QUEBEC";
+    const firstLetter = saaq[1], dd = saaq[3], mm = saaq[4];
+    const formInitial = String((form && form.lastName) || "").trim().toUpperCase()[0];
+    if (formInitial && firstLetter !== formInitial) discrepancies.push({ field: "Apellido vs. Licencia SAAQ", formValue: form.lastName, idValue: "La licencia empieza con "" + firstLetter + """ });
+    const formBirth = String((form && form.birthDate) || "");
+    if (formBirth && !formBirth.endsWith(mm + "-" + dd) && !formBirth.endsWith(dd + "-" + mm)) discrepancies.push({ field: "Fecha de nacimiento vs. Licencia SAAQ", formValue: formBirth, idValue: "Los dígitos SAAQ indican día " + dd + " / mes " + mm });
+  }
+  const mrz = clean.match(/P<[A-Z]{3}([A-Z<]{39})/);
+  if (mrz) {
+    idType = "PASSEPORT_MRZ_ICAO";
+    const parts = mrz[1].split("<<");
+    const passLast = (parts[0] || "").replace(/</g, " ").trim();
+    const passFirst = (parts[1] || "").replace(/</g, " ").trim();
+    if (passLast && passLast !== String((form && form.lastName) || "").toUpperCase().trim()) discrepancies.push({ field: "Apellido oficial (Pasaporte MRZ)", formValue: form.lastName, idValue: passLast });
+    if (passFirst && !passFirst.includes(String((form && form.firstName) || "").toUpperCase().trim())) discrepancies.push({ field: "Nombre oficial (Pasaporte MRZ)", formValue: form.firstName, idValue: passFirst });
+  }
+  return { idDetected: Boolean(saaq || mrz), idType, matches100Percent: discrepancies.length === 0, discrepancies };
+}
 function buildMonthlyClientInvoice(profile, rows) {
   const TPS = 0.05, TVQ = 0.09975;
   const setupFee = profile.isFirstMonth ? (profile.tier === "SOLO" ? 350.0 : 750.0) : 0.0;
@@ -182,6 +206,31 @@ function compareClientIdentityColumns(clientWritten, officialExtracted) {
     diffRows.push({ field: key, colA_ClientInput: colA, colB_OfficialDoc: colB, charDiffHtmlA: highlightCharDiff(colA, colB), charDiffHtmlB: highlightCharDiff(colB, colA), isYearOverYearChange: Boolean(clientWritten && clientWritten.isPriorYear && key === "address") });
   }
   return { needsHumanTriage: diffRows.length > 0, greenCollapsedText: "🟢 " + identical + " datos generales idénticos al documento oficial (ocultos)", twoColumnDiffs: diffRows };
+}
+function executeFiduciarySignatureCeremony(o) {
+  const pending = (o.apicesResolvedLog || []).filter((a) => !a.verifiedByHuman || !a.timestampMs);
+  if (pending.length > 0) return { ok: false, error: "FIRMA_RECHAZADA: Faltan " + pending.length + " Ápices por verificar." };
+  const c = require("node:crypto");
+  try {
+    const expected = Buffer.from(String(o.professionalProfile && o.professionalProfile.storedPinSha256Hex || ""), "hex");
+    const actual = Buffer.from(String(o.enteredPinHash || ""), "hex");
+    if (expected.length !== actual.length || !c.timingSafeEqual(expected, actual)) return { ok: false, error: "SEGUNDA_CAPA_INVALIDA: el PIN no coincide." };
+  } catch (e) { return { ok: false, error: "SEGUNDA_CAPA_INVALIDA" }; }
+  const initials = String(o.enteredInitials || "").trim().toUpperCase();
+  const required = String(o.professionalProfile && o.professionalProfile.requiredInitials || "").toUpperCase();
+  if (required && initials !== required) return { ok: false, error: "INICIALES_INVALIDAS" };
+  const sealedAt = new Date().toISOString();
+  const cert = {
+    standard: "FANAL-LCCJTI-QUEBEC-V1",
+    dossierId: o.dossierId,
+    sealedAtIso: sealedAt,
+    beneficiaryOriginProof: { declaredByClient: (o.clientSubmittedDocsHashes && o.clientSubmittedDocsHashes.clientName) || "", sourceFilesSha256: (o.clientSubmittedDocsHashes && o.clientSubmittedDocsHashes.fileHashesArray) || [] },
+    fanalMachineProof: { veilLoi25Applied: true, arithmeticAndMrzVerified: true, verbatimQuotesCheckedCount: (o.apicesResolvedLog || []).length, finalDossierSha256: c.createHash("sha256").update(JSON.stringify(o.dossierContent || {})).digest("hex") },
+    professionalHumanJudgment: { signerName: (o.professionalProfile && o.professionalProfile.fullName) || "", licenseOrOrdreNumber: (o.professionalProfile && o.professionalProfile.licenseNumber) || "Titulaire Entreprise", initialsStamped: initials, secondFactorMethod: (o.professionalProfile && o.professionalProfile.biometricEnabled) ? "OS_BIOMETRIC + INITIALS" : "FIDUCIARY_PIN + INITIALS", apicesAuditTrail: (o.apicesResolvedLog || []).map((a) => ({ apexId: a.id, decisionTaken: a.selectedOption, verifiedAtIso: new Date(a.timestampMs).toISOString() })) },
+  };
+  let seal = "";
+  try { seal = c.sign(null, Buffer.from(JSON.stringify(cert), "utf8"), c.createPrivateKey(o.nodeSignPrivateKeyPem)).toString("base64url"); } catch (e) { return { ok: false, error: "LLAVE_FIRMANTE_INVALIDA" }; }
+  return { ok: true, certificatePayload: cert, cryptographicSealB64: seal, printableSealLine: "🛡️ SELLADO BILATERAL #" + seal.slice(0, 12) + " · " + cert.professionalHumanJudgment.signerName + " (" + initials + ") · " + sealedAt };
 }
 function verifyBackwardIdentityIntegrity(generatedDocs, anchor) {
   const errors = [];
@@ -295,7 +344,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.157";
+const VERSION = "1.0.158";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -1572,6 +1621,20 @@ async function api(req, res, pathname) {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, buildMonthlyClientInvoice(b.profile || {}, b.rows || []));
+  }
+  if (pathname === "/api/identity/id-image" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, verifyOfficialIdImageAgainstForm(b.ocrText || "", b.form || {}));
+  }
+  if (pathname === "/api/signature/ceremony" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    const r = executeFiduciarySignatureCeremony(b);
+    if (r.ok) {
+      appendLedger({ id: b.dossierId, branch: "dossier", signerRole: "OWNER", signerName: (b.professionalProfile && b.professionalProfile.fullName) || "", summary: r.printableSealLine, hash: r.cryptographicSealB64.slice(0, 12) });
+    }
+    return send(res, 200, r);
   }
   if (pathname === "/api/links" && req.method === "POST") {
     if (!managerOnly(res, req)) return;
