@@ -23,13 +23,15 @@
 //
 // Zero npm dependencies (node: built-ins + global fetch/WebSocket), zero eval.
 import { readFile } from "node:fs/promises";
-import { existsSync, writeFileSync, mkdirSync, appendFileSync, readFileSync } from "node:fs";
+import { existsSync, writeFileSync, mkdirSync, appendFileSync, readFileSync, chmodSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import { homedir } from "node:os";
 import { join, resolve, dirname } from "node:path";
 import { BUNDLED_SKILL_RANK } from "@deepseek-ai/dsh-skill";
 import { TypertRemoteService } from "@deepseek-ai/dsh-typert-protocol";
+import { defineTool } from "@deepseek-ai/dsh-tools";
 import { createWsBridge } from "./ws-bridge.js";
 
 const PROVIDER_NAME = "jfranco-cockpit-browser";
@@ -65,7 +67,48 @@ const provider = {
 // Cockpit runtime state and safety rails
 // ---------------------------------------------------------------------------
 
-const FORBIDDEN = /envoyer|enviar|soumettre|transmettre|payer|pagar|signer|firmar|supprimer|eliminar|borrar|submit|pay|delete|send|publish|post|confirm|confirmer|confirmar|valider|validar|validate|authorize|autoriser|autorizar|acheter|comprar|buy|purchase|checkout|sign\s?in|log\s?in|login|sign\s?up|register|registrar|inscrire|inscription|connexion|connecter|iniciar\s+sesi|entrar|create|créer|crear|creer/i;
+// Unicode normalization + diacritics removal — immune to macOS NFD vs NFC
+function normalizeText(str) {
+  return String(str || "").normalize("NFD").replace(/\p{Diacritic}/gu, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+// Word-boundary FORBIDDEN set (fr/en/es), evaluated on normalizeText() output so
+// "pays" (country), "postal", "centrar", "designer", "déconnecter" no longer
+// false-positive; OAuth/SSO/finance/destructive verbs are covered.
+const FORBIDDEN_WORDS = [
+  "envoyer", "enviar", "soumettre", "transmettre", "submit", "send",
+  "publish", "publier", "publicar", "post", "share", "partager", "compartir",
+  "reply", "repondre", "responder",
+  "payer", "pagar", "pay", "payment", "paiement", "pago",
+  "acheter", "comprar", "buy", "purchase", "checkout", "commander",
+  "transfer", "transferer", "transferir", "virement", "wire",
+  "subscribe", "abonner", "suscribir", "suscribirse", "donate", "donar", "donner",
+  "withdraw", "retirer", "retirar",
+  "signer", "firmar", "confirm", "confirmer", "confirmar",
+  "valider", "validar", "validate", "authorize", "autoriser", "autorizar",
+  "accept", "accepter", "aceptar", "allow", "grant", "accorder", "conceder",
+  "supprimer", "eliminar", "borrar", "delete", "remove", "erase",
+  "cancel", "annuler", "cancelar", "revoke", "revoquer", "revocar",
+  "deactivate", "desactiver", "desactivar", "reset", "reinitialiser", "restablecer",
+  "sign\\s?in", "log\\s?in", "login", "sign\\s?up", "log\\s?out", "logout", "sign\\s?out",
+  "register", "registrar", "inscrire", "inscription",
+  "connexion", "connecter", "deconnexion", "deconnecter",
+  "iniciar\\s+sesion", "cerrar\\s+sesion", "entrar",
+  "continue\\s+with", "continuer\\s+avec", "continuar\\s+con",
+  "create", "creer", "crear",
+];
+const FORBIDDEN_RE = new RegExp(`(?:^|[^a-z0-9])(?:${FORBIDDEN_WORDS.join("|")})(?=$|[^a-z0-9])`, "i");
+
+function isForbiddenLabel(label, meta = {}) {
+  if (meta.isSubmit) return true;
+  const norm = normalizeText(label);
+  if (norm && FORBIDDEN_RE.test(norm)) return true;
+  if (meta.href && FORBIDDEN_RE.test(normalizeText(meta.href))) return true;
+  return false;
+}
+
+const TIER_PRIORITY = { GREEN: 1, "SEMI-AUTOMATIC": 2, SEMI: 2, YELLOW: 3, RED: 4 };
+const SENSITIVE_SELECTOR_OR_LABEL = /pass|pwd|secret|token|key|cvv|cvc|cc-|card|tarjeta|carte|pin|otp|2fa|ssn|auth|code|codigo/i;
 const MAX_READ_CHARS = 24000;
 
 const state = {
@@ -76,11 +119,13 @@ const state = {
   targetId: null,
   port: Number(process.env.COCKPIT_PORT || 9333),
   allowOne: false,
+  pendingYellow: null, // { sel, label } awaiting human approval
 };
 
 const audit = [];
 const AUDIT_FILE = join(homedir(), ".dsh", "cockpit-browser", "audit.jsonl");
 const TIERS_FILE = process.env.COCKPIT_TIERS || join(homedir(), ".dsh", "cockpit-browser", "tiers.md");
+const TIERS_PROPOSED_FILE = join(homedir(), ".dsh", "cockpit-browser", "tiers.proposed.md");
 let frameCtxs = null; // cached isolated-world contexts per frame
 let bridge = null; // Chrome-extension bridge (the "your Chrome" transport)
 const BRIDGE_PORT = Number(process.env.COCKPIT_BRIDGE_PORT || 9334);
@@ -93,14 +138,38 @@ const GREEN = "GREEN";
 const SEMI = "SEMI-AUTOMATIC";
 const RED = "RED";
 
+function writeAuditEntry(path, entry) {
+  const dir = dirname(path);
+  if (!existsSync(dir)) mkdirSync(dir, { recursive: true, mode: 0o700 });
+  const isNew = !existsSync(path);
+  let prevHash = "";
+  if (!isNew) {
+    try {
+      const lines = readFileSync(path, "utf8").trim().split("\n").filter(Boolean);
+      const last = JSON.parse(lines[lines.length - 1]);
+      prevHash = last.hash || "";
+    } catch {}
+  }
+  const hash = createHash("sha256").update(prevHash + JSON.stringify(entry)).digest("hex");
+  const chained = { ...entry, prevHash, hash };
+  appendFileSync(path, JSON.stringify(chained) + "\n", { encoding: "utf8", mode: 0o600 });
+  if (isNew) { try { chmodSync(path, 0o600); } catch {} }
+}
+
 function logEntry(action, tier, target, value, justification) {
   const entry = { ts: new Date().toISOString(), action, tier, target: target || "", value: value || "", justification };
   audit.push(entry);
-  try {
-    mkdirSync(dirname(AUDIT_FILE), { recursive: true });
-    appendFileSync(AUDIT_FILE, JSON.stringify(entry) + "\n", { mode: 0o600 });
-  } catch {}
+  try { writeAuditEntry(AUDIT_FILE, entry); } catch {}
   return entry;
+}
+
+// Proactive secret redaction: driven by selector/label, independent of whether
+// the DOM reported isPassword (which is undefined on failure/timeout).
+function redactFillValue(selector, label, value, res = {}) {
+  if ((res && res.isPassword) || SENSITIVE_SELECTOR_OR_LABEL.test(String(selector || "")) || SENSITIVE_SELECTOR_OR_LABEL.test(String(label || ""))) {
+    return "••• (sensitive — never logged)";
+  }
+  return String(value ?? "").slice(0, 80);
 }
 
 function readySummary() {
@@ -286,9 +355,27 @@ async function preflight() {
   await requireReady();
   const touched = await evaluate("!!(window.__cockpitHumanTouched)").catch(() => false);
   if (touched) state.mode = "MANUAL";
+  if (state.mode === "BRAKED") {
+    if (state.allowOne) { state.allowOne = false; return null; }
+    return err("🛑 BRAKE — the agent stopped before a final/legal button. It will NOT try another selector. Use /cockpit resume (or /cockpit step) to proceed deliberately.");
+  }
   if (state.mode === "MANUAL") {
     if (state.allowOne) { state.allowOne = false; return null; }
     return err("🖐️ HUMAN AT THE WHEEL — the human has the wheel. /cockpit resume (or /cockpit step for exactly one action).");
+  }
+  return null;
+}
+
+// Extension transport preflight: same gate (BRAKED/MANUAL) + real-time
+// human-touch check via a status round-trip.
+async function extPreflight() {
+  try {
+    const s = await bridge.send("status", {}).catch(() => null);
+    if (s && s.humanTouched) state.mode = "MANUAL";
+  } catch {}
+  if (state.mode === "BRAKED" || state.mode === "MANUAL") {
+    if (state.allowOne) { state.allowOne = false; return null; }
+    return err(`HUD: ${state.mode === "BRAKED" ? "🛑 BRAKE" : "🖐️ HUMAN AT THE WHEEL"} — use /cockpit resume (or /cockpit step) to proceed.`);
   }
   return null;
 }
@@ -298,8 +385,8 @@ async function injectProbes() {
     if (window.__cockpitHudInstalled) return true;
     window.__cockpitHudInstalled = true;
     window.__cockpitHumanTouched = false;
-    window.addEventListener("mousedown", () => { window.__cockpitHumanTouched = true; }, true);
-    window.addEventListener("keydown", () => { window.__cockpitHumanTouched = true; }, true);
+    window.addEventListener("mousedown", (e) => { if (e && e.isTrusted) window.__cockpitHumanTouched = true; }, true);
+    window.addEventListener("keydown", (e) => { if (e && e.isTrusted) window.__cockpitHumanTouched = true; }, true);
     const bar = document.createElement("div");
     bar.id = "__cockpit_hud";
     bar.style.cssText = "position:fixed;top:0;left:0;right:0;height:36px;z-index:2147483647;background:#0f172a;color:#f8fafc;font:700 12px/36px system-ui;padding:0 12px;display:flex;gap:12px;align-items:center;box-shadow:0 1px 0 #334155";
@@ -314,10 +401,55 @@ async function injectProbes() {
 // ---------------------------------------------------------------------------
 
 function tokenize(input) {
+  const str = String(input || "").trim();
   const tokens = [];
-  const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
-  let m;
-  while ((m = re.exec(input)) !== null) tokens.push(m[1] ?? m[2] ?? m[3]);
+  let current = "";
+  let quote = null;
+  let tokenStartedWithQuote = false;
+  let inToken = false;
+
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i];
+    if (ch === "\\" && i + 1 < str.length) {
+      const next = str[++i];
+      current += quote ? next : "\\" + next;
+      inToken = true;
+      continue;
+    }
+    if (quote) {
+      if (ch === quote) {
+        if (!tokenStartedWithQuote) current += ch;
+        quote = null;
+      } else {
+        current += ch;
+      }
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quote = ch;
+      if (!inToken) {
+        tokenStartedWithQuote = true;
+        inToken = true;
+      } else {
+        tokenStartedWithQuote = false;
+        current += ch;
+      }
+      continue;
+    }
+    if (/\s/.test(ch)) {
+      if (inToken) {
+        tokens.push(current);
+        current = "";
+        inToken = false;
+        tokenStartedWithQuote = false;
+      }
+      continue;
+    }
+    current += ch;
+    inToken = true;
+  }
+  if (quote !== null) throw new Error(`Unclosed quote (${quote}) in command input`);
+  if (inToken) tokens.push(current);
   return tokens;
 }
 
@@ -377,7 +509,7 @@ async function cmdFill(sel, value) {
   })()`;
   const res = await evaluateIn(c.contextId, expr);
   if (!res || res.done !== true) return err(`Could not fill ${sel}.`);
-  const shown = res.kind === "select" ? `[select] ${String(value).slice(0, 80)}` : (res.isPassword ? "••• (password — never logged)" : String(value).slice(0, 80));
+  const shown = (res.kind === "select" ? "[select] " : "") + redactFillValue(sel, "", value, res);
   logEntry("fill", SEMI, sel, shown, "writes a value into a third-party page — mandatory verification");
   return ok(`Filled ${sel} (emerald border). ⚑ SEMI-AUTOMATIC — verify it in the report.`);
 }
@@ -387,7 +519,7 @@ const VALID_TIERS = new Set(["GREEN", "SEMI-AUTOMATIC", "YELLOW", "RED"]);
 // User-editable tier overrides: ~/.dsh/cockpit-browser/tiers.md, one
 // "pattern → TIER" per line. Read FRESH on every decision (no cache), so a
 // correction takes effect on the NEXT action and persists across restarts.
-function loadTiers() {
+function loadTiersFromDisk() {
   const out = [];
   try {
     if (existsSync(TIERS_FILE)) {
@@ -406,13 +538,52 @@ function loadTiers() {
   return out;
 }
 
-function tierForLabel(label) {
-  const lab = String(label || "").toLowerCase();
-  let hit = null;
-  for (const t of loadTiers()) {
-    if (t.pattern && lab.includes(t.pattern.toLowerCase())) hit = t.tier;
+// RAM-cached tiers: loaded once at startup and only refreshed on /cockpit
+// promote. A bash write to tiers.md by a danger-full-access agent is therefore
+// ignored by the running host.
+let trustedTiers = [];
+let trustedTiersHash = "";
+function refreshTrustedTiers() {
+  trustedTiers = loadTiersFromDisk();
+  try { trustedTiersHash = createHash("sha256").update(readFileSync(TIERS_FILE, "utf8")).digest("hex"); } catch { trustedTiersHash = ""; }
+}
+function loadTiers() {
+  return trustedTiers;
+}
+
+function tierForLabel(label, rules = []) {
+  const lab = normalizeText(label);
+  if (!lab) return null;
+  let exactMatchTier = null;
+  let highestSubstringTier = null;
+  for (const t of rules) {
+    const pat = normalizeText(t.pattern);
+    const tier = String(t.tier || "").toUpperCase();
+    if (!pat || pat.length < 2 || !(tier in TIER_PRIORITY)) continue;
+    if (lab === pat) {
+      exactMatchTier = tier;
+    } else if (pat.length >= 3 && lab.includes(pat)) {
+      if (!highestSubstringTier || TIER_PRIORITY[tier] > TIER_PRIORITY[highestSubstringTier]) {
+        highestSubstringTier = tier;
+      }
+    }
   }
-  return hit; // the last matching line wins
+  return exactMatchTier || highestSubstringTier;
+}
+
+// Constitutional rule: FORBIDDEN (danger) can only be downgraded by an EXACT
+// override in tiers.md — a generic substring GREEN never disables the brake.
+function resolveActionTier(label, rules = [], meta = {}) {
+  const forbidden = isForbiddenLabel(label, meta);
+  const override = tierForLabel(label, rules);
+  const normLab = normalizeText(label);
+  if (forbidden) {
+    const hasExactOverride = rules.some(
+      (r) => normalizeText(r.pattern) === normLab && (r.tier === "GREEN" || r.tier === "SEMI" || r.tier === "SEMI-AUTOMATIC" || r.tier === "YELLOW")
+    );
+    if (!hasExactOverride) return RED;
+  }
+  return override || (forbidden ? RED : SEMI);
 }
 
 function cmdTier(pattern, tierRaw) {
@@ -420,12 +591,40 @@ function cmdTier(pattern, tierRaw) {
   const tier = String(tierRaw || "").toUpperCase().trim();
   if (!VALID_TIERS.has(tier)) return err("Tier must be one of: GREEN, SEMI-AUTOMATIC, YELLOW, RED.");
   try {
-    mkdirSync(dirname(TIERS_FILE), { recursive: true });
-    appendFileSync(TIERS_FILE, `${pattern} → ${tier}\n`, { mode: 0o600 });
+    mkdirSync(dirname(TIERS_PROPOSED_FILE), { recursive: true });
+    appendFileSync(TIERS_PROPOSED_FILE, `${pattern} → ${tier}\n`, { mode: 0o600 });
   } catch (e) {
-    return err(`Could not write the tier override: ${e && e.message ? e.message : e}`);
+    return err(`Could not write the tier proposal: ${e && e.message ? e.message : e}`);
   }
-  return ok(`✅ "${pattern}" → ${tier}.\n\nTakes effect on the NEXT action (read fresh, no cache) and persists in ${TIERS_FILE}. To override it, add another line with the same text and the new tier — the last line wins.`);
+  return ok(`✍️ Proposal recorded: "${pattern}" → ${tier}.\n\nIt is NOT active yet. Run /cockpit promote to approve it into tiers.md (the human gate).`);
+}
+
+function cmdPromote() {
+  try {
+    if (!existsSync(TIERS_PROPOSED_FILE)) return ok("No proposals pending.");
+    const proposals = readFileSync(TIERS_PROPOSED_FILE, "utf8");
+    if (!proposals.trim()) return ok("No proposals pending.");
+
+    // Piggyback defense: verify the on-disk tiers.md still matches the trusted
+    // RAM hash. If a bash-injected line is waiting in tiers.md, rebuild it from
+    // the trusted RAM copy + the approved proposals instead of loading the
+    // tampered file into memory.
+    let diskHash = "";
+    try { diskHash = createHash("sha256").update(readFileSync(TIERS_FILE, "utf8")).digest("hex"); } catch {}
+    let tampered = diskHash !== trustedTiersHash;
+    if (tampered) {
+      const ramLines = trustedTiers.map((t) => `${t.pattern} → ${t.tier}`).join("\n");
+      const rebuilt = [ramLines, proposals.trim()].filter(Boolean).join("\n") + "\n";
+      writeFileSync(TIERS_FILE, rebuilt, { encoding: "utf8", mode: 0o600 });
+    } else {
+      appendFileSync(TIERS_FILE, proposals, { encoding: "utf8", mode: 0o600 });
+    }
+    writeFileSync(TIERS_PROPOSED_FILE, "", { encoding: "utf8", mode: 0o600 });
+    refreshTrustedTiers();
+    return ok(`✅ Promoted proposals into ${TIERS_FILE}:\n${proposals.trim()}${tampered ? "\n\n⚠️ Detected and discarded a tampered line in tiers.md (rebuilt from the trusted RAM copy)." : ""}`);
+  } catch (e) {
+    return err(`Could not promote proposals: ${e && e.message ? e.message : e}`);
+  }
 }
 
 async function cmdClick(sel) {
@@ -434,17 +633,27 @@ async function cmdClick(sel) {
   if (p) return p;
   const c = await locate(sel);
   if (!c) return err(`No element matched selector ${sel} (searched the main frame and iframes).`);
-  const label = await evaluateIn(c.contextId, `(() => { const el = document.querySelector(${JSON.stringify(sel)}); return (el.getAttribute("aria-label") || el.innerText || el.textContent || el.value || el.getAttribute("title") || "").trim().slice(0, 200); })()`);
-  const override = tierForLabel(label);
-  const tier = override || (FORBIDDEN.test(label) ? RED : SEMI);
+  const meta = await evaluateIn(c.contextId, `(() => { const el = document.querySelector(${JSON.stringify(sel)}); if (!el) return null; const anc = el.closest('button, a, [role="button"], [role="link"], [role="menuitem"], [role="tab"], label'); const target = anc || el; const lab = (n) => n ? ((n.getAttribute("aria-label") || n.getAttribute("title") || n.innerText || n.textContent || "").trim().slice(0, 200)) : ""; const label = [lab(target), lab(el)].filter(Boolean).join(" | ").slice(0, 300); let isSubmit = false; if (target.matches && (target.matches('input[type="submit"], button[type="submit"]'))) isSubmit = true; else if (target.tagName === "BUTTON" && !target.hasAttribute("type") && target.closest && target.closest("form")) isSubmit = true; const href = (target.getAttribute && target.getAttribute("href")) || (target.form && target.form.action) || ""; return { label, isSubmit, href }; })()`);
+  if (meta === null) return err(`No element matched selector ${sel}.`);
+  const label = (meta && meta.label) || "";
+  const override = tierForLabel(label, loadTiers());
+  const tier = resolveActionTier(label, loadTiers(), { isSubmit: meta && meta.isSubmit, href: meta && meta.href });
+  // Human-approved pending YELLOW: consume the one-time approval for this exact click.
+  if (tier === "YELLOW" && state.pendingYellow && state.pendingYellow.sel === sel && state.pendingYellow.label === label) {
+    state.pendingYellow = null;
+    state.mode = "AGENTE";
+    tier = "SEMI";
+  }
   if (tier === RED) {
     state.mode = "BRAKED";
     logEntry("click", RED, sel, label, override ? "human override: RED" : "refused — final/legal/committing button");
     return ok(`🛑 BRAKE — I stopped at "${label}"${override ? " (you marked it RED)" : " because it is a final/legal/committing click (send, pay, authorize, create, sign in)"}.\n\n✅ I already left ready: ${readySummary()}\n\n⏳ You still need to (you, human): ${missingSummary()}`);
   }
   if (tier === "YELLOW") {
-    logEntry("click", "YELLOW", sel, label, "human override: propose and wait");
-    return ok(`🟡 Propose first — "${label}" is marked YELLOW. Propose it in the chat and wait for the human's yes before retrying.`);
+    state.pendingYellow = { sel, label };
+    state.mode = "MANUAL";
+    logEntry("click", "YELLOW", sel, label, "propose and wait");
+    return ok(`🟡 Propose first — "${label}" is marked YELLOW. Run /cockpit step to authorize exactly this click, then re-run it.`);
   }
   if (c.isMain) {
     const rect = await evaluateIn(c.contextId, `(() => { const el = document.querySelector(${JSON.stringify(sel)}); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
@@ -562,30 +771,44 @@ function readAllAudit() {
   return entries;
 }
 
+function computeKpis(entries = []) {
+  const mutating = entries.filter((e) => e && (e.action === "click" || e.action === "fill"));
+  let green = 0, semi = 0, yellow = 0, red = 0;
+  for (const e of mutating) {
+    if (e.tier === GREEN) green++;
+    else if (e.tier === SEMI || e.tier === "SEMI-AUTOMATIC") semi++;
+    else if (e.tier === "YELLOW") yellow++;
+    else if (e.tier === RED) red++;
+  }
+  const total = green + semi + yellow + red;
+  if (total === 0) return { total: 0, autonomy: 0, intervention: 0, breakdown: { green, semi, yellow, red } };
+  return {
+    total,
+    autonomy: Number(((green + semi) / total).toFixed(4)),
+    intervention: Number(((yellow + red) / total).toFixed(4)),
+    breakdown: { green, semi, yellow, red },
+  };
+}
+
 function cmdKpi() {
   const all = readAllAudit();
-  const green = all.filter((e) => e.tier === GREEN).length;
-  const semi = all.filter((e) => e.tier === SEMI).length;
-  const red = all.filter((e) => e.tier === RED).length;
-  const yellow = all.filter((e) => e.tier === "YELLOW").length;
-  const total = all.length;
-  const autonomy = green + semi;
-  const handover = red + yellow;
-  const autonomyRate = total ? Math.round((autonomy / total) * 100) : 0;
-  const handoverRate = total ? Math.round((handover / total) * 100) : 0;
+  const k = computeKpis(all);
+  const { green, semi, yellow, red } = k.breakdown;
+  const autonomyPct = Math.round(k.autonomy * 100);
+  const interventionPct = Math.round(k.intervention * 100);
   const redLabels = {};
-  for (const e of all) if (e.tier === RED) { const k = e.value || e.target || "?"; redLabels[k] = (redLabels[k] || 0) + 1; }
-  const topRed = Object.entries(redLabels).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k, n]) => `${k} (×${n})`).join(" · ");
+  for (const e of all) if (e.tier === RED) { const key = e.value || e.target || "?"; redLabels[key] = (redLabels[key] || 0) + 1; }
+  const topRed = Object.entries(redLabels).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([k2, n]) => `${k2} (×${n})`).join(" · ");
   let verdict;
-  if (total === 0) verdict = "⚪ No activity yet — use /cockpit open <url> and do something.";
-  else if (autonomyRate >= 80) verdict = "✅ The system works — the agent did most of the work.";
-  else if (autonomyRate >= 50) verdict = "🟡 Mixed — review the handovers to the human below; some steps could have been automated.";
+  if (k.total === 0) verdict = "⚪ No activity yet — use /cockpit open <url> and do something.";
+  else if (autonomyPct >= 80) verdict = "✅ The system works — the agent did most of the work.";
+  else if (autonomyPct >= 50) verdict = "🟡 Mixed — review the handovers to the human below; some steps could have been automated.";
   else verdict = "🔧 Refine the plugin — too much human intervention on automatable tasks.";
   const lines = [
     "— Cockpit Efficiency KPI —",
     "",
-    `Actions: ${total}  (autonomous ${autonomy} = ${green} GREEN + ${semi} ⚑SEMI · handed to human ${handover} = ${red} 🛑RED + ${yellow} 🟡YELLOW)`,
-    `Autonomy: ${autonomyRate}%   ·   Human intervention: ${handoverRate}%`,
+    `Mutating actions: ${k.total}  (autonomous ${green + semi} = ${green} GREEN + ${semi} ⚑SEMI · human ${yellow + red} = ${red} 🛑RED + ${yellow} 🟡YELLOW)`,
+    `Autonomy: ${autonomyPct}%   ·   Human intervention: ${interventionPct}%`,
     "",
     `Verdict: ${verdict}`,
     "",
@@ -596,7 +819,7 @@ function cmdKpi() {
   return ok(lines.join("\n"));
 }
 
-const USAGE = "Usage: /cockpit <open <url> | read [selector] | fill <selector> <value> | click <selector> | screenshot [file] | tabs | switch <n> | newtab [url] | status | pause | resume | step | report | kpi | tier <pattern> <tier> | close>";
+const USAGE = "Usage: /cockpit <open <url> | read [selector] | fill <selector> <value> | click <selector> | screenshot [file] | tabs | switch <n> | newtab [url] | status | pause | resume | step | report | kpi | tier <pattern> <tier> | promote | close>";
 
 // ---------------------------------------------------------------------------
 // Extension transport — the "your Chrome" backend. Same guardrails as the CDP
@@ -625,27 +848,38 @@ async function extRead(sel) {
 
 async function extFill(sel, value) {
   if (!sel || value === undefined) return err("fill requires <selector> <value>: /cockpit fill \"#email\" \"me@example.com\"");
+  const g = await extPreflight(); if (g) return g;
   const res = await bridge.send("fill", { selector: sel, value: String(value) });
   if (!res || res.done !== true) return err(`Could not fill ${sel}.`);
-  const shown = res.kind === "select" ? `[select] ${String(value).slice(0, 80)}` : (res.isPassword ? "••• (password — never logged)" : String(value).slice(0, 80));
+  const shown = (res.kind === "select" ? "[select] " : "") + redactFillValue(sel, "", value, res);
   logEntry("fill", SEMI, sel, shown, "writes a value into a third-party page — mandatory verification");
   return ok(`Filled ${sel} (emerald border). ⚑ SEMI-AUTOMATIC — verify it in the report.`);
 }
 
 async function extClick(sel) {
   if (!sel) return err("click requires <selector>: /cockpit click \"button.envoyer\"");
-  const label = await bridge.send("getLabel", { selector: sel });
-  if (label === null) return err(`No element matched selector ${sel}.`);
-  const override = tierForLabel(label);
-  const tier = override || (FORBIDDEN.test(label) ? RED : SEMI);
+  const g = await extPreflight(); if (g) return g;
+  const meta = await bridge.send("getLabel", { selector: sel });
+  if (meta === null) return err(`No element matched selector ${sel}.`);
+  const label = (meta && meta.label) || "";
+  const override = tierForLabel(label, loadTiers());
+  const tier = resolveActionTier(label, loadTiers(), { isSubmit: meta && meta.isSubmit, href: meta && meta.href });
+  // Human-approved pending YELLOW: consume the one-time approval for this exact click.
+  if (tier === "YELLOW" && state.pendingYellow && state.pendingYellow.sel === sel && state.pendingYellow.label === label) {
+    state.pendingYellow = null;
+    state.mode = "AGENTE";
+    tier = "SEMI";
+  }
   if (tier === RED) {
     state.mode = "BRAKED";
     logEntry("click", RED, sel, label, override ? "human override: RED" : "refused — final/legal/committing button");
     return ok(`🛑 BRAKE — I stopped at "${label}"${override ? " (you marked it RED)" : " because it is a final/legal/committing click (send, pay, authorize, create, sign in)"}.\n\n✅ I already left ready: ${readySummary()}\n\n⏳ You still need to (you, human): ${missingSummary()}`);
   }
   if (tier === "YELLOW") {
-    logEntry("click", "YELLOW", sel, label, "human override: propose and wait");
-    return ok(`🟡 Propose first — "${label}" is marked YELLOW. Propose it in the chat and wait for the human's yes before retrying.`);
+    state.pendingYellow = { sel, label };
+    state.mode = "MANUAL";
+    logEntry("click", "YELLOW", sel, label, "propose and wait");
+    return ok(`🟡 Propose first — "${label}" is marked YELLOW. Run /cockpit step to authorize exactly this click, then re-run it.`);
   }
   await bridge.send("click", { selector: sel });
   logEntry("click", tier, sel, label, override ? `human override: ${tier}` : "clicked a third-party page — mandatory verification");
@@ -689,6 +923,7 @@ async function executeCockpit(invocation) {
         case "report": return cmdReport();
         case "kpi": return cmdKpi();
         case "tier": return cmdTier(tokens[1], tokens[2]);
+        case "promote": return cmdPromote();
         case "close": return ok("The extension stays connected. Close the cockpit tab in your Chrome to end the session.");
         case "tabs": case "switch": case "newtab": return err(`/cockpit ${cmd} is not needed with the extension — use your Chrome tabs directly.`);
         default: return err(USAGE);
@@ -710,6 +945,7 @@ async function executeCockpit(invocation) {
       case "report": return cmdReport();
       case "kpi": return cmdKpi();
       case "tier": return cmdTier(tokens[1], tokens[2]);
+      case "promote": return cmdPromote();
       case "close": return await cmdClose();
       default: return err(USAGE);
     }
@@ -748,9 +984,10 @@ Object.defineProperty(CockpitBridge.prototype, REMOTE_METHOD_DESCRIPTOR, {
 // ---------------------------------------------------------------------------
 
 const name = "cockpit-browser";
-const inject = ["commands"];
+const inject = ["commands", "tools"];
 
 function apply(ctx) {
+  refreshTrustedTiers();
   try { bridge = createWsBridge(BRIDGE_PORT); } catch {}
   ctx.on("skills", (skills) => {
     skills.registerProvider(() => provider);
@@ -761,7 +998,7 @@ function apply(ctx) {
     description:
       "Control the cockpit browser AND keep the J.Franco guardrails. GREEN (read-only) actions run and are logged; SEMI-AUTOMATIC ⚑ actions (fill/click) run and are flagged; RED actions (Envoyer/Payer/Create/Authorize/Sign in) are refused by the brake, which — like a guide — tells you what is ready and what is missing; YELLOW proposals wait in chat. Finds elements inside iframes, fills <select>, manages tabs (tabs/switch/newtab). /cockpit report renders the Accountability Report.",
     input: {
-      hint: "<open <url> | read [selector] | fill <selector> <value> | click <selector> | screenshot [file] | tabs | switch <n> | newtab [url] | status | pause | resume | step | report | kpi | tier <pattern> <tier> | close>",
+      hint: "<open <url> | read [selector] | fill <selector> <value> | click <selector> | screenshot [file] | tabs | switch <n> | newtab [url] | status | pause | resume | step | report | kpi | tier <pattern> <tier> | promote | close>",
       attachments: false,
     },
     handler: (invocation) => executeCockpit(invocation),
@@ -769,6 +1006,49 @@ function apply(ctx) {
   try {
     new CockpitBridge(ctx);
   } catch {}
+
+  // The agent-callable tool: the SAME operations as the /cockpit slash
+  // command (one operation, two callers). The brake stays — the tool's click
+  // runs the same FORBIDDEN check, so a committing click is refused and the
+  // final click remains the human's.
+  ctx.tools.register(defineTool({
+    name: "cockpit",
+    description:
+      "Drive the user's Chrome browser (the cockpit) under the J.Franco guardrails. "
+      + "action=read returns the visible page text; fill writes into a field (emerald border, logged); "
+      + "click clicks a NON-committing control; screenshot captures the visible tab; open navigates; "
+      + "status shows the HUD. The brake refuses committing clicks (send/pay/confirm/authorize/create/sign in) — those stay the human's.",
+    parameters: {
+      action: {
+        type: "string",
+        required: true,
+        enum: ["open", "read", "fill", "click", "screenshot", "status", "report", "kpi", "pause", "resume", "step"],
+        description: "The cockpit operation to run.",
+      },
+      selector: { type: "string", description: "CSS selector for read/fill/click." },
+      value: { type: "string", description: "Value to write into the field (fill)." },
+      url: { type: "string", description: "URL to open (open)." },
+    },
+    output: {
+      schema: {
+        type: "object",
+        additionalProperties: false,
+        properties: { text: { type: "string", required: true } },
+      },
+      render: (_args, value) => [{ type: "text", text: value.text }],
+      presentationMeta: (_args, _value) => ({}),
+    },
+    async execute(args) {
+      const q = (s) => (s === undefined || s === null) ? "" : String(s);
+      let raw = String(args.action);
+      if (args.action === "open") raw += " " + q(args.url);
+      else if (args.action === "read" && args.selector) raw += " " + JSON.stringify(q(args.selector));
+      else if (args.action === "fill") raw += " " + JSON.stringify(q(args.selector)) + " " + JSON.stringify(q(args.value));
+      else if (args.action === "click") raw += " " + JSON.stringify(q(args.selector));
+      const res = await executeCockpit({ rawInput: raw });
+      return { text: res.text };
+    },
+  }));
 }
 
 export { apply, inject, name };

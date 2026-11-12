@@ -277,3 +277,30 @@ curl -sS "http://127.0.0.1:<puerto>/plugins/??@scope/mi-plugin/client.js&rev=$RE
 
 Full reference: `docs/PLUGIN-AUTHORING.md`. Template: `templates/dsh-plugin/`.
 Scaffold/validate: `tools/new-plugin.sh`, `tools/check-plugin.sh`.
+
+## Browser control (Chrome extension "hands") — the pattern
+
+When the agent must drive the USER's real browser (logged-in Gmail/Google/
+Facebook), a DSH plugin cannot do it: the host runs as `ELECTRON_RUN_AS_NODE` and
+Electron's main process is not plugin-extensible. Use a **Chrome MV3 extension**
+as the hands, bridged over a local WebSocket.
+
+- `manifest.json`: `permissions ["tabs","scripting","alarms"]`,
+  `host_permissions ["*://*/*"]` (for `captureVisibleTab` only), content script
+  `matches` scoped to the sites you touch (`https://*.google.com/*`,
+  `https://*.facebook.com/*`).
+- `background.js`: one WebSocket to the host + heartbeat (20s) + `chrome.alarms`
+  keepalive; `connect()` must clear timers and guard duplicate sockets; every
+  async `onmessage` handler MUST try/catch and `sendBack` an error (else the
+  host hangs 30s on a timeout); re-inject `content.js` with
+  `chrome.scripting.executeScript` when `sendMessage` throws "Receiving end does
+  not exist"; before `captureVisibleTab`, re-verify the ACTIVE tab is still an
+  allowed host (never photograph a bank tab).
+- `content.js`: read with `innerText` ONLY (ignores hidden text → no prompt
+  injection); fill `<div contenteditable>` via `execCommand("insertText")`, not
+  the input value setter; `<svg>` has no `.click()` → dispatch a MouseEvent;
+  `getLabel` must walk the interactive ANCESTOR and return `isSubmit`/`href`.
+- The WebSocket server (host) must be RFC 6455-hardened (see lesson #36): token +
+  Origin `chrome-extension://`, 16MB cap, control-frame/masking/opcode rules.
+
+Live reference: `jfranco-cockpit-browser/` (extension/ + lib/ws-bridge.js).

@@ -15,22 +15,21 @@ review, no distribution, no account risk from a public listing.
 
 ## Permission model (minimized blast radius)
 
-The content script is injected **only** on the domains you automate, not on every
-page you visit:
+The **content script** (the part that reads and writes the page — the "hands") is
+injected **only** on the domains you automate:
 
 | Scope | Why |
 |---|---|
-| `https://*.google.com/*` | Google Cloud Console, Gmail, Accounts (login) |
-| `https://*.facebook.com/*` | Facebook Business / portal |
-| `http://127.0.0.1:9334/*` | the local bridge to DSH only |
+| `content_scripts.matches` → `https://*.google.com/*`, `https://*.facebook.com/*` | the hands touch only Google and Facebook |
+| `host_permissions` → `<all_urls>` | **screenshot only**: Chrome requires it to capture *any* visible tab (`captureVisibleTab`). The background worker uses it for nothing else. |
+| `http://127.0.0.1:9334/*` | the local bridge to DSH |
 
-**To add a domain:** edit **both** `host_permissions` and `content_scripts.matches`
-in `manifest.json`, then click the reload icon on the extension card in
-`chrome://extensions`.
-
-> Tradeoff, stated plainly: the extension cannot see or touch your bank, other
-> email, or any non-listed site. That is the point. Add a domain only when you
-> actually automate it.
+**Tradeoff, stated plainly:** the content script (DOM read/write) stays confined
+to Google/Facebook, but `<all_urls>` grants the background worker the *ability*
+to screenshot any tab. The code only ever calls `captureVisibleTab` — no arbitrary
+`fetch`/`executeScript` — so the actual usage is narrow even though the permission
+is broad. If you prefer zero broad permission, the cost is no programmatic
+screenshot (use your OS screenshot).
 
 ## The non-negotiables (never relax these)
 

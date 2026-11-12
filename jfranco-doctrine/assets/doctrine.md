@@ -37,3 +37,11 @@ constitution; this skill is the ACTIVE subset the agent applies.
    source is English. Never ship Spanish (or French) in a shared
    package. Regexes that match real-world button labels (the cockpit's
    `FORBIDDEN` set) are the one exception — they stay multilingual.
+9. **The brake is not a regex** — the agent fills fields and reads, but it
+   never clicks a committing button (send, pay, confirm, authorize, create,
+   sign in). That click is always the human's. A forbidden-word list is only
+   the first line: it needs word boundaries + Unicode normalization, the label
+   of the interactive ANCESTOR (not a child icon), and `isSubmit`/`href`
+   metadata. Governance state lives in the host module and gates every mutating
+   action; overrides (tiers) are RAM-cached with a hash and promoted only by
+   the human. The emerald border marks every agent touch; the human commands.
