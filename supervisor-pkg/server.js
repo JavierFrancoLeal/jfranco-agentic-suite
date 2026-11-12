@@ -579,7 +579,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.179";
+const VERSION = "1.0.180";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -694,6 +694,18 @@ function providersWrite(p) { try { fs.writeFileSync(path.join(DATA_DIR, "provide
 // The anti-fragile brain: every tier routes to a CONFIGURED provider —
 // cloud or LOCAL (open models). Change providers.json and the brain changes.
 function route(model, tierArg) {
+  if (tierArg === "route" && raylineEnabled()) {
+    try {
+      const p = providersRead().rayline;
+      const rec = await fetch(p.baseUrl + "/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", ...(p.apiKey ? { Authorization: "Bearer " + p.apiKey } : {}) }, body: JSON.stringify({ model: p.model || "arc-route", messages: [{ role: "user", content: "routing" }], max_tokens: 8 }), signal: AbortSignal.timeout(4000) });
+      if (rec.ok) {
+        const j = await rec.json();
+        const chosen = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+        if (chosen) { telemetryTick("route", { tier: "route", chosen: String(chosen).slice(0, 40) }); return route(chosen === "local" ? "local" : chosen, "deep"); }
+      }
+    } catch (e) { /* la degradación graciosa: sin Rayline, la escalera sigue */ }
+    return route(model, "deep");
+  }
   const pr = providersRead();
   const tier = tierArg || (String(model).includes("v4-pro") ? "deep" : "fast");
   const cfg = pr[tier] || {};
