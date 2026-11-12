@@ -1,0 +1,19 @@
+Es la auditoría de revisión después de una semana de implementación. Todo lo que sigue YA está construido y probado — tu trabajo es la verificación adversarial, no el rediseño. Formato de siempre (VERDICTO · HUECOS · CAMBIOS MÍNIMOS · NO HAGAS · números):
+
+CONTEXTO: Fanal (Trasunto inc., Québec) — la capa de orquestación agéntica soberana. Esta semana se construyó y se INTEGRÓ en el código real (el supervisor Node de 1 archivo + la app Electron + los plugins DSH):
+
+1. EL TRIAGE FIDUCIARIO con el registro de ápices de Québec (las 18 profesiones, los 4 gatillos universales, el sourcePin con la verificación includes() — la paráfrasis va a ROJO, jamás se firma).
+2. EL ANCLA DE IDENTIDAD (el espejo de 2 columnas letra-por-letra + la auditoría hacia atrás en 0.1 ms).
+3. LA AUTOINSTALACIÓN A 4 MANOS (el embudo cerrado, los validadores NEQ/TPS/TVQ, el sello bilateral con el hash génesis).
+4. LA BÓVEDA (el scrypt 64MB, la biometría, la zeroización de RAM, el guardián exponencial con el HMAC en disco + el registro CAI).
+5. LA CABINA DEL AGENTE (el CDP interno con el freno de envío, el doble monitor sincronizado, el HUD de 36px, la detección del ratón humano).
+6. EL MOTOR DARWINIANO (la poda por vía negativa, los callos operativos, la replicación por especie con la firma Ed25519, el forjador en lenguaje natural con el anti-ReDoS).
+7. LA CAPA FORENSE (el escáner de código, los contratos @fanal-forensic-contract, el registro de arranque ~/.dsh/fanal-startup.log).
+8. LOS DOSSIERS PROFESIONALES (el CRIC y el CPA — los documentos de venta por profesión).
+
+LAS PREGUNTAS DE LA AUDITORÍA:
+A) ¿Qué pieza de las 8 tiene el hueco de seguridad o de UX más grave que NO se haya discutido aún?
+B) El motor darwiniano: ¿dónde está el riesgo de que un órgano evolutivo contamine a la especie (a pesar de la firma del fundador)?
+C) La bóveda y el guardián exponencial: ¿qué ataque o accidente queda SIN cubrir?
+D) Los dossiers profesionales: ¿qué argumento de venta falta o sobra para el cliente no técnico?
+E) ¿Qué prueba de aceptación debería correr el fundador ANTES del primer cliente beta que no esté en la lista actual?
