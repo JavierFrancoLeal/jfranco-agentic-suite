@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/doctrine",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The ACTIVE constitution of the J.Franco house: the one-sentence test, the zero-CPU rule, the friction honesty, the wash order, the species verdict, the diminishing-returns — the laws every agent must obey when working on Fanal.",
   "author": "J.Franco",
   "license": "MIT",
@@ -13,8 +13,15 @@
     "./locale/*.json": "./locale/*.json"
   },
   "icon": "./icon.svg",
-  "files": ["icon.svg", "locale/*.json", "lib/index.js", "assets"],
-  "peerDependencies": { "@deepseek-ai/dsh-skill": ">=0.1.0" },
+  "files": [
+    "icon.svg",
+    "locale/*.json",
+    "lib/index.js",
+    "assets"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/dsh-skill": ">=0.1.0"
+  },
   "dsh": {
     "manifestVersion": 1,
     "bundle": {

@@ -579,7 +579,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.178";
+const VERSION = "1.0.179";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -679,6 +679,13 @@ function ts() { return new Date().toISOString(); }
 // real-time demand → deepseek-flash; deep analysis → deepseek-v4-pro.
 // Without the key, the standby agent (tools/agent-standby.sh) takes over.
 const BRAIN_BASE = "https://api.deepseek.com/chat/completions";
+function raylineEnabled() {
+  try {
+    const p = providersRead();
+    const r = p && p.rayline;
+    return !!(r && r.enabled === true && r.baseUrl);
+  } catch (e) { return false; }
+}
 function providersRead() {
   try { const p = path.join(DATA_DIR, "providers.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
   catch (e) { return {}; }

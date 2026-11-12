@@ -1,6 +1,6 @@
 {
   "name": "@javierfrancoleal/deepseek-prices",
-  "version": "1.0.133",
+  "version": "1.0.134",
   "description": "Live DeepSeek API token price bar for the web GUI: peak/off-peak tariff, UTC + local (Quebec) clocks, countdown to the next tariff change, and a daily self-verification against the official DeepSeek pricing page.",
   "author": "J.Franco",
   "license": "MIT",
