@@ -579,7 +579,7 @@ const SECTOR_CLOSE = [
   { id: "close_clean", label: "Nettoyage et rangement des postes" },
   { id: "close_lights", label: "Lumières, chauffage et alarme" }
 ];
-const VERSION = "1.0.180";
+const VERSION = "1.0.181";
 // Homeostasis: the daily token budget (metabolic limit). The brain rests
 // when the budget is spent — no runaway costs.
 const DAILY_BUDGET_USD = Number(process.env.DSH_DAILY_BUDGET_USD || 0); // 0 = unlimited: consumption is the business
@@ -679,6 +679,71 @@ function ts() { return new Date().toISOString(); }
 // real-time demand → deepseek-flash; deep analysis → deepseek-v4-pro.
 // Without the key, the standby agent (tools/agent-standby.sh) takes over.
 const BRAIN_BASE = "https://api.deepseek.com/chat/completions";
+const RECOVERY_WORDS = ["FANAL","QUEBEC","FLEUVE","BOUSSOLE","ANCRE","GRANIT","ERABLE","NORD","PIN","VEILLE","SCEAU","CLARTE","VERITE","GARDE","PONT","ROCHE","SOLIDE","PHARE","LAC","FORET","NEIGE","VENT","PORT","CALME","JUSTE","DROIT","LIVRE","CLEF","OR","FER","SOURCE","CAP"];
+function generateClientRecoveryKit() {
+  const c = require("node:crypto");
+  const raw = c.randomBytes(32);
+  const words = [];
+  for (let i = 0; i < 24; i++) words.push((i + 1) + "." + RECOVERY_WORDS[raw[i] % RECOVERY_WORDS.length]);
+  return { recoveryKeyHex: raw.toString("hex"), printable24Words: words.join("  "), fingerprint: c.createHash("sha256").update(raw).digest("hex").slice(0, 10).toUpperCase() };
+}
+function writeEncryptedMirrorBackup(o) {
+  try {
+    const c = require("node:crypto");
+    const files = ["constitution.json", "ledger.jsonl", "custom_organs.json", "registre_incidents_loi25.jsonl"];
+    const bundle = { exportedAtIso: new Date().toISOString(), files: {} };
+    for (const fn of files) {
+      const fp = path.join(o.localArchiveDir, fn);
+      if (fs.existsSync(fp)) bundle.files[fn] = fs.readFileSync(fp, "utf8");
+    }
+    const key = Buffer.from(o.recoveryKeyHex, "hex");
+    const iv = c.randomBytes(12);
+    const ci = c.createCipheriv("aes-256-gcm", key, iv);
+    const enc = Buffer.concat([ci.update(Buffer.from(JSON.stringify(bundle), "utf8")), ci.final()]);
+    const out = Buffer.concat([Buffer.from("FNLB", "utf8"), iv, ci.getAuthTag(), enc]);
+    const target = path.join(o.clientCloudSyncFolder, "fanal_backup.enc");
+    fs.writeFileSync(target, out, { mode: 0o600 });
+    key.fill(0);
+    return { ok: true, backupPath: target, bytes: out.length };
+  } catch (e) { return { ok: false, error: String(e.message) }; }
+}
+function restoreFromEncryptedMirrorBackup(o) {
+  try {
+    const c = require("node:crypto");
+    const raw = fs.readFileSync(o.backupFilePath);
+    if (raw.subarray(0, 4).toString("utf8") !== "FNLB") return { ok: false, error: "BACKUP_CORRUPTO" };
+    const key = Buffer.from(o.recoveryKeyHex, "hex");
+    const d = c.createDecipheriv("aes-256-gcm", key, raw.subarray(4, 16));
+    d.setAuthTag(raw.subarray(16, 32));
+    const json = Buffer.concat([d.update(raw.subarray(32)), d.final()]).toString("utf8");
+    key.fill(0);
+    const bundle = JSON.parse(json);
+    fs.mkdirSync(o.targetRestoreDir, { recursive: true, mode: 0o700 });
+    let n = 0;
+    for (const fn of Object.keys(bundle.files)) { fs.writeFileSync(path.join(o.targetRestoreDir, fn), bundle.files[fn], { mode: 0o600 }); n++; }
+    return { restored: true, filesCount: n, snapshotDate: bundle.exportedAtIso };
+  } catch (e) { return { ok: false, error: String(e.message) }; }
+}
+function runBetaCohortTriSectorReader(professionKey, docData) {
+  if (professionKey === "CPA_COMPTABLE") {
+    const expectedTvq = Number((docData.subtotalCad * 0.09975).toFixed(2));
+    const expectedTps = Number((docData.subtotalCad * 0.05).toFixed(2));
+    const tvqDiff = Math.abs((docData.claimedTvqCad || 0) - expectedTvq);
+    const missing = docData.subtotalCad >= 30 && !/\b\d{10}\s?TQ\s?\d{4}\b/i.test(docData.rawText || "");
+    if (missing || tvqDiff > 0.05) return { color: missing ? "RED" : "YELLOW", leftWhatIs: "Factura '" + docData.fileName + "': Subtotal " + docData.subtotalCad + " $, TVQ declarada " + docData.claimedTvqCad + " $ (Nº TVQ: " + (missing ? "AUSENTE" : "Presente") + ").", rightProfessor: missing ? "Revenu Québec rechaza el RTI en facturas de ≥30 $ sin número de inscripción TVQ válido (10 dígitos + TQ0001)." : ("Descuadre aritmético de TVQ: el 9,975% exacto es " + expectedTvq + " $ (diferencia de " + tvqDiff.toFixed(2) + " $)."), officialUrl: "https://www.revenuquebec.ca/fr/services-en-ligne/outils/validation-dun-numero-dinscription-au-fichier-de-la-tvq/" };
+    return { color: "GREEN", summary: "Cuadre exacto TPS (" + expectedTps + " $) + TVQ (" + expectedTvq + " $)." };
+  }
+  if (professionKey === "GYM_PROPRIETAIRE_OPC") {
+    const legalMax = Number(Math.min(50.0, (docData.remainingContractValueCad || 0) * 0.1).toFixed(2));
+    if ((docData.proposedPenaltyCad || 0) > legalMax) return { color: "RED", leftWhatIs: "Penalidad de rescisión calculada: " + docData.proposedPenaltyCad + " $ sobre saldo restante de " + docData.remainingContractValueCad + " $.", rightProfessor: "Bloqueo OPC (Art. 199 LPC): la penalidad máxima legal en Québec es el menor entre 50,00 $ o el 10% del servicio no prestado — exactamente " + legalMax + " $.", officialUrl: "https://www.legisquebec.gouv.qc.ca/fr/document/lc/P-40.1#se:199" };
+    return { color: "GREEN", summary: "Rescisión conforme a la regla del 1/10 OPC (" + legalMax + " $)." };
+  }
+  if (professionKey === "PLEX_PROPRIETAIRE_TAL") {
+    if (docData.isAnnualTaxSeason && !docData.hasReleve31Generated) return { color: "YELLOW", leftWhatIs: "Inquilino activo en Apt. " + docData.unitNumber + " al 31 de diciembre sin Relevé 31 emitido.", rightProfessor: "Todo propietario debe entregar el Relevé 31 a sus inquilinos antes del último día de febrero para el crédito de solidaridad.", officialUrl: "https://www.revenuquebec.ca/fr/entreprises/retenues-et-cotisations/produire-les-releves-et-le-sommaire/releve-31-renseignements-sur-loccupation-dun-logement/" };
+    return { color: "GREEN", summary: "Bail y Relevé 31 en regla para Apt. " + docData.unitNumber + "." };
+  }
+  return { color: "GREEN", summary: "Sin regla específica para " + professionKey + "." };
+}
 function raylineEnabled() {
   try {
     const p = providersRead();
@@ -1932,6 +1997,27 @@ async function api(req, res, pathname) {
     if (!managerOnly(res, req)) return;
     const b = await json(req);
     return send(res, 200, { proposedMutations: detectCallusAndProposeMutation(b.edits || []) });
+  }
+  if (pathname === "/api/backup/kit" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const kit = generateClientRecoveryKit();
+    try { fs.writeFileSync(path.join(DATA_DIR, "recovery-kit.json"), JSON.stringify(kit), { mode: 0o600 }); } catch (e) {}
+    return send(res, 200, kit);
+  }
+  if (pathname === "/api/backup/mirror" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, writeEncryptedMirrorBackup({ localArchiveDir: b.localArchiveDir || path.join(DATA_DIR, "archive"), clientCloudSyncFolder: b.clientCloudSyncFolder || DATA_DIR, recoveryKeyHex: b.recoveryKeyHex || "" }));
+  }
+  if (pathname === "/api/backup/restore" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, restoreFromEncryptedMirrorBackup({ backupFilePath: b.backupFilePath || "", recoveryKeyHex: b.recoveryKeyHex || "", targetRestoreDir: b.targetRestoreDir || path.join(DATA_DIR, "restored") }));
+  }
+  if (pathname === "/api/beta/reader" && req.method === "POST") {
+    if (!managerOnly(res, req)) return;
+    const b = await json(req);
+    return send(res, 200, runBetaCohortTriSectorReader(b.professionKey || "", b.docData || {}));
   }
   if (pathname === "/api/evolution/forge" && req.method === "POST") {
     if (!managerOnly(res, req)) return;

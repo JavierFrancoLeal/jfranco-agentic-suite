@@ -1008,11 +1008,16 @@ function apply(ctx) {
   } catch {}
 
   // The agent-callable tool: the SAME operations as the /cockpit slash
-  // command (one operation, two callers). The brake stays — the tool's click
+  // command (one operation, two callers). Registered PER-AGENT (scoped, via
+  // agent/created) so it appears in each agent's model-facing tool set; a host
+  // registration alone is not model-visible. The brake stays — the tool's click
   // runs the same FORBIDDEN check, so a committing click is refused and the
   // final click remains the human's.
-  ctx.tools.register(defineTool({
-    name: "cockpit",
+  ctx.on("agent/created", (agent) => {
+    ctx.logger.info("cockpit-browser: agent/created fired — registering the cockpit tool");
+    agent.ctx.effect(() => {
+      const unregister = agent.ctx.tools.register(defineTool({
+        name: "cockpit",
     description:
       "Drive the user's Chrome browser (the cockpit) under the J.Franco guardrails. "
       + "action=read returns the visible page text; fill writes into a field (emerald border, logged); "
@@ -1048,7 +1053,10 @@ function apply(ctx) {
       const res = await executeCockpit({ rawInput: raw });
       return { text: res.text };
     },
-  }));
+      }));
+      return () => unregister();
+    }, "cockpit: tool");
+  });
 }
 
 export { apply, inject, name };
