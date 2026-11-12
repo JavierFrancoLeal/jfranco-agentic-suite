@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Feuille de Secours Souveraine — Fanal</title>
+<style>
+  @page { size: A4; margin: 12mm; }
+  body { margin:0; background:#fff; color:#0f172a; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; font-size:11px; }
+  .sheet { max-width:180mm; margin:0 auto; border:2px solid #0f172a; border-radius:8px; padding:14px 16px; }
+  .head { display:flex; justify-content:space-between; align-items:center; border-bottom:3px solid #4D6BFE; padding-bottom:8px; margin-bottom:10px; }
+  .brand { font-weight:800; font-size:15px; }
+  .brand small { display:block; font-weight:600; color:#475569; font-size:10px; }
+  .tag { background:#4D6BFE; color:#fff; padding:3px 10px; border-radius:999px; font-weight:800; font-size:10px; letter-spacing:.06em; }
+  .warn { background:#fef2f2; border:1px solid #fca5a5; color:#7f1d1d; padding:8px 10px; border-radius:6px; margin-bottom:12px; font-weight:600; }
+  .words { display:grid; grid-template-columns:repeat(6,1fr); gap:6px; margin:10px 0; }
+  .word { border:1px solid #cbd5e1; border-radius:4px; padding:5px 4px; text-align:center; font-family:monospace; font-size:9px; font-weight:700; }
+  .word b { display:block; color:#4D6BFE; font-size:8px; margin-bottom:2px; }
+  .fp { font-family:monospace; font-size:12px; background:#f1f5f9; border-radius:4px; padding:4px 8px; display:inline-block; letter-spacing:.12em; font-weight:800; }
+  .steps { font-size:10px; line-height:1.5; color:#334155; }
+  .steps b { color:#0f172a; }
+  .foot { border-top:2px solid #0f172a; margin-top:12px; padding-top:6px; font-size:9px; color:#64748b; display:flex; justify-content:space-between; }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <div class="head">
+    <div class="brand">FANAL · TRASUNTO<small>Feuille de Secours Souveraine — à conserver hors de l'ordinateur</small></div>
+    <span class="tag">1 SEULE IMPRESSION · ZÉRO COPIE NUMÉRIQUE</span>
+  </div>
+  <div class="warn">⚠️ Cette feuille est la SEULE clé de votre coffre. Sans elle, personne — pas même Trasunto — ne peut récupérer vos données si votre ordinateur meurt. Ne la photographiez jamais. Rangez-la avec vos documents importants.</div>
+  <div style="font-weight:800;font-size:12px;">VOS 24 MOTS DE RESCOUSSE (à écrire à la main ici, en minuscules, dans l'ordre) :</div>
+  <div class="words" id="words"></div>
+  <div style="margin-top:8px;">Empreinte du coffre : <span class="fp" id="fp">—</span></div>
+  <div class="steps" style="margin-top:10px;">
+    <b>Si votre ordinateur meurt (café, feu, vol) :</b><br>
+    1. Achetez ou empruntez un autre ordinateur (Mac ou Windows).<br>
+    2. Installez Fanal — pendant l'installation, choisissez « Restaurer depuis la feuille de secours ».<br>
+    3. Recopiez ces 24 mots. Fanal récupère votre Constitution, vos dossiers et votre journal dans votre propre nuage (Drive/OneDrive), où la copie chiffrée <b>fanal_backup.enc</b> vous attend.<br>
+    <b>Trasunto ne détient aucune copie de vos données : tout vit chez vous, et cette feuille est à vous.</b>
+  </div>
+  <div class="foot">
+    <span>Trasunto inc. — « L'IA travaille. L'humain veille, décide, révise. »</span>
+    <span>FEUILLE-DE-SECOURS · v1 · 2026</span>
+  </div>
+</div>
+<script>
+  // Placeholder: les mots réels sont générés par /api/backup/kit et recopiés À LA MAIN
+  // (la feuille imprimée ne doit JAMAIS contenir les mots en numérique).
+  const w = document.getElementById('words');
+  for (let i = 1; i <= 24; i++) {
+    const d = document.createElement('div');
+    d.className = 'word';
+    d.innerHTML = '<b>MOT ' + i + '</b>…………';
+    w.appendChild(d);
+  }
+  document.getElementById('fp').textContent = 'ÉCRITE À LA MAIN LE JOUR DE L\'INSTALLATION';
+</script>
+</body>
+</html>
