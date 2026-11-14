@@ -48,6 +48,7 @@ echo "OK ui"
 
 echo "== supervisor =="
 "$NODE" --check supervisor/server.js
+"$NODE" --check supervisor/brain-catalog.js
 "$NODE" --check supervisor/diagnostic-sanitizer.js
 "$NODE" -e '
   const fs=require("fs");
@@ -57,9 +58,12 @@ echo "== supervisor =="
   new Function(m[1]);
 '
 "$NODE" tools/test-diagnostic-export.mjs
+"$NODE" tools/test-closed-brain.mjs
+"$NODE" tools/test-api-closed-brain.mjs
 echo "OK supervisor"
 
 echo "== desktop app =="
+"$NODE" tools/sync-desktop.mjs --check
 "$NODE" tools/test-vault-biometric.mjs
 "$NODE" tools/test-desktop-sandbox.mjs
 "$NODE" tools/verify-app.mjs

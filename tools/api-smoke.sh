@@ -60,6 +60,26 @@ done
 curl -sf "$BASE/api/diagnostic/export?format=md" -H "$AUTH" | grep -q "Sanitized Diagnostic Export" || { echo "FAIL diag md"; exit 1; }
 echo "ok"
 
+step "closed curated brain modes + dual BYOK masking"
+curl -sf "$BASE/api/settings/brain" -H "$AUTH" | grep -q '"closedCatalog":true' || { echo "FAIL closedCatalog missing"; exit 1; }
+if curl -sf "$BASE/api/settings/brain" -H "$AUTH" | grep -q "gemini-3.1-pro"; then echo "FAIL stale gemini-3.1-pro"; exit 1; fi
+BAD_BRAIN_CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/settings/brain" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"fast":{"baseUrl":"https://evil.example/v1","model":"gpt-4o"}}')"
+[ "$BAD_BRAIN_CODE" = "400" ] || { echo "FAIL open override accepted (code=$BAD_BRAIN_CODE)"; exit 1; }
+curl -sf -X POST "$BASE/api/settings/brain" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" \
+  -d '{"mode":"dual_cloud","deepseekKey":"sk-smoke-ds-key-9876","geminiKey":"AIzaSySmokeGemKey5432109876"}' | grep -q '"ok":true' || { echo "FAIL save dual BYOK"; exit 1; }
+BRAIN_GET="$(curl -sf "$BASE/api/settings/brain" -H "$AUTH")"
+echo "$BRAIN_GET" | grep -q '"configured":true' || { echo "FAIL brain configured"; exit 1; }
+for leak in "sk-smoke-ds-key-9876" "AIzaSySmokeGemKey5432109876"; do
+  if echo "$BRAIN_GET" | grep -qF "$leak"; then echo "FAIL brain endpoint leaked key: $leak"; exit 1; fi
+done
+DIAG_AFTER_KEY="$(curl -sf "$BASE/api/diagnostic/export" -H "$AUTH")"
+for leak in "sk-smoke-ds-key-9876" "AIzaSySmokeGemKey5432109876"; do
+  if echo "$DIAG_AFTER_KEY" | grep -qF "$leak"; then echo "FAIL diag leaked BYOK key: $leak"; exit 1; fi
+done
+curl -sf -X POST "$BASE/api/settings/brain" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" \
+  -d '{"mode":"local_sovereign","localModel":"qwen2.5:7b"}' | grep -q '"mode":"local_sovereign"' || { echo "FAIL switch local_sovereign"; exit 1; }
+echo "ok"
+
 step "orders + paid flag"
 curl -sf -X POST "$BASE/api/live/summary" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"speakers":[{"name":"Mesa 3","requests":[{"text":"dos cafés","tier":"GREEN"}]}]}' >/dev/null
 curl -sf -X POST "$BASE/api/live/confirm" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"requestId":"p1-r1"}' >/dev/null

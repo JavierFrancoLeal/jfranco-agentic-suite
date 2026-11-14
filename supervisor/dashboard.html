@@ -123,6 +123,13 @@ button{font-family:inherit;cursor:pointer}
 .btn{border:none;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(135deg,#4D6BFE,#7c5cff);box-shadow:0 4px 12px rgba(77,107,254,.22)}
 .btn.gray{background:var(--line2);color:var(--ink)}
 .btn.small{padding:8px 12px;font-size:13px}
+.brain-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:10px 0}
+.mode-card{text-align:left;padding:14px;border:1.5px solid var(--line);border-radius:16px;background:var(--card2);color:var(--ink);cursor:pointer;transition:border-color .18s,box-shadow .18s,background .18s}
+.mode-card.on{border-color:var(--blue);background:rgba(77,107,254,.08);box-shadow:0 0 0 3px rgba(77,107,254,.16)}
+.mode-card b{display:block;font-size:14.5px;margin-bottom:4px}
+.mode-card small{display:block;font-size:12.5px;color:var(--muted);line-height:1.45}
+.byok-row{display:flex;gap:8px;align-items:center}
+.byok-row input{margin-bottom:0;flex:1}
 main{max-width:960px;margin:0 auto;padding:14px}
 .card{background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px;margin:12px 0}
 .card h2{margin:0 0 10px;font-size:16px}
@@ -795,8 +802,70 @@ body.wall pre{max-height:40vh}
     <p class="hint" id="alertHint" style="margin:6px 0 0"></p>
   </div><footer class="foot"><div class="langs" id="footLangs"></div><div class="copyr">Fanal · open source (MIT) · autor J.Franco</div><div class="copyr" id="verBadge" style="opacity:.75;margin-top:2px"></div></footer>
   <script src="dashboard-i18n.js"></script>
-<div id="tab-reglages" class="hidden" style="max-width:880px;margin:0 auto;padding:16px"><h2 style="font-size:18px;margin:0 0 10px">⚙️ Réglages</h2><p class="hint">Tout se règle ici, comme les Réglages de votre système — et tout reste dans votre silo.</p><div class="card"><h2>🧠 Cerveau</h2><p class="hint">Le routeur anti-fragile : changez de modèle ou de fournisseur sans toucher au code. Vide = DeepSeek.</p><div class="row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><input id="brainFast" placeholder="fast: deepseek-flash" style="flex:1;min-width:110px"><input id="brainDeep" placeholder="deep: deepseek-v4-pro" style="flex:1;min-width:110px"><input id="brainBase" placeholder="baseUrl (vide = DeepSeek)" style="flex:2;min-width:160px"></div><button class="btn small" id="brainAuto" style="margin-top:6px;background:#16a34a">✨ Configurer le cerveau automatiquement</button>
-          <button class="btn small gray" id="brainSave" style="margin-top:6px">Changer de cerveau</button><p class="hint" id="brainStatus"></p></div><div class="card"><h2>⚠️ Zone dangereuse</h2><p class="hint">Réinstaller l'assistant (efface la configuration locale, pas vos données).</p><button class="btn small gray" id="dangerReset" style="margin-top:6px">Réinitialiser Fanal</button></div></div>
+<div id="tab-reglages" class="hidden" style="max-width:880px;margin:0 auto;padding:16px">
+  <h2 id="reglagesTitleEl" style="font-size:18px;margin:0 0 10px">⚙️ Réglages</h2>
+  <p id="reglagesHintEl" class="hint">Tout se règle ici dans votre silo privé — simple et verrouillé comme les Réglages Apple.</p>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <h2 id="brainCardTitleEl" style="margin:0">🧠 Cerveau Fanal Curé</h2>
+      <span id="brainVaultBadge" class="chip" style="background:rgba(77,107,254,.12);color:var(--blue);border-color:rgba(77,107,254,.3);font-size:11.5px">🛡️ Silo local</span>
+    </div>
+    <p id="brainCardHintEl" class="hint">Choisissez l'un des deux modes curés — jamais d'URL ouverte ni de modèle arbitraire.</p>
+    <div class="brain-modes" role="radiogroup" aria-label="Curated Brain Modes">
+      <button type="button" class="mode-card on" id="modeDualBtn" data-mode="dual_cloud">
+        <b id="brainModeDualTitleEl">☁️ Cerveau Fanal Dual (Recommandé)</b>
+        <small id="brainModeDualDescEl">Double hémisphère curé (DeepSeek + Gemini). Vos clés BYOK restent dans votre Coffre local.</small>
+      </button>
+      <button type="button" class="mode-card" id="modeLocalBtn" data-mode="local_sovereign">
+        <b id="brainModeLocalTitleEl">💻 Mode Souverain Privé (100 % Local)</b>
+        <small id="brainModeLocalDescEl">Zéro transfert externe : tout reste strictement sur cette machine.</small>
+      </button>
+    </div>
+    <div id="dualVaultPanel" style="margin-top:8px">
+      <p id="brainVaultDualTitleEl" class="hint" style="font-weight:700;color:var(--ink);margin-bottom:8px">🔐 Clés BYOK Dual dans le Coffre</p>
+      <div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+          <span id="brainDeepseekLblEl">DeepSeek API key</span>
+          <b id="vaultDeepseekState" class="hint">—</b>
+        </div>
+        <div class="byok-row">
+          <input type="password" id="vaultDeepseekInput" placeholder="sk-… (DeepSeek)">
+          <button type="button" class="btn small gray" id="vaultDeepseekClear">Effacer</button>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+          <span id="brainGeminiLblEl">Google Gemini API key</span>
+          <b id="vaultGeminiState" class="hint">—</b>
+        </div>
+        <div class="byok-row">
+          <input type="password" id="vaultGeminiInput" placeholder="AIza… (Google Gemini)">
+          <button type="button" class="btn small gray" id="vaultGeminiClear">Effacer</button>
+        </div>
+      </div>
+    </div>
+    <div id="localSovereignPanel" class="hidden" style="margin-top:8px">
+      <label for="brainLocalModelSel" id="brainLocalPresetLblEl" style="display:block;font-size:12.5px;margin-bottom:4px">Moteur local curé</label>
+      <select id="brainLocalModelSel">
+        <option value="qwen2.5:7b" id="brainLocalBalancedOpt">Équilibré (qwen2.5:7b — recommandé)</option>
+        <option value="llama3.2:3b" id="brainLocalLightOpt">Léger (llama3.2:3b — moins de RAM)</option>
+      </select>
+      <button type="button" class="btn small" id="brainLocalDetectBtn" style="background:#16a34a;margin-top:2px">✨ Détecter et activer le moteur local</button>
+    </div>
+    <button type="button" class="btn small" id="brainSaveClosed" style="margin-top:10px">💾 Enregistrer mode et clés</button>
+    <p class="hint" id="brainStatus"></p>
+  </div>
+  <div class="card">
+    <h2 id="diagCardTitleEl">🛡️ Support et Diagnostic Assaini (Loi 25)</h2>
+    <p id="diagCardHintEl" class="hint">Exporte un diagnostic technique sans noms de clients, sans dossiers ni clés API.</p>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button type="button" class="btn small" id="diagExportMdBtn">⬇ Exporter le rapport (.md)</button>
+      <button type="button" class="btn small gray" id="diagExportJsonBtn">⬇ Exporter le paquet technique (.json)</button>
+    </div>
+    <p class="hint" id="diagExportStatus"></p>
+  </div>
+  <div class="card"><h2>⚠️ Zone dangereuse</h2><p class="hint">Réinstaller l'assistant (efface la configuration locale, pas vos données).</p><button class="btn small gray" id="dangerReset" style="margin-top:6px">Réinitialiser Fanal</button></div>
+</div>
 <script>
 "use strict";
 const LANG={es:"ES",en:"EN",fr:"FR",de:"DE",it:"IT",pt:"PT",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
@@ -1082,7 +1151,7 @@ function wizBodyHTML(){
   if(wizStep===0)return '<span class="wiz-ico">🚀</span><p>'+L("wizStartBody")+'</p><p class="hint">'+HT("home")+'</p>';
   if(wizStep===1)return '<span class="wiz-ico">🏪</span><p>'+L("wizBizBody")+'</p><input id="wizBizInput" placeholder="'+L("wizBizPh")+'">';
   if(wizStep===2){const secs=[["restaurant",L("wizSecRest")],["hotel",L("wizSecHotel")],["tourisme",L("wizSecTour")],["agroalimentaire",L("wizSecAgro")],["generic",L("wizSecGeneric")]];return '<p>'+L("wizSectorBody")+'</p><div class="wiz-sectors">'+secs.map(x=>'<div class="ws'+(wizSector===x[0]?" on":"")+'" data-sec="'+x[0]+'">'+x[1]+'<small>'+(x[0]==="restaurant"?L("wizSecRestD"):x[0]==="hotel"?L("wizSecHotelD"):x[0]==="tourisme"?L("wizSecTourD"):x[0]==="agroalimentaire"?L("wizSecAgroD"):L("wizSecGenericD"))+'</small></div>').join("")+'</div>';}
-  if(wizStep===3)return '<p>'+L("wizKeyBody")+'</p><input type="password" id="wizKeyInput" placeholder="DEEPSEEK_API_KEY"><p class="hint">'+L("wizKeyHint")+'</p><p>'+L("wizBrainChoice")+'</p><select id="wizBrainSel"><option value="deepseek">'+L("wizBrainCloud")+'</option><option value="local">'+L("wizBrainLocal")+'</option></select><p class="hint">'+L("wizBrainNote")+'</p>'
+  if(wizStep===3)return '<p>'+L("wizKeyBody")+'</p><input type="password" id="wizKeyInput" placeholder="DeepSeek API key (sk-…)"><input type="password" id="wizGeminiKeyInput" placeholder="Google Gemini API key (AIza… — optionnel)"><p class="hint">'+L("wizKeyHint")+'</p><p>'+L("wizBrainChoice")+'</p><select id="wizBrainSel"><option value="dual_cloud">'+L("wizBrainCloud")+'</option><option value="local_sovereign">'+L("wizBrainLocal")+'</option></select><p class="hint">'+L("wizBrainNote")+'</p>'
     +'<div style="background:#090d16;padding:10px;border-radius:4px;border:1px solid #334155;margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="font-size:10px;color:#38bdf8;font-weight:700">🔑 CONTRASEÑA MAESTRA (scrypt 64MB):</label><span id="entropy-badge" style="font-size:9px;font-family:monospace;padding:1px 6px;border-radius:10px;background:#1e293b;color:#94a3b8">Sin clave</span></div><input id="master-pwd-input" type="password" oninput="evalLiveEntropy(this.value);this.dataset.vaultSaved=\'\'" placeholder="Mínimo 12 caracteres, mayúsculas, números y símbolos..." style="width:100%;box-sizing:border-box;background:#020617;color:#fff;border:1px solid #475569;padding:7px;border-radius:3px;font-family:monospace;font-size:11px;margin-bottom:6px"/><div style="height:4px;width:100%;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:6px"><div id="entropy-bar" style="height:100%;width:0%;background:#ef4444;transition:width .2s,background .2s"></div></div><div id="entropy-feedback" style="font-size:9px;color:#94a3b8;font-family:monospace">Debe contener al menos 12 caracteres y alta complejidad.</div></div>'
     +'<div style="background:#064e3b;border:1px solid #10b981;padding:8px 10px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;margin-top:8px"><div><div style="font-size:11px;font-weight:800;color:#6ee7b7">🫆 ENLACE BIOMÉTRICO RÁPIDO (OPCIONAL)</div><div style="font-size:9px;color:#a7f3d0">Activa Touch ID (Mac) o Windows Hello (PC) para entrar en 0.4s.</div></div><button onclick="linkBiometricOneClick()" style="background:#10b981;color:#022c22;border:none;padding:6px 12px;border-radius:3px;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap">Vincular Huella / Rostro</button></div>';
   if(wizStep===4)return '<p>'+L("wizPermsBody")+'</p><div class="wiz-sectors"><div class="ws wiz-perm" data-p="mic"><small>🎙️ '+L("wizPermMic")+' — '+HT("permMic")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws wiz-perm" data-p="notif"><small>🔔 '+L("wizPermNotif")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws" style="cursor:default"><small>📁 '+HT("permFinder")+'</small></div><div class="ws" style="cursor:default"><small>🌐 '+L("wizPermLan")+'</small></div></div>';
@@ -1105,7 +1174,7 @@ function wizRender(){
   ws.forEach(el=>{el.onclick=()=>{wizSector=el.dataset.sec;wizRender();};});
   const perms=document.querySelectorAll(".wiz-sectors .wiz-perm[data-p]");
   perms.forEach(el=>{el.onclick=async()=>{try{if(el.dataset.p==="mic"){await navigator.mediaDevices.getUserMedia({audio:true});el.querySelector("b").textContent=t("wizPermOk");}else{const r=await Notification.requestPermission();el.querySelector("b").textContent=r==="granted"?t("wizPermOk"):t("wizPermTry");}}catch(e){el.querySelector("b").textContent=t("wizPermSkip");}};});
-  if(wizStep===6){$("wizRecapBiz").textContent=$("wizBizInput")?($("wizBizInput").value||"—"):"—";$("wizRecapSec").textContent=wizSector;$("wizRecapKey").textContent=$("wizKeyInput")?($("wizKeyInput").value?"✅":"—"):"—";$("wizRecapCons").textContent=$("wizConsInput")&&$("wizConsInput").value?"✔":"—";}
+  if(wizStep===6){$("wizRecapBiz").textContent=$("wizBizInput")?($("wizBizInput").value||"—"):"—";$("wizRecapSec").textContent=wizSector;const dsOk=$("wizKeyInput")&&$("wizKeyInput").value;const gmOk=$("wizGeminiKeyInput")&&$("wizGeminiKeyInput").value;$("wizRecapKey").textContent=(dsOk&&gmOk)?"✅ Dual":(dsOk||gmOk?"✅":"—");$("wizRecapCons").textContent=$("wizConsInput")&&$("wizConsInput").value?"✔":"—";}
 }
 async function wizNext(){
   if(wizStep===3&&$("master-pwd-input")){
@@ -1121,7 +1190,7 @@ async function wizNext(){
   }
   if(wizStep===WIZ_STEPS-1){
     try{localStorage.setItem("lv-onboarded","1");}catch(e){}
-    try{localStorage.setItem("lv-pending-setup",JSON.stringify({bizName:$("wizBizInput")?$("wizBizInput").value:"",sector:wizSector,key:$("wizKeyInput")?$("wizKeyInput").value:"",constitution:$("wizConsInput")?$("wizConsInput").value:"",brain:$("wizBrainSel")?$("wizBrainSel").value:"deepseek"}));}catch(e){}
+    try{localStorage.setItem("lv-pending-setup",JSON.stringify({bizName:$("wizBizInput")?$("wizBizInput").value:"",sector:wizSector,key:$("wizKeyInput")?$("wizKeyInput").value:"",geminiKey:$("wizGeminiKeyInput")?$("wizGeminiKeyInput").value:"",constitution:$("wizConsInput")?$("wizConsInput").value:"",brain:$("wizBrainSel")?$("wizBrainSel").value:"dual_cloud"}));}catch(e){}
     $("wizardView").style.display="none";$("wizardView").classList.add("hidden");
     finishBoot();
     return;}
@@ -1136,10 +1205,16 @@ function flushPendingSetup(){
     const p=JSON.parse(localStorage.getItem("lv-pending-setup")||"null");
     if(!p)return;
     localStorage.removeItem("lv-pending-setup");
-    if(p.key)api("/api/settings/key",{method:"POST",body:{key:p.key,bizName:p.bizName||""}});
+    if(p.bizName)api("/api/settings/key",{method:"POST",body:{bizName:p.bizName}});
     if(p.sector&&p.sector!=="generic")api("/api/sector/pick",{method:"POST",body:{id:p.sector}});
     if(p.constitution)api("/api/constitution",{method:"POST",body:{philosophy:p.constitution}});
-    if(p.brain==="local")api("/api/settings/brain",{method:"POST",body:{fast:{model:"llama3.3",baseUrl:"http://localhost:11434/v1"},deep:{model:"qwen3:32b",baseUrl:"http://localhost:11434/v1"}}});
+    if(p.brain==="local_sovereign"||p.brain==="local"||p.key||p.geminiKey){
+      api("/api/settings/brain",{method:"POST",body:{
+        mode:(p.brain==="local_sovereign"||p.brain==="local")?"local_sovereign":"dual_cloud",
+        deepseekKey:p.key||"",
+        geminiKey:p.geminiKey||""
+      }});
+    }
   }catch(e){}
 }
 function showWizard(){
@@ -1151,8 +1226,8 @@ function showWizard(){
   return true;
 }
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
-function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
-try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
+function pollKeyStatus(){api("/api/settings/status").then(r=>{if(!r||!$("keyStatus"))return;const modeLbl=r.mode==="local_sovereign"?("💻 "+(r.localModel||"qwen2.5:7b")):("☁️ Dual · DeepSeek "+(r.hasKey||r.source==="env"?"✔":"—")+" · Gemini "+(r.hasGeminiKey||(r.gemini&&r.gemini.configured)?"✔":"—"));$("keyStatus").textContent=modeLbl+" · "+t("keyBudget")+": $"+r.dailyBudget;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
+try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();if(!v)return;await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();loadBrain();});}catch(e){}
 function evalLiveEntropy(val){
   const bar=$("entropy-bar");const badge=$("entropy-badge");const fb=$("entropy-feedback");
   if(!bar)return;
@@ -1266,10 +1341,124 @@ async function saveConstitution(){const v=$("constitutionFields").value;const o=
 async function loadMemory(){try{const r=await api("/api/memory");const cs=(r&&r.contacts)||[];$("memList").innerHTML=cs.map((c,i)=>"<div>• <b>"+esc(c.name)+"</b> ("+esc(c.type)+") "+(c.order?esc(c.order)+" ":"")+(c.address?esc(c.address)+" ":"")+(c.price?esc(c.price):"")+"</div>").join("");}catch(e){}}
 async function saveMemory(){const b={name:$("memName").value.trim(),type:$("memType").value,order:$("memOrder").value.trim(),ids:$("memIds").value.trim()};if(!b.name)return;await api("/api/memory",{method:"POST",body:b});$("memName").value="";$("memOrder").value="";$("memIds").value="";loadMemory();}
 async function pollKpi(){try{const r=await api("/api/kpi");if(!r||r.error)return;const el=$("kpiLine");if(el)el.textContent="⏱️ "+t("kpiSaved")+": "+r.timeSavedMin+" min · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections;}catch(e){}}
-async function loadBrain(){try{const r=await api("/api/settings/brain");if(!r||r.error)return;const bf=$("brainFast"),bd=$("brainDeep");if(bf&&!bf.dataset.touched)bf.value=(r.fast&&r.fast.model)||"deepseek-flash";if(bd&&!bd.dataset.touched)bd.value=(r.deep&&r.deep.model)||"deepseek-v4-pro";}catch(e){}}
-async function saveBrain(){const base=$("brainBase");const b={fast:{model:($("brainFast").value||"").trim()||"deepseek-flash",baseUrl:(base&&base.value||"").trim()},deep:{model:($("brainDeep").value||"").trim()||"deepseek-v4-pro",baseUrl:(base&&base.value||"").trim()}};await api("/api/settings/brain",{method:"POST",body:b});$("brainStatus").textContent="✔ "+t("saved")+" — "+t("brainNote");}
-async function brainAuto(){const r=await api("/api/settings/brain/auto",{method:"POST"});const el=$("brainStatus");if(r&&r.detected&&r.detected.ollama){el.textContent="✔ "+t("brainAutoOk")+": "+r.fast;}else{el.textContent=t("brainAutoNo");}}
-try{$("constitutionSave").addEventListener("click",saveConstitution);$("memSave").addEventListener("click",saveMemory);$("brainSave").addEventListener("click",saveBrain);$("brainAuto").addEventListener("click",brainAuto);$("dangerReset").addEventListener("click",()=>{try{localStorage.clear();}catch(e){}location.reload();});}catch(e){}
+let selectedBrainMode="dual_cloud";
+function applyBrainModeUi(mode){
+  selectedBrainMode=mode==="local_sovereign"?"local_sovereign":"dual_cloud";
+  if($("modeDualBtn"))$("modeDualBtn").classList.toggle("on",selectedBrainMode==="dual_cloud");
+  if($("modeLocalBtn"))$("modeLocalBtn").classList.toggle("on",selectedBrainMode==="local_sovereign");
+  if($("dualVaultPanel"))$("dualVaultPanel").classList.toggle("hidden",selectedBrainMode!=="dual_cloud");
+  if($("localSovereignPanel"))$("localSovereignPanel").classList.toggle("hidden",selectedBrainMode!=="local_sovereign");
+}
+async function updateBrainVaultBadge(brainSummary){
+  const badge=$("brainVaultBadge");if(!badge)return;
+  if(brainSummary&&brainSummary.keysEncryptedAtRest){badge.textContent=t("vaultEncryptedBadge");return;}
+  try{
+    if(window.fanalIPC&&typeof window.fanalIPC.getVaultStatus==="function"){
+      const vs=await window.fanalIPC.getVaultStatus();
+      if(vs&&vs.configured){badge.textContent=t("vaultLockSiloBadge");return;}
+    }
+  }catch(e){}
+  badge.textContent=t("vaultSiloBadge");
+}
+async function loadBrain(){
+  try{
+    const r=await api("/api/settings/brain");
+    if(!r||r.error)return;
+    applyBrainModeUi(r.mode);
+    if($("brainLocalModelSel")&&r.localModel)$("brainLocalModelSel").value=r.localModel;
+    if($("vaultDeepseekState")){
+      const d=r.deepseek||{};
+      $("vaultDeepseekState").textContent=d.configured?(t("brainConfigured")+(d.masked?" ("+d.masked+")":"")):t("brainNotConfigured");
+    }
+    if($("vaultGeminiState")){
+      const g=r.gemini||{};
+      $("vaultGeminiState").textContent=g.configured?(t("brainConfigured")+(g.masked?" ("+g.masked+")":"")):t("brainNotConfigured");
+    }
+    updateBrainVaultBadge(r);
+  }catch(e){}
+}
+async function saveBrain(){
+  const payload={mode:selectedBrainMode};
+  if(selectedBrainMode==="local_sovereign"&&$("brainLocalModelSel")){
+    payload.localModel=$("brainLocalModelSel").value;
+  }
+  const dsEl=$("vaultDeepseekInput"),gmEl=$("vaultGeminiInput");
+  if(dsEl&&dsEl.value.trim())payload.deepseekKey=dsEl.value.trim();
+  if(gmEl&&gmEl.value.trim())payload.geminiKey=gmEl.value.trim();
+  const res=await api("/api/settings/brain",{method:"POST",body:payload});
+  if(res&&res.error){$("brainStatus").textContent="⚠ "+(res.message||res.error);return;}
+  if(dsEl)dsEl.value="";if(gmEl)gmEl.value="";
+  $("brainStatus").textContent="✔ "+t("saved")+" — "+t("brainNote");
+  await loadBrain();pollKeyStatus();
+}
+async function clearVaultKey(which){
+  const body=which==="gemini"?{clearGeminiKey:true}:{clearDeepseekKey:true};
+  await api("/api/settings/brain",{method:"POST",body});
+  $("brainStatus").textContent="✔ "+t("saved");
+  await loadBrain();pollKeyStatus();
+}
+async function brainAuto(){
+  const r=await api("/api/settings/brain/auto",{method:"POST"});
+  const el=$("brainStatus");
+  if(r&&r.detected&&r.detected.ollama&&r.localModel){
+    applyBrainModeUi("local_sovereign");
+    if($("brainLocalModelSel"))$("brainLocalModelSel").value=r.localModel;
+    if(el)el.textContent="✔ "+t("brainAutoOk")+": "+r.localModel;
+    await loadBrain();pollKeyStatus();
+  }else{
+    if(el)el.textContent=t("brainAutoNo");
+  }
+}
+function triggerDiagnosticDownload(filename,text,mime){
+  const blob=new Blob([text],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>{try{URL.revokeObjectURL(url);}catch(e){}},1000);
+}
+async function exportDiagnostic(format){
+  const fmt=format==="md"?"md":"json";
+  const stEl=$("diagExportStatus");
+  try{
+    if(window.fanalIPC&&typeof window.fanalIPC.exportDiagnostic==="function"){
+      const r=await window.fanalIPC.exportDiagnostic();
+      if(!r||!r.ok){if(stEl)stEl.textContent=t("diagExportErr");return;}
+      const hash=r.diagnostic&&r.diagnostic.bundleHash?r.diagnostic.bundleHash:"";
+      if(fmt==="md"){
+        triggerDiagnosticDownload("fanal-diagnostic.md",String(r.markdown||""),"text/markdown;charset=utf-8");
+      }else{
+        triggerDiagnosticDownload("fanal-diagnostic.json",JSON.stringify(r.diagnostic||{},null,2),"application/json;charset=utf-8");
+      }
+      if(stEl)stEl.textContent=t("diagExportOk")+(hash?" · #"+hash+")":")");
+      toast(t("exportDone"));
+      return;
+    }
+    const res=await fetch("/api/diagnostic/export?format="+fmt,{headers:{"Authorization":"Bearer "+token}});
+    if(!res.ok){if(stEl)stEl.textContent=t("diagExportErr");return;}
+    const raw=await res.text();
+    let hash="";
+    if(fmt==="json"){try{const j=JSON.parse(raw);hash=j&&j.diagnostic&&j.diagnostic.bundleHash?j.diagnostic.bundleHash:"";}catch(e){}}
+    triggerDiagnosticDownload(fmt==="md"?"fanal-diagnostic.md":"fanal-diagnostic.json",raw,fmt==="md"?"text/markdown;charset=utf-8":"application/json;charset=utf-8");
+    if(stEl)stEl.textContent=t("diagExportOk")+(hash?" · #"+hash+")":")");
+    toast(t("exportDone"));
+  }catch(e){
+    if(stEl)stEl.textContent=t("diagExportErr");
+  }
+}
+try{
+  $("constitutionSave").addEventListener("click",saveConstitution);
+  $("memSave").addEventListener("click",saveMemory);
+  if($("modeDualBtn"))$("modeDualBtn").addEventListener("click",()=>applyBrainModeUi("dual_cloud"));
+  if($("modeLocalBtn"))$("modeLocalBtn").addEventListener("click",()=>applyBrainModeUi("local_sovereign"));
+  if($("brainSaveClosed"))$("brainSaveClosed").addEventListener("click",saveBrain);
+  if($("brainLocalDetectBtn"))$("brainLocalDetectBtn").addEventListener("click",brainAuto);
+  if($("vaultDeepseekClear"))$("vaultDeepseekClear").addEventListener("click",()=>clearVaultKey("deepseek"));
+  if($("vaultGeminiClear"))$("vaultGeminiClear").addEventListener("click",()=>clearVaultKey("gemini"));
+  if($("diagExportMdBtn"))$("diagExportMdBtn").addEventListener("click",()=>exportDiagnostic("md"));
+  if($("diagExportJsonBtn"))$("diagExportJsonBtn").addEventListener("click",()=>exportDiagnostic("json"));
+  $("dangerReset").addEventListener("click",()=>{try{localStorage.clear();}catch(e){}location.reload();});
+}catch(e){}
 async function fbPrepare(task){const r=await api("/api/facebook/prepare",{method:"POST",body:{text:task.result}});showMsg(r&&r.status?r.status:(r&&r.error||t("saved")));}
 let lastReply="";
 async function repondantScan(){const b=$("repondantScan");b.disabled=true;b.textContent="…";const r=await api("/api/repondant/scan",{method:"POST"});b.disabled=false;b.textContent=t("repondantScanBtn");
@@ -1334,6 +1523,29 @@ function applyLang(){
   $("tabSector").textContent=t("sectorTab");$("bnavOverview").textContent=t("overview");$("bnavField").textContent=t("field");$("bnavRules").textContent=t("rules");$("bnavSector").textContent=t("sectorTab");$("sectorPresetsTitle").textContent=t("sectorPresets");$("customSectorTitle").textContent=t("customSector");$("saveSectorBtn").textContent=t("saveSector");$("aiSectorBtn").textContent=t("aiSuggest");
   $("trailTitle").textContent=t("conversationTrail");$("trailHint").textContent=t("trailHint");
   $("sayText").placeholder=t("sayPh");$("sayBtn").textContent=t("sendPhrase");$("aiHint").textContent=t("aiHint");if(!recording)$("micBtn").textContent=t("dictate");
+  if($("reglagesTitleEl"))$("reglagesTitleEl").textContent=t("reglagesTitle");
+  if($("reglagesHintEl"))$("reglagesHintEl").textContent=t("reglagesHint");
+  if($("brainCardTitleEl"))$("brainCardTitleEl").textContent=t("brainCardTitle");
+  if($("brainCardHintEl"))$("brainCardHintEl").textContent=t("brainCardHint");
+  if($("brainModeDualTitleEl"))$("brainModeDualTitleEl").textContent=t("brainModeDualTitle");
+  if($("brainModeDualDescEl"))$("brainModeDualDescEl").textContent=t("brainModeDualDesc");
+  if($("brainModeLocalTitleEl"))$("brainModeLocalTitleEl").textContent=t("brainModeLocalTitle");
+  if($("brainModeLocalDescEl"))$("brainModeLocalDescEl").textContent=t("brainModeLocalDesc");
+  if($("brainVaultDualTitleEl"))$("brainVaultDualTitleEl").textContent=t("brainVaultDualTitle");
+  if($("brainDeepseekLblEl"))$("brainDeepseekLblEl").textContent=t("brainDeepseekLbl");
+  if($("brainGeminiLblEl"))$("brainGeminiLblEl").textContent=t("brainGeminiLbl");
+  if($("vaultDeepseekClear"))$("vaultDeepseekClear").textContent=t("brainClearKey");
+  if($("vaultGeminiClear"))$("vaultGeminiClear").textContent=t("brainClearKey");
+  if($("brainLocalPresetLblEl"))$("brainLocalPresetLblEl").textContent=t("brainLocalPresetLbl");
+  if($("brainLocalBalancedOpt"))$("brainLocalBalancedOpt").textContent=t("brainLocalBalanced");
+  if($("brainLocalLightOpt"))$("brainLocalLightOpt").textContent=t("brainLocalLight");
+  if($("brainSaveClosed"))$("brainSaveClosed").textContent=t("brainSaveBtn");
+  if($("brainLocalDetectBtn"))$("brainLocalDetectBtn").textContent=t("brainAutoBtn");
+  if($("diagCardTitleEl"))$("diagCardTitleEl").textContent=t("diagTitle");
+  if($("diagCardHintEl"))$("diagCardHintEl").textContent=t("diagHint");
+  if($("diagExportMdBtn"))$("diagExportMdBtn").textContent=t("diagExportMd");
+  if($("diagExportJsonBtn"))$("diagExportJsonBtn").textContent=t("diagExportJson");
+  updateBrainVaultBadge();
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
   panelLinks();
   reRenderDynamic();

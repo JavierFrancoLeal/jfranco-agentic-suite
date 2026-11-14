@@ -25,13 +25,14 @@ function run() {
   const dirty = [
     "Authorization: Bearer super_secret_token_value_123",
     "DeepSeek key sk-proj1234567890abcdef failed",
+    "Gemini key AIzaSyDTestSecretKey1234567890abcd failed",
     "GitHub token ghp_1234567890abcdef123456",
     "Spawned server.js init --owner Bob --password MySecretPassword99",
     "macOS path /Users/jfranco/Documents/client-files/tax.pdf",
     "Linux path /home/jfranco/cases/secret.pdf",
     "Windows path C:\\Users\\jfranco\\Documents\\Client\\t4.pdf",
     "Contact jean.tremblay@example.ca or 514-555-0199",
-    'JSON {"apiKey": "sk-abc12345678", "osProtectedKeyB64": "AAAA", "salt": "deadbeef", "hash": "cafe", "key": "secret"}',
+    'JSON {"apiKey": "sk-abc12345678", "geminiApiKey": "AIzaSecretGemini9876543210abcdef", "gemini_api_key": "gemSnakeSecret99", "deepseek_key": "dsSnakeSecret88", "deepseek_api_key": "dsApiSnakeSecret77", "osProtectedKeyB64": "AAAA", "salt": "deadbeef", "hash": "cafe", "key": "secret"}',
     "bare hash: barehash999, bare key=supersecret123, bare salt: cafebabe02, privateKey=privval42",
     "-----BEGIN PRIVATE KEY-----\nMIIBVwIBADANBgkqhkiG9w0BAQEFAASCAT8wggE7\n-----END PRIVATE KEY-----",
     "Diagnostic code preserved: FNL-SANDBOX-502#A1B2",
@@ -41,6 +42,11 @@ function run() {
   for (const forbidden of [
     "super_secret_token_value_123",
     "sk-proj1234567890abcdef",
+    "AIzaSyDTestSecretKey1234567890abcd",
+    "AIzaSecretGemini9876543210abcdef",
+    "gemSnakeSecret99",
+    "dsSnakeSecret88",
+    "dsApiSnakeSecret77",
     "ghp_1234567890abcdef123456",
     "MySecretPassword99",
     "/Users/jfranco",
@@ -108,14 +114,19 @@ function run() {
   assert.equal(report.bundle.vaultStatus.biometricLinked, true);
   assert.ok(report.markdown.includes("Sanitized Diagnostic Export (Loi 25)"));
 
-  // 4. Server & desktop wiring assertions
+  // 4. Server, desktop & dashboard UI wiring assertions
   const serverSrc = readFileSync(join(ROOT, "supervisor", "server.js"), "utf8");
   const mainSrc = readFileSync(join(ROOT, "apps", "desktop", "main.js"), "utf8");
   const preloadSrc = readFileSync(join(ROOT, "apps", "desktop", "preload.js"), "utf8");
+  const dashSrc = readFileSync(join(ROOT, "supervisor", "dashboard.html"), "utf8");
   assert.ok(serverSrc.includes("persistVault: false"), "server.js must support persistVault: false in veil()");
   assert.ok(serverSrc.includes('"/api/diagnostic/export"'), "server.js must expose /api/diagnostic/export");
   assert.ok(mainSrc.includes('"fanal:export-diagnostic"'), "main.js must register fanal:export-diagnostic");
   assert.ok(preloadSrc.includes("exportDiagnostic"), "preload.js must expose exportDiagnostic");
+  assert.ok(dashSrc.includes('id="diagExportMdBtn"'), "dashboard.html must wire diagExportMdBtn");
+  assert.ok(dashSrc.includes('id="diagExportJsonBtn"'), "dashboard.html must wire diagExportJsonBtn");
+  assert.ok(dashSrc.includes("fanalIPC.exportDiagnostic"), "dashboard.html must invoke fanalIPC.exportDiagnostic");
+  assert.ok(dashSrc.includes("/api/diagnostic/export"), "dashboard.html must support /api/diagnostic/export fallback");
 
   console.log("DIAGNOSTIC_EXPORT_TESTS PASSED");
 }

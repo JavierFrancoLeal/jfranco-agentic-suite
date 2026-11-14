@@ -29,6 +29,21 @@ const {
   sanitizeTicketRecord,
   buildSanitizedDiagnosticReport,
 } = require("./diagnostic-sanitizer");
+const {
+  DEEPSEEK_CHAT_URL,
+  CURATED_LOCAL_MODELS,
+  sealSettingsObject,
+  unsealSettingsObject,
+  decryptProvidersText,
+  encryptProvidersText,
+  normalizeBrainMode,
+  normalizeLocalModel,
+  validateClosedBrainUpdate,
+  routeBrainRequest,
+  buildDerivedProvidersRecord,
+  buildBrainHttpRequest,
+  buildBrainPublicSummary,
+} = require("./brain-catalog");
 
 const PORT = Number(process.env.DSH_SUPERVISOR_PORT || 8787);
 const HTTPS_PORT = Number(process.env.DSH_SUPERVISOR_HTTPS_PORT || 8443);
@@ -692,7 +707,7 @@ function ts() { return new Date().toISOString(); }
 // When DEEPSEEK_API_KEY is set, the server calls the official API directly:
 // real-time demand → deepseek-flash; deep analysis → deepseek-v4-pro.
 // Without the key, the standby agent (tools/agent-standby.sh) takes over.
-const BRAIN_BASE = "https://api.deepseek.com/chat/completions";
+const BRAIN_BASE = DEEPSEEK_CHAT_URL;
 const RECOVERY_WORDS = ["FANAL","QUEBEC","FLEUVE","BOUSSOLE","ANCRE","GRANIT","ERABLE","NORD","PIN","VEILLE","SCEAU","CLARTE","VERITE","GARDE","PONT","ROCHE","SOLIDE","PHARE","LAC","FORET","NEIGE","VENT","PORT","CALME","JUSTE","DROIT","LIVRE","CLEF","OR","FER","SOURCE","CAP"];
 function generateClientRecoveryKit() {
   const c = require("node:crypto");
@@ -758,61 +773,64 @@ function runBetaCohortTriSectorReader(professionKey, docData) {
   }
   return { color: "GREEN", summary: "Sin regla específica para " + professionKey + "." };
 }
-function raylineEnabled() {
-  try {
-    const p = providersRead();
-    const r = p && p.rayline;
-    return !!(r && r.enabled === true && r.baseUrl);
-  } catch (e) { return false; }
-}
 function providersRead() {
-  try { const p = path.join(DATA_DIR, "providers.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
-  catch (e) { return {}; }
+  try {
+    const p = path.join(DATA_DIR, "providers.json");
+    return decryptProvidersText(fs.readFileSync(p, "utf8"), process.env.FANAL_MASTER_KEY || "");
+  } catch (e) { return {}; }
 }
-function providersWrite(p) { try { fs.writeFileSync(path.join(DATA_DIR, "providers.json"), JSON.stringify(p)); } catch (e) {} }
-// The anti-fragile brain: every tier routes to a CONFIGURED provider —
-// cloud or LOCAL (open models). Change providers.json and the brain changes.
+function providersWrite(p) {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
+    const body = encryptProvidersText(p, process.env.FANAL_MASTER_KEY || "");
+    fs.writeFileSync(path.join(DATA_DIR, "providers.json"), body, { mode: 0o600 });
+  } catch (e) {}
+}
+// Closed curated brain router: routes strictly to Apple-curated dual cloud hemispheres
+// (DeepSeek + Google Gemini) or allowlisted local sovereign engine — never arbitrary URLs.
 function route(model, tierArg) {
-  const pr = providersRead();
-  const tier = tierArg || (String(model).includes("v4-pro") ? "deep" : "fast");
-  const cfg = pr[tier] || {};
-  return {
-    baseUrl: String(cfg.baseUrl || BRAIN_BASE),
-    key: String(cfg.key || clientKey() || process.env.DEEPSEEK_API_KEY || ""),
-    model: String(cfg.model || model),
-    tier,
-  };
+  return routeBrainRequest({
+    model,
+    tierArg,
+    settings: settingsRead(),
+    providers: providersRead(),
+    env: process.env,
+  });
 }
 async function brain(model, prompt, maxTokens, tierArg) {
   const rt = route(model, tierArg);
-  const key = rt.key;
-  if (!key) throw new Error("no API key");
+  const { url: callUrl, isLocal, headers, payload } = buildBrainHttpRequest({ rt, prompt, maxTokens });
+  if (!isLocal && !rt.key) {
+    throw new Error(rt.provider === "gemini" ? "no Gemini API key" : "no DeepSeek API key");
+  }
   if (!isBrainHealthy(rt.tier)) throw new Error("circuit open for " + rt.tier);
-  const isLocal = /localhost|127\.0\.0\.1/.test(String(rt.baseUrl || ""));
-  let callUrl = String(rt.baseUrl);
-  if (!/chat\/completions/.test(callUrl)) callUrl = callUrl.replace(/\/$/, "") + "/chat/completions";
   while (isLocal && LOCAL_BUSY >= 1) { await new Promise((rs) => setTimeout(rs, 200)); }
   if (isLocal) LOCAL_BUSY++;
   let r = null;
-  const payload = { model: rt.model, messages: [{ role: "user", content: prompt }], max_tokens: maxTokens || (String(rt.model).includes("v4-pro") ? 12000 : 8000), temperature: 0 };
-  if (isLocal) { payload.response_format = { type: "json_object" }; }
-  for (let netAttempt = 0; netAttempt <= 3; netAttempt++) {
-    r = await fetch(callUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(Number(process.env.FANAL_PARACHUTE_MS || 90000)),
-    });
-    if ((r.status === 429 || r.status >= 500) && netAttempt < 3) { await new Promise((rs) => setTimeout(rs, Math.pow(2, netAttempt) * 1000 + Math.random() * 200)); continue; }
-    break;
+  try {
+    for (let netAttempt = 0; netAttempt <= 3; netAttempt++) {
+      r = await fetch(callUrl, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(Number(process.env.FANAL_PARACHUTE_MS || 90000)),
+      });
+      if ((r.status === 429 || r.status >= 500) && netAttempt < 3) { await new Promise((rs) => setTimeout(rs, Math.pow(2, netAttempt) * 1000 + Math.random() * 200)); continue; }
+      break;
+    }
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || !j.choices) { throw new Error((j.error && j.error.message) || ("HTTP " + r.status)); }
+    recordBrainOutcome(rt.tier, true);
+    try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, String(rt.model || model)); } catch {}
+    try { telemetryTick("call", { model: String(rt.model || model), tokens: Number(j.usage && j.usage.total_tokens) || 0 }); } catch {}
+    const m = j.choices[0].message || {};
+    return m.content || m.reasoning_content || "";
+  } catch (err) {
+    recordBrainOutcome(rt.tier, false);
+    throw err;
+  } finally {
+    if (isLocal) LOCAL_BUSY = Math.max(0, LOCAL_BUSY - 1);
   }
-  const j = await r.json().catch(() => ({}));
-  if (!r.ok || !j.choices) { recordBrainOutcome(rt.tier, false); if (isLocal) LOCAL_BUSY = Math.max(0, LOCAL_BUSY - 1); throw new Error((j.error && j.error.message) || ("HTTP " + r.status)); }
-  recordBrainOutcome(rt.tier, true); if (isLocal) LOCAL_BUSY = Math.max(0, LOCAL_BUSY - 1);
-  try { appendUsage("server", Number(j.usage && j.usage.total_tokens) || 0, String(rt.model || model)); } catch {}
-  try { telemetryTick("call", { model: String(rt.model || model), tokens: Number(j.usage && j.usage.total_tokens) || 0 }); } catch {}
-  const m = j.choices[0].message || {};
-  return m.content || m.reasoning_content || "";
 }
 function jsonBlock(text) {
   const a = String(text).indexOf("{"), b = String(text).lastIndexOf("}");
@@ -820,10 +838,31 @@ function jsonBlock(text) {
   try { return JSON.parse(String(text).slice(a, b + 1)); } catch { return null; }
 }
 const SETTINGS_FILE = path.join(DATA_DIR, "settings.json");
-function settingsRead() { try { return JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8")); } catch { return {}; } }
-function settingsWrite(obj) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(SETTINGS_FILE, JSON.stringify(obj, null, 2)); }
+function settingsRead() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(SETTINGS_FILE, "utf8"));
+    return unsealSettingsObject(raw, process.env.FANAL_MASTER_KEY || "");
+  } catch { return {}; }
+}
+function settingsWrite(obj) {
+  fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
+  const sealed = sealSettingsObject(obj, process.env.FANAL_MASTER_KEY || "");
+  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(sealed, null, 2), { mode: 0o600 });
+}
 function clientKey() { const s0 = settingsRead(); return (s0.apiKey && String(s0.apiKey).trim()) || ""; }
-function brainOn() { return !!clientKey() || !!process.env.DEEPSEEK_API_KEY; }
+function geminiClientKey() {
+  const s0 = settingsRead();
+  if (s0.geminiApiKey && String(s0.geminiApiKey).trim()) return String(s0.geminiApiKey).trim();
+  const pr = providersRead();
+  return (pr.rescue && typeof pr.rescue.key === "string" && pr.rescue.key.trim()) || "";
+}
+function brainOn() {
+  return normalizeBrainMode(settingsRead(), providersRead()) === "local_sovereign"
+    || !!clientKey()
+    || !!process.env.DEEPSEEK_API_KEY
+    || !!geminiClientKey()
+    || !!process.env.GEMINI_API_KEY;
+}
 function constitutionRead() {
   try { const p = path.join(DATA_DIR, "constitution.json"); return JSON.parse(fs.readFileSync(p, "utf8")); }
   catch (e) { return { philosophy: "", tone: "", policies: "", discountRule: "", minPrice: "", extremeDiscounts: "", escalation: "" }; }
@@ -1214,8 +1253,7 @@ function shouldRunLocalForBranch(branch, localQueueEmpty) {
 function processStudio(item) {
   if (item._queuedAt === undefined) item._queuedAt = Date.now();
   // El carril LOCAL (Ollama) no espera en la cola: es el reflejo de la médula.
-  const fastCfg = (providersRead() || {}).fast || {};
-  const isLocal = /localhost|127\.0\.0\.1/.test(String(fastCfg.baseUrl || ""));
+  const isLocal = route("deepseek-flash").isLocal;
   if (STUDIO_BUSY >= 4 && !isLocal) {
     if (Date.now() - item._queuedAt > Number(process.env.FANAL_QUEUE_CEILING_MS || 45000)) {
       const tkQ = tasksRead();
@@ -1671,28 +1709,40 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/settings/brain/auto" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
-    const out = { ok: true, detected: {}, fast: null };
+    const out = { ok: true, detected: {}, fast: null, localModel: null };
     try {
       const r = await fetch("http://localhost:11434/api/tags", { signal: AbortSignal.timeout(4000) });
       if (r.ok) {
         const j = await r.json();
-        const models = (j.models || []).map((m) => m.name);
+        const models = (j.models || []).map((m) => String(m.name || ""));
         out.detected = { ollama: true, models };
-        let pick = models.find((m) => /qwen2\.5:7b/.test(m)) || models.find((m) => /llama3\.2:3b/.test(m)) || models[0];
+        let pick = CURATED_LOCAL_MODELS.find((allowed) => models.some((m) => m === allowed || m === allowed + ":latest")) || null;
         if (!pick) {
-          // El cliente jamás escribe comandos: si Ollama está vacío, Fanal baja el modelo SOLO.
+          // El cliente jamás escribe comandos: si Ollama está vacío, Fanal baja el modelo curado SOLO.
           try {
-            await fetch("http://localhost:11434/api/pull", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ model: "qwen2.5:7b" }), signal: AbortSignal.timeout(600000) });
-            pick = "qwen2.5:7b";
-            out.detected.pulled = true;
+            const pullRes = await fetch("http://localhost:11434/api/pull", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ model: CURATED_LOCAL_MODELS[0] }),
+              signal: AbortSignal.timeout(600000),
+            });
+            if (pullRes.ok) {
+              pick = CURATED_LOCAL_MODELS[0];
+              out.detected.pulled = true;
+            }
           } catch (e) { out.detected.pulled = false; }
         }
         if (pick) {
-          const pr = providersRead();
-          pr.fast = { baseUrl: "http://localhost:11434/v1", key: "", model: pick };
+          const s0 = settingsRead();
+          s0.brainMode = "local_sovereign";
+          s0.localModel = normalizeLocalModel(pick);
+          settingsWrite(s0);
+          const pr = buildDerivedProvidersRecord(s0, providersRead());
           providersWrite(pr);
-          out.fast = pick;
-          telemetryTick("action", { tier: "GREEN", what: "Brain auto-configured: local " + pick + " (the client never typed a baseUrl)" });
+          out.mode = "local_sovereign";
+          out.localModel = s0.localModel;
+          out.fast = s0.localModel;
+          telemetryTick("action", { tier: "GREEN", what: "Local Sovereign brain activated (" + s0.localModel + ")" });
         }
       } else { out.detected = { ollama: false }; }
     } catch (e) { out.detected = { ollama: false }; }
@@ -1700,33 +1750,48 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/settings/brain" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
-    const pr = providersRead();
-    return send(res, 200, { fast: pr.fast || { baseUrl: BRAIN_BASE, model: "deepseek-flash" }, deep: pr.deep || { baseUrl: BRAIN_BASE, model: "deepseek-v4-pro" }, rescue: pr.rescue || { baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai", model: "gemini-3.1-pro" } });
+    return send(res, 200, buildBrainPublicSummary({ settings: settingsRead(), providers: providersRead(), env: process.env }));
   }
   if (pathname === "/api/settings/brain" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
-    const pr = providersRead();
-    if (b.fast) pr.fast = { baseUrl: String(b.fast.baseUrl || BRAIN_BASE), key: String(b.fast.key || ""), model: String(b.fast.model || "deepseek-flash") };
-    if (b.deep) pr.deep = { baseUrl: String(b.deep.baseUrl || BRAIN_BASE), key: String(b.deep.key || ""), model: String(b.deep.model || "deepseek-v4-pro") };
-    if (b.rescue) pr.rescue = { baseUrl: String(b.rescue.baseUrl || "https://generativelanguage.googleapis.com/v1beta/openai"), key: String(b.rescue.key || ""), model: String(b.rescue.model || "gemini-3.1-pro") };
+    const check = validateClosedBrainUpdate(b);
+    if (!check.ok) {
+      return send(res, check.status || 400, { error: check.error, message: check.message });
+    }
+    const s0 = settingsRead();
+    if (b.mode !== undefined) s0.brainMode = b.mode;
+    else if (!s0.brainMode) s0.brainMode = normalizeBrainMode(s0, providersRead());
+    if (b.localModel) s0.localModel = normalizeLocalModel(b.localModel);
+    if (b.clearDeepseekKey === true) delete s0.apiKey;
+    else if (typeof b.deepseekKey === "string" && b.deepseekKey.trim()) s0.apiKey = b.deepseekKey.trim();
+    if (b.clearGeminiKey === true) {
+      delete s0.geminiApiKey;
+      const prClean = providersRead();
+      if (prClean.rescue && prClean.rescue.key) delete prClean.rescue.key;
+      providersWrite(prClean);
+    } else if (typeof b.geminiKey === "string" && b.geminiKey.trim()) {
+      s0.geminiApiKey = b.geminiKey.trim();
+    }
+    settingsWrite(s0);
+    const pr = buildDerivedProvidersRecord(s0, providersRead());
     providersWrite(pr);
-    telemetryTick("action", { tier: "GREEN", what: "Brain router updated (fast: " + (pr.fast && pr.fast.model) + ", deep: " + (pr.deep && pr.deep.model) + ", rescue: " + (pr.rescue && pr.rescue.model) + ")" });
-    return send(res, 200, { ok: true });
+    const summary = buildBrainPublicSummary({ settings: s0, providers: pr, env: process.env });
+    telemetryTick("action", { tier: "GREEN", what: "Curated brain mode updated (" + summary.mode + ")" });
+    return send(res, 200, { ok: true, ...summary });
   }
   if (pathname === "/api/settings/balance" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
     const key = clientKey() || process.env.DEEPSEEK_API_KEY || "";
     if (!key) return send(res, 200, { ok: false, error: "no key" });
-    const rt = route("deepseek-flash");
     try {
       const r = await fetch("https://api.deepseek.com/user/balance", { headers: { Authorization: "Bearer " + key } });
       const j = await r.json().catch(() => ({}));
       const bal = j && j.balance_infos && j.balance_infos[0];
       const usd = bal ? Number(bal.total_balance || 0) : null;
-      const res = { ok: true, usd, currency: bal && bal.currency, prices: { flash: 0.002, "v4-pro": 0.05, unit: "USD / 8k-12k tokens (approx)" } };
+      const balRes = { ok: true, usd, currency: bal && bal.currency, prices: { flash: 0.002, "v4-pro": 0.05, unit: "USD / 8k-12k tokens (approx)" } };
       if (usd === null && !r.ok) return send(res, 200, { ok: false, error: "balance unavailable from the provider" });
-      return send(res, 200, res);
+      return send(res, 200, balRes);
     } catch (e) { return send(res, 200, { ok: false, error: e.message }); }
   }
   if (pathname === "/api/task/open" && req.method === "POST") {
@@ -2344,15 +2409,38 @@ async function api(req, res, pathname) {
     if (!ownerOnly(res, req)) return;
     const b = await json(req);
     const s0 = settingsRead();
-    if (String(b.key || "").trim()) s0.apiKey = String(b.key).trim();
-    else delete s0.apiKey;
+    if (b.clearKey === true) delete s0.apiKey;
+    else if (String(b.key || "").trim()) s0.apiKey = String(b.key).trim();
+    if (b.clearGeminiKey === true) delete s0.geminiApiKey;
+    else if (String(b.geminiKey || "").trim()) s0.geminiApiKey = String(b.geminiKey).trim();
     if (String(b.bizName || "").trim()) s0.bizName = String(b.bizName).trim();
     settingsWrite(s0);
-    return send(res, 200, { ok: true, hasKey: !!clientKey(), source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none") });
+    return send(res, 200, {
+      ok: true,
+      hasKey: !!clientKey(),
+      hasGeminiKey: !!geminiClientKey(),
+      source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none"),
+      geminiSource: geminiClientKey() ? "client" : (process.env.GEMINI_API_KEY ? "env" : "none"),
+      mode: normalizeBrainMode(s0, providersRead()),
+    });
   }
   if (pathname === "/api/settings/status" && req.method === "GET") {
     if (!ownerOnly(res, req)) return;
-    return send(res, 200, { hasKey: !!clientKey(), source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none"), dailyBudget: DAILY_BUDGET_USD, models: { fast: ROUTES.transcript.model, deep: ROUTES.deep.model } });
+    const pub = buildBrainPublicSummary({ settings: settingsRead(), providers: providersRead(), env: process.env });
+    return send(res, 200, {
+      hasKey: !!clientKey(),
+      hasGeminiKey: !!geminiClientKey(),
+      source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none"),
+      geminiSource: geminiClientKey() ? "client" : (process.env.GEMINI_API_KEY ? "env" : "none"),
+      mode: pub.mode,
+      localModel: pub.localModel,
+      keysEncryptedAtRest: pub.keysEncryptedAtRest,
+      keyStorageMode: pub.keyStorageMode,
+      deepseek: pub.deepseek,
+      gemini: pub.gemini,
+      dailyBudget: DAILY_BUDGET_USD,
+      models: { fast: pub.fast.model, deep: pub.deep.model, rescue: pub.rescue.model },
+    });
   }
   if (pathname === "/api/nodes" && req.method === "GET") { if (!ownerOnly(res, req)) return; const nf = path.join(DATA_DIR, "nodes.json"); let n = []; try { n = JSON.parse(fs.readFileSync(nf, "utf8")); } catch {} return send(res, 200, { nodes: n }); }
   if (pathname === "/api/nodes" && req.method === "POST") { if (!ownerOnly(res, req)) return; const b = await json(req); if (!b.url || !b.name) return send(res, 400, { error: "name and url required" }); const nf = path.join(DATA_DIR, "nodes.json"); fs.mkdirSync(DATA_DIR, { recursive: true }); let n = []; try { n = JSON.parse(fs.readFileSync(nf, "utf8")); } catch {} const i = n.findIndex(x => x.url === b.url); if (i >= 0) n[i] = { name: String(b.name), url: String(b.url), sector: String(b.sector || ""), at: ts() }; else n.push({ name: String(b.name), url: String(b.url), sector: String(b.sector || ""), at: ts() }); fs.writeFileSync(nf, JSON.stringify(n)); return send(res, 200, { nodes: n }); }

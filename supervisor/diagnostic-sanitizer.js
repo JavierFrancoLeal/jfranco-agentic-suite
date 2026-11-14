@@ -16,6 +16,7 @@ function redactSecretsAndPaths(rawText) {
 
   // Known token & API key formats
   out = out.replace(/\bsk-[A-Za-z0-9_-]{8,}\b/g, "[REDACTED_API_KEY]");
+  out = out.replace(/\bAIza[0-9A-Za-z_-]{20,}\b/g, "[REDACTED_API_KEY]");
   out = out.replace(/\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9]{12,}\b/g, "[REDACTED_TOKEN]");
   out = out.replace(/\bgithub_pat_[A-Za-z0-9_]{12,}\b/g, "[REDACTED_TOKEN]");
   out = out.replace(/\b(Bearer\s+)[A-Za-z0-9._~+/=-]{8,}/gi, "$1[REDACTED_TOKEN]");
@@ -31,13 +32,13 @@ function redactSecretsAndPaths(rawText) {
     /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/g,
     "[REDACTED_PRIVATE_KEY]"
   );
-  // Quoted JSON or JS key-value secrets (includes brain.json "key", vault-auth salts/hashes, PEM keys)
+  // Quoted JSON or JS key-value secrets (includes brain.json "key", vault-auth salts/hashes, PEM keys, dual BYOK slots)
   out = out.replace(
-    /(["'])(masterPassword|password|api[_-]?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)\1(\s*:\s*)(?:"[^"]*"|'[^']*'|[^,}\]\n]+)/gi,
+    /(["'])(masterPassword|password|api[_-]?key|gemini[_-]?(?:api[_-]?)?key|deepseek[_-]?(?:api[_-]?)?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)\1(\s*:\s*)(?:"[^"]*"|'[^']*'|[^,}\]\n]+)/gi,
     '$1$2$1$3"[REDACTED]"'
   );
   out = out.replace(
-    /\b(masterPassword|password|api[_-]?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)(\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,}\]\n]+)/gi,
+    /\b(masterPassword|password|api[_-]?key|gemini[_-]?(?:api[_-]?)?key|deepseek[_-]?(?:api[_-]?)?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)(\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,}\]\n]+)/gi,
     "$1$2[REDACTED]"
   );
 
