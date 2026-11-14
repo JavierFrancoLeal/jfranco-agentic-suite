@@ -90,6 +90,13 @@ function sealSettingsObject(obj, masterKey) {
   if (typeof copy.geminiApiKey === "string" && copy.geminiApiKey.trim() && !copy.geminiApiKey.startsWith("AESGCM2:")) {
     copy.geminiApiKey = encryptSecretValue(copy.geminiApiKey.trim(), mk);
   }
+  if (copy.intake && typeof copy.intake === "object" && copy.intake.imap && typeof copy.intake.imap === "object") {
+    copy.intake = { ...copy.intake, imap: { ...copy.intake.imap } };
+    const pw = copy.intake.imap.password;
+    if (typeof pw === "string" && pw.trim() && !pw.startsWith("AESGCM2:")) {
+      copy.intake.imap.password = encryptSecretValue(pw.trim(), mk);
+    }
+  }
   return copy;
 }
 
@@ -105,6 +112,15 @@ function unsealSettingsObject(obj, masterKey) {
     const plain = decryptSecretValue(copy.geminiApiKey, mk);
     if (plain) copy.geminiApiKey = plain;
     else delete copy.geminiApiKey;
+  }
+  if (copy.intake && typeof copy.intake === "object" && copy.intake.imap && typeof copy.intake.imap === "object") {
+    copy.intake = { ...copy.intake, imap: { ...copy.intake.imap } };
+    const pw = copy.intake.imap.password;
+    if (typeof pw === "string" && pw.startsWith("AESGCM2:")) {
+      const plain = decryptSecretValue(pw, mk);
+      if (plain) copy.intake.imap.password = plain;
+      else delete copy.intake.imap.password;
+    }
   }
   return copy;
 }

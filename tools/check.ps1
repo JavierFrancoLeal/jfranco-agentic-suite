@@ -30,6 +30,8 @@ Write-Host "== supervisor =="
 & $node --check "supervisor\server.js" | Out-Null
 & $node --check "supervisor\brain-catalog.js" | Out-Null
 & $node --check "supervisor\diagnostic-sanitizer.js" | Out-Null
+& $node --check "supervisor\power-kpi.js" | Out-Null
+& $node --check "supervisor\intake-engine.js" | Out-Null
 $html2 = Get-Content "supervisor\dashboard.html" -Raw
 $m2 = [regex]::Match($html2, "(?s)<script>(.*?)</script>")
 Set-Content -Path "$env:TEMP\dsh-dash.js" -Value $m2.Groups[1].Value -Encoding UTF8
@@ -40,6 +42,8 @@ if ($LASTEXITCODE -ne 0) { throw "test-diagnostic-export failed" }
 if ($LASTEXITCODE -ne 0) { throw "test-closed-brain failed" }
 & $node "tools\test-api-closed-brain.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-api-closed-brain failed" }
+& $node "tools\test-intake-pipeline.mjs"
+if ($LASTEXITCODE -ne 0) { throw "test-intake-pipeline failed" }
 Write-Host "OK supervisor"
 
 Write-Host "== desktop app =="

@@ -34,11 +34,11 @@ function redactSecretsAndPaths(rawText) {
   );
   // Quoted JSON or JS key-value secrets (includes brain.json "key", vault-auth salts/hashes, PEM keys, dual BYOK slots)
   out = out.replace(
-    /(["'])(masterPassword|password|api[_-]?key|gemini[_-]?(?:api[_-]?)?key|deepseek[_-]?(?:api[_-]?)?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)\1(\s*:\s*)(?:"[^"]*"|'[^']*'|[^,}\]\n]+)/gi,
+    /(["'])(masterPassword|imapPassword|appPassword|password|api[_-]?key|gemini[_-]?(?:api[_-]?)?key|deepseek[_-]?(?:api[_-]?)?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)\1(\s*:\s*)(?:"[^"]*"|'[^']*'|[^,}\]\n]+)/gi,
     '$1$2$1$3"[REDACTED]"'
   );
   out = out.replace(
-    /\b(masterPassword|password|api[_-]?key|gemini[_-]?(?:api[_-]?)?key|deepseek[_-]?(?:api[_-]?)?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)(\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,}\]\n]+)/gi,
+    /\b(masterPassword|imapPassword|appPassword|password|api[_-]?key|gemini[_-]?(?:api[_-]?)?key|deepseek[_-]?(?:api[_-]?)?key|osProtectedKeyB64|recoveryKeyHex|boxPrivatePem|signPrivatePem|privateKey|masterHash|masterSalt|recoverySalt|recoveryHash|secret|access_token|refresh_token|salt|hash|key)(\s*[:=]\s*)(?:"[^"]*"|'[^']*'|[^\s,}\]\n]+)/gi,
     "$1$2[REDACTED]"
   );
 

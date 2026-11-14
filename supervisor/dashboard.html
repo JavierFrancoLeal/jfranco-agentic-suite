@@ -440,7 +440,7 @@ body.wall pre{max-height:40vh}
     </div>
     <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
     <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
-    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
+    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p><p class="hint hidden" id="repriseBanner" style="margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(77,107,254,.08)"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
       <div id="superDecisions"></div>
@@ -563,7 +563,7 @@ body.wall pre{max-height:40vh}
     </div>
     <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
     <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
-    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
+    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p><p class="hint hidden" id="repriseBanner" style="margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(77,107,254,.08)"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
       <div id="superDecisions"></div>
@@ -705,7 +705,7 @@ body.wall pre{max-height:40vh}
     </div>
     <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
     <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
-    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
+    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p><p class="hint hidden" id="repriseBanner" style="margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(77,107,254,.08)"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
       <div id="superDecisions"></div>
@@ -855,6 +855,31 @@ body.wall pre{max-height:40vh}
     <button type="button" class="btn small" id="brainSaveClosed" style="margin-top:10px">💾 Enregistrer mode et clés</button>
     <p class="hint" id="brainStatus"></p>
   </div>
+  <div class="card" id="intakeCard">
+    <h2 id="intakeCardTitleEl">📬 Entrée Autonome &amp; Énergie</h2>
+    <p id="intakeCardHintEl" class="hint">Lit vos courriels IMAP (y compris VoIP/SMS) sans modifier le statut lu et surveille Fanal-Inbox — rattrapage automatique au réveil.</p>
+    <p class="hint" id="intakeSummaryLine" style="margin:6px 0"></p>
+    <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input type="checkbox" id="imapEnabledChk"> <span id="imapEnabledLblEl">Activer la capture IMAP incrémentale</span></label>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:6px">
+      <div><label id="imapHostLblEl" class="hint" style="display:block;font-size:12px">Serveur IMAP</label><input id="imapHostInput" placeholder="imap.gmail.com" autocomplete="off"></div>
+      <div><label id="imapPortLblEl" class="hint" style="display:block;font-size:12px">Port</label><input id="imapPortInput" type="number" min="1" max="65535" value="993"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+      <div><label id="imapUserLblEl" class="hint" style="display:block;font-size:12px">Courriel / utilisateur</label><input id="imapUserInput" placeholder="vous@entreprise.ca" autocomplete="off"></div>
+      <div><label id="imapPassLblEl" class="hint" style="display:block;font-size:12px">Mot de passe d’application</label><input id="imapPassInput" type="password" placeholder="••••••••" autocomplete="off"></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input type="checkbox" id="imapTlsChk" checked> <span id="imapTlsLblEl">Utiliser TLS (recommandé)</span></label>
+    <div style="margin-top:6px">
+      <label id="intakeFolderLblEl" class="hint" style="display:block;font-size:12px">Dossier surveillé Fanal-Inbox</label>
+      <input id="intakeFolderInput" placeholder="Fanal-Inbox" autocomplete="off">
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input type="checkbox" id="batterySaverChk" checked> <span id="batterySaverLblEl">Suspendre l’IA locale lourde sur batterie</span></label>
+    <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+      <button type="button" class="btn small" id="intakeSaveBtn">💾 Enregistrer entrée &amp; énergie</button>
+      <button type="button" class="btn small gray" id="intakeSyncBtn">🔄 Synchroniser maintenant</button>
+    </div>
+    <p class="hint" id="intakeStatus"></p>
+  </div>
   <div class="card">
     <h2 id="diagCardTitleEl">🛡️ Support et Diagnostic Assaini (Loi 25)</h2>
     <p id="diagCardHintEl" class="hint">Exporte un diagnostic technique sans noms de clients, sans dossiers ni clés API.</p>
@@ -873,7 +898,7 @@ const S=window.I18N||{};
 function haptic(){try{if(navigator.vibrate)navigator.vibrate(25);}catch(e){}if(soundOn){try{const C=window.AudioContext||window.webkitAudioContext;if(!window.__ac)window.__ac=new C();const c=window.__ac;const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.12,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.12);o.start();o.stop(c.currentTime+.12);}catch(e){}}}
 const $=id=>document.getElementById(id);
 let token=null,me=null,auto=false,cur="en",livePoll=null,PACK=null,recording=false,rec=null,soundOn=true,darkOn=false,kitchenPoll=null,lastOrders=0;
-function t(k){return (S[cur]&&S[cur][k])||S.en[k]||k;}
+function t(k){return (S[cur]&&S[cur][k])||(S.en&&S.en[k])||k;}
 function applyToggles(){document.body.classList.toggle("dark",darkOn);$("darkBtn").textContent=darkOn?"☀️":"🌙";$("soundBtn").textContent=soundOn?"🔊":"🔇";}
 $("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-dark",darkOn?"1":"0");}catch(e){}applyToggles();};
 $("soundBtn").onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("dsh-sound",soundOn?"1":"0");}catch(e){}applyToggles();};
@@ -976,32 +1001,80 @@ function renderInbox(items){
   }).join(""):empty("🔕",t("inboxEmpty"));
   $("inboxList").querySelectorAll(".inbox-item").forEach(el=>el.onclick=()=>openDecision(items.find(x=>x.id===el.dataset.id)));
 }
+let activeDecisionTimer=null;
 function openDecision(x){
   if(!x)return;
+  if(activeDecisionTimer){clearTimeout(activeDecisionTimer);activeDecisionTimer=null;}
   $("inboxList").classList.add("hidden");
   const d=$("inboxDecision");
   d.classList.remove("hidden");
+  const origDraft=String(x.result||"");
+  const openedAtMs=Date.now();
   d.innerHTML="<h3>"+esc(t("inboxIncoming"))+"</h3><div class=\"msg\">"+esc(x.text)+"</div>"+
     "<h3>"+esc(t("inboxWhy"))+"</h3><div class=\"why\">"+esc(x.rationale||"—")+"</div>"+
-    "<h3>"+esc(t("inboxDraft"))+"</h3><div class=\"draft\">"+esc(x.result||"—")+"</div>"+
+    "<h3>"+esc(t("inboxDraft"))+"</h3><textarea id=\"inboxDraftEdit\" rows=\"4\" style=\"width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;background:var(--bg);color:var(--fg)\"></textarea>"+
     "<div class=\"dec-actions\"><button class=\"btn\" id=\"sendBtn\">"+esc(t("inboxSend"))+"</button>"+
     "<button class=\"btn\" id=\"noSendBtn\"><span class=\"noSendFill\"></span><span class=\"noSendTxt\">"+esc(t("inboxNoSend"))+"</span></button></div>"+
     (x.type==="publication"?("<button class=\"btn\" id=\"fbBtn\" style=\"margin-top:8px;background:linear-gradient(135deg,#1877F2,#4D6BFE)\">📘 "+esc(t("fbPlace"))+"</button>"):"")+
     "<p class=\"hint\" style=\"margin:8px 0 0\">"+esc(t("alertDefaultHint"))+"</p>";
+  const draftEl=d.querySelector("#inboxDraftEdit");
+  if(draftEl)draftEl.value=origDraft;
   const fill=d.querySelector(".noSendFill");
   if(fill){fill.style.animation="none";void fill.offsetWidth;fill.style.animation="";}
-  const timer=setTimeout(()=>decideInbox(x.id,"nosend"),10000);
-  d.querySelector("#sendBtn").onclick=async()=>{clearTimeout(timer);await decideInbox(x.id,"send");};
-  d.querySelector("#noSendBtn").onclick=async()=>{clearTimeout(timer);await decideInbox(x.id,"nosend");};
+  const cancelAuto=()=>{if(activeDecisionTimer){clearTimeout(activeDecisionTimer);activeDecisionTimer=null;}};
+  activeDecisionTimer=setTimeout(()=>decideInbox(x.id,"nosend",{correctionSecs:Math.max(5,Math.round((Date.now()-openedAtMs)/1000))}),10000);
+  if(draftEl){draftEl.addEventListener("focus",cancelAuto);draftEl.addEventListener("input",cancelAuto);}
+  d.querySelector("#sendBtn").onclick=async()=>{
+    cancelAuto();
+    const curDraft=draftEl?draftEl.value:origDraft;
+    const edited=curDraft.trim()!==origDraft.trim();
+    const elapsedSecs=Math.max(5,Math.round((Date.now()-openedAtMs)/1000));
+    await decideInbox(x.id,"send",{edited,editedText:curDraft,correctionSecs:edited?elapsedSecs:0});
+  };
+  d.querySelector("#noSendBtn").onclick=async()=>{
+    cancelAuto();
+    const elapsedSecs=Math.max(5,Math.round((Date.now()-openedAtMs)/1000));
+    await decideInbox(x.id,"nosend",{correctionSecs:elapsedSecs});
+  };
   const fb=d.querySelector("#fbBtn");
-  if(fb)fb.onclick=async()=>{clearTimeout(timer);await fbPrepare(x);};
+  if(fb)fb.onclick=async()=>{cancelAuto();await fbPrepare(x);};
 }
-async function decideInbox(id,decision){
-  await api("/api/studio/send",{id,decision});
+async function decideInbox(id,decision,meta){
+  if(activeDecisionTimer){clearTimeout(activeDecisionTimer);activeDecisionTimer=null;}
+  await api("/api/studio/send",Object.assign({id,decision},meta||{}));
   toast(decision==="send"?t("inboxSent"):t("inboxNoSendDone"));
   $("inboxDecision").classList.add("hidden");
   $("inboxList").classList.remove("hidden");
   loadStudio();
+  pollKpi();
+}
+const __visiblePolls=new Map();
+function isDocHidden(){return typeof document!=="undefined"&&document.hidden===true;}
+function scheduleVisiblePoll(key,fn,ms){
+  if(__visiblePolls.has(key))clearInterval(__visiblePolls.get(key));
+  const id=setInterval(()=>{if(!isDocHidden()){try{fn();}catch(e){}}},ms);
+  __visiblePolls.set(key,id);
+}
+function clearVisiblePoll(key){if(__visiblePolls.has(key)){clearInterval(__visiblePolls.get(key));__visiblePolls.delete(key);}}
+function clearRolePolls(){for(const k of ["deepAnswers","state","kpi","kitchen","live","autoRefresh","inboxFirst"])clearVisiblePoll(k);}
+let __lastResumeSyncMs=0;
+function triggerVisibleResumeSync(){
+  if(isDocHidden())return;
+  const now=Date.now();
+  if(now-__lastResumeSyncMs<1500)return;
+  __lastResumeSyncMs=now;
+  if(me){
+    pollKpi();
+    if(typeof loadIntakeStatus==="function")loadIntakeStatus();
+    if(me.role==="owner"||me.role==="lead"){loadStudio();pollState();pollAlerts();}
+  }
+  if(typeof wallTick==="function"&&location.search.indexOf("wall=1")>=0)wallTick();
+}
+if(typeof document.addEventListener==="function")document.addEventListener("visibilitychange",()=>{if(!isDocHidden())triggerVisibleResumeSync();});
+if(typeof window.addEventListener==="function")window.addEventListener("focus",triggerVisibleResumeSync);
+if(typeof window!=="undefined"&&window.fanalIPC&&typeof window.fanalIPC.on==="function"){
+  window.fanalIPC.on("fanal:system-wake",()=>triggerVisibleResumeSync());
+  window.fanalIPC.on("fanal:power-state",()=>{if(me)pollKpi();});
 }
 async function refreshNotifBadge(){
   try{
@@ -1013,7 +1086,7 @@ async function refreshNotifBadge(){
   }catch(e){}
 }
 $("notifBell").onclick=()=>{$("inboxView").style.display="flex";loadStudio();};
-setInterval(refreshNotifBadge,30000);
+scheduleVisiblePoll("notifBadge",()=>{if(me&&(me.role==="owner"||me.role==="lead"))refreshNotifBadge();},30000);
 async function loadStudio(){
   const r=await api("/api/studio");
   if(!r||r.error)return;
@@ -1047,7 +1120,7 @@ async function loadShift(){
   });
 }
 $("closeDayBtn").onclick=()=>loadShift();
-setInterval(pollAlerts,60000);
+scheduleVisiblePoll("alerts",()=>{if(me)pollAlerts();},60000);
 async function loadRegister(){
   const r=await api("/api/register");
   if(!r||r.error)return;
@@ -1328,9 +1401,9 @@ try{
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initVaultUi);else initVaultUi();
 }catch(e){}
 function viewToggle(){const simple=document.body.classList.toggle("simpleview");try{localStorage.setItem("dsh-simpleview",simple?"1":"0");}catch(e){}$("viewBtn").textContent=simple?"👁️🗨️":"👁️";$("viewBtn").title=simple?t("viewAdvanced"):t("viewSimple");}
-try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)setInterval(()=>{api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
+try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)scheduleVisiblePoll("inboxFirst",()=>{if(!me||(me.role!=="owner"&&me.role!=="lead"))return;api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
 async function pollDiscover(){try{const r=await api("/api/capabilities");if(!r||r.error)return;const dc=$("discoverCard");if(!dc)return;if(r.pending>0||!r.cards||!r.cards.length){dc.style.display="none";return;}dc.style.display="block";$("discoverList").innerHTML=r.cards.map(c=>'<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><b>'+esc(c.title)+'</b><p class="hint" style="margin:2px 0">'+esc(c.pitch)+'</p><button class="btn small" data-cap="'+esc(c.id)+'" style="background:#16a34a">'+esc(c.cta)+'</button></div>').join("");document.querySelectorAll("[data-cap]").forEach(b=>b.onclick=async()=>{await api("/api/capabilities/use",{method:"POST",body:{id:b.dataset.cap}});pollDiscover();});}catch(e){}}
-try{if(document.getElementById("discoverCard")){pollDiscover();setInterval(pollDiscover,20000);}}catch(e){}
+try{if(document.getElementById("discoverCard")){scheduleVisiblePoll("discover",()=>{if(me)pollDiscover();},20000);}}catch(e){}
 try{$("viewBtn").addEventListener("click",viewToggle);if(localStorage.getItem("dsh-simpleview")==="1"){document.body.classList.add("simpleview");$("viewBtn").textContent="👁️🗨️";}}catch(e){}
 function phoneLog(who,text){const l=$("phoneLog");if(l)l.innerHTML+="<div style=\"margin:4px 0\"><b>"+who+":</b> "+esc(text)+"</div>";l.scrollTop=l.scrollHeight;}
 async function phoneAnnounce(){const r=await api("/api/phone/announce");if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
@@ -1340,7 +1413,92 @@ async function loadConstitution(){try{const r=await api("/api/constitution");if(
 async function saveConstitution(){const v=$("constitutionFields").value;const o={};v.split("\n").forEach(l=>{const i=l.indexOf(":");if(i>0)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});const map={philosophie:"philosophy",ton:"tone",politiques:"policies",rabais:"discountRule","prix minimum":"minPrice",escalades:"escalation"};const body={};Object.keys(map).forEach(k=>body[map[k]]=o[k]||"");body.extremeDiscounts=$("constitutionExtreme").value.trim();await api("/api/constitution",{method:"POST",body});$("constitutionStatus").textContent="✔ "+t("saved");}
 async function loadMemory(){try{const r=await api("/api/memory");const cs=(r&&r.contacts)||[];$("memList").innerHTML=cs.map((c,i)=>"<div>• <b>"+esc(c.name)+"</b> ("+esc(c.type)+") "+(c.order?esc(c.order)+" ":"")+(c.address?esc(c.address)+" ":"")+(c.price?esc(c.price):"")+"</div>").join("");}catch(e){}}
 async function saveMemory(){const b={name:$("memName").value.trim(),type:$("memType").value,order:$("memOrder").value.trim(),ids:$("memIds").value.trim()};if(!b.name)return;await api("/api/memory",{method:"POST",body:b});$("memName").value="";$("memOrder").value="";$("memIds").value="";loadMemory();}
-async function pollKpi(){try{const r=await api("/api/kpi");if(!r||r.error)return;const el=$("kpiLine");if(el)el.textContent="⏱️ "+t("kpiSaved")+": "+r.timeSavedMin+" min · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections;}catch(e){}}
+async function pollKpi(){
+  try{
+    const r=await api("/api/kpi");if(!r||r.error)return;
+    const sign=(r.netSavedMin||0)>0?"+":"";
+    const prod=r.productiveMin!==undefined?r.productiveMin:(r.timeSavedMin||0);
+    const corr=r.correctiveMin!==undefined?r.correctiveMin:0;
+    const bat=(r.power&&r.power.onBattery)?" · 🔋":"";
+    const txt="⏱️ "+t("kpiNet")+": "+sign+(r.netSavedMin!==undefined?r.netSavedMin:(r.timeSavedMin||0))+" min (+"+prod+" − "+corr+") · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections+bat;
+    const nodes=typeof document.querySelectorAll==="function"?document.querySelectorAll('[id="kpiLine"]'):[];
+    const targets=nodes&&nodes.length?[...nodes]:($("kpiLine")?[$("kpiLine")]:[]);
+    for(const el of targets)el.textContent=txt;
+  }catch(e){}
+}
+async function loadIntakeStatus(){
+  try{
+    const r=await api("/api/intake");if(!r||r.error)return;
+    const rep=r.reprise||{};
+    const n=Number(rep.arrivedCount||0);
+    const def=Number(r.deferredCount||0);
+    const nodes=typeof document.querySelectorAll==="function"?document.querySelectorAll('[id="repriseBanner"]'):[];
+    const targets=nodes&&nodes.length?[...nodes]:($("repriseBanner")?[$("repriseBanner")]:[]);
+    for(const el of targets){
+      if(n>0||def>0){
+        const parts=[];
+        if(n>0)parts.push("☀️ "+t("repriseLabel")+": "+n+" ("+Number(rep.redCount||0)+" 🔴 / "+Number(rep.yellowCount||0)+" 🟡 / "+Number(rep.greenCount||0)+" 🟢)");
+        if(def>0)parts.push("🔋 "+def+" paused");
+        el.textContent=parts.join(" · ");
+        el.classList.remove("hidden");
+      }else{
+        el.classList.add("hidden");
+      }
+    }
+    const sum=$("intakeSummaryLine");
+    if(sum){
+      const folderTxt=r.folder&&r.folder.path?r.folder.path:"Fanal-Inbox";
+      const imapTxt=r.imap&&r.imap.configured?(r.imap.enabled?"IMAP ON ("+r.imap.user+")":"IMAP ready (off)"):"IMAP off";
+      sum.textContent="📁 "+folderTxt+" · ✉️ "+imapTxt+(r.reprise&&r.reprise.lastRunAt?" · Last: "+r.reprise.lastRunAt.slice(11,16):"");
+    }
+  }catch(e){}
+}
+async function loadIntakeConfig(){
+  try{
+    const r=await api("/api/intake/config");if(!r||r.error)return;
+    const im=r.imap||{};
+    if($("imapEnabledChk"))$("imapEnabledChk").checked=Boolean(im.enabled);
+    if($("imapHostInput"))$("imapHostInput").value=im.host||"";
+    if($("imapPortInput"))$("imapPortInput").value=String(im.port||993);
+    if($("imapUserInput"))$("imapUserInput").value=im.user||"";
+    if($("imapPassInput")){$("imapPassInput").value="";$("imapPassInput").placeholder=im.hasPassword?"•••••••• ("+t("brainConfigured")+")":"••••••••";}
+    if($("imapTlsChk"))$("imapTlsChk").checked=im.tls!==false;
+    if($("intakeFolderInput"))$("intakeFolderInput").value=(r.folder&&r.folder.path)||"";
+    if($("batterySaverChk"))$("batterySaverChk").checked=r.batterySaver!==false;
+    loadIntakeStatus();
+  }catch(e){}
+}
+async function saveIntakeConfig(){
+  const st=$("intakeStatus");
+  const payload={
+    imap:{
+      enabled:Boolean($("imapEnabledChk")&&$("imapEnabledChk").checked),
+      host:$("imapHostInput")?$("imapHostInput").value.trim():"",
+      port:Number($("imapPortInput")&&$("imapPortInput").value)||993,
+      user:$("imapUserInput")?$("imapUserInput").value.trim():"",
+      tls:$("imapTlsChk")?$("imapTlsChk").checked:true,
+    },
+    folder:{enabled:true,path:$("intakeFolderInput")?$("intakeFolderInput").value.trim():""},
+    batterySaver:$("batterySaverChk")?$("batterySaverChk").checked:true,
+  };
+  const pw=$("imapPassInput")?$("imapPassInput").value.trim():"";
+  if(pw)payload.imap.password=pw;
+  const r=await api("/api/intake/config",{method:"POST",body:payload});
+  if(r&&r.error){if(st)st.textContent="⚠ "+(r.message||r.error);return;}
+  if($("imapPassInput"))$("imapPassInput").value="";
+  if(st)st.textContent="✔ "+t("saved");
+  await loadIntakeConfig();
+}
+async function syncIntakeNow(){
+  const st=$("intakeStatus");
+  if(st)st.textContent=t("intakeSyncing");
+  const r=await api("/api/intake/sync",{method:"POST"});
+  if(r&&r.error){if(st)st.textContent="⚠ "+(r.message||r.error);return;}
+  if(st)st.textContent=t("intakeSyncedOk")+" ("+Number(r.arrivedCount||0)+" new, "+Number(r.filteredCount||0)+" filtered)";
+  await loadIntakeStatus();
+  await loadStudio();
+  await pollKpi();
+}
 let selectedBrainMode="dual_cloud";
 function applyBrainModeUi(mode){
   selectedBrainMode=mode==="local_sovereign"?"local_sovereign":"dual_cloud";
@@ -1457,6 +1615,8 @@ try{
   if($("vaultGeminiClear"))$("vaultGeminiClear").addEventListener("click",()=>clearVaultKey("gemini"));
   if($("diagExportMdBtn"))$("diagExportMdBtn").addEventListener("click",()=>exportDiagnostic("md"));
   if($("diagExportJsonBtn"))$("diagExportJsonBtn").addEventListener("click",()=>exportDiagnostic("json"));
+  if($("intakeSaveBtn"))$("intakeSaveBtn").addEventListener("click",saveIntakeConfig);
+  if($("intakeSyncBtn"))$("intakeSyncBtn").addEventListener("click",syncIntakeNow);
   $("dangerReset").addEventListener("click",()=>{try{localStorage.clear();}catch(e){}location.reload();});
 }catch(e){}
 async function fbPrepare(task){const r=await api("/api/facebook/prepare",{method:"POST",body:{text:task.result}});showMsg(r&&r.status?r.status:(r&&r.error||t("saved")));}
@@ -1545,6 +1705,18 @@ function applyLang(){
   if($("diagCardHintEl"))$("diagCardHintEl").textContent=t("diagHint");
   if($("diagExportMdBtn"))$("diagExportMdBtn").textContent=t("diagExportMd");
   if($("diagExportJsonBtn"))$("diagExportJsonBtn").textContent=t("diagExportJson");
+  if($("intakeCardTitleEl"))$("intakeCardTitleEl").textContent=t("intakeCardTitle");
+  if($("intakeCardHintEl"))$("intakeCardHintEl").textContent=t("intakeCardHint");
+  if($("imapEnabledLblEl"))$("imapEnabledLblEl").textContent=t("imapEnabledLbl");
+  if($("imapHostLblEl"))$("imapHostLblEl").textContent=t("imapHostLbl");
+  if($("imapPortLblEl"))$("imapPortLblEl").textContent=t("imapPortLbl");
+  if($("imapUserLblEl"))$("imapUserLblEl").textContent=t("imapUserLbl");
+  if($("imapPassLblEl"))$("imapPassLblEl").textContent=t("imapPassLbl");
+  if($("imapTlsLblEl"))$("imapTlsLblEl").textContent=t("imapTlsLbl");
+  if($("intakeFolderLblEl"))$("intakeFolderLblEl").textContent=t("intakeFolderLbl");
+  if($("batterySaverLblEl"))$("batterySaverLblEl").textContent=t("batterySaverLbl");
+  if($("intakeSaveBtn"))$("intakeSaveBtn").textContent=t("intakeSaveBtn");
+  if($("intakeSyncBtn"))$("intakeSyncBtn").textContent=t("intakeSyncBtn");
   updateBrainVaultBadge();
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
   panelLinks();
@@ -1575,25 +1747,28 @@ function markReel(){
   document.querySelectorAll("#langStepTicks .tick").forEach(t=>t.classList.toggle("active",t.dataset.l===cur));
 }
 function buildReel(ticksId){
+  const el=typeof document.querySelector==="function"?document.querySelector("#"+ticksId):null;
+  if(!el)return;
   for(let pass=0;pass<2;pass++){
     for(const l of Object.keys(LANG)){
       const d=document.createElement("div");
       d.className="tick";d.dataset.l=l;d.textContent=LANGNAMES[l];
-      $(ticksId).appendChild(d);
+      el.appendChild(d);
     }
   }
   const N=Object.keys(LANG).length,H=58,CYCLE=20000;
   const t0=performance.now();
   (function frame(now){
     const t=(now-t0)%CYCLE;
-    $(ticksId).style.transform="translateY(-"+((t/CYCLE)*N*H)+"px)";
+    el.style.transform="translateY(-"+((t/CYCLE)*N*H)+"px)";
     requestAnimationFrame(frame);
   })(t0);
 }
 buildLangMenu();
 buildReel("langStepTicks");
 markReel();
-$("langStepReel").onclick=()=>{$("langOverlay").style.display="flex";const en=document.querySelector("#langRows .center");if(en)en.scrollIntoView({block:"center"});};
+const langReelEl=typeof document.querySelector==="function"?document.querySelector("#langStepReel"):null;
+if(langReelEl)langReelEl.onclick=()=>{$("langOverlay").style.display="flex";const en=document.querySelector("#langRows .center");if(en)en.scrollIntoView({block:"center"});};
 $("closeOverlay").onclick=()=>{$("langOverlay").style.display="none";};
 // The Apple flow: after the splash, the language menu opens once (until chosen).
 
@@ -1707,9 +1882,10 @@ $("toHomeBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 async function enter(){
   if(!PACK){PACK=await api("/api/sector");applyPack();}
   setWho();
-  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);pollKeyStatus();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});loadConstitution();loadMemory();loadBrain();pollKpi();setInterval(pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
-  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});if(kitchenPoll)clearInterval(kitchenPoll);kitchenPoll=setInterval(kitchenWatch,4000);}
-  else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();if(livePoll)clearInterval(livePoll);livePoll=setInterval(()=>{if(me&&me.role==="employee")workerFlow();},3000);}
+  clearRolePolls();
+  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();scheduleVisiblePoll("deepAnswers",pollDeepAnswers,6000);pollState();scheduleVisiblePoll("state",pollState,8000);pollKeyStatus();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});loadConstitution();loadMemory();loadBrain();loadIntakeConfig();pollKpi();scheduleVisiblePoll("kpi",pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
+  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();scheduleVisiblePoll("deepAnswers",pollDeepAnswers,6000);pollState();scheduleVisiblePoll("state",pollState,8000);loadIntakeStatus();pollKpi();scheduleVisiblePoll("kpi",pollKpi,30000);loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});scheduleVisiblePoll("kitchen",kitchenWatch,4000);}
+  else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();scheduleVisiblePoll("live",()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
 let pwVisible=false;
 $("eyeBtn").onclick=()=>{pwVisible=!pwVisible;$("loginPass").type=pwVisible?"text":"password";$("eyeOn").classList.toggle("hidden",pwVisible);$("eyeOff").classList.toggle("hidden",!pwVisible);};
@@ -1738,7 +1914,7 @@ $("loginBtn").onclick=async()=>{
   sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));
   $("loginPass").value="";bootFlash(1400,()=>enter());
 };
-function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);setWho();bootFlash(1200,()=>show("loginView"));}
+function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);clearRolePolls();setWho();bootFlash(1200,()=>show("loginView"));}
 $("logoutBtn").onclick=logout;
 const sb=$("switchBtn");if(sb)sb.onclick=logout;
 async function loadUsers(){const tb=$("usersTable").querySelector("tbody");tb.innerHTML='<tr><td colspan="2">'+skel(2)+'</td></tr>';const r=await api("/api/users");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+esc(u.name)+"</td><td>"+esc(u.label||u.name)+" · "+t(LVL[u.role]||"lvlEmployee")+"</td>";tb.appendChild(tr);});}
@@ -1747,7 +1923,7 @@ async function loadField(){$("reports").innerHTML=skel(2);$("feedback").innerHTM
 async function loadLead(){$("leadReports").textContent=(await api("/api/reports")).content||"(empty)";$("leadFeedback").textContent=(await api("/api/feedback")).content||"(empty)";}
 $("refreshReports").onclick=loadField;$("leadRefresh").onclick=loadLead;
 const ar=$("autoRefresh");
-if(ar)ar.onclick=()=>{auto=!auto;ar.textContent=auto?t("autoOn"):t("autoOff");if(auto){const iv=setInterval(()=>{if(!auto){clearInterval(iv);return;}if(me&&me.role==="owner"){loadField();renderOrders();}},30000);}};
+if(ar)ar.onclick=()=>{auto=!auto;ar.textContent=auto?t("autoOn"):t("autoOff");if(auto){scheduleVisiblePoll("autoRefresh",()=>{if(!auto){clearVisiblePoll("autoRefresh");return;}if(me&&me.role==="owner"){loadField();renderOrders();}},30000);}else{clearVisiblePoll("autoRefresh");}};
 async function loadPresets(){
   const r=await api("/api/sector-presets");
   const g=$("presetGrid");if(!g)return;g.innerHTML="";
@@ -1772,7 +1948,7 @@ $("aiSectorBtn").onclick=async()=>{
 };
 async function loadRules(){$("decisions").value=(await api("/api/decisions")).content||"";}
 $("saveDecisions").onclick=async()=>{await api("/api/decisions",{content:$("decisions").value});$("decisionsSaved").textContent=t("saved");setTimeout(()=>$("decisionsSaved").textContent="",2000);};
-document.querySelectorAll(".tabs button, .bnav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button, .bnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector","studio","reglages"].forEach(x=>$("tab-"+x).classList.add("hidden"));if(b.dataset.tab==="studio"){$("inboxView").style.display="flex";loadStudio();}else{$("tab-"+b.dataset.tab).classList.remove("hidden");if(b.dataset.tab==="reglages"){loadConstitution();loadMemory();loadBrain();}}});
+document.querySelectorAll(".tabs button, .bnav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button, .bnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector","studio","reglages"].forEach(x=>$("tab-"+x).classList.add("hidden"));if(b.dataset.tab==="studio"){$("inboxView").style.display="flex";loadStudio();}else{$("tab-"+b.dataset.tab).classList.remove("hidden");if(b.dataset.tab==="reglages"){loadConstitution();loadMemory();loadBrain();loadIntakeConfig();}}});
 $("reportBtn").onclick=async()=>{const r=await api("/api/report",{text:$("reportText").value});if(r.error){showMsg("Error: "+r.error);return;}$("reportText").value="";showMsg(t("reportSent"));};
 $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.name,role:me.role,category:$("empFbCat").value,text:$("empFbText").value});if(r.error){showMsg("Error: "+r.error);return;}$("empFbText").value="";showMsg(t("feedbackSent"));};
 (async()=>{const dm=(/[?&]demo=([a-z]+)/.exec(location.search)||[])[1];if(dm){const r=await api("/api/demo-login",{role:dm});if(r&&r.token){token=r.token;me={name:r.name,role:r.role,label:r.label||r.name};sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));enter();if(/[?&]alert=1/.test(location.search)){await api("/api/demo/alert");setTimeout(pollAlerts,400);}return;}}})();
@@ -1784,8 +1960,8 @@ async function wallTick(){try{const r=await (await fetch("/api/wall")).json();co
 function clockTick(){const d=new Date();$("wallClock").textContent=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});$("wallDate").textContent=d.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});}
 if(location.search.indexOf("wall=1")>=0){
   document.body.classList.add("wall");show("wallView");
-  clockTick();setInterval(clockTick,1000);
-  wallTick();setInterval(wallTick,30000);
+  clockTick();scheduleVisiblePoll("wallClock",clockTick,1000);
+  wallTick();scheduleVisiblePoll("wallFeed",wallTick,30000);
 }
 </script>
 <style>

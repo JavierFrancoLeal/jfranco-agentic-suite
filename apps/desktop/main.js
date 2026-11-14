@@ -13,6 +13,9 @@ const { app, BrowserWindow, Tray, Menu, shell, nativeImage, ipcMain } = require(
 const path = require("node:path");
 const os = require("node:os");
 const net = require("node:net");
+const crypto = require("node:crypto");
+const http = require("node:http");
+const https = require("node:https");
 const { spawn } = require("node:child_process");
 const { globalShortcut, WebContentsView, screen, powerMonitor, systemPreferences, safeStorage } = require("electron");
 const fs = require("node:fs");
@@ -48,6 +51,8 @@ let activeMasterKeyBuf = null;
 let isVaultLocked = false;
 let idleTimer = null;
 let watchdogStarted = false;
+const FANAL_INTERNAL_TOKEN = crypto.randomBytes(24).toString("hex");
+let desktopPowerState = { sleeping: false, onBattery: false, lastWakeAt: null };
 let vaultIpcRegistered = false;
 let restoreMonitor2OnUnlock = false;
 const IDLE_TIMEOUT_SECONDS = 300;
@@ -240,8 +245,46 @@ function startBankGradeSecurityWatchdog(ctx) {
   try {
     if (ctx.primaryWindow && !ctx.primaryWindow.isDestroyed()) ctx.primaryWindow.setContentProtection(true);
     if (ctx.monitor2Window && !ctx.monitor2Window.isDestroyed()) ctx.monitor2Window.setContentProtection(true);
-    powerMonitor.on("suspend", () => lockFanalVaultNow(ctx, "LAPTOP_LID_CLOSED"));
-    powerMonitor.on("lock-screen", () => lockFanalVaultNow(ctx, "OS_SCREEN_LOCKED"));
+    powerMonitor.on("suspend", () => {
+      desktopPowerState.sleeping = true;
+      postInternalSupervisor("/api/system/power", { sleeping: true, reason: "suspend" });
+      lockFanalVaultNow(ctx, "LAPTOP_LID_CLOSED");
+    });
+    powerMonitor.on("lock-screen", () => {
+      postInternalSupervisor("/api/system/power", { sleeping: false, screenLocked: true, reason: "lock-screen" });
+      lockFanalVaultNow(ctx, "OS_SCREEN_LOCKED");
+    });
+    powerMonitor.on("resume", () => {
+      desktopPowerState.sleeping = false;
+      desktopPowerState.lastWakeAt = new Date().toISOString();
+      postInternalSupervisor("/api/system/wake", { reason: "os_resume" });
+      const activeWin = getActivePrimaryWindow();
+      if (activeWin) activeWin.webContents.send("fanal:system-wake", { reason: "os_resume", wakeAt: desktopPowerState.lastWakeAt });
+    });
+    powerMonitor.on("unlock-screen", () => {
+      desktopPowerState.sleeping = false;
+      desktopPowerState.lastWakeAt = new Date().toISOString();
+      postInternalSupervisor("/api/system/wake", { reason: "unlock_screen" });
+      const activeWin = getActivePrimaryWindow();
+      if (activeWin) activeWin.webContents.send("fanal:system-wake", { reason: "unlock_screen", wakeAt: desktopPowerState.lastWakeAt });
+    });
+    powerMonitor.on("on-battery", () => {
+      desktopPowerState.onBattery = true;
+      postInternalSupervisor("/api/system/power", { onBattery: true, reason: "on_battery" });
+      const activeWin = getActivePrimaryWindow();
+      if (activeWin) activeWin.webContents.send("fanal:power-state", { ...desktopPowerState });
+    });
+    powerMonitor.on("on-ac", () => {
+      desktopPowerState.onBattery = false;
+      postInternalSupervisor("/api/system/power", { onBattery: false, reason: "on_ac" });
+      const activeWin = getActivePrimaryWindow();
+      if (activeWin) activeWin.webContents.send("fanal:power-state", { ...desktopPowerState });
+    });
+    try {
+      if (typeof powerMonitor.isOnBatteryPower === "function") {
+        desktopPowerState.onBattery = Boolean(powerMonitor.isOnBatteryPower());
+      }
+    } catch {}
     idleTimer = setInterval(() => {
       if (isVaultLocked) return;
       try {
@@ -622,13 +665,43 @@ function armWatchdog() {
 }
 // El sandbox de la carpeta conectada (el chip [📁]): Fanal solo toca el expediente activo
 let allowedClientFolder = null;
+function postInternalSupervisor(apiPath, payload = {}) {
+  try {
+    const u = new URL(apiPath, TARGET_ORIGIN);
+    const mod = u.protocol === "https:" ? https : http;
+    const body = JSON.stringify(payload);
+    const req = mod.request(
+      u,
+      {
+        method: "POST",
+        timeout: 2500,
+        headers: {
+          "Content-Type": "application/json",
+          "Content-Length": Buffer.byteLength(body),
+          "X-Fanal-Csrf": "1",
+          "X-Fanal-Internal": FANAL_INTERNAL_TOKEN,
+        },
+      },
+      (res) => { res.resume(); }
+    );
+    req.on("timeout", () => { try { req.destroy(); } catch {} });
+    req.on("error", () => {});
+    req.write(body);
+    req.end();
+  } catch {}
+}
 try {
   ipcMain.handle("fanal:set-connected-folder", (ev, p) => {
     if (!isTrustedIpcEvent(ev)) throw new Error("Blocked untrusted IPC origin");
     const res = canonicalizeFolderPath(p);
     if (!res.ok) throw new Error(res.error);
     allowedClientFolder = res.resolvedPath;
+    postInternalSupervisor("/api/intake/folder", { folderPath: res.resolvedPath });
     return { activeFolderChip: res.activeFolderChip, fullPath: res.resolvedPath };
+  });
+  ipcMain.handle("fanal:power-state", (ev) => {
+    if (!isTrustedIpcEvent(ev)) throw new Error("Blocked untrusted IPC origin");
+    return { ...desktopPowerState };
   });
 } catch (e) {}
 
@@ -642,6 +715,7 @@ async function ensureBrain() {
     DSH_SUPERVISOR_DATA: DATA_DIR,
     DSH_SUPERVISOR_PORT: String(TARGET.port),
     DSH_SECTOR_PACKS_DIR: packs,
+    FANAL_INTERNAL_TOKEN,
   };
   delete cleanEnv.NODE_OPTIONS; delete cleanEnv.NODE_PATH; delete cleanEnv.ELECTRON_RUN_AS_NODE_POLL;
   brain = spawn(process.execPath, [serverJs, "--lan"], {
@@ -733,6 +807,12 @@ if (!app.requestSingleInstanceLock()) {
         backgroundThrottling: true,
         preload: path.join(__dirname, "preload.js"),
       },
+    });
+    win.on("close", (ev) => {
+      if (!SMOKE && !KIOSK && !shuttingDown && tray) {
+        ev.preventDefault();
+        win.hide();
+      }
     });
     win.on("closed", () => { win = null; });
     win.setMenuBarVisibility(false);
@@ -872,7 +952,10 @@ if (!app.requestSingleInstanceLock()) {
     setupCoworkRightDrawer();
     watchMonitorPlugEvents();
     bindMonitor2Events();
-    if (!SMOKE) startBankGradeSecurityWatchdog(vaultCtx);
+    if (!SMOKE) {
+      startBankGradeSecurityWatchdog(vaultCtx);
+      postInternalSupervisor("/api/system/power", { onBattery: desktopPowerState.onBattery, reason: "app_ready" });
+    }
     if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
     try {
       const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));
@@ -881,14 +964,14 @@ if (!app.requestSingleInstanceLock()) {
       tray.setContextMenu(Menu.buildFromTemplate([
         { label: "Abrir Fanal", click: () => showOrCreateMainWindow() },
         { type: "separator" },
-        { label: "Salir", click: () => app.quit() },
+        { label: "Salir", click: () => { shuttingDown = true; app.quit(); } },
       ]));
     } catch (e) { /* tray optional (kiosk) */ }
     app.on("activate", () => showOrCreateMainWindow());
   });
 
   app.on("window-all-closed", () => {
-    if (process.platform !== "darwin" || KIOSK) app.quit();
+    if (SMOKE || KIOSK || shuttingDown || (process.platform !== "darwin" && !tray)) app.quit();
   });
   app.on("will-quit", () => { try { if (brain) brain.kill(); } catch {} });
 }

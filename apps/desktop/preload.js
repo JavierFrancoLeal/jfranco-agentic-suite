@@ -8,6 +8,8 @@ const ALLOWED_PUSH_CHANNELS = new Set([
   "fanal:hud-step-tick",
   "fanal:vault-locked",
   "fanal:vault-unlocked",
+  "fanal:system-wake",
+  "fanal:power-state",
 ]);
 
 const isWebOrigin = Boolean(
@@ -38,6 +40,7 @@ if (isWebOrigin) {
     closeRightDrawer: () => ipcRenderer.invoke("fanal:close-right-drawer"),
     setConnectedFolder: (folderPath) => ipcRenderer.invoke("fanal:set-connected-folder", folderPath),
     exportDiagnostic: () => ipcRenderer.invoke("fanal:export-diagnostic"),
+    getPowerState: () => ipcRenderer.invoke("fanal:power-state"),
     on: (channel, listener) => {
       if (!ALLOWED_PUSH_CHANNELS.has(channel) || typeof listener !== "function") {
         return () => {};

@@ -50,6 +50,8 @@ echo "== supervisor =="
 "$NODE" --check supervisor/server.js
 "$NODE" --check supervisor/brain-catalog.js
 "$NODE" --check supervisor/diagnostic-sanitizer.js
+"$NODE" --check supervisor/power-kpi.js
+"$NODE" --check supervisor/intake-engine.js
 "$NODE" -e '
   const fs=require("fs");
   const h=fs.readFileSync("supervisor/dashboard.html","utf8");
@@ -60,6 +62,7 @@ echo "== supervisor =="
 "$NODE" tools/test-diagnostic-export.mjs
 "$NODE" tools/test-closed-brain.mjs
 "$NODE" tools/test-api-closed-brain.mjs
+"$NODE" tools/test-intake-pipeline.mjs
 echo "OK supervisor"
 
 echo "== desktop app =="

@@ -33,6 +33,8 @@ const FILE_PAIRS = [
   ["supervisor/server.js", "apps/desktop/brain/server.js"],
   ["supervisor/brain-catalog.js", "apps/desktop/brain/brain-catalog.js"],
   ["supervisor/diagnostic-sanitizer.js", "apps/desktop/brain/diagnostic-sanitizer.js"],
+  ["supervisor/power-kpi.js", "apps/desktop/brain/power-kpi.js"],
+  ["supervisor/intake-engine.js", "apps/desktop/brain/intake-engine.js"],
   ["supervisor/dashboard.html", "apps/desktop/brain/dashboard.html"],
   ["supervisor/dashboard-i18n.js", "apps/desktop/brain/dashboard-i18n.js"],
   ["supervisor/browser-cdp.js", "apps/desktop/brain/browser-cdp.js"],
