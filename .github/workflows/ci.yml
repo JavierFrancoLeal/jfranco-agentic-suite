@@ -26,3 +26,19 @@ jobs:
       - name: Run the suite quality gate (PowerShell)
         shell: pwsh
         run: ./tools/check.ps1
+
+  desktop-windows-smoke:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: 'npm'
+          cache-dependency-path: apps/desktop/package-lock.json
+      - name: Install desktop dependencies
+        working-directory: apps/desktop
+        run: npm ci
+      - name: Run Electron desktop smoke test
+        run: node tools/smoke-desktop.mjs

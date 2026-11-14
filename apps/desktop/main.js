@@ -17,67 +17,21 @@ const { spawn } = require("node:child_process");
 const { globalShortcut, WebContentsView, screen, powerMonitor, systemPreferences, safeStorage } = require("electron");
 const fs = require("node:fs");
 const fsx = require("node:fs");
+const {
+  resolveBiometricLink,
+  unlockFanalVaultData,
+} = require("./vault-biometric");
+function brainPath(...parts) {
+  const unpacked = __dirname.includes("app.asar") && !__dirname.includes("app.asar.unpacked")
+    ? path.join(__dirname.replace(/app\.asar(?=[/\\]|$)/, "app.asar.unpacked"), "brain", ...parts)
+    : path.join(__dirname, "brain", ...parts);
+  return fs.existsSync(unpacked) ? unpacked : path.join(__dirname, "brain", ...parts);
+}
 let rightDrawerView = null;
 let activeMasterKeyBuf = null;
 let isVaultLocked = true;
 let idleTimer = null;
 const IDLE_TIMEOUT_SECONDS = 300;
-const cryptoV = require("node:crypto");
-const osV = require("node:os");
-function guardVaultUnlockAttempt(o) {
-  const stateFile = path.join(o.archiveDir, "vault_guard_state.json");
-  const loi25File = path.join(o.archiveDir, "registre_incidents_loi25.jsonl");
-  const nowMs = Date.now();
-  let state = { failedAttempts: 0, lockedUntilMs: 0, lastFailIso: null };
-  if (fs.existsSync(stateFile)) {
-    try {
-      const raw = JSON.parse(fs.readFileSync(stateFile, "utf8"));
-      const payloadStr = raw.failedAttempts + ":" + raw.lockedUntilMs + ":" + raw.lastFailIso;
-      const expectedHmac = cryptoV.createHmac("sha256", o.machineBindingSecret).update(payloadStr).digest("hex");
-      if (raw.hmac === expectedHmac) { state = { failedAttempts: raw.failedAttempts, lockedUntilMs: raw.lockedUntilMs, lastFailIso: raw.lastFailIso }; }
-      else { state = { failedAttempts: 6, lockedUntilMs: nowMs + 900000, lastFailIso: new Date(nowMs).toISOString() }; }
-    } catch (e) { state = { failedAttempts: 3, lockedUntilMs: nowMs + 60000, lastFailIso: new Date(nowMs).toISOString() }; }
-  }
-  if (nowMs < state.lockedUntilMs) {
-    const waitSeconds = Math.ceil((state.lockedUntilMs - nowMs) / 1000);
-    return { ok: false, status: "COOLDOWN_ACTIVE", failedAttempts: state.failedAttempts, waitSeconds, uiMessage: "⏳ Protección activa: espera " + waitSeconds + " s antes de volver a intentar." };
-  }
-  const isUnlocked = Boolean(o.verifyCredentialsFn && o.verifyCredentialsFn());
-  if (isUnlocked) {
-    if (state.failedAttempts > 0 && fs.existsSync(stateFile)) { try { fs.unlinkSync(stateFile); } catch (e) {} }
-    return { ok: true, status: "UNLOCKED", failedAttempts: 0, waitSeconds: 0 };
-  }
-  state.failedAttempts += 1;
-  state.lastFailIso = new Date(nowMs).toISOString();
-  let penaltySeconds = 0;
-  if (state.failedAttempts >= 3) {
-    penaltySeconds = Math.min(3600, 30 * Math.pow(2, state.failedAttempts - 3));
-    state.lockedUntilMs = nowMs + penaltySeconds * 1000;
-  }
-  const newPayloadStr = state.failedAttempts + ":" + state.lockedUntilMs + ":" + state.lastFailIso;
-  const hmac = cryptoV.createHmac("sha256", o.machineBindingSecret).update(newPayloadStr).digest("hex");
-  try { fs.writeFileSync(stateFile, JSON.stringify({ failedAttempts: state.failedAttempts, lockedUntilMs: state.lockedUntilMs, lastFailIso: state.lastFailIso, hmac: hmac }), { mode: 0o600 }); } catch (e) {}
-  if (state.failedAttempts >= 3) {
-    const rec = { dateDetection: state.lastFailIso, circumstances: "Intento de desbloqueo físico no autorizado #" + state.failedAttempts + " vía " + (o.attemptMethod || "MASTER_PASSWORD") + " en sesión OS '" + osV.userInfo().username + "' (" + osV.hostname() + ").", natureOfPersonalInfo: ["Bóveda local cifrada AES-256-GCM (0 bytes expuestos)"], personsAffectedCount: 0, seriousHarmRiskAssessed: false, notifiedCaiAndPersonsAt: null, mitigationMeasuresTaken: "Bloqueo exponencial activado por " + penaltySeconds + " segundos y llave maestra purgada de memoria RAM." };
-    try { fs.appendFileSync(loi25File, JSON.stringify(rec) + "\n", { mode: 0o600 }); } catch (e) {}
-  }
-  return { ok: false, status: state.failedAttempts >= 3 ? "INTRUSION_LOCKOUT_LOGGED" : "INVALID_CREDENTIAL", failedAttempts: state.failedAttempts, waitSeconds: penaltySeconds, uiMessage: penaltySeconds > 0 ? ("🔒 Intento #" + state.failedAttempts + " fallido. Bóveda bloqueada por " + penaltySeconds + " s (Registrado en la bitácora Loi 25).") : ("Clave incorrecta (" + (3 - state.failedAttempts) + " intento(s) antes del bloqueo temporal).") };
-}
-function deriveKeyFromMasterPassword(plain, saltHex) {
-  try {
-    return cryptoV.scryptSync(String(plain).normalize("NFKC"), Buffer.from(saltHex, "hex"), 32, { N: 65536, r: 8, p: 1, maxmem: 128 * 1024 * 1024 });
-  } catch (e) { return null; }
-}
-function verifyMasterPassword(plain, stored) {
-  try {
-    const cand = deriveKeyFromMasterPassword(plain, stored.saltHex);
-    if (!cand) return null;
-    const verifier = cryptoV.createHmac("sha256", cand).update("FANAL_VAULT_VERIFIER_V1").digest();
-    const expected = Buffer.from(stored.verifierHmacHex, "hex");
-    if (verifier.length !== expected.length || !cryptoV.timingSafeEqual(verifier, expected)) { cand.fill(0); return null; }
-    return cand;
-  } catch (e) { return null; }
-}
 function lockFanalVaultNow(ctx, reason) {
   if (isVaultLocked) return;
   isVaultLocked = true;
@@ -95,23 +49,18 @@ function lockFanalVaultNow(ctx, reason) {
   try { if (ctx.primaryWindow && !ctx.primaryWindow.isDestroyed()) ctx.primaryWindow.webContents.send("fanal:vault-locked", { reason: reason || "IDLE_TIMEOUT", lockedAtIso: new Date().toISOString() }); } catch (e) {}
 }
 async function unlockFanalVault(o) {
-  try {
-    if (o.method === "BIOMETRIC") {
-      if (process.platform === "darwin") { await systemPreferences.promptTouchID("déverrouiller la voûte fiduciaire Fanal (Loi 25)"); }
-      else if (process.platform === "win32") { if (!safeStorage.isEncryptionAvailable()) throw new Error("WINDOWS_HELLO_UNAVAILABLE"); }
-      const encBuf = Buffer.from(o.storedVaultAuth.osProtectedKeyB64, "base64");
-      const hexKey = safeStorage.decryptString(encBuf);
-      activeMasterKeyBuf = Buffer.from(hexKey, "hex");
-    } else {
-      const derived = verifyMasterPassword(o.passwordInput, o.storedVaultAuth);
-      if (!derived) return { ok: false, error: "Contraseña maestra incorrecta." };
-      activeMasterKeyBuf = derived;
-    }
-    isVaultLocked = false;
-    try { o.restoreDualScreenFn(); } catch (e) {}
-    try { o.primaryWindow.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
-    return { ok: true };
-  } catch (e) { return { ok: false, error: "Biometría cancelada o no reconocida. Usa tu Contraseña Maestra." }; }
+  const res = await unlockFanalVaultData({
+    ...o,
+    platform: process.platform,
+    systemPreferences,
+    safeStorage,
+  });
+  if (!res.ok) return { ok: false, code: res.code, error: res.error };
+  activeMasterKeyBuf = res.keyBuf;
+  isVaultLocked = false;
+  try { o.restoreDualScreenFn(); } catch (e) {}
+  try { o.primaryWindow.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
+  return { ok: true };
 }
 function startBankGradeSecurityWatchdog(ctx) {
   try {
@@ -275,13 +224,12 @@ function bindMonitor2Events(primaryWin) {
         });
       }
     } catch (e) {}
-    ipcMain.handle("fanal:link-biometric", async () => {
-      try {
-        if (process.platform === "darwin") { await systemPreferences.promptTouchID("vincular la biometría a la bóveda Fanal (Loi 25)"); return { success: true }; }
-        if (process.platform === "win32") { return safeStorage.isEncryptionAvailable() ? { success: true } : { success: false, error: "WINDOWS_HELLO_UNAVAILABLE" }; }
-        return { success: false, error: "PLATAFORMA_SIN_BIOMETRIA" };
-      } catch (e) { return { success: false, error: String(e.message) }; }
-    });
+    ipcMain.handle("fanal:link-biometric", () => resolveBiometricLink({
+      platform: process.platform,
+      systemPreferences,
+      safeStorage,
+      reason: "vincular la biometría a la bóveda Fanal (Loi 25)",
+    }));
   } catch (e) {}
 }
 const agentPilotState = { mode: "RUNNING", stepCursor: 0, currentPlan: [], allowSingleStep: false };
@@ -366,7 +314,9 @@ function setupCoworkRightDrawer(mainWindow) {
     });
   } catch (e) {}
 }
-const DATA_DIR = path.join(os.homedir(), ".dsh", "supervisor-data");
+const DATA_DIR = process.env.DSH_SUPERVISOR_DATA
+  ? path.resolve(process.env.DSH_SUPERVISOR_DATA)
+  : path.join(os.homedir(), ".dsh", "supervisor-data");
 const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
 const bundledDsh = () => { const c = path.join(process.resourcesPath, "runtime", "cli", "bin", "dsh"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
 const bundledNode = () => { const c = path.join(process.resourcesPath, "runtime", "primary-runtime", "dependencies", "node", "bin", "node"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
@@ -397,16 +347,31 @@ function armWatchdog() {
   if (brainWatch) clearTimeout(brainWatch);
   brainWatch = null;
 }
-async function ensureBrain() {
-  if (!LOCAL || await portOpen(TARGET.host, TARGET.port)) return true;
-  const serverJs = path.join(__dirname, "brain", "server.js");
-  const packs = path.join(__dirname, "brain", "sector-packs");
 // El sandbox de la carpeta conectada (el chip [📁]): Fanal solo toca el expediente activo
 let allowedClientFolder = null;
 try {
-  ipcMain.handle("fanal:set-connected-folder", (_e, p) => { const r = path.resolve(p); allowedClientFolder = r; return { activeFolderChip: path.basename(r), fullPath: r }; });
+  ipcMain.handle("fanal:set-connected-folder", (_e, p) => {
+    if (typeof p !== "string" || !p.trim()) throw new Error("Invalid folder path");
+    const r = path.resolve(p.trim());
+    let st;
+    try { st = fs.statSync(r); } catch { throw new Error("Folder does not exist: " + r); }
+    if (!st.isDirectory()) throw new Error("Path is not a directory: " + r);
+    allowedClientFolder = r;
+    return { activeFolderChip: path.basename(r), fullPath: r };
+  });
 } catch (e) {}
-const cleanEnv = { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DATA: path.join(os.homedir(), ".dsh", "supervisor-data"), DSH_SECTOR_PACKS_DIR: packs };
+
+async function ensureBrain() {
+  if (!LOCAL || await portOpen(TARGET.host, TARGET.port)) return true;
+  const serverJs = brainPath("server.js");
+  const packs = brainPath("sector-packs");
+  const cleanEnv = {
+    ...process.env,
+    ELECTRON_RUN_AS_NODE: "1",
+    DSH_SUPERVISOR_DATA: DATA_DIR,
+    DSH_SUPERVISOR_PORT: String(TARGET.port),
+    DSH_SECTOR_PACKS_DIR: packs,
+  };
   delete cleanEnv.NODE_OPTIONS; delete cleanEnv.NODE_PATH; delete cleanEnv.ELECTRON_RUN_AS_NODE_POLL;
   brain = spawn(process.execPath, [serverJs, "--lan"], {
     env: cleanEnv,
@@ -417,12 +382,13 @@ const cleanEnv = { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DAT
     // The watchdog: if the brain dies unexpectedly, it is reborn —
     // with a backoff and a cap, then the error page says it honestly.
     if (shuttingDown) return;
+    if (SMOKE) { console.error("SMOKE BRAIN EXIT:", code); }
     brainRestarts++;
     if (brainRestarts <= 5) {
       brainWatch = setTimeout(async () => {
         try { await ensureBrain(); } catch (e) {}
       }, Math.min(30000, 2000 * brainRestarts));
-    } else {
+    } else if (win && !win.isDestroyed()) {
       win.loadURL(errorPage());
     }
   });
@@ -466,6 +432,7 @@ if (!app.requestSingleInstanceLock()) {
       width: 420,
       height: 800,
       minWidth: 360,
+      show: !SMOKE,
       kiosk: KIOSK,
       frame: !KIOSK,
       title: "Fanal",
@@ -491,17 +458,33 @@ if (!app.requestSingleInstanceLock()) {
       try { win.loadURL(errorPage()); } catch {}
     });
     if (SMOKE) {
-      win.webContents.once("did-finish-load", () => {
-        console.log("SMOKE OK — window loaded: " + TARGET_URL);
-        setTimeout(() => app.quit(), 400);
+      win.webContents.once("did-finish-load", async () => {
+        try {
+          const probe = await win.webContents.executeJavaScript(`(() => ({
+            url: location.href,
+            title: document.title,
+            hasDashboardDom: Boolean(document.getElementById("setupSection") && document.getElementById("fanal-agent-hud"))
+          }))()`);
+          const expectedOrigin = new URL(TARGET_URL).origin;
+          if (!probe || !String(probe.url || "").startsWith(expectedOrigin) || !String(probe.title || "").includes("Fanal") || !probe.hasDashboardDom) {
+            console.error("SMOKE FAIL — unexpected page: " + JSON.stringify(probe));
+            app.exit(1);
+            return;
+          }
+          console.log("SMOKE OK — window loaded: " + probe.url + " (" + probe.title + ")");
+          setTimeout(() => app.quit(), 400);
+        } catch (err) {
+          console.error("SMOKE FAIL — " + (err && err.message ? err.message : err));
+          app.exit(1);
+        }
       });
     }
     win.loadURL(TARGET_URL);
   }
 
   ipcMain.on("leveilleux-setup", async (_e, p) => {
-    const serverJs = path.join(__dirname, "brain", "server.js");
-    const packs = path.join(__dirname, "brain", "sector-packs");
+    const serverJs = brainPath("server.js");
+    const packs = brainPath("sector-packs");
     const runInit = () => new Promise((res) => {
       const c = spawn(process.execPath, [serverJs, "init", "--owner", String(p.user || "Owner"), "--password", String(p.password || "password123"), "--owner-label", String(p.user || "Owner")], {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DATA: DATA_DIR, DSH_SECTOR_PACKS_DIR: packs }, stdio: "ignore",
@@ -532,7 +515,7 @@ if (!app.requestSingleInstanceLock()) {
         }
       }
       if (dsh) {
-        const standby = path.join(__dirname, "brain", "agent-standby.sh");
+        const standby = brainPath("agent-standby.sh");
         if (fs.existsSync(standby)) {
           try {
             spawn("sh", [standby], {
@@ -547,7 +530,18 @@ if (!app.requestSingleInstanceLock()) {
   })
   // (los montajes de la cabina/el visor/el doble monitor viven DENTRO del whenReady — véase arriba)
   app.whenReady().then(async () => {
+    if (SMOKE) {
+      setTimeout(() => {
+        console.error("SMOKE FAIL — timeout waiting for window load: " + TARGET_URL);
+        app.exit(1);
+      }, 30000).unref();
+    }
     const ok = await ensureBrain();
+    if (!ok && SMOKE) {
+      console.error("SMOKE FAIL — bundled supervisor failed to reach " + TARGET_URL);
+      app.exit(1);
+      return;
+    }
     createWindow();
     // La cabina, el visor y los eventos del sistema se montan AQUÍ (el hilo de la UI está listo) —
     // jamás al nivel del módulo: el chequeo del hilo de Chromium lo exige (la lección #36).

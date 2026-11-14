@@ -20,10 +20,15 @@
     "files": [
       "main.js",
       "preload.js",
+      "vault-biometric.js",
       "assets/**",
       "brain/**",
       "ui/**",
       "brain/agent-standby.sh"
+    ],
+    "asarUnpack": [
+      "brain/**",
+      "ui/**"
     ],
     "mac": {
       "category": "public.app-category.business",

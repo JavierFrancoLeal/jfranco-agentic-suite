@@ -107,6 +107,7 @@ if (allow["electron@45.3.0"] !== true) fail('allowScripts missing "electron@45.3
 const brandTargets = [
   join(APP, "main.js"),
   join(APP, "preload.js"),
+  join(APP, "vault-biometric.js"),
   join(APP, "package.json"),
   join(APP, "welcome.html"),
   join(APP, "brain"),
@@ -130,6 +131,35 @@ if (!mainJs.includes("ELECTRON_RUN_AS_NODE")) {
 }
 if (!mainJs.includes('brain.on("exit"')) {
   fail('main.js is missing the watchdog brain.on("exit")');
+}
+for (const m of mainJs.matchAll(/\brequire\(\s*["'](\.\/[^"']+)["']\s*\)/g)) {
+  const rel = m[1].slice(2);
+  const candidates = /\.[cm]?js$|\.json$/.test(rel) ? [rel] : [rel, `${rel}.js`, `${rel}/index.js`];
+  const resolvedRel = candidates.find((c) => {
+    const p = join(APP, c);
+    return existsSync(p) && !statSync(p).isDirectory();
+  });
+  if (!resolvedRel) {
+    fail(`main.js local require("${m[1]}") target missing on disk`);
+    continue;
+  }
+  if (Array.isArray(b.files) && b.files.length > 0) {
+    const covered = b.files.some((pat) => {
+      if (typeof pat !== "string" || pat.startsWith("!")) return false;
+      if (pat === resolvedRel) return true;
+      const prefix = pat.replace(/\/\*\*\/\*$/, "/").replace(/\/\*\*$/, "/");
+      return prefix !== pat && resolvedRel.startsWith(prefix);
+    });
+    if (!covered) {
+      fail(`main.js requires "./${resolvedRel}" which is missing from package.json build.files`);
+    }
+  }
+}
+const unpack = Array.isArray(b.asarUnpack) ? b.asarUnpack : [];
+for (const dir of ["brain/**", "ui/**"]) {
+  if (!unpack.includes(dir)) {
+    fail(`package.json build.asarUnpack must include "${dir}" (ELECTRON_RUN_AS_NODE cannot read inside app.asar)`);
+  }
 }
 const brainServer = readFileSync(join(APP, "brain", "server.js"), "utf8");
 if (!brainServer.includes("repondant/scan")) {
