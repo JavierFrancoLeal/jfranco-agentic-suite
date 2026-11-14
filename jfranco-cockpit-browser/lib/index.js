@@ -130,6 +130,15 @@ let frameCtxs = null; // cached isolated-world contexts per frame
 let bridge = null; // Chrome-extension bridge (the "your Chrome" transport)
 const BRIDGE_PORT = Number(process.env.COCKPIT_BRIDGE_PORT || 9334);
 
+// Set the mode and push it to the extension's toolbar badge (browser chrome,
+// not the page) so the human sees ⚡/🖐️/🛑 without any on-page overlay.
+function setMode(mode) {
+  state.mode = mode;
+  try {
+    if (bridge && bridge.connected()) bridge.send("setMode", { mode }).catch(() => {});
+  } catch {}
+}
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ok = (text) => ({ kind: "success", text });
 const err = (text) => ({ kind: "error", text });
@@ -295,7 +304,7 @@ async function ensureBrowser() {
   ];
   const child = spawn(bin, args, { stdio: "ignore" });
   child.on("exit", () => {
-    if (state.chrome === child) { state.chrome = null; state.ws = null; state.wsUrl = null; state.mode = "IDLE"; }
+    if (state.chrome === child) { state.chrome = null; state.ws = null; state.wsUrl = null; setMode("IDLE"); }
   });
   state.chrome = child;
   for (let i = 0; i < 40; i++) { if (await chromeRunning()) break; await sleep(250); }
@@ -354,7 +363,7 @@ async function locate(selector) {
 async function preflight() {
   await requireReady();
   const touched = await evaluate("!!(window.__cockpitHumanTouched)").catch(() => false);
-  if (touched) state.mode = "MANUAL";
+  if (touched) setMode("MANUAL");
   if (state.mode === "BRAKED") {
     if (state.allowOne) { state.allowOne = false; return null; }
     return err("🛑 BRAKE — the agent stopped before a final/legal button. It will NOT try another selector. Use /cockpit resume (or /cockpit step) to proceed deliberately.");
@@ -371,7 +380,7 @@ async function preflight() {
 async function extPreflight() {
   try {
     const s = await bridge.send("status", {}).catch(() => null);
-    if (s && s.humanTouched) state.mode = "MANUAL";
+    if (s && s.humanTouched) setMode("MANUAL");
   } catch {}
   if (state.mode === "BRAKED" || state.mode === "MANUAL") {
     if (state.allowOne) { state.allowOne = false; return null; }
@@ -462,7 +471,7 @@ async function cmdOpen(url) {
   frameCtxs = null;
   await sleep(1200);
   await injectProbes();
-  state.mode = "AGENTE";
+  setMode("AGENTE");
   logEntry("open", GREEN, url, "", "navigation is reversible and internal");
   return ok(`Opened ${url}\nHUD: ⚡ AGENT — a physical mouse/keyboard touch hands the wheel to the human.`);
 }
@@ -641,17 +650,17 @@ async function cmdClick(sel) {
   // Human-approved pending YELLOW: consume the one-time approval for this exact click.
   if (tier === "YELLOW" && state.pendingYellow && state.pendingYellow.sel === sel && state.pendingYellow.label === label) {
     state.pendingYellow = null;
-    state.mode = "AGENTE";
+    setMode("AGENTE");
     tier = "SEMI";
   }
   if (tier === RED) {
-    state.mode = "BRAKED";
+    setMode("BRAKED");
     logEntry("click", RED, sel, label, override ? "human override: RED" : "refused — final/legal/committing button");
     return ok(`🛑 BRAKE — I stopped at "${label}"${override ? " (you marked it RED)" : " because it is a final/legal/committing click (send, pay, authorize, create, sign in)"}.\n\n✅ I already left ready: ${readySummary()}\n\n⏳ You still need to (you, human): ${missingSummary()}`);
   }
   if (tier === "YELLOW") {
     state.pendingYellow = { sel, label };
-    state.mode = "MANUAL";
+    setMode("MANUAL");
     logEntry("click", "YELLOW", sel, label, "propose and wait");
     return ok(`🟡 Propose first — "${label}" is marked YELLOW. Run /cockpit step to authorize exactly this click, then re-run it.`);
   }
@@ -687,7 +696,7 @@ async function cmdStatus() {
     const raw = await evaluate(`JSON.stringify({ url: location.href, title: document.title, humanTouched: !!window.__cockpitHumanTouched })`);
     if (raw) {
       const o = JSON.parse(raw);
-      if (o.humanTouched) state.mode = "MANUAL";
+      if (o.humanTouched) setMode("MANUAL");
       extra = `\nURL: ${o.url}\nTitle: ${o.title}`;
     }
   } catch {}
@@ -727,7 +736,7 @@ async function cmdNewtab(url) {
 
 async function cmdClose() {
   if (state.chrome) { try { state.chrome.kill(); } catch {} state.chrome = null; }
-  state.ws = null; state.wsUrl = null; state.targetId = null; frameCtxs = null; state.mode = "IDLE";
+  state.ws = null; state.wsUrl = null; state.targetId = null; frameCtxs = null; setMode("IDLE");
   return ok("Browser closed. The persistent profile (cookies/sessions) is kept for the next run.");
 }
 
@@ -834,7 +843,7 @@ async function extOpen(url) {
   if (!url) return err("cockpit open requires a URL: /cockpit open https://…");
   if (!/^https?:\/\//i.test(url)) return err("cockpit only opens http(s) URLs — file:// is blocked.");
   await bridge.send("open", { url });
-  state.mode = "AGENTE";
+  setMode("AGENTE");
   logEntry("open", GREEN, url, "", "navigation is reversible and internal");
   return ok(`Opened ${url} in your Chrome.\nHUD: ⚡ AGENT — a physical mouse/keyboard touch hands the wheel to the human.`);
 }
@@ -867,17 +876,17 @@ async function extClick(sel) {
   // Human-approved pending YELLOW: consume the one-time approval for this exact click.
   if (tier === "YELLOW" && state.pendingYellow && state.pendingYellow.sel === sel && state.pendingYellow.label === label) {
     state.pendingYellow = null;
-    state.mode = "AGENTE";
+    setMode("AGENTE");
     tier = "SEMI";
   }
   if (tier === RED) {
-    state.mode = "BRAKED";
+    setMode("BRAKED");
     logEntry("click", RED, sel, label, override ? "human override: RED" : "refused — final/legal/committing button");
     return ok(`🛑 BRAKE — I stopped at "${label}"${override ? " (you marked it RED)" : " because it is a final/legal/committing click (send, pay, authorize, create, sign in)"}.\n\n✅ I already left ready: ${readySummary()}\n\n⏳ You still need to (you, human): ${missingSummary()}`);
   }
   if (tier === "YELLOW") {
     state.pendingYellow = { sel, label };
-    state.mode = "MANUAL";
+    setMode("MANUAL");
     logEntry("click", "YELLOW", sel, label, "propose and wait");
     return ok(`🟡 Propose first — "${label}" is marked YELLOW. Run /cockpit step to authorize exactly this click, then re-run it.`);
   }
@@ -900,7 +909,7 @@ async function extScreenshot(file) {
 
 async function extStatus() {
   const s = await bridge.send("status", {});
-  if (s && s.humanTouched) state.mode = "MANUAL";
+  if (s && s.humanTouched) setMode("MANUAL");
   const hud = state.mode === "BRAKED" ? "🛑 BRAKE" : state.mode === "MANUAL" ? "🖐️ HUMAN AT THE WHEEL" : "⚡ AGENT";
   return ok(`HUD: ${hud}\nURL: ${s ? s.url : "?"}\nTitle: ${s ? s.title : "?"}`);
 }
@@ -917,9 +926,9 @@ async function executeCockpit(invocation) {
         case "click": return await extClick(tokens[1]);
         case "screenshot": return await extScreenshot(tokens[1]);
         case "status": return await extStatus();
-        case "pause": state.mode = "MANUAL"; return ok("HUD: 🖐️ HUMAN AT THE WHEEL — paused. /cockpit resume to hand it back.");
-        case "resume": state.mode = "AGENTE"; return ok("HUD: ⚡ AGENT — resumed.");
-        case "step": state.mode = "MANUAL"; state.allowOne = true; return ok("Step mode: exactly ONE next action, then the wheel returns to the human.");
+        case "pause": setMode("MANUAL"); return ok("HUD: 🖐️ HUMAN AT THE WHEEL — paused. /cockpit resume to hand it back.");
+        case "resume": setMode("AGENTE"); return ok("HUD: ⚡ AGENT — resumed.");
+        case "step": setMode("MANUAL"); state.allowOne = true; return ok("Step mode: exactly ONE next action, then the wheel returns to the human.");
         case "report": return cmdReport();
         case "kpi": return cmdKpi();
         case "tier": return cmdTier(tokens[1], tokens[2]);
@@ -939,9 +948,9 @@ async function executeCockpit(invocation) {
       case "switch": return await cmdSwitch(tokens[1]);
       case "newtab": return await cmdNewtab(tokens[1]);
       case "status": return await cmdStatus();
-      case "pause": state.mode = "MANUAL"; return ok("HUD: 🖐️ HUMAN AT THE WHEEL — paused. /cockpit resume to hand it back.");
-      case "resume": state.mode = "AGENTE"; return ok("HUD: ⚡ AGENT — resumed.");
-      case "step": state.mode = "MANUAL"; state.allowOne = true; return ok("Step mode: exactly ONE next action, then the wheel returns to the human.");
+      case "pause": setMode("MANUAL"); return ok("HUD: 🖐️ HUMAN AT THE WHEEL — paused. /cockpit resume to hand it back.");
+      case "resume": setMode("AGENTE"); return ok("HUD: ⚡ AGENT — resumed.");
+      case "step": setMode("MANUAL"); state.allowOne = true; return ok("Step mode: exactly ONE next action, then the wheel returns to the human.");
       case "report": return cmdReport();
       case "kpi": return cmdKpi();
       case "tier": return cmdTier(tokens[1], tokens[2]);
@@ -1013,7 +1022,8 @@ function apply(ctx) {
   // registration alone is not model-visible. The brake stays — the tool's click
   // runs the same FORBIDDEN check, so a committing click is refused and the
   // final click remains the human's.
-  ctx.on("agent/created", (agent) => {
+  ctx.on("agent/created", ({ agent }) => {
+    if (!agent?.ctx) return;
     ctx.logger.info("cockpit-browser: agent/created fired — registering the cockpit tool");
     agent.ctx.effect(() => {
       const unregister = agent.ctx.tools.register(defineTool({

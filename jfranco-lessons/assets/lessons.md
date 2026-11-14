@@ -58,3 +58,65 @@ every future session must obey them so the past does not repeat.
   RAM-cached with a SHA-256 hash and only `/cockpit promote` (human) refreshes
   them — a bash write by a danger-full-access agent is ignored or detected and
   discarded.
+
+## The code-hands law (lesson #37 — delegating to an external coding agent, 2026-11-14)
+- When DSH delegates to an external coding CLI (Google Antigravity `agy`), the
+  SAME brake applies as the browser: the agent plans and fills, the human signs.
+  Map the tool's modes to tiers — `plan` (read-only) = GREEN, `accept-edits`
+  (writes files) = SEMI-AUTOMATIC, `auto`/`--dangerously-skip-permissions` = RED
+  (never exposed to the agent).
+- Permissions must be SESSION-SCOPED, never global: pass the CLI's own
+  `--settings '{"toolPermission":"proceed-in-sandbox"}'` + `--sandbox` per call,
+  so the user's global `settings.json` is untouched. Avoid broad grants
+  (`command(find)` has `-exec`/`-delete`; global `cat`/`grep` can read secrets).
+- Before a WRITE mode, pre-check a clean Git tree (`git status --porcelain`
+  empty) so the post-run `git diff` shows exactly what the delegate changed.
+- Bound the call: an explicit `--print-timeout` (e.g. 300s) and an `--effort`
+  knob (low/medium/high) avoid hung processes and cut latency (~2.5 min plan
+  mode on an M2 → much less on `low`).
+- Register the tool PER-AGENT so it is model-visible: `ctx.on("agent/created",
+  ({ agent }) => { if (!agent?.ctx) return; agent.ctx.effect(() => { const
+  unregister = agent.ctx.tools.register(defineTool({ ... })); return () =>
+  unregister(); }); })`. **`agent/created` (also `agent/disposed`,
+  `agent/status`) emits a PAYLOAD `{ agent, source, signal }` — NEVER the agent
+  directly — so always destructure `({ agent })`.** A host-only
+  `ctx.tools.register` does not reach the agent's function list.
+- Resolve the external CLI binary by ABSOLUTE path, never a bare `spawn("agy")`:
+  a GUI Electron app launched from Finder/Dock inherits a minimal PATH without
+  `~/.local/bin`, so `spawn("agy")` fails with ENOENT even though `agy` works in
+  Terminal. Prefer `process.env.ANTIGRAVITY_CLI`, then `existsSync` over known
+  absolute paths, then fall back to the bare name.
+
+## The two-brain law (lesson #38 — pincer architecture, 2026-11-14)
+- Two models complement by ASSIGNING each its strength, not by splitting the
+  work evenly. Gemini (Hydrogen/Argon) is strong on intelligence, 2M context,
+  multimodality and factual reliability (~4–15% hallucination) but expensive;
+  DeepSeek V4 Pro is cheap, fast, elite at bounded code (SWE-bench ~80%,
+  LiveCodeBench ~92%) but ~94% hallucination on out-of-knowledge facts and no
+  multimodal.
+- **Golden rule:** DeepSeek must NEVER critique from memory — only against
+  VERIFIABLE evidence on disk (real files, test output, `git diff`, the house
+  laws). Gemini supplies the factual truth and the plan; DeepSeek plays
+  "devil's advocate" strictly against the repo, orchestrates, and executes
+  well-specified code.
+- **Model routing inside Google:** Hydrogen (XHigh/High) beats Argon on the
+  composite index, is faster and cheaper; reserve Argon for extreme
+  math/science/horizon. DeepSeek wins on the HARNESS, not the raw model.
+- **Cross-audit before the human signs:** whoever did NOT write the change
+  reviews the `git diff` — DSH implements → Antigravity audits (plan, low
+  effort); Antigravity implements → DSH runs tests + checks the diff.
+
+## The agent-event law (lesson #39 — the payload, not the agent, 2026-11-12 & 2026-11-14)
+- `agent/created`, `agent/disposed` and `agent/status` emit a PAYLOAD
+  `{ agent, source, signal }` — never the `agent` object directly. The handler's
+  first argument is that payload, so `(agent) => agent.ctx.effect(...)` throws
+  `TypeError: Cannot read properties of undefined (reading 'effect')` and —
+  because `agent/created` is a SERIAL, awaited event — aborts the WHOLE session
+  creation.
+- ALWAYS destructure: `ctx.on("agent/created", ({ agent }) => { if (!agent?.ctx)
+  return; agent.ctx.effect(() => { const unregister = agent.ctx.tools.register(
+  defineTool({ ... })); return () => unregister(); }); })`.
+- This recurred TWICE (cockpit-browser 2026-11-12, antigravity 2026-11-14)
+  because the knowledge stayed in `docs/LEARNINGS.md` and never reached the
+  active lessons nor the authoring template. Now guarded in `tools/check-host.mjs`
+  (static + runtime) and wired into `tools/check-plugin.sh`.

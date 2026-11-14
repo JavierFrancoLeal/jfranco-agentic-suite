@@ -34,6 +34,16 @@ function sendBack(id, result, error = null) {
   } catch {}
 }
 
+function setBadge(mode) {
+  const b = mode === "BRAKED" ? { text: "🛑", color: "#ef4444" }
+    : mode === "MANUAL" ? { text: "🖐", color: "#f59e0b" }
+    : { text: "⚡", color: "#10b981" }; // AGENTE / default
+  try {
+    chrome.action.setBadgeText({ text: b.text });
+    chrome.action.setBadgeBackgroundColor({ color: b.color });
+  } catch {}
+}
+
 function stopHeartbeat() {
   if (heartbeatTimer !== null) {
     clearInterval(heartbeatTimer);
@@ -121,6 +131,7 @@ async function connect() {
     if (ws !== socket) return;
     if (reconnectTimer !== null) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     startHeartbeat();
+    setBadge("AGENTE");
   };
 
   socket.onmessage = async (event) => {
@@ -134,6 +145,11 @@ async function connect() {
       if (msg.method === "open") {
         const url = (msg.params && msg.params.url) || "";
         await chrome.tabs.create({ url, active: true });
+        sendBack(msg.id, { done: true });
+        return;
+      }
+      if (msg.method === "setMode") {
+        setBadge((msg.params && msg.params.mode) || "AGENTE");
         sendBack(msg.id, { done: true });
         return;
       }
@@ -177,6 +193,9 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onStartup.addListener(() => {
   chrome.alarms.create("cockpit-keepalive", { periodInMinutes: 0.5 });
   connect();
+});
+chrome.runtime.onMessage.addListener((message) => {
+  if (message && message.type === "humanTouched") setBadge("MANUAL");
 });
 chrome.alarms.create("cockpit-keepalive", { periodInMinutes: 0.5 });
 chrome.alarms.onAlarm.addListener((alarm) => {

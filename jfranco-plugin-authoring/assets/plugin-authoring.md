@@ -84,6 +84,34 @@ function apply(ctx) { ctx.skills.registerProvider(() => provider); }
 export { apply, inject, name };
 ```
 
+### Register a per-agent tool (the safe pattern)
+
+> ⚠️ `agent/created` (and `agent/disposed`, `agent/status`) emits a **payload**
+> `{ agent, source, signal }`, NOT the `agent` object directly. Always destructure
+> `({ agent })`; otherwise `agent.ctx.effect(...)` throws
+> `TypeError: Cannot read properties of undefined (reading 'effect')` and — because the
+> event is serial/awaited — aborts the whole session creation.
+
+```js
+import { defineTool } from "@deepseek-ai/dsh-tools";
+
+ctx.on("agent/created", ({ agent }) => {
+  if (!agent?.ctx) return;
+  agent.ctx.effect(() => {
+    const unregister = agent.ctx.tools.register(defineTool({
+      name: "mi-tool",
+      description: "…",
+      parameters: { /* … */ },
+      async execute(args) { return { text: "…" }; },
+    }));
+    return () => unregister();
+  }, "mi-plugin: tool");
+});
+```
+
+Registering on `agent/created` makes the tool model-visible PER-AGENT; a host-level
+`ctx.tools.register` does not reach the agent's function list.
+
 Commands: `ctx.get("commands")?.register({ definitionId, name, description, input, handler })`.
 Timers: `ctx.effect(() => { const t = setTimeout(run, ms); return () => clearTimeout(t); }, "label")`.
 Log: `ctx.logger.info/warn(...)`.

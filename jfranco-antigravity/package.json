@@ -1,0 +1,48 @@
+{
+  "name": "@javierfrancoleal/antigravity",
+  "version": "1.0.0",
+  "description": "The code hands of the J.Franco agentic suite for DeepSeek Harness: delegates coding tasks to Google Antigravity (agy CLI) under the guardrails. plan (read-only analysis) is GREEN; edit (accept-edits) is SEMI-AUTOMATIC and requires a clean Git tree; auto / --dangerously-skip-permissions is RED (never by the agent). Session-scoped permissions via --settings + --sandbox (no global config change). Zero npm dependencies.",
+  "author": "J.Franco",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "icon": "./icon.svg",
+  "files": ["icon.svg", "locale/*.json", "lib/index.js", "cordis.patch.yml", "assets", "README.md"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JavierFrancoLeal/jfranco-agentic-suite.git",
+    "directory": "jfranco-antigravity"
+  },
+  "homepage": "https://github.com/JavierFrancoLeal/jfranco-agentic-suite",
+  "keywords": [
+    "deepseek-harness",
+    "plugin",
+    "antigravity",
+    "gemini",
+    "coding-agent",
+    "guardrails",
+    "agentic",
+    "decision-router",
+    "accountability"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/dsh-skill": ">=0.1.0",
+    "@deepseek-ai/dsh-tools": ">=0.1.0"
+  },
+  "dsh": {
+    "manifestVersion": 1,
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "compatibility": {
+      "nodejsRange": ">=20",
+      "dshRange": ">=0.2.1-rc.0"
+    }
+  }
+}

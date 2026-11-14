@@ -32,13 +32,19 @@ for f in "$DIR/lib/index.js" "$DIR/lib/client.js"; do
   "$NODE" --check "$f" || fail=1
 done
 
-# 2) mock-load del half cliente
+# 2) guard del half host (firma de agent/created + simulación apply/evento)
+if [ -f "$DIR/lib/index.js" ]; then
+  echo "check: guard del half host (agent/created)"
+  "$NODE" "$SCRIPT_DIR/check-host.mjs" "$DIR/lib/index.js" || fail=1
+fi
+
+# 3) mock-load del half cliente
 if [ -f "$DIR/lib/client.js" ]; then
   echo "check: mock-load del cliente"
   "$NODE" "$SCRIPT_DIR/check-client.mjs" "$DIR/lib/client.js" || fail=1
 fi
 
-# 3) composición en un perfil desechable (el perfil "desktop" rechaza --dump-config)
+# 4) composición en un perfil desechable (el perfil "desktop" rechaza --dump-config)
 if [ "$COMPOSE" = "1" ]; then
   DSH_CLI="${DSH_CLI:-/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh}"
   [ -x "$DSH_CLI" ] || { echo "skip --compose: no encuentro dsh CLI ($DSH_CLI)"; fail=1; }

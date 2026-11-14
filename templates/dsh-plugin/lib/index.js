@@ -20,6 +20,18 @@
 //   ctx.effect(() => { const t = setInterval(run, ms); return () => clearInterval(t); }, "label");
 //
 // Log: ctx.logger.info / ctx.logger.warn.
+//
+// Per-agent tool (model-visible; needs peerDep @deepseek-ai/dsh-tools):
+//   import { defineTool } from "@deepseek-ai/dsh-tools";
+//   ctx.on("agent/created", ({ agent }) => {          // destructure the payload
+//     if (!agent?.ctx) return;
+//     agent.ctx.effect(() => {
+//       const unregister = agent.ctx.tools.register(defineTool({ /* ... */ }));
+//       return () => unregister();
+//     }, "__NAME__: tool");
+//   });
+//   ⚠ `agent/created` / `agent/disposed` / `agent/status` emit `{ agent, source, signal }`,
+//     NOT the agent directly — always `({ agent }) =>`, never `(agent) => agent.ctx`.
 
 const name = "__NAME__";
 

@@ -6,6 +6,7 @@
   "permissions": ["tabs", "scripting", "alarms"],
   "host_permissions": ["*://*/*"],
   "background": { "service_worker": "background.js" },
+  "action": { "default_title": "Cockpit Browser" },
   "content_scripts": [
     {
       "matches": [

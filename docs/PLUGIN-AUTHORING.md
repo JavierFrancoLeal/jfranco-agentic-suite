@@ -135,6 +135,34 @@ function apply(ctx) { ctx.skills.registerProvider(() => provider); }
 export { apply, inject, name };
 ```
 
+### Registrar una tool per-agent (patrón seguro)
+
+> ⚠️ `agent/created` (igual que `agent/disposed` y `agent/status`) emite un **payload**
+> `{ agent, source, signal }`, **no** el objeto `agent` directo. Desestructura siempre
+> `({ agent })`; si no, `agent.ctx.effect(...)` lanza
+> `TypeError: Cannot read properties of undefined (reading 'effect')` y, como el evento
+> es serial/await, aborta la creación de la sesión entera.
+
+```js
+import { defineTool } from "@deepseek-ai/dsh-tools";
+
+ctx.on("agent/created", ({ agent }) => {
+  if (!agent?.ctx) return;
+  agent.ctx.effect(() => {
+    const unregister = agent.ctx.tools.register(defineTool({
+      name: "mi-tool",
+      description: "…",
+      parameters: { /* … */ },
+      async execute(args) { return { text: "…" }; },
+    }));
+    return () => unregister();
+  }, "mi-plugin: tool");
+});
+```
+
+Registrar en `agent/created` hace la tool **visible para el modelo por agente**; un
+`ctx.tools.register` a nivel de host no llega a la lista de funciones del agente.
+
 ---
 
 ## 4. Half browser (`lib/client.js`) — la parte difícil

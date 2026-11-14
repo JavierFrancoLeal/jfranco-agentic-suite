@@ -9,17 +9,8 @@
   window.__cockpitHudInstalled = true;
   window.__cockpitHumanTouched = false;
 
-  window.addEventListener("mousedown", (e) => { if (e && e.isTrusted) window.__cockpitHumanTouched = true; }, true);
-  window.addEventListener("keydown", (e) => { if (e && e.isTrusted) window.__cockpitHumanTouched = true; }, true);
-
-  function installHud() {
-    if (document.getElementById("__cockpit_hud")) return;
-    const bar = document.createElement("div");
-    bar.id = "__cockpit_hud";
-    bar.style.cssText = "position:fixed;top:0;left:0;right:0;height:36px;z-index:2147483647;background:#0f172a;color:#f8fafc;font:700 12px/36px system-ui;padding:0 12px;display:flex;gap:12px;align-items:center;box-shadow:0 1px 0 #334155";
-    bar.innerHTML = '<span style="color:#10b981">⚡ AGENT</span><span style="color:#64748b">|</span><span style="color:#94a3b8">cockpit-browser · the human commands · the agent never clicks Send/Pay</span>';
-    (document.body || document.documentElement).appendChild(bar);
-  }
+  window.addEventListener("mousedown", (e) => { if (e && e.isTrusted) { window.__cockpitHumanTouched = true; try { chrome.runtime.sendMessage({ type: "humanTouched" }); } catch {} } }, true);
+  window.addEventListener("keydown", (e) => { if (e && e.isTrusted) { window.__cockpitHumanTouched = true; try { chrome.runtime.sendMessage({ type: "humanTouched" }); } catch {} } }, true);
 
   function paint(el) {
     try {
@@ -169,7 +160,4 @@
     })();
     return true;
   });
-
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", installHud);
-  else installHud();
 })();

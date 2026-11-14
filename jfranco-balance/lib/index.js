@@ -58,14 +58,19 @@ class BalanceService extends TypertRemoteService {
     }, "jfranco-balance: poll");
   }
 
-  /** Resolve a usable credential per refresh; null when none exists. */
-  async resolveAuth() {
+  /**
+   * Resolve every usable credential in priority order (API key first, then
+   * account token). The refresh loop tries them in order and falls back on an
+   * auth rejection, so a stale API key never masks a working account token.
+   */
+  async resolveAuthCandidates() {
+    const out = [];
     const credentials = this.ctx.get("credentials");
     if (credentials !== undefined) {
       try {
         const hit = await credentials.resolve("DEEPSEEK_API_KEY");
         if (hit !== undefined && typeof hit.value === "string" && hit.value.length > 0) {
-          return { kind: "api-key", secret: hit.value };
+          out.push({ kind: "api-key", secret: hit.value });
         }
       } catch {
         /* fall through to the account token */
@@ -76,13 +81,13 @@ class BalanceService extends TypertRemoteService {
       try {
         const token = await account.resolveToken("https://api.deepseek.com");
         if (typeof token === "string" && token.length > 0) {
-          return { kind: "account-token", secret: token };
+          out.push({ kind: "account-token", secret: token });
         }
       } catch {
         /* no usable account token */
       }
     }
-    return null;
+    return out;
   }
 
   /** Refresh the snapshot; concurrent callers share one in-flight request. */
@@ -91,13 +96,25 @@ class BalanceService extends TypertRemoteService {
     this.inflight = (async () => {
       const previous = this.snapshot;
       try {
-        const auth = await this.resolveAuth();
-        if (auth === null) {
+        const candidates = await this.resolveAuthCandidates();
+        if (candidates.length === 0) {
           this.snapshot = { state: "no-credential", fetchedAt: new Date().toISOString() };
           return this.snapshot;
         }
-        const data = await fetchBalance(auth);
-        this.snapshot = { state: "ok", authKind: auth.kind, ...data };
+        let lastError = null;
+        for (const auth of candidates) {
+          try {
+            const data = await fetchBalance(auth);
+            this.snapshot = { state: "ok", authKind: auth.kind, ...data };
+            return this.snapshot;
+          } catch (error) {
+            lastError = error;
+            // Fall through to the next credential only on an auth rejection;
+            // network/timeout and non-auth HTTP errors surface immediately.
+            if (error === null || error.code !== "UNAUTHORIZED") throw error;
+          }
+        }
+        throw lastError ?? new Error("balance: no usable credential");
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         this.snapshot = {

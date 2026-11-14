@@ -46,3 +46,54 @@ Rules:
 2. Sequence transitions explicitly: previous screen fully faded BEFORE the
    next appears (splash out at 1300 + 500ms fade → step in at 1900).
 3. The strict smoke test stays: dead references and missing ids crash CI.
+
+## 2026-11-12 — `agent/created` entrega un payload, no el agente (crash de cockpit-browser)
+
+- **Context:** El 12-nov-2026 dejaron de abrirse sesiones nuevas en DeepSeek
+  Harness con `TypeError: Cannot read properties of undefined (reading 'effect')`.
+  El fallo bloqueaba la creación de cualquier agente en el perfil `desktop`.
+- **What the AI (Gemini) did:** Lo diagnosticó como un problema de timing
+  ("`agent.ctx` aún no está adjunto en la fase temprana de creación") y parcheó
+  con un fallback defensivo: `const targetCtx = agent?.ctx ?? agent?.agent?.ctx ?? ctx;`
+  más un guard `if (!targetCtx?.tools?.register) return;`.
+- **What forensics found:** La causa real es un error de desestructuración, no
+  de timing. DSH emite `agent/created` con un **payload** `{ agent, source, signal }`,
+  no con el agente directamente. El handler original
+  `ctx.on("agent/created", (agent) => { agent.ctx.effect(...) })` leía `.ctx`
+  sobre el payload (`payload.ctx === undefined`), de ahí el `reading 'effect'`.
+  Todos los plugins del núcleo desestructuran `({ agent }) => { ... agent.ctx ... }`.
+  El parche de Gemini solo funciona por la rama `agent?.agent?.ctx`
+  (`payload.agent.ctx` es el contexto real); las ramas `agent?.ctx` y `?? ctx`
+  son código muerto/misleading.
+- **New rule:** En DSH, `agent/created` (igual que `agent/disposed` y
+  `agent/status`) entrega un payload `{ agent, ... }`. Desestructura SIEMPRE el
+  agente: `ctx.on("agent/created", ({ agent }) => { ... })` — jamás leas campos
+  del primer argumento crudo. La firma exacta está en
+  `@deepseek-ai/dsh-agent` `src/runtime-types.ts`:
+  `'agent/created'(this: Scoped<Agent>, payload: { agent: Agent; source: SessionStartSource; signal?: AbortSignal })`.
+  Corrección aplicada en `plugins/jfranco-cockpit-browser/lib/index.js` (la
+  versión defectuosa queda en el historial git).
+
+## 2026-11-13 — "Balance unavailable": no es un bug de código, es un 401 de DeepSeek
+
+- **Context:** Tras arreglar el crash de `agent/created`, el pill de balance
+  (`@javierfrancoleal/balance`) pasó de funcionar a mostrar "Balance unavailable".
+  Se sospechaba un bug de código similar al de cockpit-browser.
+- **What the AI did:** Revisó el plugin y descartó el bug de código: el servicio
+  host corre y el remote Typert está montado (por eso muestra "unavailable" y no
+  "loading"). Probó el endpoint real y encontró la causa: `https://api.deepseek.com`
+  ahora exige `Authorization: Bearer sk-...`. Las dos credenciales disponibles
+  fallan con 401 — `DEEPSEEK_API_KEY` = `a77d1370-…` (un UUID, "invalid api key")
+  y el account token de `platform.deepseek.com` ("Authentication Fails (governor)").
+- **What forensics found:** Además, `resolveAuth` devolvía la PRIMERA credencial
+  encontrada y **no hacía fallback** cuando el API la rechazaba (aunque el
+  comentario decía "tried in order"): una API key inválida enmascaraba un account
+  token que sí funcionara. Se corrigió a `resolveAuthCandidates()` + bucle con
+  fallback solo en `401` (`error.code === "UNAUTHORIZED"`); los errores de red/timeout
+  siguen saliendo al instante.
+- **New rule:** Antes de declarar un "bug de plugin", prueba el endpoint real con
+  `curl` y las credenciales almacenadas — un 401 de API se parece a un fallo de
+  código pero no lo es. Y la selección de credenciales debe hacer fallback en
+  **rechazo** (401), no solo en ausencia. **Pendiente del usuario:** guardar un
+  `DEEPSEEK_API_KEY` válido (`sk-…`) en Ajustes → Modelos; el account token ya no
+  sirve para `api.deepseek.com`.
