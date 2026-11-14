@@ -78,6 +78,7 @@ const vaultCtx = {
 function lockFanalVaultNow(ctx, reason) {
   if (!hasVaultAuthConfigured(DATA_DIR) || isVaultLocked) return;
   isVaultLocked = true;
+  postInternalSupervisor("/api/internal/vault-key", { locked: true });
   clearActiveMasterKey();
   try {
     if (ctx.monitor2Window && !ctx.monitor2Window.isDestroyed()) {
@@ -129,6 +130,9 @@ async function unlockFanalVault(payload) {
   }
   clearActiveMasterKey();
   activeMasterKeyBuf = res.keyBuf || null;
+  if (activeMasterKeyBuf) {
+    postInternalSupervisor("/api/internal/vault-key", { masterKeyHex: activeMasterKeyBuf.toString("hex"), locked: false });
+  }
   isVaultLocked = false;
   try { vaultCtx.restoreDualScreenFn(); } catch (e) {}
   try { if (win && !win.isDestroyed()) win.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
@@ -162,6 +166,9 @@ function registerVaultIpcHandlers() {
     if (!res.ok) return { ok: false, code: res.code, error: res.error };
     clearActiveMasterKey();
     activeMasterKeyBuf = res.keyBuf;
+    if (activeMasterKeyBuf) {
+      postInternalSupervisor("/api/internal/vault-key", { masterKeyHex: activeMasterKeyBuf.toString("hex"), locked: false });
+    }
     isVaultLocked = false;
     try { if (win && !win.isDestroyed()) win.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
     return { ok: true };
@@ -899,7 +906,7 @@ if (!app.requestSingleInstanceLock()) {
     try {
       const dshDir = path.join(os.homedir(), ".dsh");
       fs.mkdirSync(dshDir, { recursive: true, mode: 0o700 });
-      fs.writeFileSync(path.join(dshDir, "brain.json"), JSON.stringify({ key: String(p.key || ""), fast: String(p.model || "deepseek-chat"), deep: "deepseek-reasoner" }, null, 2), { mode: 0o600 });
+      fs.writeFileSync(path.join(dshDir, "brain.json"), JSON.stringify({ key: String(p.key || ""), fast: String(p.model || "deepseek-flash"), deep: "deepseek-v4-pro" }, null, 2), { mode: 0o600 });
     } catch {}
     // If the harness is present and a key was given, light the always-connected agent.
     if (p.key) {
@@ -941,6 +948,9 @@ if (!app.requestSingleInstanceLock()) {
       }, 30000).unref();
     }
     const ok = await ensureBrain();
+    if (ok && !isVaultLocked && activeMasterKeyBuf) {
+      postInternalSupervisor("/api/internal/vault-key", { masterKeyHex: activeMasterKeyBuf.toString("hex"), locked: false });
+    }
     if (!ok && SMOKE) {
       console.error("SMOKE FAIL — bundled supervisor failed to reach " + TARGET_URL);
       app.exit(1);
@@ -958,13 +968,35 @@ if (!app.requestSingleInstanceLock()) {
     }
     if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
     try {
+      const TRAY_I18N = {
+        en: { tip: "Fanal — The AI works, the human watches", open: "Open Fanal", quit: "Quit" },
+        es: { tip: "Fanal — La IA trabaja, el humano vela", open: "Abrir Fanal", quit: "Salir" },
+        fr: { tip: "Fanal — L'IA travaille, l'humain veille", open: "Ouvrir Fanal", quit: "Quitter" },
+        de: { tip: "Fanal — Die KI arbeitet, der Mensch wacht", open: "Fanal öffnen", quit: "Beenden" },
+        it: { tip: "Fanal — L'IA lavora, l'umano veglia", open: "Apri Fanal", quit: "Esci" },
+        pt: { tip: "Fanal — A IA trabalha, o humano vigia", open: "Abrir Fanal", quit: "Sair" },
+        zh: { tip: "Fanal — AI工作，人类把关", open: "打开 Fanal", quit: "退出" },
+        ja: { tip: "Fanal — AIが働き、人が見守る", open: "Fanal を開く", quit: "終了" },
+        ko: { tip: "Fanal — AI가 일하고 사람이 감독합니다", open: "Fanal 열기", quit: "종료" },
+        ar: { tip: "Fanal — الذكاء الاصطناعي يعمل والإنسان يراقب", open: "فتح Fanal", quit: "إنهاء" },
+      };
+      let trayLang = "";
+      try {
+        const pf = JSON.parse(fs.readFileSync(path.join(app.getPath("userData"), "prefs.json"), "utf8"));
+        if (pf && pf.lang) trayLang = String(pf.lang).slice(0, 2).toLowerCase();
+      } catch {}
+      if (!TRAY_I18N[trayLang]) {
+        const sysLoc = typeof app.getLocale === "function" ? String(app.getLocale() || "fr").slice(0, 2).toLowerCase() : "fr";
+        trayLang = TRAY_I18N[sysLoc] ? sysLoc : "fr";
+      }
+      const tl = TRAY_I18N[trayLang];
       const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));
       tray = new Tray(icon.resize({ width: 18, height: 18 }));
-      tray.setToolTip("Fanal — l'IA travaille, l'humain veille");
+      tray.setToolTip(tl.tip);
       tray.setContextMenu(Menu.buildFromTemplate([
-        { label: "Abrir Fanal", click: () => showOrCreateMainWindow() },
+        { label: tl.open, click: () => showOrCreateMainWindow() },
         { type: "separator" },
-        { label: "Salir", click: () => { shuttingDown = true; app.quit(); } },
+        { label: tl.quit, click: () => { shuttingDown = true; app.quit(); } },
       ]));
     } catch (e) { /* tray optional (kiosk) */ }
     app.on("activate", () => showOrCreateMainWindow());

@@ -131,6 +131,43 @@ async function run() {
     assert.equal(diagMdText.includes(gemKey), false);
     assert.ok(diagMdText.includes("Sanitized Diagnostic Export"));
 
+    // Verify dynamic vault-key handoff (POST /api/internal/vault-key): rotation, lock, and unlock
+    const rotatedKeyHex = "b".repeat(64);
+    const vkRes = await fetch(`${baseUrl}/api/internal/vault-key`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ masterKeyHex: rotatedKeyHex, locked: false }),
+    });
+    assert.equal(vkRes.status, 200);
+    const vkJson = await vkRes.json();
+    assert.equal(vkJson.ok, true);
+    assert.equal(vkJson.keysEncryptedAtRest, true);
+
+    const statusAfterRotate = await (await fetch(`${baseUrl}/api/settings/status`, { headers: authHeaders })).json();
+    assert.equal(statusAfterRotate.hasKey, true, "DeepSeek key must survive master key rotation");
+    assert.equal(statusAfterRotate.hasGeminiKey, true, "Gemini key must survive master key rotation");
+
+    // Lock vault -> RAM key cleared, disk remains AESGCM2-sealed
+    const lockRes = await fetch(`${baseUrl}/api/internal/vault-key`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ locked: true }),
+    });
+    assert.equal(lockRes.status, 200);
+    const diskWhileLocked = JSON.parse(readFileSync(join(dataDir, "settings.json"), "utf8"));
+    assert.ok(diskWhileLocked.apiKey.startsWith("AESGCM2:"), "disk apiKey must stay AESGCM2-sealed while locked");
+
+    // Unlock again with rotatedKeyHex -> keys available again in RAM
+    const unlockRes = await fetch(`${baseUrl}/api/internal/vault-key`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ masterKeyHex: rotatedKeyHex, locked: false }),
+    });
+    assert.equal(unlockRes.status, 200);
+    const statusAfterUnlock = await (await fetch(`${baseUrl}/api/settings/status`, { headers: authHeaders })).json();
+    assert.equal(statusAfterUnlock.hasKey, true, "DeepSeek key must be available after unlock");
+    assert.equal(statusAfterUnlock.hasGeminiKey, true, "Gemini key must be available after unlock");
+
     console.log("API_CLOSED_BRAIN_TESTS PASSED");
   } finally {
     try {

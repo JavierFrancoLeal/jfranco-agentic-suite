@@ -59,6 +59,7 @@ echo "== supervisor =="
   if(!m) throw new Error("dashboard: script block missing");
   new Function(m[1]);
 '
+"$NODE" tools/smoke-dashboard.js
 "$NODE" tools/test-diagnostic-export.mjs
 "$NODE" tools/test-closed-brain.mjs
 "$NODE" tools/test-api-closed-brain.mjs

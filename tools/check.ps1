@@ -36,6 +36,8 @@ $html2 = Get-Content "supervisor\dashboard.html" -Raw
 $m2 = [regex]::Match($html2, "(?s)<script>(.*?)</script>")
 Set-Content -Path "$env:TEMP\dsh-dash.js" -Value $m2.Groups[1].Value -Encoding UTF8
 & $node --check "$env:TEMP\dsh-dash.js" | Out-Null
+& $node "tools\smoke-dashboard.js"
+if ($LASTEXITCODE -ne 0) { throw "smoke-dashboard failed" }
 & $node "tools\test-diagnostic-export.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-diagnostic-export failed" }
 & $node "tools\test-closed-brain.mjs"

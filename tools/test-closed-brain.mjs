@@ -138,6 +138,24 @@ function run() {
   // 6. Outbound HTTP request isolation: DeepSeek bearer never sent to Gemini; Local sends no Authorization
   const outDs = buildBrainHttpRequest({ rt: dsFast, prompt: "hello" });
   const outGem = buildBrainHttpRequest({ rt: gemArgon, prompt: "verify" });
+  const gemHotSwapDeep = routeBrainRequest({
+    model: "deep",
+    tierArg: "rescue",
+    settings: dualSettings,
+    providers: {},
+    env: {},
+  });
+  assert.equal(gemHotSwapDeep.provider, "gemini");
+  assert.equal(gemHotSwapDeep.model, "gemini-4-argon", "deep/argon with rescue tierArg must route to gemini-4-argon");
+  const gemHotSwapFlash = routeBrainRequest({
+    model: "deepseek-flash",
+    tierArg: "rescue",
+    settings: dualSettings,
+    providers: {},
+    env: {},
+  });
+  assert.equal(gemHotSwapFlash.provider, "gemini");
+  assert.equal(gemHotSwapFlash.model, "gemini-3.8-flash", "deepseek-flash with rescue tierArg must route to gemini-3.8-flash");
   const outGemMissing = buildBrainHttpRequest({ rt: gemRescueNoKey, prompt: "verify" });
   const outLocal = buildBrainHttpRequest({ rt: locFast, prompt: "local" });
   assert.equal(outDs.url, DEEPSEEK_CHAT_URL);
@@ -187,7 +205,7 @@ function run() {
   for (const loc of ["en", "es", "fr", "de", "it", "pt", "zh", "ja", "ko", "ar"]) {
     const dict = i18nCtx.window.I18N[loc];
     assert.ok(dict, `missing locale ${loc}`);
-    for (const k of ["reglagesTitle", "brainCardTitle", "diagTitle", "vaultEncryptedBadge", "vaultLockSiloBadge", "vaultSiloBadge"]) {
+    for (const k of ["reglagesTitle", "brainCardTitle", "diagTitle", "vaultEncryptedBadge", "vaultLockSiloBadge", "vaultSiloBadge", "imapGmailHint", "vaultCurtainTitle", "stType_email", "stType_intake"]) {
       assert.ok(dict[k], `locale ${loc} missing key ${k}`);
     }
   }
