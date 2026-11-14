@@ -166,3 +166,20 @@ every future session must obey them so the past does not repeat.
      escalates the synthesis one notch.
   4. **Latency/fatigue** — when work turns repetitive/mechanical, DE-escalate
      (Argon→Hydrogen→Flash / effort low) to stop burning cortex on muscle work.
+
+## The single-manifest bundle law (lesson #42 — one list for Desktop & npm, 2026-11-14)
+- Modularizing `supervisor/` (`brain-catalog.js`, `diagnostic-sanitizer.js`, `power-kpi.js`, `intake-engine.js`) broke `supervisor-pkg/` because `tools/sync-all.sh` kept a stale 4-file copy list (`server.js`, `dashboard.html`, `dashboard-i18n.js`, `browser-cdp.js`), omitting the new required modules and recursively nesting `icons/icons` and `sector-packs/sector-packs`.
+- Never duplicate bundle file lists across scripts: [`tools/sync-desktop.mjs`](../../tools/sync-desktop.mjs) is the single canonical manifest for **both** `apps/desktop/` and `supervisor-pkg/`, verified in `tools/check.sh` and `tools/check.ps1` including `"files"` whitelist validation against every local `require("./...")` in `server.js`.
+- `--dry-run` in `sync-all.sh` must be strictly read-only (never bump `package.json` or overwrite `.last-sync`).
+
+## The RAM vault-key handoff law (lesson #43 — Electron ↔ Supervisor parity, 2026-11-14)
+- Keeping `FANAL_MASTER_KEY` only inside Electron Main meant `server.js` saved BYOK keys and IMAP passwords without `AESGCM2:` envelope encryption.
+- Hand off the derived master key exclusively over authenticated loopback (`POST /api/internal/vault-key` with `FANAL_INTERNAL_TOKEN`), keep it only in `runtimeMasterKey` RAM, zeroize on lock, and verify `allSecretsDecrypted` before re-sealing during key rotation so wrong/stale keys can never overwrite encrypted secrets.
+
+## The zero-duplicate-DOM law (lesson #44 — structural smoke guard, 2026-11-14)
+- Malformed HTML tags (`="tab-sector"`), duplicate containers (`#leadView`, 131 duplicate IDs), settings blocks orphaned outside `<main>`, or a smoke script checking only a single `<script>` tag silently break buttons (`document.getElementById` hits the first DOM node) and leak idle animations.
+- Every UI gate (`tools/smoke-dashboard.js`, wired into `check.sh` + `check.ps1`) must assert zero duplicate static `id="..."` attributes, `<main>` containment for `#tab-reglages`, valid tags, Inbox-First (`simpleview`) default active on fresh load, and zero-CPU static idle highlights instead of infinite `@keyframes`.
+
+## The explicit-tier failover law (lesson #45 — closed Dual Brain routing, 2026-11-14)
+- Relying on regex substring heuristics (`/argon|\bdeep\b/i.test("deepseek-v4-pro")`) or placing rescue only inside `.then()` silently leaves provider errors un-rescued and makes `gemini-4-argon` unreachable.
+- Fail over across providers inside `.catch()` when a primary attempt errors in `dual_cloud` mode (`deepseek-flash` → `gemini-3.8-flash`), pass explicit `"rescue"` / `"deep"` tier intent (`gemini-4-argon` / `deepseek-v4-pro`), validate non-JSON responses consistently, and terminate every final `.catch()` with `failToHuman` so tasks never hang in `pending`.

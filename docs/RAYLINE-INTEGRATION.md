@@ -1,3 +1,9 @@
+> [!NOTE]
+> **ARCHIVED / SUPERSEDED (2026-11-14):** External dynamic model routing via Rayline
+> was superseded by Fanal's **closed curated Dual BYOK + Local catalog** enforced
+> in [`supervisor/brain-catalog.js`](../supervisor/brain-catalog.js)
+> (`400 closed_curated_catalog`). Preserved below for historical context only.
+
 # RAYLINE-INTEGRATION — the honest analysis (2026-11-12)
 
 *The question: can Rayline (rayline.ai) be added to Fanal and to all

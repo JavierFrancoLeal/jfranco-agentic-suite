@@ -1,6 +1,6 @@
 # Politique de confidentialité — Trasunto inc. (Charlevoix, Québec)
 
-*Loi 25 — transparence. Version 1.0 · 2026-11-06 · publique.*
+*Loi 25 — transparence. Version 1.1 · 2026-11-14 · publique (alignée sur `docs/LEGAL/POLITIQUE-CONFIDENTIALITE.md`).*
 
 ## Qui nous sommes
 
@@ -17,13 +17,27 @@ de conséquences, pendant que l'humain signe ce qui en a.
   coordonnées du signataire, et les leçons ANONYMISÉES du pilote.
 - La télémétrie de Fanal est anonymisée : des types et des compteurs —
   jamais des noms ni des contenus.
+- **Le voile PII 2.0 :** les noms, téléphones et courriels sont remplacés
+  par des jetons locaux AVANT tout appel au modèle (insensible aux
+  accents du français québécois, table de correspondance éphémère en silo
+  détruite après réhydratation) — le nuage ne voit jamais un nom réel.
+- **Connecteurs en lecture seule et diagnostic assaini :** la relève IMAP
+  utilise `EXAMINE` + `BODY.PEEK[]` sans marquer ni modifier vos courriels,
+  le dossier `Fanal-Inbox` est confiné à un répertoire explicite, et
+  l'export de support (`diagnostic-sanitizer.js`) retranche clés et PII
+  avant tout envoi.
 
 ## Ce que VOUS détenez
 
-- Votre clé d'API, votre constitution, votre mémoire et vos données —
-  dans votre silo, exportables et effaçables à la demande.
-- Le choix du cerveau (nuage ou local) vous appartient et est consigné à
-  l'installation.
+- **Coffre chiffré scrypt + AES-256-GCM :** vos clés d'API, vos identifiants
+  IMAP, votre constitution, votre mémoire et vos données restent sur votre
+  machine dans un silo chiffré (déverrouillage par mot de passe maître et
+  biométrie OS, purge en RAM au verrouillage), exportables et effaçables
+  à la demande.
+- **Cerveau Dual curé ou 100 % Local :** vous choisissez à l'installation
+  entre le mode **100 % Local** (Ollama — aucune donnée ne quitte votre
+  machine) ou vos propres clés **BYOK Dual** (**DeepSeek + Google Gemini**,
+  avec bascule curée et contrat directement sous votre compte).
 
 ## La responsabilité
 
@@ -41,8 +55,8 @@ consultant externe.
 ## Vos droits
 
 Accès, rectification, portabilité et effacement — sur demande via le
-dépôt GitHub officiel (issues) ou l'adresse courriel de Trasunto.
-Réponse sous 30 jours.
+dépôt GitHub officiel (issues) ou les coordonnées de Trasunto indiquées
+à l'Accord-Pilote. Réponse sous 30 jours.
 
 ## Les incidents
 

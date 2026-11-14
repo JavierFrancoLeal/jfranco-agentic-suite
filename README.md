@@ -129,8 +129,9 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
 ## 🚀 Quick start
 
-1. Install **DeepSeek Harness**.
-2. Run the one-command installer and answer two questions (sector + mode):
+1. **For SMB / end-user pilots:** install **Fanal Desktop** (`apps/desktop/`) — it bundles the Electron Node runtime, encrypted Dual BYOK Vault (`DeepSeek + Gemini` or `100 % Local Ollama`), Inbox-First dashboard (`simpleview`), KPI Neto, and read-only IMAP / `Fanal-Inbox` intake in one installer (`docs/INSTALLERS.md`).
+
+2. **For DeepSeek Harness developers & CLI workflows:** install DeepSeek Harness and run the installer:
 
    ```sh
    ./install.sh          # macOS / Linux
@@ -138,43 +139,17 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
    On Windows: right-click `install.ps1` → **Run with PowerShell**.
 
-   The installer installs the six plugins, creates your starter
-   `decisions.md` from the sector template, activates the `supervision.md`
-   log, and offers to open the Action Panel.
+   The installer installs the **five core workflow plugins** (`workflow-master`, `decision-router`, `accountability-auditor`, `autonomy-grader`, `audit`), creates your starter `decisions.md` from the sector template, activates the `supervision.md` log, and configures `deepseek-flash` in `~/.dsh/profiles/campo/`.
 
 3. Open the [Action Panel](ui/panel.html) — one big button, 10 languages,
-   voice dictation — or build the one-click desktop app (Mac/Windows scripts
-   in [`ui/`](ui/)).
+   voice dictation — or install it as a PWA at
+   https://javierfrancoleal.github.io/jfranco-agentic-suite/ui/panel.html.
 
-4. **Install the panel as an app (PWA):** open the hosted panel at
-   https://javierfrancoleal.github.io/jfranco-agentic-suite/ui/panel.html and
-   use your browser's **Install** action — it gets a Dock/desktop icon,
-   remembers your language, and works offline. (The panel is PWA-ready:
-   manifest, service worker, and icons ship in [`ui/`](ui/).)
+## 📦 Distribution & Catalog
 
-   Manual installation (optional):
-
-   ```
-   dsh plugin --profile desktop add /path/to/jfranco-workflow-master
-   dsh plugin --profile desktop add /path/to/jfranco-input-detector
-   dsh plugin --profile desktop add /path/to/jfranco-decision-router
-   dsh plugin --profile desktop add /path/to/jfranco-accountability-auditor
-   dsh plugin --profile desktop add /path/to/jfranco-interpreter
-   dsh plugin --profile desktop add /path/to/jfranco-autonomy-grader
-   ```
-
-## 📦 Distribution
-
-The five organs are published (the five vestigial ones are deprecated and kept in the genome) on **npm** under the `@javierfrancoleal` scope, so a
-business can install them by name:
-
-```
-dsh plugin --profile desktop add @javierfrancoleal/workflow-master
-dsh plugin --profile desktop add @javierfrancoleal/usage-auditor
-```
-
-The publisher (`tools/publish.sh`) runs the quality gate before publishing.
-The suite is also installable from this repository and from GitHub Pages.
+- **Full organ taxonomy (`26 jfranco-*` packages):** see [`docs/ACTIVE-CATALOG.md`](docs/ACTIVE-CATALOG.md) for the exact split between core workflow organs, developer/house organs, and archived vestigial genomes.
+- **Standalone Supervisor CLI (`supervisor-pkg/`):** `@javierfrancoleal/dsh-supervisor` (`Node >= 24`), synced byte-for-byte with `supervisor/` via `node tools/sync-desktop.mjs --all`.
+- **Quality & publish tooling:** `tools/check.sh` / `tools/check.ps1` (with CI verification on `ubuntu-latest` and `windows-latest` including packed ASAR Electron smoke), `.github/workflows/publish.yml` (7 Trusted Publishing packages), and `tools/publish.sh` (8 core/utility packages).
 
 ## 📚 Documents
 

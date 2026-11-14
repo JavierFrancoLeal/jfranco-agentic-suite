@@ -1,3 +1,10 @@
+> [!NOTE]
+> **ARCHIVED / SUPERSEDED (2026-11-14):** The dormant `rayline` tier and
+> `raylineEnabled()` hook were removed from [`supervisor/server.js`](../supervisor/server.js).
+> Routing now uses strictly the closed curated catalog in
+> [`supervisor/brain-catalog.js`](../supervisor/brain-catalog.js)
+> (`DeepSeek + Gemini` or `100 % Local Ollama`). Kept below for historical context.
+
 # RAYLINE-CONFIG — the prepared tier (2026-11-12)
 
 The configuration is PREPARED and OFF by default. To activate it when

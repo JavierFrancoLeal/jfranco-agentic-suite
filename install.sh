@@ -6,7 +6,7 @@
 #   1. Locates DeepSeek Harness.
 #   2. Asks your sector (creates decisions.md with starter rules).
 #   3. Asks where to install: desktop, campo (autonomous), or both.
-#   4. Installs the six @javierfrancoleal/* plugins into each chosen profile.
+#   4. Installs the five core @javierfrancoleal/* plugins into each chosen profile.
 #   5. Creates ~/.dsh/decisions.md (training) and ~/.dsh/supervision.md (log).
 #   6. Offers to open the Action Panel.
 #
@@ -98,7 +98,7 @@ EOF
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
     provider: deepseek-official
-    model: deepseek-chat
+    model: deepseek-flash
     reasoningEffort: max
 EOF
       cat > "$CAMPODIR/pnpm-workspace.yaml" <<EOF
@@ -112,10 +112,10 @@ EOF
     ;;
 esac
 
-# 5. Install the six plugins into each chosen profile
+# 5. Install the five core plugins into each chosen profile
 for prof in $PROFILES; do
   echo ""
-  echo "${BLUE}Installing the six plugins into profile '$prof'…${NC}"
+  echo "${BLUE}Installing the five core plugins into profile '$prof'…${NC}"
   for p in jfranco-workflow-master jfranco-decision-router \
          jfranco-accountability-auditor jfranco-autonomy-grader jfranco-audit; do
     if "$DSH" plugin --profile "$prof" add "$ROOT/$p" >/dev/null 2>&1; then

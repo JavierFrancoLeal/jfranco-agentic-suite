@@ -19,7 +19,7 @@ An **accountable workflow assistant** for companies:
 
 1. Install **DeepSeek Harness** on the computer (Mac or Windows).
 2. Run the **one-command installer** (`install.sh` on Mac, `install.ps1` on
-   Windows): it asks two questions — sector and mode — then installs the six
+   Windows): it asks two questions — sector and mode — then installs the five core
    plugins, creates the starter `decisions.md` from the sector template,
    activates the `supervision.md` log, and offers to open the Action Panel.
 3. Open the **Action Panel** (`ui/panel.html`) in the browser, or build the

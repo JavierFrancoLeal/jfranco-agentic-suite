@@ -16,15 +16,19 @@ npmver(){ curl -s --max-time 10 "https://registry.npmjs.org/$1/latest" | "$NODE"
 
 echo "=== sync-check $(date +%Y-%m-%d\ %H:%M) ==="
 
-# 1. Supervisor package copies
-for f in server.js dashboard.html; do
-  if cmp -s "$ROOT/supervisor/$f" "$ROOT/supervisor-pkg/$f"; then say "supervisor-pkg/$f" "✔ idéntico"; else say "supervisor-pkg/$f" "❌ DESACTUALIZADO"; STALE=1; fi
-done
-if cmp -s "$ROOT/ui/panel.html" "$ROOT/supervisor-pkg/panel.html"; then say "supervisor-pkg/panel.html" "✔ idéntico"; else say "supervisor-pkg/panel.html" "❌ DESACTUALIZADO"; STALE=1; fi
-for f in "$ROOT"/docs/sector-packs/*.json; do
-  b="$(basename "$f")"
-  if [ -f "$ROOT/supervisor-pkg/sector-packs/$b" ] && cmp -s "$f" "$ROOT/supervisor-pkg/sector-packs/$b"; then :; else say "sector-pack/$b" "❌ DESACTUALIZADO"; STALE=1; fi
-done
+# 1. Supervisor package + desktop bundle parity (all modules, via canonical manifest)
+if "$NODE" "$ROOT/tools/sync-desktop.mjs" --check-supervisor-pkg >/dev/null 2>&1; then
+  say "supervisor-pkg (8 módulos + ui + packs)" "✔ idéntico"
+else
+  say "supervisor-pkg (8 módulos + ui + packs)" "❌ DESACTUALIZADO"
+  STALE=1
+fi
+if "$NODE" "$ROOT/tools/sync-desktop.mjs" --check >/dev/null 2>&1; then
+  say "apps/desktop bundle (brain + ui + packs)" "✔ idéntico"
+else
+  say "apps/desktop bundle (brain + ui + packs)" "❌ DESACTUALIZADO"
+  STALE=1
+fi
 
 # 2. npm plugins: local version vs published
 for d in "$ROOT"/jfranco-*; do

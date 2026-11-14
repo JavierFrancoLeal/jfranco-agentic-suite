@@ -41,62 +41,68 @@ stage_deprecate(){ name="$1";
     && echo "   $name: 0.0.0-stage deprecado" || echo "   $name: 0.0.0-stage (registry propagando; reintenta luego)"
 }
 
-# 1. Supervisor bundle
+# 1. Supervisor package + desktop bundle (single canonical manifest in sync-desktop.mjs)
 CHANGED=0
-for f in server.js dashboard.html dashboard-i18n.js browser-cdp.js; do
-  cmp -s "$ROOT/supervisor/$f" "$ROOT/supervisor-pkg/$f" || { cp "$ROOT/supervisor/$f" "$ROOT/supervisor-pkg/$f"; CHANGED=1; }
-done
-cmp -s "$ROOT/ui/panel.html" "$ROOT/supervisor-pkg/panel.html" || { cp "$ROOT/ui/panel.html" "$ROOT/supervisor-pkg/panel.html"; CHANGED=1; }
-for f in "$ROOT"/ui/icons/*; do
-  b="$(basename "$f")"
-  cmp -s "$f" "$ROOT/supervisor-pkg/icons/$b" 2>/dev/null || { cp "$f" "$ROOT/supervisor-pkg/icons/$b"; CHANGED=1; }
-done
-for f in "$ROOT"/docs/sector-packs/*.json; do
-  b="$(basename "$f")"
-  cmp -s "$f" "$ROOT/supervisor-pkg/sector-packs/$b" 2>/dev/null || { cp "$f" "$ROOT/supervisor-pkg/sector-packs/$b"; CHANGED=1; }
-done
-# Desktop app bundle: detect drift against supervisor/ without copying yet —
-# the single manifest lives in tools/sync-desktop.mjs. A stale desktop copy
-# must also trigger a version bump (lesson #17).
+PKG_CHK="$("$NODE" "$ROOT/tools/sync-desktop.mjs" --check-supervisor-pkg 2>&1)" || {
+  CHANGED=1
+  if echo "$PKG_CHK" | grep -q "PKG-FILES"; then
+    echo "$PKG_CHK" >&2
+    echo "ERROR: supervisor-pkg/package.json files[] está incompleto — corrígelo antes de publicar." >&2
+    exit 1
+  fi
+}
 "$NODE" "$ROOT/tools/sync-desktop.mjs" --check >/dev/null 2>&1 || CHANGED=1
 sname="$("$NODE" -e 'console.log(require(process.argv[1]).name)' "$ROOT/supervisor-pkg/package.json")"
 if [ "$CHANGED" = 1 ]; then
-  nv="$(bump "$ROOT/supervisor-pkg/package.json")"
-  echo "supervisor: fuentes cambiaron → v$nv"
-  replaceConstVersion "$ROOT/supervisor/server.js" "$nv"
-  cp "$ROOT/supervisor/server.js" "$ROOT/supervisor-pkg/server.js"
-  pub "$sname" "$ROOT/supervisor-pkg"
+  if [ -n "$DRY" ]; then
+    echo "   [dry] fuentes cambiaron → sincronizaría desktop + supervisor-pkg y publicaría $sname"
+  else
+    nv="$(bump "$ROOT/supervisor-pkg/package.json")"
+    echo "supervisor: fuentes cambiaron → v$nv"
+    replaceConstVersion "$ROOT/supervisor/server.js" "$nv"
+    "$NODE" "$ROOT/tools/sync-desktop.mjs" --all
+    pub "$sname" "$ROOT/supervisor-pkg"
+  fi
 else
   echo "supervisor: sin cambios ✔"
+  [ -n "$DRY" ] || "$NODE" "$ROOT/tools/sync-desktop.mjs" --all >/dev/null
 fi
-# Sync the desktop bundle AFTER any version bump so apps/desktop/brain/ can
-# never be left holding a stale VERSION (lesson #17).
-"$NODE" "$ROOT/tools/sync-desktop.mjs"
 
-# 2. Plugins: changed files → bump + republish; missing npm → publish as-is
+# 2. Plugins: changed content files (excluding package.json bump commits) → bump + republish; missing npm → publish as-is
 for d in "$ROOT"/jfranco-*; do
   [ -f "$d/package.json" ] || continue
   name="$("$NODE" -e 'console.log(require(process.argv[1]).name)' "$d/package.json")"
   lv="$("$NODE" -e 'console.log(require(process.argv[1]).version)' "$d/package.json")"
   pv="$(npmver "$name")"
   marker="$d/.last-sync"
-  cur="$(git -C "$ROOT" log -1 --format=%H -- "$(basename "$d")" 2>/dev/null || echo none)"
-  prev="$(cat "$marker" 2>/dev/null || echo "")"
   base="$(basename "$d")"
+  cur="$(git -C "$ROOT" log -1 --format=%H -- "$base" ':!'"$base/package.json" 2>/dev/null || echo none)"
+  prev="$(cat "$marker" 2>/dev/null || echo "")"
   if [ "$pv" = "0.0.0" ]; then
-    echo "$base: no está en npm → publicar v$lv"
-    pub "$name" "$d"
-    stage_deprecate "$name"
-    echo "$cur" > "$marker"
+    if [ -n "$DRY" ]; then
+      echo "$base: no está en npm → [dry] publicaría $name v$lv desde $d"
+    else
+      echo "$base: no está en npm → publicar v$lv"
+      pub "$name" "$d"
+      stage_deprecate "$name"
+      echo "$cur" > "$marker"
+    fi
   elif [ -z "$prev" ]; then
-    echo "$base: primer registro del marcador (sin cambios) ✔"
-    echo "$cur" > "$marker"
+    if [ -n "$DRY" ]; then
+      echo "$base: [dry] registraría marcador inicial ✔"
+    else
+      echo "$base: primer registro del marcador (sin cambios) ✔"
+      echo "$cur" > "$marker"
+    fi
   elif [ "$cur" != "$prev" ]; then
-    nv="$(bump "$d/package.json")"
-    echo "$base: archivos cambiaron → v$nv"
-    if [ "$base" = "supervisor-pkg" ]; then replaceConstVersion "$ROOT/supervisor/server.js" "$nv"; cp "$ROOT/supervisor/server.js" "$ROOT/supervisor-pkg/server.js"; fi
-    pub "$name" "$d"
-    echo "$cur" > "$marker"
+    if [ -n "$DRY" ]; then
+      echo "$base: archivos cambiaron → [dry] bumpearía v$lv y publicaría $name desde $d"
+    else
+      nv="$(bump "$d/package.json")"
+      echo "$base: archivos cambiaron → v$nv"
+      pub "$name" "$d"
+      echo "$cur" > "$marker"
+    fi
   else
     echo "$base: sin cambios desde la última sincronización ✔"
   fi

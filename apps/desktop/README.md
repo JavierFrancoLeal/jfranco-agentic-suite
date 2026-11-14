@@ -1,9 +1,9 @@
 # Fanal Desktop
 
-Created by **J.Franco** — the universal sector dashboard as a desktop
-application. An Electron shell (the same proven pattern as DeepSeek
-Harness) around the Fanal dashboard, with kiosk mode for kitchen and
-back-office screens.
+Created by **J.Franco** — the Inbox-First universal sector dashboard as an
+Electron desktop application (`ca.trasunto.fanal`). Includes a closed Dual BYOK
+Vault (scrypt + OS biometric lock + RAM zeroization), sleep/wake power telemetry,
+sandboxed `Fanal-Inbox` folder watching, and kiosk mode for back-office screens.
 
 ## Note for DeepSeek Harness sessions
 
@@ -15,25 +15,29 @@ Normal user terminals do not have this variable.
 
 ```sh
 npm install
-LE_VEILLEUX_URL=http://127.0.0.1:8787/dashboard npm start   # normal window
-LE_VEILLEUX_URL=http://127.0.0.1:8787/dashboard npm run kiosk  # fullscreen kiosk
+npm start                                                      # normal window + auto-spawned local supervisor
+npm run kiosk                                                  # fullscreen kiosk
+LE_VEILLEUX_URL=http://127.0.0.1:8787/dashboard npm start      # optional custom loopback URL override
 ```
 
-- The dashboard URL defaults to `http://127.0.0.1:8787/dashboard`
-  (the supervisor running on the same machine).
-- A system tray icon keeps the app alive on macOS; close the window and
-  reopen it from the tray.
-- External links (the Action Panel, docs) open in the default browser.
+- The target defaults to `http://127.0.0.1:8787/dashboard` (env override name remains `LE_VEILLEUX_URL` for legacy test compatibility).
+- A localized system tray icon (10 languages) keeps Fanal alive on macOS/Windows; closing the window hides to the tray.
+- Vault security (`vault-biometric.js`): scrypt master password + Touch ID / Windows Hello unlock, with `FANAL_MASTER_KEY` handed to the bundled supervisor over internal loopback and zeroized in RAM on lock.
+- External links open in the default browser via `desktop-sandbox.js`.
 
-## Smoke test (no window lingering)
+## Verification & smoke tests
 
 ```sh
-LE_VEILLEUX_SMOKE=1 npm start   # prints "SMOKE OK — window loaded" and quits
+node ../../tools/sync-desktop.mjs --check          # brain/ and ui/ match sources
+node ../../tools/verify-app.mjs                    # static + darwin bundle checks
+node ../../tools/smoke-desktop.mjs                 # Electron source smoke
+node ../../tools/smoke-desktop.mjs --packed        # Electron ASAR unpacked/packed smoke
 ```
 
 ## Build installers
 
 ```sh
+sh ../../tools/verify-app.sh
 npm run dist   # .dmg + .zip (macOS), .exe (Windows), .AppImage (Linux)
 ```
 

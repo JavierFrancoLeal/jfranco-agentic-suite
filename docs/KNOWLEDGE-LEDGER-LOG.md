@@ -1,3 +1,9 @@
+> [!NOTE]
+> **ARCHIVED HISTORICAL LEDGER (through 2026-11-07, Lesson #34):** Preserved
+> intact per append-only archaeology rules. From **2026-11-11 onward (Lessons
+> #35–#45+)**, the **single active canonical knowledge ledger** loaded by agents
+> lives at [`jfranco-lessons/assets/lessons.md`](../jfranco-lessons/assets/lessons.md).
+
 # 🔥 Knowledge Ledger-LOG — the canonical knowledge record (append-only)
 
 *Canonical format of the Knowledge Ledger standard. Never edit — only append. The

@@ -1,6 +1,6 @@
 # Politique de confidentialité — Trasunto inc. (Charlevoix, Québec)
 
-*Loi 25 — transparence. Version 1.0, 2026-11-06. À publier sur le site.*
+*Loi 25 — transparence. Version 1.1 · 2026-11-14 · réconciliée avec [`POLITIQUE-CONFIDENTIALITE.md`](../../POLITIQUE-CONFIDENTIALITE.md).*
 
 ## Qui nous sommes
 
@@ -15,36 +15,54 @@ l'IA et les PME : nous installons, configurons et accompagnons Fanal.
   coordonnées du signataire, leçons ANONYMISÉES du pilote.
 - La télémétrie de Fanal est anonymisée : des types et des compteurs,
   jamais des noms ni des contenus.
-- Le voile PII 2.0 : les noms, téléphones et courriels sont remplacés
+- Le **voile PII 2.0** : les noms, téléphones et courriels sont remplacés
   par des jetons locaux AVANT tout appel au modèle (insensible aux
-  accents du français québécois, bóveda local détruite après usage) —
-  la nuage ne voit jamais un nom réel.
+  accents du français québécois, table locale détruite après réhydratation) —
+  le nuage ne voit jamais un nom réel.
+- **Lecture seule et diagnostic assaini :** l'accès courriel IMAP utilise
+  `EXAMINE` et `BODY.PEEK[]` sans altérer vos messages, `Fanal-Inbox` reste
+  confiné à un dossier autorisé, et l'export diagnostic retire toute PII
+  ou clé avant partage.
 
 ## Ce que VOUS détenez
 
-- Votre clé d'API, votre constitution, votre mémoire et vos données —
-  dans votre silo, exportables et effaçables à la demande.
-- Le choix du cerveau (nuage ou local) vous appartient et est consigné
-  à l'installation.
+- **Coffre local scrypt + AES-256-GCM :** vos clés d'API, vos identifiants
+  IMAP, votre constitution, votre mémoire et vos données restent dans votre
+  silo chiffré (purge en RAM au verrouillage), exportables et effaçables
+  à la demande.
+- **Cerveau Dual curé ou 100 % Local :** vous choisissez et consignez à
+  l'installation entre le mode **100 % Local** (Ollama) ou vos propres clés
+  **BYOK Dual** (**DeepSeek + Google Gemini**).
 
 ## Vos droits
 
-Accès, rectification, portabilité et effacement — sur demande à
-[coordonnées], réponse sous 30 jours.
+Accès, rectification, portabilité et effacement — sur demande via le dépôt
+GitHub officiel (issues) ou les coordonnées indiquées à l'Accord-Pilote,
+réponse sous 30 jours.
 
 ## Le responsable (la fonction, pas la charge personnelle)
 
 La PERSONNE responsable au sens de la Loi 25 est l'entreprise
-elle-même : Trasunto inc. — c'est la personne morale qui répond des
+elle-même : **Trasunto inc.** — c'est la personne morale qui répond des
 actes, pas son fondateur personnellement (la responsabilité limitée de
 la société protège le patrimoine personnel, sauf faute personnelle :
 fraude ou négligence grossière).
 
 La FONCTION de responsable de la protection des renseignements
 personnels (art. 3.1, al. 2 — elle peut être déléguée, en tout ou en
-partie) est exercée aujourd'hui par : Javier Alejandro Franco Leal,
-fondateur. À l'échelle, la fonction sera déléguée à un directeur des
+partie) est exercée aujourd'hui par : **Javier Alejandro Franco Leal,
+fondateur**. À l'échelle, la fonction sera déléguée à un directeur des
 opérations ou à un consultant externe en protection des renseignements
 personnels — la politique l'annoncera alors.
 
-Contact : [coordonnées] — réponse sous 30 jours.
+## Les incidents
+
+Voir [`PROTOCOLE-INCIDENTS.md`](./PROTOCOLE-INCIDENTS.md) : journal interne
+local, évaluation en trois degrés, et avis à la CAI ainsi qu'aux
+personnes concernées sans délai (objectif ≤ 72 h) en cas de risque de
+préjudice sérieux.
+
+## Contact
+
+- Dépôt officiel : https://github.com/JavierFrancoLeal/jfranco-agentic-suite
+- Responsable : Javier Alejandro Franco Leal, Trasunto inc., Charlevoix (Québec) — réponse sous 30 jours.

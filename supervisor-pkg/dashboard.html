@@ -123,6 +123,13 @@ button{font-family:inherit;cursor:pointer}
 .btn{border:none;border-radius:12px;padding:12px 16px;font-size:15px;font-weight:600;color:#fff;background:linear-gradient(135deg,#4D6BFE,#7c5cff);box-shadow:0 4px 12px rgba(77,107,254,.22)}
 .btn.gray{background:var(--line2);color:var(--ink)}
 .btn.small{padding:8px 12px;font-size:13px}
+.brain-modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin:10px 0}
+.mode-card{text-align:left;padding:14px;border:1.5px solid var(--line);border-radius:16px;background:var(--card2);color:var(--ink);cursor:pointer;transition:border-color .18s,box-shadow .18s,background .18s}
+.mode-card.on{border-color:var(--blue);background:rgba(77,107,254,.08);box-shadow:0 0 0 3px rgba(77,107,254,.16)}
+.mode-card b{display:block;font-size:14.5px;margin-bottom:4px}
+.mode-card small{display:block;font-size:12.5px;color:var(--muted);line-height:1.45}
+.byok-row{display:flex;gap:8px;align-items:center}
+.byok-row input{margin-bottom:0;flex:1}
 main{max-width:960px;margin:0 auto;padding:14px}
 .card{background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px;margin:12px 0}
 .card h2{margin:0 0 10px;font-size:16px}
@@ -294,9 +301,7 @@ body.wall pre{max-height:40vh}
 .noSendTxt{position:relative;z-index:2}
 .noSendFill{position:absolute;inset:0;z-index:1;background:rgba(107,114,128,.38);backdrop-filter:blur(1.5px);-webkit-backdrop-filter:blur(1.5px);transform-origin:left;animation:noFill 10s linear forwards}
 @media(prefers-reduced-motion:reduce){.noSendFill{animation:none;transform:scaleX(0)}}
-#notifBell.bell-pulse{animation:bellPulse 1.1s ease-in-out infinite}
-@keyframes bellPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.14)}}
-@media(prefers-reduced-motion:reduce){#notifBell.bell-pulse{animation:none}}
+#notifBell.bell-pulse{box-shadow:0 0 0 2px #ef4444;border-color:#ef4444}
 .inbox-item .when{font-size:11px;color:#9CA3AF}
 </style>
 </head>
@@ -394,12 +399,6 @@ body.wall pre{max-height:40vh}
       <p id="welcomeBody" class="note"></p>
     </div>
     <div class="metrics" id="ownerMetrics"></div>
-    <div class="card"><h2 id="keyTitle">🔑 Clé IA (la vôtre)</h2>
-      <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
-      <button class="btn small" id="keySave">Enregistrer la clé</button>
-      <p class="hint" id="keyStatus"></p>
-      <p class="hint" id="keyBalance"></p>
-    </div>
     <div class="card adv-only"><h2 id="browserTitle">🌐 Navigateur</h2>
       <input id="browserUrl" placeholder="https://…">
       <div class="row" style="display:flex;gap:8px">
@@ -408,7 +407,7 @@ body.wall pre{max-height:40vh}
       </div>
       <p class="hint" id="browserStatus"></p>
     </div>
-    <div class="card"><h2 id="telephonisteTitle">☎️ Le Téléphoniste</h2>
+    <div class="card adv-only"><h2 id="telephonisteTitle">☎️ Le Téléphoniste</h2>
       <p class="hint" id="telephonisteHint"></p>
       <button class="btn small" id="phoneAnnounce" style="margin-bottom:6px">Décrocher (annonce)</button>
       <div id="phoneLog" class="st-res" style="min-height:60px;text-align:left"></div>
@@ -417,14 +416,14 @@ body.wall pre{max-height:40vh}
         <button class="btn small" id="phoneSend" style="flex:0">Envoyer</button>
       </div>
     </div>
-    <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
+    <div class="card adv-only"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
       <p class="hint" id="secretaireHint"></p>
       <div class="row" style="display:flex;gap:8px">
         <button class="btn small" id="secretaireScan" style="flex:1">Analyser le formulaire</button>
       </div>
       <div id="secretaireResult"></div>
     </div>
-    <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
+    <div class="card adv-only"><h2 id="repondantTitle">📨 Le Répondant</h2>
       <p class="hint" id="repondantHint"></p>
       <div class="row" style="display:flex;gap:8px">
         <button class="btn small" id="repondantScan" style="flex:1">Analyser la page</button>
@@ -433,7 +432,7 @@ body.wall pre{max-height:40vh}
     </div>
     <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
     <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
-    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
+    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p><p class="hint hidden" id="repriseBanner" style="margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(77,107,254,.08)"></p>
       <div id="superTiers"></div>
       <div id="superCalls"></div>
       <div id="superDecisions"></div>
@@ -495,7 +494,7 @@ body.wall pre{max-height:40vh}
         <p class="hint" id="feedbackHint">The agent reads this queue and resolves errors and improvements.</p>
       </div>
     </div>
-    ="tab-sector" class="hidden">
+    <div id="tab-sector" class="hidden">
       <div class="card"><h2 id="sectorPresetsTitle">Sector presets</h2><div id="presetGrid" class="row"></div></div>
       <div class="card">
         <h2 id="customSectorTitle">Custom sector</h2>
@@ -513,199 +512,122 @@ body.wall pre{max-height:40vh}
         <textarea id="decisions" rows="14"></textarea>
         <button class="btn" id="saveDecisions">Save rules</button><span id="decisionsSaved" class="note"></span>
       </div>
-    </div>
-  </div>
-
-  <div id="leadView" class="hidden">
-    <div class="metrics" id="leadMetrics"></div>
-    <div class="card"><h2 id="keyTitle">🔑 Clé IA (la vôtre)</h2>
-      <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
-      <button class="btn small" id="keySave">Enregistrer la clé</button>
-      <p class="hint" id="keyStatus"></p>
-    </div>
-    <div class="card adv-only"><h2 id="browserTitle">🌐 Navigateur</h2>
-      <input id="browserUrl" placeholder="https://…">
-      <div class="row" style="display:flex;gap:8px">
-        <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
-        <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
+      <div class="card"><h2 id="constitutionTitle">⚖️ Constitution</h2>
+        <p class="hint" id="constitutionHint"></p>
+        <textarea id="constitutionFields" rows="8" placeholder="philosophie · ton · politiques · règle de rabais · prix minimum · escalades"></textarea>
+        <label class="hint" style="margin-top:4px;display:block">Conditions extrêmes du rabais (le prix minimum = DERNIÈRE option, l'offre exige toujours l'humain) :</label>
+        <input id="constitutionExtreme" placeholder="ex: uniquement réservation ferme le jour même, chambre vide, client fidèle, max 2x/semaine">
+        <button class="btn small" id="constitutionSave" style="margin-top:6px">Enregistrer</button>
+        <p class="hint" id="constitutionStatus"></p>
       </div>
-      <p class="hint" id="browserStatus"></p>
-    </div>
-    <div class="card"><h2 id="telephonisteTitle">☎️ Le Téléphoniste</h2>
-      <p class="hint" id="telephonisteHint"></p>
-      <button class="btn small" id="phoneAnnounce" style="margin-bottom:6px">Décrocher (annonce)</button>
-      <div id="phoneLog" class="st-res" style="min-height:60px;text-align:left"></div>
-      <div class="row" style="display:flex;gap:6px;margin-top:6px">
-        <input id="phoneInput" placeholder="« je voudrais réserver une table pour deux à 19 h »" style="flex:1">
-        <button class="btn small" id="phoneSend" style="flex:0">Envoyer</button>
+      <div class="card"><h2 id="memoryTitle">🗂️ Mémoire</h2>
+        <p class="hint" id="memoryHint"></p>
+        <div class="row" style="display:flex;gap:6px;flex-wrap:wrap">
+          <input id="memName" placeholder="nom" style="flex:2;min-width:120px">
+          <select id="memType" style="flex:1"><option value="client">client</option><option value="fournisseur">fournisseur</option><option value="partenaire">partenaire</option></select>
+        </div>
+        <input id="memOrder" placeholder="« lo de siempre » · adresse · prix" style="margin-top:6px">
+        <input id="memIds" placeholder="identifiants : téléphone / courriel / facebook" style="margin-top:6px">
+        <button class="btn small" id="memSave" style="margin-top:6px">Enregistrer</button>
+        <div id="memList" style="margin-top:6px;font-size:12.5px"></div>
       </div>
     </div>
-    <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
-      <p class="hint" id="secretaireHint"></p>
-      <div class="row" style="display:flex;gap:8px">
-        <button class="btn small" id="secretaireScan" style="flex:1">Analyser le formulaire</button>
-      </div>
-      <div id="secretaireResult"></div>
-    </div>
-    <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
-      <p class="hint" id="repondantHint"></p>
-      <div class="row" style="display:flex;gap:8px">
-        <button class="btn small" id="repondantScan" style="flex:1">Analyser la page</button>
-      </div>
-      <div id="repondantResult"></div>
-    </div>
-    <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
-    <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
-    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
-      <div id="superTiers"></div>
-      <div id="superCalls"></div>
-      <div id="superDecisions"></div>
-      <div id="superAutonomy"></div>
-      <div id="superActions" class="hint"></div>
-      <div class="hostsig hint"></div>
-    </div>
-    <div class="tabs">
-      <button data-tab="overview" class="active" id="tabOverview">Overview</button>
-      <button data-tab="field" id="tabField">Field</button>
-      <button data-tab="rules" id="tabRules">Rules</button>
-      <button data-tab="sector" id="tabSector">Sector</button>
-      <button data-tab="studio" id="tabStudio">🔔 Notifications</button>
-      <button data-tab="reglages" id="tabReglages">⚙️ Réglages</button>
-    </div>
-    <nav class="bnav" id="ownerBnav">
-      <button data-tab="overview" class="active">📊<span id="bnavOverview">Overview</span></button>
-      <button data-tab="field">🗒️<span id="bnavField">Field</span></button>
-      <button data-tab="rules">📜<span id="bnavRules">Rules</span></button>
-      <button data-tab="sector">🏪<span id="bnavSector">Sector</span></button>
-      <button data-tab="studio">🔔<span id="bnavStudio">Notifications</span></button>
-      <button data-tab="reglages">⚙️<span id="bnavReglages">Réglages</span></button>
-    </nav>
-    <div id="tab-overview">
-      <div class="card"><h2 id="workersTitle">Workers</h2>
-        <table id="usersTable"><thead><tr><th id="thUser">User</th><th id="thRole">Role</th></tr></thead><tbody></tbody></table>
-        <h2 style="margin-top:14px" id="addWorkerTitle">Add worker</h2>
-        <div id="suggestUsers" class="row"></div>
-        <input id="newUser" placeholder="User name"><input id="newPass" type="password" placeholder="Password" minlength="8">
-        <input id="newLabel" placeholder="Role label (e.g. Cook)">
-        <select id="newRole"><option id="optEmployee" value="employee">employee</option><option id="optLead" value="lead">lead</option><option id="optOwner" value="owner">owner</option></select>
-        <button class="btn" id="addUserBtn">Add worker</button>
-      </div>
-      <div class="card"><h2 id="ordersTitle">Orders — kitchen & bill</h2><button class="btn small gray" id="exportOrdersBtn" style="margin-bottom:8px">⬇ Export bill</button><div id="ownerOrders"></div><p class="hint" id="billSummary"></p></div>
-      <div class="card" id="shiftCard"><h2 id="shiftTitle">🌅 Ouverture de la journée</h2><div id="shiftBody"></div><button class="btn small gray" id="closeDayBtn" style="display:none;margin-top:6px">Fermer la journée</button></div>
-      <div class="card"><h2 id="regDayTitle">🪙 Day register (counter-audit)</h2><div id="regDay"></div><div class="row" style="margin-top:8px"><input id="regSearch" placeholder="Search items…" style="flex:2;margin:0"><select id="regMethod" style="flex:1;margin:0"><option value="all">All</option><option value="cash">Cash</option><option value="card">Card</option><option value="terminal">Terminal</option></select></div><div id="regSales"></div><button class="btn small gray" id="exportRegisterBtn" style="margin-top:6px">⬇ Export Z-report</button></div>
-      <div class="card"><h2 id="usageTitle">Usage & cost</h2><p class="hint" id="usageSub">(per worker, estimated)</p>
-        <p class="hint" id="usageBudget"></p>
-        <table id="usageTable"><thead><tr><th id="thWorker">Worker</th><th id="thSessions">Sessions</th><th id="thTokens">Tokens</th><th id="thCost">Est. cost</th></tr></thead><tbody></tbody></table>
-      </div>
-      <div class="card"><h2 id="panelTitle">Action Panel</h2><p class="note" id="panelNote">Workers open the panel from their tablet or phone.</p>
-        <a href="/panel" target="_blank" id="openPanelLink"><button class="btn" id="openPanel">Open Action Panel</button></a>
-      </div>
-    </div>
-    <div id="tab-field" class="hidden">
-      <div class="card"><h2 id="fieldReportsTitle">Field reports</h2>
-        <div class="row" style="margin-bottom:8px"><button class="btn small gray" id="refreshReports">Refresh</button><button class="btn small gray" id="exportBtn">⬇ Export reports</button><button class="btn small gray" id="autoRefresh">Auto-refresh: OFF</button></div>
-        <pre id="reports"></pre>
-      </div>
-      <div class="card"><h2 id="deepTitle">Deep analysis (Reasoner)</h2>
-        <textarea id="deepText" rows="3" placeholder="Ask a deep question…"></textarea>
-        <button class="btn" id="deepSend">Ask deep</button>
-        <p class="hint" id="deepHint">The Reasoner brain thinks deeply and appends its answer to the reports.</p>
-        <div id="deepAnswers"></div>
-        <button class="btn small gray" id="demoAlertBtn" style="display:none;margin-top:6px">🔔 <span id="demoAlertBtnText">Simuler une alerte</span></button>
-      </div>
-      <div class="card"><h2 id="trailTitle">Conversation trail</h2><p class="hint" id="trailHint">The raw phrases captured from the field, in order.</p><pre id="trail"></pre></div>
-      <div class="card"><h2 id="feedbackTitle">Feedback queue</h2><pre id="feedback"></pre>
-        <p class="hint" id="feedbackHint">The agent reads this queue and resolves errors and improvements.</p>
-      </div>
-    </div>
-    ="tab-sector" class="hidden">
-      <div class="card"><h2 id="sectorPresetsTitle">Sector presets</h2><div id="presetGrid" class="row"></div></div>
+    <div id="tab-reglages" class="hidden">
+      <h2 id="reglagesTitleEl" style="font-size:18px;margin:0 0 10px">⚙️ Réglages</h2>
+      <p id="reglagesHintEl" class="hint">Tout se règle ici dans votre silo privé — simple et verrouillé comme les Réglages Apple.</p>
       <div class="card">
-        <h2 id="customSectorTitle">Custom sector</h2>
-        <input id="csId" placeholder="id (e.g. bakery)">
-        <input id="csLabelEn" placeholder="Label (EN)"><input id="csLabelFr" placeholder="Label (FR)">
-        <input id="csOrdersEn" placeholder="Orders title (EN)"><input id="csOrdersFr" placeholder="Orders title (FR)">
-        <input id="csF1Id" placeholder="Field 1 id (e.g. orderNo)"><input id="csF1Label" placeholder="Field 1 label (EN)">
-        <input id="csF2Id" placeholder="Field 2 id (optional)"><input id="csF2Label" placeholder="Field 2 label (EN)">
-        <button class="btn" id="saveSectorBtn">Save sector</button>
-        <button class="btn gray" id="aiSectorBtn" style="margin-top:6px">Suggest with AI (copy prompt)</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <h2 id="brainCardTitleEl" style="margin:0">🧠 Cerveau Fanal Curé</h2>
+          <span id="brainVaultBadge" class="chip" style="background:rgba(77,107,254,.12);color:var(--blue);border-color:rgba(77,107,254,.3);font-size:11.5px">🛡️ Silo local</span>
+        </div>
+        <p id="brainCardHintEl" class="hint">Choisissez l'un des deux modes curés — jamais d'URL ouverte ni de modèle arbitraire.</p>
+        <div class="brain-modes" role="radiogroup" aria-label="Curated Brain Modes">
+          <button type="button" class="mode-card on" id="modeDualBtn" data-mode="dual_cloud">
+            <b id="brainModeDualTitleEl">☁️ Cerveau Fanal Dual (Recommandé)</b>
+            <small id="brainModeDualDescEl">Double hémisphère curé (DeepSeek + Gemini). Vos clés BYOK restent dans votre Coffre local.</small>
+          </button>
+          <button type="button" class="mode-card" id="modeLocalBtn" data-mode="local_sovereign">
+            <b id="brainModeLocalTitleEl">💻 Mode Souverain Privé (100 % Local)</b>
+            <small id="brainModeLocalDescEl">Zéro transfert externe : tout reste strictement sur cette machine.</small>
+          </button>
+        </div>
+        <div id="dualVaultPanel" style="margin-top:8px">
+          <p id="brainVaultDualTitleEl" class="hint" style="font-weight:700;color:var(--ink);margin-bottom:8px">🔐 Clés BYOK Dual dans le Coffre</p>
+          <div style="margin-bottom:8px">
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+              <span id="brainDeepseekLblEl">DeepSeek API key</span>
+              <b id="vaultDeepseekState" class="hint">—</b>
+            </div>
+            <div class="byok-row">
+              <input type="password" id="vaultDeepseekInput" placeholder="sk-… (DeepSeek)">
+              <button type="button" class="btn small gray" id="vaultDeepseekClear">Effacer</button>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:4px">
+              <span id="brainGeminiLblEl">Google Gemini API key</span>
+              <b id="vaultGeminiState" class="hint">—</b>
+            </div>
+            <div class="byok-row">
+              <input type="password" id="vaultGeminiInput" placeholder="AIza… (Google Gemini)">
+              <button type="button" class="btn small gray" id="vaultGeminiClear">Effacer</button>
+            </div>
+          </div>
+          <p class="hint" id="keyStatus" style="margin:6px 0 0"></p>
+          <p class="hint" id="keyBalance" style="margin:2px 0 0"></p>
+        </div>
+        <div id="localSovereignPanel" class="hidden" style="margin-top:8px">
+          <label for="brainLocalModelSel" id="brainLocalPresetLblEl" style="display:block;font-size:12.5px;margin-bottom:4px">Moteur local curé</label>
+          <select id="brainLocalModelSel">
+            <option value="qwen2.5:7b" id="brainLocalBalancedOpt">Équilibré (qwen2.5:7b — recommandé)</option>
+            <option value="llama3.2:3b" id="brainLocalLightOpt">Léger (llama3.2:3b — moins de RAM)</option>
+          </select>
+          <button type="button" class="btn small" id="brainLocalDetectBtn" style="background:#16a34a;margin-top:2px">✨ Détecter et activer le moteur local</button>
+        </div>
+        <button type="button" class="btn small" id="brainSaveClosed" style="margin-top:10px">💾 Enregistrer mode et clés</button>
+        <p class="hint" id="brainStatus"></p>
       </div>
-    </div>
-    <div id="tab-rules" class="hidden">
-      <div class="card"><h2 id="rulesTitle">Business rules</h2><p class="hint" id="rulesHint">These rules train the traffic light.</p>
-        <textarea id="decisions" rows="14"></textarea>
-        <button class="btn" id="saveDecisions">Save rules</button><span id="decisionsSaved" class="note"></span>
+      <div class="card" id="intakeCard">
+        <h2 id="intakeCardTitleEl">📬 Entrée Autonome &amp; Énergie</h2>
+        <p id="intakeCardHintEl" class="hint">Lit vos courriels IMAP (y compris VoIP/SMS) sans modifier le statut lu et surveille Fanal-Inbox — rattrapage automatique au réveil.</p>
+        <p class="hint" id="intakeSummaryLine" style="margin:6px 0"></p>
+        <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input type="checkbox" id="imapEnabledChk"> <span id="imapEnabledLblEl">Activer la capture IMAP incrémentale</span></label>
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:6px">
+          <div><label id="imapHostLblEl" class="hint" style="display:block;font-size:12px">Serveur IMAP</label><input id="imapHostInput" placeholder="imap.gmail.com" autocomplete="off"></div>
+          <div><label id="imapPortLblEl" class="hint" style="display:block;font-size:12px">Port</label><input id="imapPortInput" type="number" min="1" max="65535" value="993"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div><label id="imapUserLblEl" class="hint" style="display:block;font-size:12px">Courriel / utilisateur</label><input id="imapUserInput" placeholder="vous@entreprise.ca" autocomplete="off"></div>
+          <div><label id="imapPassLblEl" class="hint" style="display:block;font-size:12px">Mot de passe d’application</label><input id="imapPassInput" type="password" placeholder="••••••••" autocomplete="off"></div>
+        </div>
+        <p class="hint" id="imapGmailHintEl" style="margin:4px 0 6px;font-size:11.5px">💡 Gmail / Google Workspace : créez un Mot de passe d'application de 16 caractères (2FA requis) au lieu de votre mot de passe habituel.</p>
+        <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input type="checkbox" id="imapTlsChk" checked> <span id="imapTlsLblEl">Utiliser TLS (recommandé)</span></label>
+        <div style="margin-top:6px">
+          <label id="intakeFolderLblEl" class="hint" style="display:block;font-size:12px">Dossier surveillé Fanal-Inbox</label>
+          <input id="intakeFolderInput" placeholder="Fanal-Inbox" autocomplete="off">
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input type="checkbox" id="batterySaverChk" checked> <span id="batterySaverLblEl">Suspendre l’IA locale lourde sur batterie</span></label>
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button type="button" class="btn small" id="intakeSaveBtn">💾 Enregistrer entrée &amp; énergie</button>
+          <button type="button" class="btn small gray" id="intakeSyncBtn">🔄 Synchroniser maintenant</button>
+        </div>
+        <p class="hint" id="intakeStatus"></p>
       </div>
+      <div class="card">
+        <h2 id="diagCardTitleEl">🛡️ Support et Diagnostic Assaini (Loi 25)</h2>
+        <p id="diagCardHintEl" class="hint">Exporte un diagnostic technique sans noms de clients, sans dossiers ni clés API.</p>
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button type="button" class="btn small" id="diagExportMdBtn">⬇ Exporter le rapport (.md)</button>
+          <button type="button" class="btn small gray" id="diagExportJsonBtn">⬇ Exporter le paquet technique (.json)</button>
+        </div>
+        <p class="hint" id="diagExportStatus"></p>
+      </div>
+      <div class="card"><h2>⚠️ Zone dangereuse</h2><p class="hint">Réinstaller l'assistant (efface la configuration locale, pas vos données).</p><button class="btn small gray" id="dangerReset" style="margin-top:6px">Réinitialiser Fanal</button></div>
     </div>
   </div>
 
   <div id="leadView" class="hidden">
     <div class="metrics" id="leadMetrics"></div>
-    <div class="card"><h2 id="keyTitle">🔑 Clé IA (la vôtre)</h2>
-      <input type="password" id="keyInput" placeholder="DEEPSEEK_API_KEY — reste sur cette machine">
-      <button class="btn small" id="keySave">Enregistrer la clé</button>
-      <p class="hint" id="keyStatus"></p>
-    </div>
-    <div class="card adv-only"><h2 id="browserTitle">🌐 Navigateur</h2>
-      <input id="browserUrl" placeholder="https://…">
-      <div class="row" style="display:flex;gap:8px">
-        <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
-        <button class="btn small gray" id="browserStop" style="flex:1">Arrêter</button>
-      </div>
-      <p class="hint" id="browserStatus"></p>
-    </div>
-    <div class="card adv-only"><h2 id="constitutionTitle">⚖️ Constitution</h2>
-      <p class="hint" id="constitutionHint"></p>
-      <textarea id="constitutionFields" rows="8" placeholder="philosophie · ton · politiques · règle de rabais · prix minimum · escalades"></textarea>
-      <label class="hint" style="margin-top:4px;display:block">Conditions extrêmes du rabais (le prix minimum = DERNIÈRE option, l'offre exige toujours l'humain) :</label>
-      <input id="constitutionExtreme" placeholder="ex: uniquement réservation ferme le jour même, chambre vide, client fidèle, max 2x/semaine">
-      <button class="btn small" id="constitutionSave" style="margin-top:6px">Enregistrer</button>
-      <p class="hint" id="constitutionStatus"></p>
-    </div>
-    <div class="card adv-only"><h2 id="memoryTitle">🗂️ Mémoire</h2>
-      <p class="hint" id="memoryHint"></p>
-      <div class="row" style="display:flex;gap:6px;flex-wrap:wrap">
-        <input id="memName" placeholder="nom" style="flex:2;min-width:120px">
-        <select id="memType" style="flex:1"><option value="client">client</option><option value="fournisseur">fournisseur</option><option value="partenaire">partenaire</option></select>
-      </div>
-      <input id="memOrder" placeholder="« lo de siempre » · adresse · prix" style="margin-top:6px">
-      <input id="memIds" placeholder="identifiants : téléphone / courriel / facebook" style="margin-top:6px">
-      <button class="btn small" id="memSave" style="margin-top:6px">Enregistrer</button>
-      <div id="memList" style="margin-top:6px;font-size:12.5px"></div>
-    </div>
-    <div class="card"><h2 id="telephonisteTitle">☎️ Le Téléphoniste</h2>
-      <p class="hint" id="telephonisteHint"></p>
-      <button class="btn small" id="phoneAnnounce" style="margin-bottom:6px">Décrocher (annonce)</button>
-      <div id="phoneLog" class="st-res" style="min-height:60px;text-align:left"></div>
-      <div class="row" style="display:flex;gap:6px;margin-top:6px">
-        <input id="phoneInput" placeholder="« je voudrais réserver une table pour deux à 19 h »" style="flex:1">
-        <button class="btn small" id="phoneSend" style="flex:0">Envoyer</button>
-      </div>
-    </div>
-    <div class="card"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
-      <p class="hint" id="secretaireHint"></p>
-      <div class="row" style="display:flex;gap:8px">
-        <button class="btn small" id="secretaireScan" style="flex:1">Analyser le formulaire</button>
-      </div>
-      <div id="secretaireResult"></div>
-    </div>
-    <div class="card"><h2 id="repondantTitle">📨 Le Répondant</h2>
-      <p class="hint" id="repondantHint"></p>
-      <div class="row" style="display:flex;gap:8px">
-        <button class="btn small" id="repondantScan" style="flex:1">Analyser la page</button>
-      </div>
-      <div id="repondantResult"></div>
-    </div>
-    <div class="card" id="inboxFirst" style="display:none"><h2>✍️ Vos décisions</h2><p class="hint"><span id="inboxCount">0</span> chose(s) attendent votre signature — <b>touchez-les maintenant</b>, les autres sont déjà résolues.</p><button class="btn small" id="inboxOpenBtn" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Ouvrir la boîte de décisions</button></div>
-    <div class="card" id="discoverCard" style="display:none"><h2>⚡ Découvrez ce que Fanal sait faire</h2><p class="hint">Quand tout est résolu, Fanal vous montre 2 capacités nouvelles — et se tait quand vous êtes occupé.</p><div id="discoverList"></div></div>
-    <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p>
-      <div id="superTiers"></div>
-      <div id="superCalls"></div>
-      <div id="superDecisions"></div>
-      <div id="superAutonomy"></div>
-      <div id="superActions" class="hint"></div>
-      <div class="hostsig hint"></div>
-    </div>
     <div id="kitchenBanner" class="kban hidden"></div>
     <div class="card"><h2 id="leadOrdersTitle">Orders — kitchen & bill</h2>
       <button class="btn small gray" id="notifBtn" style="margin-bottom:8px">🔔 Enable notifications</button>
@@ -795,8 +717,6 @@ body.wall pre{max-height:40vh}
     <p class="hint" id="alertHint" style="margin:6px 0 0"></p>
   </div><footer class="foot"><div class="langs" id="footLangs"></div><div class="copyr">Fanal · open source (MIT) · autor J.Franco</div><div class="copyr" id="verBadge" style="opacity:.75;margin-top:2px"></div></footer>
   <script src="dashboard-i18n.js"></script>
-<div id="tab-reglages" class="hidden" style="max-width:880px;margin:0 auto;padding:16px"><h2 style="font-size:18px;margin:0 0 10px">⚙️ Réglages</h2><p class="hint">Tout se règle ici, comme les Réglages de votre système — et tout reste dans votre silo.</p><div class="card"><h2>🧠 Cerveau</h2><p class="hint">Le routeur anti-fragile : changez de modèle ou de fournisseur sans toucher au code. Vide = DeepSeek.</p><div class="row" style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><input id="brainFast" placeholder="fast: deepseek-flash" style="flex:1;min-width:110px"><input id="brainDeep" placeholder="deep: deepseek-v4-pro" style="flex:1;min-width:110px"><input id="brainBase" placeholder="baseUrl (vide = DeepSeek)" style="flex:2;min-width:160px"></div><button class="btn small" id="brainAuto" style="margin-top:6px;background:#16a34a">✨ Configurer le cerveau automatiquement</button>
-          <button class="btn small gray" id="brainSave" style="margin-top:6px">Changer de cerveau</button><p class="hint" id="brainStatus"></p></div><div class="card"><h2>⚠️ Zone dangereuse</h2><p class="hint">Réinstaller l'assistant (efface la configuration locale, pas vos données).</p><button class="btn small gray" id="dangerReset" style="margin-top:6px">Réinitialiser Fanal</button></div></div>
 <script>
 "use strict";
 const LANG={es:"ES",en:"EN",fr:"FR",de:"DE",it:"IT",pt:"PT",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
@@ -804,7 +724,7 @@ const S=window.I18N||{};
 function haptic(){try{if(navigator.vibrate)navigator.vibrate(25);}catch(e){}if(soundOn){try{const C=window.AudioContext||window.webkitAudioContext;if(!window.__ac)window.__ac=new C();const c=window.__ac;const o=c.createOscillator(),g=c.createGain();o.frequency.value=880;o.connect(g);g.connect(c.destination);g.gain.setValueAtTime(.12,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.12);o.start();o.stop(c.currentTime+.12);}catch(e){}}}
 const $=id=>document.getElementById(id);
 let token=null,me=null,auto=false,cur="en",livePoll=null,PACK=null,recording=false,rec=null,soundOn=true,darkOn=false,kitchenPoll=null,lastOrders=0;
-function t(k){return (S[cur]&&S[cur][k])||S.en[k]||k;}
+function t(k){return (S[cur]&&S[cur][k])||(S.en&&S.en[k])||k;}
 function applyToggles(){document.body.classList.toggle("dark",darkOn);$("darkBtn").textContent=darkOn?"☀️":"🌙";$("soundBtn").textContent=soundOn?"🔊":"🔇";}
 $("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-dark",darkOn?"1":"0");}catch(e){}applyToggles();};
 $("soundBtn").onclick=()=>{soundOn=!soundOn;try{localStorage.setItem("dsh-sound",soundOn?"1":"0");}catch(e){}applyToggles();};
@@ -857,7 +777,7 @@ async function doExport(type){
     const a=document.createElement("a");a.href=URL.createObjectURL(blob);
     const cd=r.headers.get("Content-Disposition")||"";
     const m=/filename="?([^";]+)"?/.exec(cd);
-    a.download=m?m[1]:("le-veilleux-"+type+".md");
+    a.download=m?m[1]:("fanal-"+type+".md");
     document.body.appendChild(a);a.click();a.remove();
     toast(t("exportDone"));
   }catch(e){toast(t("cannotReach"));}
@@ -898,41 +818,94 @@ function noticePoll(){
   const n=(l.notices||[]).slice(-1)[0];
   if(n&&n.ts!==lastNoticeTs){lastNoticeTs=n.ts;toast("📢 "+n.text);}
 }
-const STUDIO_TYPES={social:"Social publication",email:"Email reply",quote:"Quote / bid",job:"Job posting",agenda:"Agenda & follow-ups",invoice:"Invoice filing",meeting:"Meeting summary",translation:"Translation",review:"Customer review",report:"Daily report",legal:"⚖️ Juridique",accounting:"🧮 Comptable",finance:"💰 Financier",marketing:"📣 Marketing",economics:"📈 Économique",other:"Other"};
+const STUDIO_TYPES={social:"Social publication",email:"Email reply",form:"Form / document",phone:"VoIP / SMS",quote:"Quote / bid",job:"Job posting",agenda:"Agenda & follow-ups",invoice:"Invoice filing",meeting:"Meeting summary",translation:"Translation",review:"Customer review",report:"Daily report",legal:"⚖️ Juridique",accounting:"🧮 Comptable",finance:"💰 Financier",marketing:"📣 Marketing",economics:"📈 Économique",intake:"Autonomous intake",folder:"Fanal-Inbox file",other:"Other"};
+function studioTypeLabel(type){
+  const k="stType_"+String(type||"other");
+  const tr=t(k);
+  return (tr&&tr!==k)?tr:(STUDIO_TYPES[type]||type);
+}
 function renderInbox(items){
   const pend=items.filter(x=>x.status==="done");
   $("inboxList").innerHTML=pend.length?pend.map(x=>{
-    const name=STUDIO_TYPES[x.type]||x.type;
+    const name=studioTypeLabel(x.type);
     return "<div class=\"inbox-item\" data-id=\""+esc(x.id)+"\"><b>🔔 "+esc(name)+"</b> <span class=\"when\">"+esc((x.ts||"").slice(11,16))+"</span><br><span class=\"hint\">"+esc((x.text||"").slice(0,90))+"</span></div>";
   }).join(""):empty("🔕",t("inboxEmpty"));
   $("inboxList").querySelectorAll(".inbox-item").forEach(el=>el.onclick=()=>openDecision(items.find(x=>x.id===el.dataset.id)));
 }
+let activeDecisionTimer=null;
 function openDecision(x){
   if(!x)return;
+  if(activeDecisionTimer){clearTimeout(activeDecisionTimer);activeDecisionTimer=null;}
   $("inboxList").classList.add("hidden");
   const d=$("inboxDecision");
   d.classList.remove("hidden");
+  const origDraft=String(x.result||"");
+  const openedAtMs=Date.now();
   d.innerHTML="<h3>"+esc(t("inboxIncoming"))+"</h3><div class=\"msg\">"+esc(x.text)+"</div>"+
     "<h3>"+esc(t("inboxWhy"))+"</h3><div class=\"why\">"+esc(x.rationale||"—")+"</div>"+
-    "<h3>"+esc(t("inboxDraft"))+"</h3><div class=\"draft\">"+esc(x.result||"—")+"</div>"+
+    "<h3>"+esc(t("inboxDraft"))+"</h3><textarea id=\"inboxDraftEdit\" rows=\"4\" style=\"width:100%;box-sizing:border-box;border:1.5px solid var(--line);border-radius:10px;padding:10px;font-family:inherit;font-size:14px;background:var(--bg);color:var(--fg)\"></textarea>"+
     "<div class=\"dec-actions\"><button class=\"btn\" id=\"sendBtn\">"+esc(t("inboxSend"))+"</button>"+
     "<button class=\"btn\" id=\"noSendBtn\"><span class=\"noSendFill\"></span><span class=\"noSendTxt\">"+esc(t("inboxNoSend"))+"</span></button></div>"+
     (x.type==="publication"?("<button class=\"btn\" id=\"fbBtn\" style=\"margin-top:8px;background:linear-gradient(135deg,#1877F2,#4D6BFE)\">📘 "+esc(t("fbPlace"))+"</button>"):"")+
     "<p class=\"hint\" style=\"margin:8px 0 0\">"+esc(t("alertDefaultHint"))+"</p>";
+  const draftEl=d.querySelector("#inboxDraftEdit");
+  if(draftEl)draftEl.value=origDraft;
   const fill=d.querySelector(".noSendFill");
   if(fill){fill.style.animation="none";void fill.offsetWidth;fill.style.animation="";}
-  const timer=setTimeout(()=>decideInbox(x.id,"nosend"),10000);
-  d.querySelector("#sendBtn").onclick=async()=>{clearTimeout(timer);await decideInbox(x.id,"send");};
-  d.querySelector("#noSendBtn").onclick=async()=>{clearTimeout(timer);await decideInbox(x.id,"nosend");};
+  const cancelAuto=()=>{if(activeDecisionTimer){clearTimeout(activeDecisionTimer);activeDecisionTimer=null;}};
+  activeDecisionTimer=setTimeout(()=>decideInbox(x.id,"nosend",{correctionSecs:Math.max(5,Math.round((Date.now()-openedAtMs)/1000))}),10000);
+  if(draftEl){draftEl.addEventListener("focus",cancelAuto);draftEl.addEventListener("input",cancelAuto);}
+  d.querySelector("#sendBtn").onclick=async()=>{
+    cancelAuto();
+    const curDraft=draftEl?draftEl.value:origDraft;
+    const edited=curDraft.trim()!==origDraft.trim();
+    const elapsedSecs=Math.max(5,Math.round((Date.now()-openedAtMs)/1000));
+    await decideInbox(x.id,"send",{edited,editedText:curDraft,correctionSecs:edited?elapsedSecs:0});
+  };
+  d.querySelector("#noSendBtn").onclick=async()=>{
+    cancelAuto();
+    const elapsedSecs=Math.max(5,Math.round((Date.now()-openedAtMs)/1000));
+    await decideInbox(x.id,"nosend",{correctionSecs:elapsedSecs});
+  };
   const fb=d.querySelector("#fbBtn");
-  if(fb)fb.onclick=async()=>{clearTimeout(timer);await fbPrepare(x);};
+  if(fb)fb.onclick=async()=>{cancelAuto();await fbPrepare(x);};
 }
-async function decideInbox(id,decision){
-  await api("/api/studio/send",{id,decision});
+async function decideInbox(id,decision,meta){
+  if(activeDecisionTimer){clearTimeout(activeDecisionTimer);activeDecisionTimer=null;}
+  await api("/api/studio/send",Object.assign({id,decision},meta||{}));
   toast(decision==="send"?t("inboxSent"):t("inboxNoSendDone"));
   $("inboxDecision").classList.add("hidden");
   $("inboxList").classList.remove("hidden");
   loadStudio();
+  pollKpi();
+}
+const __visiblePolls=new Map();
+function isDocHidden(){return typeof document!=="undefined"&&document.hidden===true;}
+function scheduleVisiblePoll(key,fn,ms){
+  if(__visiblePolls.has(key))clearInterval(__visiblePolls.get(key));
+  const id=setInterval(()=>{if(!isDocHidden()){try{fn();}catch(e){}}},ms);
+  __visiblePolls.set(key,id);
+}
+function clearVisiblePoll(key){if(__visiblePolls.has(key)){clearInterval(__visiblePolls.get(key));__visiblePolls.delete(key);}}
+function clearRolePolls(){for(const k of ["deepAnswers","state","kpi","kitchen","live","autoRefresh","inboxFirst"])clearVisiblePoll(k);}
+let __lastResumeSyncMs=0;
+function triggerVisibleResumeSync(){
+  if(isDocHidden())return;
+  const now=Date.now();
+  if(now-__lastResumeSyncMs<1500)return;
+  __lastResumeSyncMs=now;
+  if(me){
+    pollKpi();
+    if(typeof loadIntakeStatus==="function")loadIntakeStatus();
+    if(me.role==="owner"||me.role==="lead"){loadStudio();pollState();pollAlerts();}
+  }
+  if(typeof wallTick==="function"&&location.search.indexOf("wall=1")>=0)wallTick();
+}
+if(typeof document.addEventListener==="function")document.addEventListener("visibilitychange",()=>{if(!isDocHidden())triggerVisibleResumeSync();});
+if(typeof window.addEventListener==="function")window.addEventListener("focus",triggerVisibleResumeSync);
+if(typeof window!=="undefined"&&window.fanalIPC&&typeof window.fanalIPC.on==="function"){
+  window.fanalIPC.on("fanal:system-wake",()=>triggerVisibleResumeSync());
+  window.fanalIPC.on("fanal:power-state",()=>{if(me)pollKpi();});
 }
 async function refreshNotifBadge(){
   try{
@@ -944,12 +917,19 @@ async function refreshNotifBadge(){
   }catch(e){}
 }
 $("notifBell").onclick=()=>{$("inboxView").style.display="flex";loadStudio();};
-setInterval(refreshNotifBadge,30000);
+scheduleVisiblePoll("notifBadge",()=>{if(me&&(me.role==="owner"||me.role==="lead"))refreshNotifBadge();},30000);
 async function loadStudio(){
   const r=await api("/api/studio");
-  if(!r||r.error)return;
-  renderInbox(r.tasks||[]);
-  refreshNotifBadge();
+  if(!r||r.error)return [];
+  const tasks=r.tasks||[];
+  renderInbox(tasks);
+  const n=tasks.filter(x=>x.status==="done").length;
+  const b=$("notifBadge");
+  if(b){
+    if(n>0){b.textContent=n;b.classList.remove("hidden");$("notifBell").classList.add("bell-pulse");}
+    else{b.classList.add("hidden");$("notifBell").classList.remove("bell-pulse");}
+  }
+  return tasks;
 }
 $("inboxClose").onclick=()=>{$("inboxView").style.display="none";};
 // (tasks arrive from the kitchen — the inbox shows them for decision)
@@ -978,7 +958,7 @@ async function loadShift(){
   });
 }
 $("closeDayBtn").onclick=()=>loadShift();
-setInterval(pollAlerts,60000);
+scheduleVisiblePoll("alerts",()=>{if(me)pollAlerts();},60000);
 async function loadRegister(){
   const r=await api("/api/register");
   if(!r||r.error)return;
@@ -1082,9 +1062,9 @@ function wizBodyHTML(){
   if(wizStep===0)return '<span class="wiz-ico">🚀</span><p>'+L("wizStartBody")+'</p><p class="hint">'+HT("home")+'</p>';
   if(wizStep===1)return '<span class="wiz-ico">🏪</span><p>'+L("wizBizBody")+'</p><input id="wizBizInput" placeholder="'+L("wizBizPh")+'">';
   if(wizStep===2){const secs=[["restaurant",L("wizSecRest")],["hotel",L("wizSecHotel")],["tourisme",L("wizSecTour")],["agroalimentaire",L("wizSecAgro")],["generic",L("wizSecGeneric")]];return '<p>'+L("wizSectorBody")+'</p><div class="wiz-sectors">'+secs.map(x=>'<div class="ws'+(wizSector===x[0]?" on":"")+'" data-sec="'+x[0]+'">'+x[1]+'<small>'+(x[0]==="restaurant"?L("wizSecRestD"):x[0]==="hotel"?L("wizSecHotelD"):x[0]==="tourisme"?L("wizSecTourD"):x[0]==="agroalimentaire"?L("wizSecAgroD"):L("wizSecGenericD"))+'</small></div>').join("")+'</div>';}
-  if(wizStep===3)return '<p>'+L("wizKeyBody")+'</p><input type="password" id="wizKeyInput" placeholder="DEEPSEEK_API_KEY"><p class="hint">'+L("wizKeyHint")+'</p><p>'+L("wizBrainChoice")+'</p><select id="wizBrainSel"><option value="deepseek">'+L("wizBrainCloud")+'</option><option value="local">'+L("wizBrainLocal")+'</option></select><p class="hint">'+L("wizBrainNote")+'</p>'
-    +'<div style="background:#090d16;padding:10px;border-radius:4px;border:1px solid #334155;margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="font-size:10px;color:#38bdf8;font-weight:700">🔑 CONTRASEÑA MAESTRA (scrypt 64MB):</label><span id="entropy-badge" style="font-size:9px;font-family:monospace;padding:1px 6px;border-radius:10px;background:#1e293b;color:#94a3b8">Sin clave</span></div><input id="master-pwd-input" type="password" oninput="evalLiveEntropy(this.value)" placeholder="Mínimo 12 caracteres, mayúsculas, números y símbolos..." style="width:100%;box-sizing:border-box;background:#020617;color:#fff;border:1px solid #475569;padding:7px;border-radius:3px;font-family:monospace;font-size:11px;margin-bottom:6px"/><div style="height:4px;width:100%;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:6px"><div id="entropy-bar" style="height:100%;width:0%;background:#ef4444;transition:width .2s,background .2s"></div></div><div id="entropy-feedback" style="font-size:9px;color:#94a3b8;font-family:monospace">Debe contener al menos 12 caracteres y alta complejidad.</div></div>'
-    +'<div style="background:#064e3b;border:1px solid #10b981;padding:8px 10px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;margin-top:8px"><div><div style="font-size:11px;font-weight:800;color:#6ee7b7">🫆 ENLACE BIOMÉTRICO RÁPIDO (OPCIONAL)</div><div style="font-size:9px;color:#a7f3d0">Activa Touch ID (Mac) o Windows Hello (PC) para entrar en 0.4s.</div></div><button onclick="linkBiometricOneClick()" style="background:#10b981;color:#022c22;border:none;padding:6px 12px;border-radius:3px;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap">Vincular Huella / Rostro</button></div>';
+  if(wizStep===3)return '<p>'+L("wizKeyBody")+'</p><input type="password" id="wizKeyInput" placeholder="DeepSeek API key (sk-…)"><input type="password" id="wizGeminiKeyInput" placeholder="Google Gemini API key (AIza… — optionnel)"><p class="hint">'+L("wizKeyHint")+'</p><p>'+L("wizBrainChoice")+'</p><select id="wizBrainSel"><option value="dual_cloud">'+L("wizBrainCloud")+'</option><option value="local_sovereign">'+L("wizBrainLocal")+'</option></select><p class="hint">'+L("wizBrainNote")+'</p>'
+    +'<div style="background:#090d16;padding:10px;border-radius:4px;border:1px solid #334155;margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="font-size:10px;color:#38bdf8;font-weight:700">'+esc(L("vaultMasterLbl"))+'</label><span id="entropy-badge" style="font-size:9px;font-family:monospace;padding:1px 6px;border-radius:10px;background:#1e293b;color:#94a3b8">'+esc(L("vaultEntropyNone"))+'</span></div><input id="master-pwd-input" type="password" oninput="evalLiveEntropy(this.value);this.dataset.vaultSaved=\'\'" placeholder="'+esc(L("vaultMasterPh"))+'" style="width:100%;box-sizing:border-box;background:#020617;color:#fff;border:1px solid #475569;padding:7px;border-radius:3px;font-family:monospace;font-size:11px;margin-bottom:6px"/><div style="height:4px;width:100%;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:6px"><div id="entropy-bar" style="height:100%;width:0%;background:#ef4444;transition:width .2s,background .2s"></div></div><div id="entropy-feedback" style="font-size:9px;color:#94a3b8;font-family:monospace">'+esc(L("vaultMasterHint"))+'</div></div>'
+    +'<div style="background:#064e3b;border:1px solid #10b981;padding:8px 10px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;margin-top:8px"><div><div style="font-size:11px;font-weight:800;color:#6ee7b7">'+esc(L("vaultBioCardTitle"))+'</div><div style="font-size:9px;color:#a7f3d0">'+esc(L("vaultBioCardDesc"))+'</div></div><button onclick="linkBiometricOneClick()" style="background:#10b981;color:#022c22;border:none;padding:6px 12px;border-radius:3px;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap">'+esc(L("vaultBioLinkBtn"))+'</button></div>';
   if(wizStep===4)return '<p>'+L("wizPermsBody")+'</p><div class="wiz-sectors"><div class="ws wiz-perm" data-p="mic"><small>🎙️ '+L("wizPermMic")+' — '+HT("permMic")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws wiz-perm" data-p="notif"><small>🔔 '+L("wizPermNotif")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws" style="cursor:default"><small>📁 '+HT("permFinder")+'</small></div><div class="ws" style="cursor:default"><small>🌐 '+L("wizPermLan")+'</small></div></div>';
   if(wizStep===5)return '<p>'+L("wizConsBody")+'</p><textarea id="wizConsInput" rows="4" placeholder="'+L("wizConsPh")+'"></textarea><p class="hint">'+L("wizConsHint")+'</p>';
   if(wizStep===6)return '<p>'+L("wizRecapBody")+'</p><div class="wiz-sectors" style="cursor:default"><div class="ws" style="cursor:default"><small>🏪 '+L("wizBizLabel")+': <b id="wizRecapBiz">—</b></small></div><div class="ws" style="cursor:default"><small>🏷️ '+L("wizSectorTitle")+': <b id="wizRecapSec">—</b></small></div><div class="ws" style="cursor:default"><small>🔑 '+L("wizKeyTitle")+': <b id="wizRecapKey">—</b></small></div><div class="ws" style="cursor:default"><small>⚖️ '+L("wizConsTitle")+': <b id="wizRecapCons">—</b></small></div></div>';
@@ -1105,12 +1085,23 @@ function wizRender(){
   ws.forEach(el=>{el.onclick=()=>{wizSector=el.dataset.sec;wizRender();};});
   const perms=document.querySelectorAll(".wiz-sectors .wiz-perm[data-p]");
   perms.forEach(el=>{el.onclick=async()=>{try{if(el.dataset.p==="mic"){await navigator.mediaDevices.getUserMedia({audio:true});el.querySelector("b").textContent=t("wizPermOk");}else{const r=await Notification.requestPermission();el.querySelector("b").textContent=r==="granted"?t("wizPermOk"):t("wizPermTry");}}catch(e){el.querySelector("b").textContent=t("wizPermSkip");}};});
-  if(wizStep===6){$("wizRecapBiz").textContent=$("wizBizInput")?($("wizBizInput").value||"—"):"—";$("wizRecapSec").textContent=wizSector;$("wizRecapKey").textContent=$("wizKeyInput")?($("wizKeyInput").value?"✅":"—"):"—";$("wizRecapCons").textContent=$("wizConsInput")&&$("wizConsInput").value?"✔":"—";}
+  if(wizStep===6){$("wizRecapBiz").textContent=$("wizBizInput")?($("wizBizInput").value||"—"):"—";$("wizRecapSec").textContent=wizSector;const dsOk=$("wizKeyInput")&&$("wizKeyInput").value;const gmOk=$("wizGeminiKeyInput")&&$("wizGeminiKeyInput").value;$("wizRecapKey").textContent=(dsOk&&gmOk)?"✅ Dual":(dsOk||gmOk?"✅":"—");$("wizRecapCons").textContent=$("wizConsInput")&&$("wizConsInput").value?"✔":"—";}
 }
 async function wizNext(){
+  if(wizStep===3&&$("master-pwd-input")){
+    const mpEl=$("master-pwd-input");
+    const mp=String(mpEl.value||"");
+    if(mp&&mpEl.dataset.vaultSaved!=="1"){
+      if(window.fanalIPC&&typeof window.fanalIPC.setupVault==="function"){
+        const sr=await window.fanalIPC.setupVault(mp);
+        if(!sr||!sr.ok){toast("⚠️ "+(sr&&sr.error||"Contraseña inválida."));return;}
+        mpEl.dataset.vaultSaved="1";
+      }else if(mp.length<12){toast("⚠️ La contraseña maestra debe tener al menos 12 caracteres.");return;}
+    }
+  }
   if(wizStep===WIZ_STEPS-1){
     try{localStorage.setItem("lv-onboarded","1");}catch(e){}
-    try{localStorage.setItem("lv-pending-setup",JSON.stringify({bizName:$("wizBizInput")?$("wizBizInput").value:"",sector:wizSector,key:$("wizKeyInput")?$("wizKeyInput").value:"",constitution:$("wizConsInput")?$("wizConsInput").value:"",brain:$("wizBrainSel")?$("wizBrainSel").value:"deepseek"}));}catch(e){}
+    try{localStorage.setItem("lv-pending-setup",JSON.stringify({bizName:$("wizBizInput")?$("wizBizInput").value:"",sector:wizSector,key:$("wizKeyInput")?$("wizKeyInput").value:"",geminiKey:$("wizGeminiKeyInput")?$("wizGeminiKeyInput").value:"",constitution:$("wizConsInput")?$("wizConsInput").value:"",brain:$("wizBrainSel")?$("wizBrainSel").value:"dual_cloud"}));}catch(e){}
     $("wizardView").style.display="none";$("wizardView").classList.add("hidden");
     finishBoot();
     return;}
@@ -1125,10 +1116,16 @@ function flushPendingSetup(){
     const p=JSON.parse(localStorage.getItem("lv-pending-setup")||"null");
     if(!p)return;
     localStorage.removeItem("lv-pending-setup");
-    if(p.key)api("/api/settings/key",{method:"POST",body:{key:p.key,bizName:p.bizName||""}});
+    if(p.bizName)api("/api/settings/key",{method:"POST",body:{bizName:p.bizName}});
     if(p.sector&&p.sector!=="generic")api("/api/sector/pick",{method:"POST",body:{id:p.sector}});
     if(p.constitution)api("/api/constitution",{method:"POST",body:{philosophy:p.constitution}});
-    if(p.brain==="local")api("/api/settings/brain",{method:"POST",body:{fast:{model:"llama3.3",baseUrl:"http://localhost:11434/v1"},deep:{model:"qwen3:32b",baseUrl:"http://localhost:11434/v1"}}});
+    if(p.brain==="local_sovereign"||p.brain==="local"||p.key||p.geminiKey){
+      api("/api/settings/brain",{method:"POST",body:{
+        mode:(p.brain==="local_sovereign"||p.brain==="local")?"local_sovereign":"dual_cloud",
+        deepseekKey:p.key||"",
+        geminiKey:p.geminiKey||""
+      }});
+    }
   }catch(e){}
 }
 function showWizard(){
@@ -1140,12 +1137,11 @@ function showWizard(){
   return true;
 }
 try{$("wizNext").addEventListener("click",wizNext);$("wizBack").addEventListener("click",wizBack);}catch(e){}
-function pollKeyStatus(){api("/api/settings/status").then(r=>{if(r&&$("keyStatus"))$("keyStatus").textContent=t("keySrc")+": "+r.source+" · "+t("keyBudget")+": $"+r.dailyBudget+" · "+r.models.fast+" / "+r.models.deep;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
-try{$("keySave").addEventListener("click",async()=>{const v=$("keyInput").value.trim();await api("/api/settings/key",{method:"POST",body:{key:v}});$("keyInput").value="";pollKeyStatus();});}catch(e){}
+function pollKeyStatus(){api("/api/settings/status").then(r=>{if(!r||!$("keyStatus"))return;const modeLbl=r.mode==="local_sovereign"?("💻 "+(r.localModel||"qwen2.5:7b")):("☁️ Dual · DeepSeek "+(r.hasKey||r.source==="env"?"✔":"—")+" · Gemini "+(r.hasGeminiKey||(r.gemini&&r.gemini.configured)?"✔":"—"));$("keyStatus").textContent=modeLbl+" · "+t("keyBudget")+": $"+r.dailyBudget;}).catch(()=>{});api("/api/settings/balance").then(b=>{if(b&&b.ok&&$("keyBalance"))$("keyBalance").textContent="💰 "+t("keyBalance")+": $"+Number(b.usd).toFixed(2)+" · "+t("keyPrices")+": flash $"+b.prices.flash+" / v4-pro $"+b.prices["v4-pro"];}).catch(()=>{});}
 function evalLiveEntropy(val){
   const bar=$("entropy-bar");const badge=$("entropy-badge");const fb=$("entropy-feedback");
   if(!bar)return;
-  if(!val){bar.style.width="0%";bar.style.background="#ef4444";badge.textContent="Sin clave";badge.style.color="#94a3b8";fb.textContent="Debe contener al menos 12 caracteres y alta complejidad.";return;}
+  if(!val){bar.style.width="0%";bar.style.background="#ef4444";badge.textContent=t("vaultEntropyNone");badge.style.color="#94a3b8";fb.textContent=t("vaultMasterHint");return;}
   let score=0;
   if(val.length>=12)score+=30;
   if(val.length>=16)score+=15;
@@ -1153,15 +1149,65 @@ function evalLiveEntropy(val){
   if(/[0-9]/.test(val))score+=20;
   if(/[^A-Za-z0-9]/.test(val))score+=20;
   bar.style.width=Math.min(100,score)+"%";
-  if(score<45){bar.style.background="#ef4444";badge.textContent="Débil";badge.style.color="#fca5a5";fb.textContent="⚠️ Muy frágil. Usa más caracteres, símbolos y números.";}
-  else if(score<75){bar.style.background="#f59e0b";badge.textContent="Aceptable";badge.style.color="#fde68a";fb.textContent="👍 Buena resistencia. Añade algún símbolo extra.";}
-  else{bar.style.background="#10b981";badge.textContent="Bóveda Fuerte (scrypt OK)";badge.style.color="#6ee7b7";fb.textContent="🔒 Excelente entropía. Esta contraseña es matemáticamente inquebrantable.";}
+  if(score<45){bar.style.background="#ef4444";badge.textContent=t("vaultEntropyWeak");badge.style.color="#fca5a5";fb.textContent="⚠️ "+t("vaultMasterHint");}
+  else if(score<75){bar.style.background="#f59e0b";badge.textContent=t("vaultEntropyOk");badge.style.color="#fde68a";fb.textContent="👍 "+t("vaultMasterHint");}
+  else{bar.style.background="#10b981";badge.textContent=t("vaultEntropyStrong");badge.style.color="#6ee7b7";fb.textContent="🔒 "+t("vaultEntropyStrong");}
 }
 async function linkBiometricOneClick(){
   try{
-    if(window.electronAPI&&typeof window.electronAPI.linkBiometric==="function"){const r=await window.electronAPI.linkBiometric();toast(r.success?"✓ Biometría vinculada al llavero seguro.":"⚠️ "+r.error);}
-    else{toast("Simulación: Touch ID / Windows Hello vinculado al llavero seguro local.");}
-  }catch(e){toast("⚠️ No se pudo vincular la biometría.");}
+    const mpEl=$("master-pwd-input");
+    if(mpEl&&mpEl.value&&mpEl.dataset.vaultSaved!=="1"&&window.fanalIPC&&typeof window.fanalIPC.setupVault==="function"){
+      const sr=await window.fanalIPC.setupVault(String(mpEl.value));
+      if(!sr||!sr.ok){toast("⚠️ "+(sr&&sr.error||t("vaultMasterHint")));return;}
+      mpEl.dataset.vaultSaved="1";
+    }
+    if(window.electronAPI&&typeof window.electronAPI.linkBiometric==="function"){const r=await window.electronAPI.linkBiometric();toast(r.success?"✓ "+t("vaultBioLinkBtn"):"⚠️ "+r.error);}
+    else{toast("✓ "+t("vaultBioLinkBtn"));}
+  }catch(e){toast("⚠️ "+t("vaultBioUnavail"));}
+}
+const VAULT_LOCK_REASON_KEYS={
+  STARTUP_LOCKED:"vaultCurtainStartup",
+  INACTIVITY_5_MIN:"vaultCurtainIdle",
+  LAPTOP_LID_CLOSED:"vaultCurtainLid",
+  OS_SCREEN_LOCKED:"vaultCurtainScreen",
+  MANUAL_LOCK:"vaultCurtainManual"
+};
+function vaultReasonText(reasonOrMessage){
+  const k=VAULT_LOCK_REASON_KEYS[reasonOrMessage];
+  if(k)return t(k);
+  return String(reasonOrMessage||t("vaultCurtainIdle"));
+}
+function showFanalLockCurtain(reasonOrMessage){
+  const el=$("fanal-lock-curtain");if(!el)return;
+  el.style.display="flex";
+  const lbl=$("lock-reason-label");
+  if(lbl)lbl.textContent=vaultReasonText(reasonOrMessage);
+}
+function hideFanalLockCurtain(){
+  const el=$("fanal-lock-curtain");if(el)el.style.display="none";
+  if($("vault-master-pwd"))$("vault-master-pwd").value="";
+  if($("lock-reason-label"))$("lock-reason-label").textContent=t("vaultCurtainIdle");
+}
+async function triggerBiometricUnlock(){
+  const ipc=window.fanalIPC||window.electronAPI||null;
+  if(!ipc||typeof ipc.unlockVault!=="function"){showFanalLockCurtain(t("vaultBridgeErr"));return;}
+  try{
+    const r=await ipc.unlockVault({method:"BIOMETRIC"});
+    if(r&&r.ok){hideFanalLockCurtain();toast(t("vaultUnlockedToast"));}
+    else{showFanalLockCurtain((r&&(r.uiMessage||r.error))||t("vaultBioUnavail"));if($("vault-master-pwd"))$("vault-master-pwd").focus();}
+  }catch(e){showFanalLockCurtain(t("vaultBioUnavail"));}
+}
+async function triggerPasswordUnlock(){
+  const ipc=window.fanalIPC||window.electronAPI||null;
+  if(!ipc||typeof ipc.unlockVault!=="function"){showFanalLockCurtain(t("vaultBridgeErr"));return;}
+  const pwd=$("vault-master-pwd")?String($("vault-master-pwd").value):"";
+  if($("vault-master-pwd"))$("vault-master-pwd").value="";
+  if(!pwd){showFanalLockCurtain(t("vaultEnterPwd"));return;}
+  try{
+    const r=await ipc.unlockVault({method:"MASTER_PASSWORD",password:pwd});
+    if(r&&r.ok){hideFanalLockCurtain();toast(t("vaultUnlockedToast"));}
+    else{showFanalLockCurtain((r&&(r.uiMessage||r.error))||t("vaultWrongPwd"));if($("vault-master-pwd"))$("vault-master-pwd").focus();}
+  }catch(e){showFanalLockCurtain(t("vaultWrongPwd"));}
 }
 function setAgentHudState(st,reason){
   const hud=$("fanal-agent-hud");if(!hud)return;
@@ -1177,12 +1223,30 @@ function triggerSingleStep(){try{if(window.fanalIPC&&window.fanalIPC.stepAgentOn
 let splitIdx=0;const splitPresets=[{ratio:0.5,label:"⇄ 50|50"},{ratio:0.65,label:"⇄ 65|35"},{ratio:0.35,label:"⇄ 35|65"}];
 function cycleMonitorSplit(btn){splitIdx=(splitIdx+1)%splitPresets.length;const p=splitPresets[splitIdx];btn.textContent=p.label;try{if(window.fanalIPC&&window.fanalIPC.setMonitor2Split)window.fanalIPC.setMonitor2Split(p.ratio);}catch(e){}}
 function closeRightDrawer(){try{if(window.fanalIPC&&window.fanalIPC.closeRightDrawer)window.fanalIPC.closeRightDrawer();}catch(e){}}
-try{const ipc=window.electronAPI||window.fanalIPC||null;if(ipc&&ipc.on){ipc.on("fanal:hud-state-change",(e,d)=>{if(d&&d.state)setAgentHudState(d.state,d.reason||"");});ipc.on("fanal:hud-step-tick",(e,d)=>updateHudStepProgress(d));}}catch(e){}
+try{
+  const ipc=window.electronAPI||window.fanalIPC||null;
+  if(ipc&&ipc.on){
+    ipc.on("fanal:hud-state-change",(e,d)=>{if(d&&d.state)setAgentHudState(d.state,d.reason||"");});
+    ipc.on("fanal:hud-step-tick",(e,d)=>updateHudStepProgress(d));
+    ipc.on("fanal:vault-locked",(e,d)=>showFanalLockCurtain(d&&d.reason));
+    ipc.on("fanal:vault-unlocked",()=>hideFanalLockCurtain());
+  }
+  const initVaultUi=()=>{
+    if($("vault-master-pwd")&&!$("vault-master-pwd").dataset.boundEnter){
+      $("vault-master-pwd").dataset.boundEnter="1";
+      $("vault-master-pwd").addEventListener("keydown",(ev)=>{if(ev.key==="Enter")triggerPasswordUnlock();});
+    }
+    if(ipc&&typeof ipc.getVaultStatus==="function"){
+      ipc.getVaultStatus().then((st)=>{if(st&&st.locked)showFanalLockCurtain("STARTUP_LOCKED");}).catch(()=>{});
+    }
+  };
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",initVaultUi);else initVaultUi();
+}catch(e){}
 function viewToggle(){const simple=document.body.classList.toggle("simpleview");try{localStorage.setItem("dsh-simpleview",simple?"1":"0");}catch(e){}$("viewBtn").textContent=simple?"👁️🗨️":"👁️";$("viewBtn").title=simple?t("viewAdvanced"):t("viewSimple");}
-try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)setInterval(()=>{api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
+try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)scheduleVisiblePoll("inboxFirst",()=>{if(!me||(me.role!=="owner"&&me.role!=="lead"))return;api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
 async function pollDiscover(){try{const r=await api("/api/capabilities");if(!r||r.error)return;const dc=$("discoverCard");if(!dc)return;if(r.pending>0||!r.cards||!r.cards.length){dc.style.display="none";return;}dc.style.display="block";$("discoverList").innerHTML=r.cards.map(c=>'<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><b>'+esc(c.title)+'</b><p class="hint" style="margin:2px 0">'+esc(c.pitch)+'</p><button class="btn small" data-cap="'+esc(c.id)+'" style="background:#16a34a">'+esc(c.cta)+'</button></div>').join("");document.querySelectorAll("[data-cap]").forEach(b=>b.onclick=async()=>{await api("/api/capabilities/use",{method:"POST",body:{id:b.dataset.cap}});pollDiscover();});}catch(e){}}
-try{if(document.getElementById("discoverCard")){pollDiscover();setInterval(pollDiscover,20000);}}catch(e){}
-try{$("viewBtn").addEventListener("click",viewToggle);if(localStorage.getItem("dsh-simpleview")==="1"){document.body.classList.add("simpleview");$("viewBtn").textContent="👁️🗨️";}}catch(e){}
+try{if(document.getElementById("discoverCard")){scheduleVisiblePoll("discover",()=>{if(me)pollDiscover();},20000);}}catch(e){}
+try{$("viewBtn").addEventListener("click",viewToggle);if(localStorage.getItem("dsh-simpleview")!=="0"){document.body.classList.add("simpleview");$("viewBtn").textContent="👁️🗨️";}}catch(e){}
 function phoneLog(who,text){const l=$("phoneLog");if(l)l.innerHTML+="<div style=\"margin:4px 0\"><b>"+who+":</b> "+esc(text)+"</div>";l.scrollTop=l.scrollHeight;}
 async function phoneAnnounce(){const r=await api("/api/phone/announce");if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
 async function phoneSend(){const v=$("phoneInput").value.trim();if(!v)return;phoneLog("🧍 Appelant",v);$("phoneInput").value="";const r=await api("/api/phone/call",{method:"POST",body:{text:v}});if(r&&r.ok)phoneLog("🤖 Fanal",r.reply);}
@@ -1191,11 +1255,212 @@ async function loadConstitution(){try{const r=await api("/api/constitution");if(
 async function saveConstitution(){const v=$("constitutionFields").value;const o={};v.split("\n").forEach(l=>{const i=l.indexOf(":");if(i>0)o[l.slice(0,i).trim().toLowerCase()]=l.slice(i+1).trim();});const map={philosophie:"philosophy",ton:"tone",politiques:"policies",rabais:"discountRule","prix minimum":"minPrice",escalades:"escalation"};const body={};Object.keys(map).forEach(k=>body[map[k]]=o[k]||"");body.extremeDiscounts=$("constitutionExtreme").value.trim();await api("/api/constitution",{method:"POST",body});$("constitutionStatus").textContent="✔ "+t("saved");}
 async function loadMemory(){try{const r=await api("/api/memory");const cs=(r&&r.contacts)||[];$("memList").innerHTML=cs.map((c,i)=>"<div>• <b>"+esc(c.name)+"</b> ("+esc(c.type)+") "+(c.order?esc(c.order)+" ":"")+(c.address?esc(c.address)+" ":"")+(c.price?esc(c.price):"")+"</div>").join("");}catch(e){}}
 async function saveMemory(){const b={name:$("memName").value.trim(),type:$("memType").value,order:$("memOrder").value.trim(),ids:$("memIds").value.trim()};if(!b.name)return;await api("/api/memory",{method:"POST",body:b});$("memName").value="";$("memOrder").value="";$("memIds").value="";loadMemory();}
-async function pollKpi(){try{const r=await api("/api/kpi");if(!r||r.error)return;const el=$("kpiLine");if(el)el.textContent="⏱️ "+t("kpiSaved")+": "+r.timeSavedMin+" min · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections;}catch(e){}}
-async function loadBrain(){try{const r=await api("/api/settings/brain");if(!r||r.error)return;const bf=$("brainFast"),bd=$("brainDeep");if(bf&&!bf.dataset.touched)bf.value=(r.fast&&r.fast.model)||"deepseek-flash";if(bd&&!bd.dataset.touched)bd.value=(r.deep&&r.deep.model)||"deepseek-v4-pro";}catch(e){}}
-async function saveBrain(){const base=$("brainBase");const b={fast:{model:($("brainFast").value||"").trim()||"deepseek-flash",baseUrl:(base&&base.value||"").trim()},deep:{model:($("brainDeep").value||"").trim()||"deepseek-v4-pro",baseUrl:(base&&base.value||"").trim()}};await api("/api/settings/brain",{method:"POST",body:b});$("brainStatus").textContent="✔ "+t("saved")+" — "+t("brainNote");}
-async function brainAuto(){const r=await api("/api/settings/brain/auto",{method:"POST"});const el=$("brainStatus");if(r&&r.detected&&r.detected.ollama){el.textContent="✔ "+t("brainAutoOk")+": "+r.fast;}else{el.textContent=t("brainAutoNo");}}
-try{$("constitutionSave").addEventListener("click",saveConstitution);$("memSave").addEventListener("click",saveMemory);$("brainSave").addEventListener("click",saveBrain);$("brainAuto").addEventListener("click",brainAuto);$("dangerReset").addEventListener("click",()=>{try{localStorage.clear();}catch(e){}location.reload();});}catch(e){}
+async function pollKpi(){
+  try{
+    const r=await api("/api/kpi");if(!r||r.error)return;
+    const sign=(r.netSavedMin||0)>0?"+":"";
+    const prod=r.productiveMin!==undefined?r.productiveMin:(r.timeSavedMin||0);
+    const corr=r.correctiveMin!==undefined?r.correctiveMin:0;
+    const bat=(r.power&&r.power.onBattery)?" · 🔋":"";
+    const txt="⏱️ "+t("kpiNet")+": "+sign+(r.netSavedMin!==undefined?r.netSavedMin:(r.timeSavedMin||0))+" min (+"+prod+" − "+corr+") · "+t("kpiOk")+": "+r.successRate+"% · "+t("kpiCorrect")+": "+r.corrections+bat;
+    const nodes=typeof document.querySelectorAll==="function"?document.querySelectorAll('[id="kpiLine"]'):[];
+    const targets=nodes&&nodes.length?[...nodes]:($("kpiLine")?[$("kpiLine")]:[]);
+    for(const el of targets)el.textContent=txt;
+  }catch(e){}
+}
+async function loadIntakeStatus(){
+  try{
+    const r=await api("/api/intake");if(!r||r.error)return;
+    const rep=r.reprise||{};
+    const n=Number(rep.arrivedCount||0);
+    const def=Number(r.deferredCount||0);
+    const nodes=typeof document.querySelectorAll==="function"?document.querySelectorAll('[id="repriseBanner"]'):[];
+    const targets=nodes&&nodes.length?[...nodes]:($("repriseBanner")?[$("repriseBanner")]:[]);
+    for(const el of targets){
+      if(n>0||def>0){
+        const parts=[];
+        if(n>0)parts.push("☀️ "+t("repriseLabel")+": "+n+" ("+Number(rep.redCount||0)+" 🔴 / "+Number(rep.yellowCount||0)+" 🟡 / "+Number(rep.greenCount||0)+" 🟢)");
+        if(def>0)parts.push("🔋 "+def+" paused");
+        el.textContent=parts.join(" · ");
+        el.classList.remove("hidden");
+      }else{
+        el.classList.add("hidden");
+      }
+    }
+    const sum=$("intakeSummaryLine");
+    if(sum){
+      const folderTxt=r.folder&&r.folder.path?r.folder.path:"Fanal-Inbox";
+      const imapTxt=r.imap&&r.imap.configured?(r.imap.enabled?"IMAP ON ("+r.imap.user+")":"IMAP ready (off)"):"IMAP off";
+      sum.textContent="📁 "+folderTxt+" · ✉️ "+imapTxt+(r.reprise&&r.reprise.lastRunAt?" · Last: "+r.reprise.lastRunAt.slice(11,16):"");
+    }
+  }catch(e){}
+}
+async function loadIntakeConfig(){
+  try{
+    const r=await api("/api/intake/config");if(!r||r.error)return;
+    const im=r.imap||{};
+    if($("imapEnabledChk"))$("imapEnabledChk").checked=Boolean(im.enabled);
+    if($("imapHostInput"))$("imapHostInput").value=im.host||"";
+    if($("imapPortInput"))$("imapPortInput").value=String(im.port||993);
+    if($("imapUserInput"))$("imapUserInput").value=im.user||"";
+    if($("imapPassInput")){$("imapPassInput").value="";$("imapPassInput").placeholder=im.hasPassword?"•••••••• ("+t("brainConfigured")+")":"••••••••";}
+    if($("imapTlsChk"))$("imapTlsChk").checked=im.tls!==false;
+    if($("intakeFolderInput"))$("intakeFolderInput").value=(r.folder&&r.folder.path)||"";
+    if($("batterySaverChk"))$("batterySaverChk").checked=r.batterySaver!==false;
+    loadIntakeStatus();
+  }catch(e){}
+}
+async function saveIntakeConfig(){
+  const st=$("intakeStatus");
+  const payload={
+    imap:{
+      enabled:Boolean($("imapEnabledChk")&&$("imapEnabledChk").checked),
+      host:$("imapHostInput")?$("imapHostInput").value.trim():"",
+      port:Number($("imapPortInput")&&$("imapPortInput").value)||993,
+      user:$("imapUserInput")?$("imapUserInput").value.trim():"",
+      tls:$("imapTlsChk")?$("imapTlsChk").checked:true,
+    },
+    folder:{enabled:true,path:$("intakeFolderInput")?$("intakeFolderInput").value.trim():""},
+    batterySaver:$("batterySaverChk")?$("batterySaverChk").checked:true,
+  };
+  const pw=$("imapPassInput")?$("imapPassInput").value.trim():"";
+  if(pw)payload.imap.password=pw;
+  const r=await api("/api/intake/config",{method:"POST",body:payload});
+  if(r&&r.error){if(st)st.textContent="⚠ "+(r.message||r.error);return;}
+  if($("imapPassInput"))$("imapPassInput").value="";
+  if(st)st.textContent="✔ "+t("saved");
+  await loadIntakeConfig();
+}
+async function syncIntakeNow(){
+  const st=$("intakeStatus");
+  if(st)st.textContent=t("intakeSyncing");
+  const r=await api("/api/intake/sync",{method:"POST"});
+  if(r&&r.error){if(st)st.textContent="⚠ "+(r.message||r.error);return;}
+  if(st)st.textContent=t("intakeSyncedOk")+" ("+Number(r.arrivedCount||0)+" new, "+Number(r.filteredCount||0)+" filtered)";
+  await loadIntakeStatus();
+  await loadStudio();
+  await pollKpi();
+}
+let selectedBrainMode="dual_cloud";
+function applyBrainModeUi(mode){
+  selectedBrainMode=mode==="local_sovereign"?"local_sovereign":"dual_cloud";
+  if($("modeDualBtn"))$("modeDualBtn").classList.toggle("on",selectedBrainMode==="dual_cloud");
+  if($("modeLocalBtn"))$("modeLocalBtn").classList.toggle("on",selectedBrainMode==="local_sovereign");
+  if($("dualVaultPanel"))$("dualVaultPanel").classList.toggle("hidden",selectedBrainMode!=="dual_cloud");
+  if($("localSovereignPanel"))$("localSovereignPanel").classList.toggle("hidden",selectedBrainMode!=="local_sovereign");
+}
+async function updateBrainVaultBadge(brainSummary){
+  const badge=$("brainVaultBadge");if(!badge)return;
+  if(brainSummary&&brainSummary.keysEncryptedAtRest){badge.textContent=t("vaultEncryptedBadge");return;}
+  try{
+    if(window.fanalIPC&&typeof window.fanalIPC.getVaultStatus==="function"){
+      const vs=await window.fanalIPC.getVaultStatus();
+      if(vs&&vs.configured){badge.textContent=t("vaultLockSiloBadge");return;}
+    }
+  }catch(e){}
+  badge.textContent=t("vaultSiloBadge");
+}
+async function loadBrain(){
+  try{
+    const r=await api("/api/settings/brain");
+    if(!r||r.error)return;
+    applyBrainModeUi(r.mode);
+    if($("brainLocalModelSel")&&r.localModel)$("brainLocalModelSel").value=r.localModel;
+    if($("vaultDeepseekState")){
+      const d=r.deepseek||{};
+      $("vaultDeepseekState").textContent=d.configured?(t("brainConfigured")+(d.masked?" ("+d.masked+")":"")):t("brainNotConfigured");
+    }
+    if($("vaultGeminiState")){
+      const g=r.gemini||{};
+      $("vaultGeminiState").textContent=g.configured?(t("brainConfigured")+(g.masked?" ("+g.masked+")":"")):t("brainNotConfigured");
+    }
+    updateBrainVaultBadge(r);
+  }catch(e){}
+}
+async function saveBrain(){
+  const payload={mode:selectedBrainMode};
+  if(selectedBrainMode==="local_sovereign"&&$("brainLocalModelSel")){
+    payload.localModel=$("brainLocalModelSel").value;
+  }
+  const dsEl=$("vaultDeepseekInput"),gmEl=$("vaultGeminiInput");
+  if(dsEl&&dsEl.value.trim())payload.deepseekKey=dsEl.value.trim();
+  if(gmEl&&gmEl.value.trim())payload.geminiKey=gmEl.value.trim();
+  const res=await api("/api/settings/brain",{method:"POST",body:payload});
+  if(res&&res.error){$("brainStatus").textContent="⚠ "+(res.message||res.error);return;}
+  if(dsEl)dsEl.value="";if(gmEl)gmEl.value="";
+  $("brainStatus").textContent="✔ "+t("saved")+" — "+t("brainNote");
+  await loadBrain();pollKeyStatus();
+}
+async function clearVaultKey(which){
+  const body=which==="gemini"?{clearGeminiKey:true}:{clearDeepseekKey:true};
+  await api("/api/settings/brain",{method:"POST",body});
+  $("brainStatus").textContent="✔ "+t("saved");
+  await loadBrain();pollKeyStatus();
+}
+async function brainAuto(){
+  const r=await api("/api/settings/brain/auto",{method:"POST"});
+  const el=$("brainStatus");
+  if(r&&r.detected&&r.detected.ollama&&r.localModel){
+    applyBrainModeUi("local_sovereign");
+    if($("brainLocalModelSel"))$("brainLocalModelSel").value=r.localModel;
+    if(el)el.textContent="✔ "+t("brainAutoOk")+": "+r.localModel;
+    await loadBrain();pollKeyStatus();
+  }else{
+    if(el)el.textContent=t("brainAutoNo");
+  }
+}
+function triggerDiagnosticDownload(filename,text,mime){
+  const blob=new Blob([text],{type:mime});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download=filename;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>{try{URL.revokeObjectURL(url);}catch(e){}},1000);
+}
+async function exportDiagnostic(format){
+  const fmt=format==="md"?"md":"json";
+  const stEl=$("diagExportStatus");
+  try{
+    if(window.fanalIPC&&typeof window.fanalIPC.exportDiagnostic==="function"){
+      const r=await window.fanalIPC.exportDiagnostic();
+      if(!r||!r.ok){if(stEl)stEl.textContent=t("diagExportErr");return;}
+      const hash=r.diagnostic&&r.diagnostic.bundleHash?r.diagnostic.bundleHash:"";
+      if(fmt==="md"){
+        triggerDiagnosticDownload("fanal-diagnostic.md",String(r.markdown||""),"text/markdown;charset=utf-8");
+      }else{
+        triggerDiagnosticDownload("fanal-diagnostic.json",JSON.stringify(r.diagnostic||{},null,2),"application/json;charset=utf-8");
+      }
+      if(stEl)stEl.textContent=t("diagExportOk")+(hash?" · #"+hash+")":")");
+      toast(t("exportDone"));
+      return;
+    }
+    const res=await fetch("/api/diagnostic/export?format="+fmt,{headers:{"Authorization":"Bearer "+token}});
+    if(!res.ok){if(stEl)stEl.textContent=t("diagExportErr");return;}
+    const raw=await res.text();
+    let hash="";
+    if(fmt==="json"){try{const j=JSON.parse(raw);hash=j&&j.diagnostic&&j.diagnostic.bundleHash?j.diagnostic.bundleHash:"";}catch(e){}}
+    triggerDiagnosticDownload(fmt==="md"?"fanal-diagnostic.md":"fanal-diagnostic.json",raw,fmt==="md"?"text/markdown;charset=utf-8":"application/json;charset=utf-8");
+    if(stEl)stEl.textContent=t("diagExportOk")+(hash?" · #"+hash+")":")");
+    toast(t("exportDone"));
+  }catch(e){
+    if(stEl)stEl.textContent=t("diagExportErr");
+  }
+}
+try{
+  $("constitutionSave").addEventListener("click",saveConstitution);
+  $("memSave").addEventListener("click",saveMemory);
+  if($("modeDualBtn"))$("modeDualBtn").addEventListener("click",()=>applyBrainModeUi("dual_cloud"));
+  if($("modeLocalBtn"))$("modeLocalBtn").addEventListener("click",()=>applyBrainModeUi("local_sovereign"));
+  if($("brainSaveClosed"))$("brainSaveClosed").addEventListener("click",saveBrain);
+  if($("brainLocalDetectBtn"))$("brainLocalDetectBtn").addEventListener("click",brainAuto);
+  if($("vaultDeepseekClear"))$("vaultDeepseekClear").addEventListener("click",()=>clearVaultKey("deepseek"));
+  if($("vaultGeminiClear"))$("vaultGeminiClear").addEventListener("click",()=>clearVaultKey("gemini"));
+  if($("diagExportMdBtn"))$("diagExportMdBtn").addEventListener("click",()=>exportDiagnostic("md"));
+  if($("diagExportJsonBtn"))$("diagExportJsonBtn").addEventListener("click",()=>exportDiagnostic("json"));
+  if($("intakeSaveBtn"))$("intakeSaveBtn").addEventListener("click",saveIntakeConfig);
+  if($("intakeSyncBtn"))$("intakeSyncBtn").addEventListener("click",syncIntakeNow);
+  $("dangerReset").addEventListener("click",()=>{try{localStorage.clear();}catch(e){}location.reload();});
+}catch(e){}
 async function fbPrepare(task){const r=await api("/api/facebook/prepare",{method:"POST",body:{text:task.result}});showMsg(r&&r.status?r.status:(r&&r.error||t("saved")));}
 let lastReply="";
 async function repondantScan(){const b=$("repondantScan");b.disabled=true;b.textContent="…";const r=await api("/api/repondant/scan",{method:"POST"});b.disabled=false;b.textContent=t("repondantScanBtn");
@@ -1260,6 +1525,49 @@ function applyLang(){
   $("tabSector").textContent=t("sectorTab");$("bnavOverview").textContent=t("overview");$("bnavField").textContent=t("field");$("bnavRules").textContent=t("rules");$("bnavSector").textContent=t("sectorTab");$("sectorPresetsTitle").textContent=t("sectorPresets");$("customSectorTitle").textContent=t("customSector");$("saveSectorBtn").textContent=t("saveSector");$("aiSectorBtn").textContent=t("aiSuggest");
   $("trailTitle").textContent=t("conversationTrail");$("trailHint").textContent=t("trailHint");
   $("sayText").placeholder=t("sayPh");$("sayBtn").textContent=t("sendPhrase");$("aiHint").textContent=t("aiHint");if(!recording)$("micBtn").textContent=t("dictate");
+  if($("reglagesTitleEl"))$("reglagesTitleEl").textContent=t("reglagesTitle");
+  if($("reglagesHintEl"))$("reglagesHintEl").textContent=t("reglagesHint");
+  if($("brainCardTitleEl"))$("brainCardTitleEl").textContent=t("brainCardTitle");
+  if($("brainCardHintEl"))$("brainCardHintEl").textContent=t("brainCardHint");
+  if($("brainModeDualTitleEl"))$("brainModeDualTitleEl").textContent=t("brainModeDualTitle");
+  if($("brainModeDualDescEl"))$("brainModeDualDescEl").textContent=t("brainModeDualDesc");
+  if($("brainModeLocalTitleEl"))$("brainModeLocalTitleEl").textContent=t("brainModeLocalTitle");
+  if($("brainModeLocalDescEl"))$("brainModeLocalDescEl").textContent=t("brainModeLocalDesc");
+  if($("brainVaultDualTitleEl"))$("brainVaultDualTitleEl").textContent=t("brainVaultDualTitle");
+  if($("brainDeepseekLblEl"))$("brainDeepseekLblEl").textContent=t("brainDeepseekLbl");
+  if($("brainGeminiLblEl"))$("brainGeminiLblEl").textContent=t("brainGeminiLbl");
+  if($("vaultDeepseekClear"))$("vaultDeepseekClear").textContent=t("brainClearKey");
+  if($("vaultGeminiClear"))$("vaultGeminiClear").textContent=t("brainClearKey");
+  if($("brainLocalPresetLblEl"))$("brainLocalPresetLblEl").textContent=t("brainLocalPresetLbl");
+  if($("brainLocalBalancedOpt"))$("brainLocalBalancedOpt").textContent=t("brainLocalBalanced");
+  if($("brainLocalLightOpt"))$("brainLocalLightOpt").textContent=t("brainLocalLight");
+  if($("brainSaveClosed"))$("brainSaveClosed").textContent=t("brainSaveBtn");
+  if($("brainLocalDetectBtn"))$("brainLocalDetectBtn").textContent=t("brainAutoBtn");
+  if($("diagCardTitleEl"))$("diagCardTitleEl").textContent=t("diagTitle");
+  if($("diagCardHintEl"))$("diagCardHintEl").textContent=t("diagHint");
+  if($("diagExportMdBtn"))$("diagExportMdBtn").textContent=t("diagExportMd");
+  if($("diagExportJsonBtn"))$("diagExportJsonBtn").textContent=t("diagExportJson");
+  if($("intakeCardTitleEl"))$("intakeCardTitleEl").textContent=t("intakeCardTitle");
+  if($("intakeCardHintEl"))$("intakeCardHintEl").textContent=t("intakeCardHint");
+  if($("imapEnabledLblEl"))$("imapEnabledLblEl").textContent=t("imapEnabledLbl");
+  if($("imapHostLblEl"))$("imapHostLblEl").textContent=t("imapHostLbl");
+  if($("imapPortLblEl"))$("imapPortLblEl").textContent=t("imapPortLbl");
+  if($("imapUserLblEl"))$("imapUserLblEl").textContent=t("imapUserLbl");
+  if($("imapPassLblEl"))$("imapPassLblEl").textContent=t("imapPassLbl");
+  if($("imapGmailHintEl"))$("imapGmailHintEl").textContent=t("imapGmailHint");
+  if($("imapTlsLblEl"))$("imapTlsLblEl").textContent=t("imapTlsLbl");
+  if($("intakeFolderLblEl"))$("intakeFolderLblEl").textContent=t("intakeFolderLbl");
+  if($("batterySaverLblEl"))$("batterySaverLblEl").textContent=t("batterySaverLbl");
+  if($("intakeSaveBtn"))$("intakeSaveBtn").textContent=t("intakeSaveBtn");
+  if($("intakeSyncBtn"))$("intakeSyncBtn").textContent=t("intakeSyncBtn");
+  if($("vaultCurtainTitleEl"))$("vaultCurtainTitleEl").textContent=t("vaultCurtainTitle");
+  if($("lock-reason-label"))$("lock-reason-label").textContent=t("vaultCurtainIdle");
+  if($("vaultUnlockBioBtnEl"))$("vaultUnlockBioBtnEl").textContent=t("vaultUnlockBioBtn");
+  if($("vaultUnlockOrEl"))$("vaultUnlockOrEl").textContent=t("vaultUnlockOr");
+  if($("vault-master-pwd"))$("vault-master-pwd").placeholder=t("vaultUnlockPwdPh");
+  if($("vaultUnlockBtnEl"))$("vaultUnlockBtnEl").textContent=t("vaultUnlockBtn");
+  if($("vaultUnlockFooterEl"))$("vaultUnlockFooterEl").textContent=t("vaultUnlockFooter");
+  updateBrainVaultBadge();
   document.querySelectorAll(".pill").forEach(p=>p.classList.toggle("active",p.dataset.l===cur));
   panelLinks();
   reRenderDynamic();
@@ -1289,25 +1597,28 @@ function markReel(){
   document.querySelectorAll("#langStepTicks .tick").forEach(t=>t.classList.toggle("active",t.dataset.l===cur));
 }
 function buildReel(ticksId){
+  const el=typeof document.querySelector==="function"?document.querySelector("#"+ticksId):null;
+  if(!el)return;
   for(let pass=0;pass<2;pass++){
     for(const l of Object.keys(LANG)){
       const d=document.createElement("div");
       d.className="tick";d.dataset.l=l;d.textContent=LANGNAMES[l];
-      $(ticksId).appendChild(d);
+      el.appendChild(d);
     }
   }
   const N=Object.keys(LANG).length,H=58,CYCLE=20000;
   const t0=performance.now();
   (function frame(now){
     const t=(now-t0)%CYCLE;
-    $(ticksId).style.transform="translateY(-"+((t/CYCLE)*N*H)+"px)";
+    el.style.transform="translateY(-"+((t/CYCLE)*N*H)+"px)";
     requestAnimationFrame(frame);
   })(t0);
 }
 buildLangMenu();
 buildReel("langStepTicks");
 markReel();
-$("langStepReel").onclick=()=>{$("langOverlay").style.display="flex";const en=document.querySelector("#langRows .center");if(en)en.scrollIntoView({block:"center"});};
+const langReelEl=typeof document.querySelector==="function"?document.querySelector("#langStepReel"):null;
+if(langReelEl)langReelEl.onclick=()=>{$("langOverlay").style.display="flex";const en=document.querySelector("#langRows .center");if(en)en.scrollIntoView({block:"center"});};
 $("closeOverlay").onclick=()=>{$("langOverlay").style.display="none";};
 // The Apple flow: after the splash, the language menu opens once (until chosen).
 
@@ -1421,9 +1732,10 @@ $("toHomeBtn").onclick=async()=>{await api("/api/live/close",{});workerFlow();};
 async function enter(){
   if(!PACK){PACK=await api("/api/sector");applyPack();}
   setWho();
-  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);pollKeyStatus();loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});loadConstitution();loadMemory();loadBrain();pollKpi();setInterval(pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
-  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();setInterval(pollDeepAnswers,6000);pollState();setInterval(pollState,8000);loadStudio().then(()=>{refreshNotifBadge();api("/api/studio").then(r=>{if(r&&(r.tasks||[]).some(x=>x.status==="done")){const pend=r.tasks.filter(x=>x.status==="done").length;$("inboxCount").textContent=pend;$("inboxView").style.display="flex";}else{$("inboxCount").textContent="0";}});});if(kitchenPoll)clearInterval(kitchenPoll);kitchenPoll=setInterval(kitchenWatch,4000);}
-  else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();if(livePoll)clearInterval(livePoll);livePoll=setInterval(()=>{if(me&&me.role==="employee")workerFlow();},3000);}
+  clearRolePolls();
+  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadShift();pollAlerts();pollDeepAnswers();scheduleVisiblePoll("deepAnswers",pollDeepAnswers,6000);pollState();scheduleVisiblePoll("state",pollState,8000);pollKeyStatus();loadStudio().then((tasks)=>{const pend=(tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=String(pend);if(pend>0){$("inboxView").style.display="flex";if($("inboxFirst"))$("inboxFirst").style.display="block";}});loadConstitution();loadMemory();loadBrain();loadIntakeConfig();pollKpi();scheduleVisiblePoll("kpi",pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
+  else if(me.role==="lead"){show("leadView");loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();scheduleVisiblePoll("deepAnswers",pollDeepAnswers,6000);pollState();scheduleVisiblePoll("state",pollState,8000);loadIntakeStatus();pollKpi();scheduleVisiblePoll("kpi",pollKpi,30000);loadStudio().then((tasks)=>{const pend=(tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=String(pend);if(pend>0)$("inboxView").style.display="flex";});scheduleVisiblePoll("kitchen",kitchenWatch,4000);}
+  else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();scheduleVisiblePoll("live",()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
 let pwVisible=false;
 $("eyeBtn").onclick=()=>{pwVisible=!pwVisible;$("loginPass").type=pwVisible?"text":"password";$("eyeOn").classList.toggle("hidden",pwVisible);$("eyeOff").classList.toggle("hidden",!pwVisible);};
@@ -1452,7 +1764,7 @@ $("loginBtn").onclick=async()=>{
   sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));
   $("loginPass").value="";bootFlash(1400,()=>enter());
 };
-function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);setWho();bootFlash(1200,()=>show("loginView"));}
+function logout(){api("/api/logout",{});token=null;me=null;sessionStorage.clear();if(livePoll)clearInterval(livePoll);if(kitchenPoll)clearInterval(kitchenPoll);clearRolePolls();setWho();bootFlash(1200,()=>show("loginView"));}
 $("logoutBtn").onclick=logout;
 const sb=$("switchBtn");if(sb)sb.onclick=logout;
 async function loadUsers(){const tb=$("usersTable").querySelector("tbody");tb.innerHTML='<tr><td colspan="2">'+skel(2)+'</td></tr>';const r=await api("/api/users");tb.innerHTML="";(r.users||[]).forEach(u=>{const tr=document.createElement("tr");tr.innerHTML="<td>"+esc(u.name)+"</td><td>"+esc(u.label||u.name)+" · "+t(LVL[u.role]||"lvlEmployee")+"</td>";tb.appendChild(tr);});}
@@ -1461,7 +1773,7 @@ async function loadField(){$("reports").innerHTML=skel(2);$("feedback").innerHTM
 async function loadLead(){$("leadReports").textContent=(await api("/api/reports")).content||"(empty)";$("leadFeedback").textContent=(await api("/api/feedback")).content||"(empty)";}
 $("refreshReports").onclick=loadField;$("leadRefresh").onclick=loadLead;
 const ar=$("autoRefresh");
-if(ar)ar.onclick=()=>{auto=!auto;ar.textContent=auto?t("autoOn"):t("autoOff");if(auto){const iv=setInterval(()=>{if(!auto){clearInterval(iv);return;}if(me&&me.role==="owner"){loadField();renderOrders();}},30000);}};
+if(ar)ar.onclick=()=>{auto=!auto;ar.textContent=auto?t("autoOn"):t("autoOff");if(auto){scheduleVisiblePoll("autoRefresh",()=>{if(!auto){clearVisiblePoll("autoRefresh");return;}if(me&&me.role==="owner"){loadField();renderOrders();}},30000);}else{clearVisiblePoll("autoRefresh");}};
 async function loadPresets(){
   const r=await api("/api/sector-presets");
   const g=$("presetGrid");if(!g)return;g.innerHTML="";
@@ -1486,7 +1798,7 @@ $("aiSectorBtn").onclick=async()=>{
 };
 async function loadRules(){$("decisions").value=(await api("/api/decisions")).content||"";}
 $("saveDecisions").onclick=async()=>{await api("/api/decisions",{content:$("decisions").value});$("decisionsSaved").textContent=t("saved");setTimeout(()=>$("decisionsSaved").textContent="",2000);};
-document.querySelectorAll(".tabs button, .bnav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button, .bnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector","studio","reglages"].forEach(x=>$("tab-"+x).classList.add("hidden"));if(b.dataset.tab==="studio"){$("inboxView").style.display="flex";loadStudio();}else{$("tab-"+b.dataset.tab).classList.remove("hidden");if(b.dataset.tab==="reglages"){loadConstitution();loadMemory();loadBrain();}}});
+document.querySelectorAll(".tabs button, .bnav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button, .bnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector","studio","reglages"].forEach(x=>$("tab-"+x).classList.add("hidden"));if(b.dataset.tab==="studio"){$("inboxView").style.display="flex";loadStudio();}else{$("tab-"+b.dataset.tab).classList.remove("hidden");if(b.dataset.tab==="reglages"){loadConstitution();loadMemory();loadBrain();loadIntakeConfig();}}});
 $("reportBtn").onclick=async()=>{const r=await api("/api/report",{text:$("reportText").value});if(r.error){showMsg("Error: "+r.error);return;}$("reportText").value="";showMsg(t("reportSent"));};
 $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.name,role:me.role,category:$("empFbCat").value,text:$("empFbText").value});if(r.error){showMsg("Error: "+r.error);return;}$("empFbText").value="";showMsg(t("feedbackSent"));};
 (async()=>{const dm=(/[?&]demo=([a-z]+)/.exec(location.search)||[])[1];if(dm){const r=await api("/api/demo-login",{role:dm});if(r&&r.token){token=r.token;me={name:r.name,role:r.role,label:r.label||r.name};sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));enter();if(/[?&]alert=1/.test(location.search)){await api("/api/demo/alert");setTimeout(pollAlerts,400);}return;}}})();
@@ -1498,8 +1810,8 @@ async function wallTick(){try{const r=await (await fetch("/api/wall")).json();co
 function clockTick(){const d=new Date();$("wallClock").textContent=d.toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});$("wallDate").textContent=d.toLocaleDateString([],{weekday:"short",day:"numeric",month:"short"});}
 if(location.search.indexOf("wall=1")>=0){
   document.body.classList.add("wall");show("wallView");
-  clockTick();setInterval(clockTick,1000);
-  wallTick();setInterval(wallTick,30000);
+  clockTick();scheduleVisiblePoll("wallClock",clockTick,1000);
+  wallTick();scheduleVisiblePoll("wallFeed",wallTick,30000);
 }
 </script>
 <style>
@@ -1541,14 +1853,14 @@ if(location.search.indexOf("wall=1")>=0){
 <div id="fanal-lock-curtain" style="display:none;flex-direction:column;justify-content:center;align-items:center;position:fixed;inset:0;z-index:999999;background:#090d16;color:#f8fafc;font-family:system-ui,sans-serif;padding:20px;text-align:center;user-select:none">
   <div style="background:#0f172a;border:1px solid #334155;border-top:4px solid #38bdf8;border-radius:6px;padding:20px;width:100%;max-width:320px">
     <div style="font-size:28px;margin-bottom:6px">🔒</div>
-    <div style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px">BÓVEDA FANAL CONGELADA</div>
+    <div id="vaultCurtainTitleEl" style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px">BÓVEDA FANAL CONGELADA</div>
     <div id="lock-reason-label" style="font-size:11px;color:#94a3b8;font-family:monospace;margin-bottom:14px">Protección Loi 25 por inactividad · Tu expediente sigue intacto</div>
-    <button onclick="triggerBiometricUnlock()" style="width:100%;background:#0284c7;color:#fff;border:none;padding:10px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer;margin-bottom:10px">🫆 Desbloquear con Touch ID / Windows Hello</button>
-    <div style="font-size:10px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700">— O usa tu Contraseña Maestra —</div>
+    <button id="vaultUnlockBioBtnEl" onclick="triggerBiometricUnlock()" style="width:100%;background:#0284c7;color:#fff;border:none;padding:10px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer;margin-bottom:10px">🫆 Desbloquear con Touch ID / Windows Hello</button>
+    <div id="vaultUnlockOrEl" style="font-size:10px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700">— O usa tu Contraseña Maestra —</div>
     <input id="vault-master-pwd" type="password" placeholder="Contraseña Maestra de Fanal..." style="width:100%;box-sizing:border-box;background:#020617;color:#fff;border:1px solid #475569;padding:8px;border-radius:4px;font-family:monospace;font-size:12px;margin-bottom:8px"/>
-    <button onclick="triggerPasswordUnlock()" style="width:100%;background:#059669;color:#fff;border:none;padding:8px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer">Desbloquear y Continuar donde estaba</button>
+    <button id="vaultUnlockBtnEl" onclick="triggerPasswordUnlock()" style="width:100%;background:#059669;color:#fff;border:none;padding:8px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer">Desbloquear y Continuar donde estaba</button>
   </div>
-  <div style="margin-top:12px;font-size:10px;color:#475569;font-family:monospace">Llave AES-256-GCM purgada de RAM · Pantallas 1 y 2 protegidas</div>
+  <div id="vaultUnlockFooterEl" style="margin-top:12px;font-size:10px;color:#475569;font-family:monospace">Llave AES-256-GCM purgada de RAM · Pantallas 1 y 2 protegidas</div>
 </div>
 </body>
 </html>

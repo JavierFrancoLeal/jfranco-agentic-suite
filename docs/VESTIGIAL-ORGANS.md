@@ -1,39 +1,42 @@
 # VESTIGIAL-ORGANS — the evolutionary case for pausing, not deleting
 
-*Why the 8 early organs became vestigial, what substituted them, and
-why evolution says: archive the genome, never burn it. 2026-11-06.*
+*Why the 6 early user-facing organs became dormant/vestigial, what substituted
+them, and why evolution says: archive the genome, never burn it. Updated
+2026-11-14 to match [`ACTIVE-CATALOG.md`](./ACTIVE-CATALOG.md) (6 dormant
+organs + 2 founder DSH cockpit organs whose client UI lives natively in Fanal).*
 
 ## The tail of the organism
 
-The 8 organs were the PROTOTYPE stage: each was the first answer to a
-problem, built as a standalone DSH skill before the product existed.
-Then the product (the supervisor) absorbed their functions — like the
-human body absorbed the tail's function into the glutes, the balance
-system and upright walking. The tail did not disappear from the genome;
-it atrophied because the environment changed.
+The early prototype organs were the first answers built as standalone DSH
+skills before Fanal Supervisor absorbed their end-user workflows — like the
+human body absorbed the tail's function into the glutes, the balance system,
+and upright walking. The tail did not disappear from the genome; it went
+dormant because the environment changed.
 
 ## What substituted each organ (and whether it is more efficient)
 
-| The vestigial organ | What substitutes it (in the product) | More efficient? |
+### Dormant / vestigial user-facing organs (`6`, paused in `ACTIVE-CATALOG.md`)
+
+| The vestigial organ | What substitutes it (in Fanal product) | More efficient? |
 |---|---|---|
-| interpreter (speech/translation) | /api/translate + the panel's speech synthesis, 10 languages, inside the app | ✅ one call, no skill load |
-| input-detector (split actions) | workflow-master's listening + the panel's direct input | ✅ fewer layers |
-| cortex (proposal/verification split) | the Constitution + decision-router + the Studio decision inbox | ✅ governed, versioned |
-| triage (queue) | the Studio inbox + the alerts queue, with the 10-second guard | ✅ live in the dashboard |
-| usage-auditor (costs) | the telemetry + /api/usage + the budgets in ROUTES | ✅ automatic |
-| conductor (orchestration) | the Studio decision flow + the semáforo | ✅ one brain, one flow |
-| balance (register) | the built-in register + the Z-report + the counter-audit | ✅ native |
-| deepseek-prices | the ROUTES budgets + /api/settings/status | ✅ config-driven |
+| `interpreter` (speech/translation) | `/api/translate` + panel speech synthesis, 10 languages, inside the app | ✅ one call, no skill load |
+| `input-detector` (split actions) | `workflow-master`'s listening + panel direct input | ✅ fewer layers |
+| `cortex` (proposal/verification split) | Constitution + `decision-router` + Studio decision inbox | ✅ governed, versioned |
+| `triage` (queue) | Studio Inbox-First queue + morning *Reprise Matinale* | ✅ live in the dashboard |
+| `conductor` (orchestration) | Studio flow + semantic traffic light + `intake-engine.js` | ✅ one brain, one flow |
+| `usage-auditor` (costs) | Telemetry + `/api/usage` + `brain-catalog.js` budgets | ✅ automatic |
+
+### Founder's DSH cockpit (`2`, active in DSH developer cockpit only)
+
+| Developer organ | Where client essence lives in Fanal |
+|---|---|
+| `balance` | Built-in register + Z-report + `/api/settings/balance` |
+| `deepseek-prices` | `brain-catalog.js` tier pricing + `/api/settings/status` |
 
 ## The simulations (sectors, business plan, technical)
 
-- Restaurant / lodging / tourism / agri-food / professionals: every
-  flow they need lives in the PRODUCT (supervisor), not in the CLI
-  skills — the organs are not loaded at the client's site.
-- Business plan: the offer (3 lines + packs) does not mention the
-  organs — no revenue depends on them.
-- Technical: 18 providers in every agent session = attention noise; 9
-  active + constitution is the lean organism.
+- Client installations: every SME workflow lives directly inside **Fanal Desktop / Supervisor** (`supervisor/*.js`), not in CLI plugins.
+- Technical: loading only active developer/workflow organs in DSH keeps agent context lean; full classification across all 26 packages lives in [`ACTIVE-CATALOG.md`](./ACTIVE-CATALOG.md).
 
 ## The evolutionary verdict
 

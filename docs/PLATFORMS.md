@@ -2,7 +2,7 @@
 
 The suite is split in two parts, and each part has its own platform story:
 
-- **The brain** (DeepSeek Harness + the six plugins + the Supervisor server)
+- **The brain** (DeepSeek Harness + the five core plugins + the Supervisor server)
   is Node.js-based and runs on **Linux, Windows, and macOS**.
 - **The hands** (Action Panel, dashboard) are a Progressive Web App: any
   modern browser on **any device** — including **Android** phones and
@@ -13,7 +13,7 @@ The suite is split in two parts, and each part has its own platform story:
 | Component | Linux | Windows | macOS | Android |
 |---|---|---|---|---|
 | DeepSeek Harness (host) | ✅ npm: `npm install -g @deepseek-ai/dsh` | ✅ desktop app | ✅ desktop app | ⚠️ not a host — use a brain on the LAN |
-| Six plugins `@javierfrancoleal/*` | ✅ | ✅ | ✅ | ✅ (run on the brain) |
+| Five core plugins `@javierfrancoleal/*` | ✅ | ✅ | ✅ | ✅ (run on the brain) |
 | Supervisor server (`server.js`, Node ≥24) | ✅ | ✅ | ✅ | ⚠️ not a host |
 | Action Panel (PWA) | ✅ browser | ✅ browser | ✅ browser | ✅ Chrome (add to Home screen) |
 | Dashboard (responsive, roles) | ✅ | ✅ | ✅ | ✅ browser over LAN |

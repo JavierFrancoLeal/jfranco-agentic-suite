@@ -1,3 +1,9 @@
+> [!NOTE]
+> **ARCHIVED HISTORICAL LOG (through 2026-11-13):** Preserved intact as field
+> incident forensics. The **single active canonical knowledge ledger** going
+> forward is [`jfranco-lessons/assets/lessons.md`](../jfranco-lessons/assets/lessons.md)
+> (Lessons #34–#45+).
+
 # Learnings
 
 A living log of what real life teaches the suite. Every entry: what

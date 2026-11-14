@@ -64,7 +64,9 @@ const HTTPS_ON = ARGS.includes("--https");
 const USE_DB = ARGS.includes("--db");
 const HOST = process.env.DSH_SUPERVISOR_HOST || (LAN ? "0.0.0.0" : "127.0.0.1");
 const ROOT = path.join(__dirname, "..");
-const UI_DIR = path.join(ROOT, "ui");
+const UI_DIR = fs.existsSync(path.join(ROOT, "ui", "panel.html"))
+  ? path.join(ROOT, "ui")
+  : (fs.existsSync(path.join(__dirname, "panel.html")) ? __dirname : path.join(ROOT, "ui"));
 const DATA_DIR = process.env.DSH_SUPERVISOR_DATA || path.join(os.homedir(), ".dsh");
 const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
 const REPORTS_FILE = path.join(DATA_DIR, "supervision.md");

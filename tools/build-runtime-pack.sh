@@ -2,10 +2,10 @@
 # J.Franco suite — build the bundled runtime pack (Model B of the
 # distribution). Created by J.Franco. MIT.
 #
-# Copies the DeepSeek Harness runtime, the eight J.Franco plugins, and the
-# license notices into dist/trasunto-runtime, ready to be included as
+# Copies the DeepSeek Harness runtime, all J.Franco plugins in the workspace,
+# and the license notices into dist/trasunto-runtime, ready to be included as
 # extraResources in the Fanal desktop installer. Result: the client
-# installs ONE app and only pastes their DeepSeek key.
+# installs ONE app and configures their Dual BYOK Vault (or local Ollama mode).
 #
 # Usage: sh tools/build-runtime-pack.sh
 set -e
@@ -28,7 +28,7 @@ mkdir -p "$OUT/runtime"
 mv "$OUT/runtime-cli" "$OUT/runtime/cli"
 mv "$OUT/runtime-primary" "$OUT/runtime/primary-runtime"
 
-echo "→ copiando los 8 plugins de J.Franco…"
+echo "→ copiando los plugins de J.Franco…"
 mkdir -p "$OUT/plugins"
 for d in "$ROOT"/jfranco-*; do
   cp -R "$d" "$OUT/plugins/$(basename "$d")"
@@ -75,7 +75,7 @@ cat > cordis.patch.yml <<'GENYML'
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
     provider: deepseek-official
-    model: deepseek-chat
+    model: deepseek-flash
     reasoningEffort: max
 GENYML
 [ -f cordis.yml ] || echo '[]' > cordis.yml

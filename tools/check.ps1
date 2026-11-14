@@ -48,6 +48,15 @@ if ($LASTEXITCODE -ne 0) { throw "test-api-closed-brain failed" }
 if ($LASTEXITCODE -ne 0) { throw "test-intake-pipeline failed" }
 Write-Host "OK supervisor"
 
+Write-Host "== supervisor package (npm) =="
+& $node "tools\sync-desktop.mjs" --check-supervisor-pkg
+if ($LASTEXITCODE -ne 0) { throw "sync-desktop --check-supervisor-pkg failed" }
+& $node --check "supervisor-pkg\server.js" | Out-Null
+if ($LASTEXITCODE -ne 0) { throw "supervisor-pkg server.js syntax error" }
+& $node --check "supervisor-pkg\bin\jfranco-supervisor.js" | Out-Null
+if ($LASTEXITCODE -ne 0) { throw "supervisor-pkg launcher syntax error" }
+Write-Host "OK supervisor-pkg"
+
 Write-Host "== desktop app =="
 & $node "tools\sync-desktop.mjs" --check
 if ($LASTEXITCODE -ne 0) { throw "sync-desktop --check failed" }
@@ -58,6 +67,12 @@ if ($LASTEXITCODE -ne 0) { throw "test-desktop-sandbox failed" }
 & $node "tools\verify-app.mjs"
 if ($LASTEXITCODE -ne 0) { throw "verify-app failed" }
 Write-Host "OK desktop app"
+
+Write-Host "== installers (PowerShell syntax) =="
+$psErrors = $null
+[void][System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path "install.ps1"), [ref]$null, [ref]$psErrors)
+if ($psErrors -and $psErrors.Count -gt 0) { throw ("install.ps1 syntax error: " + $psErrors[0].Message) }
+Write-Host "OK install.ps1"
 
 Write-Host ""
 Write-Host "ALL CHECKS PASSED"

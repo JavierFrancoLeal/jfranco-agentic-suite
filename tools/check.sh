@@ -66,6 +66,12 @@ echo "== supervisor =="
 "$NODE" tools/test-intake-pipeline.mjs
 echo "OK supervisor"
 
+echo "== supervisor package (npm) =="
+"$NODE" tools/sync-desktop.mjs --check-supervisor-pkg
+"$NODE" --check supervisor-pkg/bin/jfranco-supervisor.js
+"$NODE" --check supervisor-pkg/server.js
+echo "OK supervisor-pkg"
+
 echo "== desktop app =="
 "$NODE" tools/sync-desktop.mjs --check
 "$NODE" tools/test-vault-biometric.mjs
@@ -89,9 +95,10 @@ sh -n tools/sync-check.sh
 sh -n tools/bundle-sync-check.sh
 echo "OK demo tools"
 
-echo "== installers =="
+echo "== installers & runtime tools =="
 sh -n install.sh
-echo "OK install.sh"
+sh -n tools/build-runtime-pack.sh
+echo "OK install.sh + build-runtime-pack.sh"
 
 echo ""
 echo "ALL CHECKS PASSED"

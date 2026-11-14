@@ -12,7 +12,7 @@ Everything in this guide can be set up with one command:
 ```
 
 On Windows: right-click `install.ps1` → **Run with PowerShell**. Answer two
-questions (sector and mode) and the installer handles the rest: the six
+questions (sector and mode) and the installer handles the rest: the five core
 plugins, the starter `decisions.md`, the `supervision.md` log, and the panel.
 
 ## 1. Always in the background
@@ -70,7 +70,7 @@ The suite ships two access points built for independent AI work:
   offline.
 - **DSH Assistant** ([`ui/DSH-Asistente.applescript`](../ui/DSH-Asistente.applescript)
   for Mac, [`ui/DSH-Asistente.ps1`](../ui/DSH-Asistente.ps1) for Windows):
-  one-button launchers that run the six plugins autonomously through the
+  one-button launchers that run the five core plugins autonomously through the
   headless `campo` profile (no DSH window needed) and open the result.
 - **One-time step for autonomous mode:** the `campo` profile uses an API key
   (the app's interactive session cannot be reused from outside, for

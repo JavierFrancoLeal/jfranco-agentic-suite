@@ -1,9 +1,8 @@
 # DeepSeek Harness — Plugin Authoring Guide
 
-> Destilado de la ingeniería inversa de **DSH 0.2.1-rc.5** (verificado 2026-11-03/04).
-> Este documento es la fuente canónica. La skill `plugin-authoring` expone el mismo
-> contenido a los agentes. La plantilla está en `templates/dsh-plugin/` y los scripts
-> en `tools/` (`new-plugin.sh`, `check-plugin.sh`).
+> **Canonical English reference (Doctrine #8):** [`jfranco-plugin-authoring/assets/plugin-authoring.md`](../jfranco-plugin-authoring/assets/plugin-authoring.md) (exposes the same updated Cordis specification and Lesson #40 `agent/created` `{ agent }` guard to coding agents in English).
+>
+> **Guía técnica en español (referencia extendida):** Destilado de la ingeniería inversa de **DSH 0.2.1-rc.5** (verificado 2026-11-03/14). Plantilla en `templates/dsh-plugin/` y scripts en `tools/` (`new-plugin.sh`, `check-plugin.sh`, `check-host.mjs`).
 
 ---
 

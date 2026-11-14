@@ -1,26 +1,12 @@
-# PRE-PILOT-CHECKLIST — the 10 points before the first pilot client (2026-11-08)
+# PRE-PILOT-CHECKLIST — the 10 points before external pilot clients (updated 2026-11-14)
 
-1. **The gates** — `sh tools/check.sh` prints ALL CHECKS PASSED (the
-   immune system is green).
-2. **The brain preflight** — `sh tools/brain-preflight.sh`: the RAM is
-   below 30%, no model pull pending, Ollama answers in under 2 s.
-3. **The build** — the .dmg was rebuilt AFTER the last change and the
-   asar check confirmed the heart, the magic button and the armor
-   inside (verify-app PASSED).
-4. **The keys** — providers.json encrypted (`tools/encrypt-providers.sh`)
-   or the demo mode; the client's OWN DeepSeek key lives in THEIR
-   Réglages, never in ours.
-5. **The qualification** — the 60-second admission tool was run with
-   the client's real numbers and the verdict was GREEN or a written
-   YELLOW scope (never a RED sold anyway).
-6. **The constitution** — the client's rules (the floor, the discounts,
-   the escalation) were written WITH them in the wizard (step 5).
-7. **The Loi 25 evidence** — the incident register and the purge proofs
-   are writable (mode 600) in the client's archive.
-8. **The CSV bridge** — their legacy export was imported once and the
-   Memory shows the client names (the 15-minute migration promise held).
-9. **The pilot health** — /api/pilot/health and /api/friction/state
-   respond; the Calm mode is armed for the quiet hours.
-10. **The honesty instruments** — the honesty charter is printed and
-    the daily PDF carries the "hours in calm mode" line (we never
-    inflate the quiet hours).
+1. **All multiplatform gates green** — `sh tools/check.sh` (plus `windows-latest` CI `check-windows` and `desktop-windows-smoke` `--packed`) reports `ALL CHECKS PASSED`.
+2. **Sync & runtime preflight** — `node tools/sync-desktop.mjs --check-all` passes; if using `local_only` (Ollama), run `sh tools/brain-preflight.sh` to verify RAM and response time.
+3. **Fresh Desktop build installed** — `sh tools/verify-app.sh` and `node tools/smoke-desktop.mjs --packed` pass **after** the last edit, and `/Applications/Fanal.app` (or Windows installer) is replaced with the newly built artifact (Lesson #1 / #35).
+4. **Encrypted Vault & Dual BYOK keys** — client sets their scrypt Master Password in Fanal Desktop, unlocks via biometric/password (`AESGCM2:` encrypted `settings.json`, `FANAL_MASTER_KEY` zeroized on lock), and chooses `dual_cloud` (own DeepSeek / Gemini keys) or `local_only` (Ollama).
+5. **Intake & Gmail 2FA / Folder Sandbox** — if connecting Gmail/Workspace IMAP (`intake-engine.js` read-only `EXAMINE`/`BODY.PEEK[]`), use a dedicated **2FA App Password**; select an explicit `Fanal-Inbox` directory (`desktop-sandbox.js` confined).
+6. **Client Constitution** — co-write the client's minimum floor, discount rules, and red-light escalations (`decisions.md`) during onboarding.
+7. **Loi 25 legal pack reconciled** — deliver current [`POLITIQUE-CONFIDENTIALITE.md`](../POLITIQUE-CONFIDENTIALITE.md) (v1.1), client EFVP template ([`LEGAL/EFVP-MODELE-CLIENT.md`](./LEGAL/EFVP-MODELE-CLIENT.md)), signed Accord-Pilote with direct corporate email, and confirm writable local incident log.
+8. **Blind diagnostic sanity check** — verify diagnostic export runs through [`diagnostic-sanitizer.js`](../supervisor/diagnostic-sanitizer.js) so support capsules redact PII and secret tokens.
+9. **KPI Neto & Reprise Matinale** — verify `GET /api/health` and confirm Inbox-First (`simpleview`) surfaces net human time saved (`saved − edited`) and overnight items after sleep/wake (`powerMonitor`).
+10. **The honesty instruments & exit** — confirm client knows one-click sovereign archive export and local silo deletion in Settings.

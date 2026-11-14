@@ -5,7 +5,7 @@
 #   1. Locates DeepSeek Harness.
 #   2. Asks your sector (creates decisions.md with starter rules).
 #   3. Asks where to install: desktop, campo (autonomous), or both.
-#   4. Installs the six @javierfrancoleal/* plugins into each chosen profile.
+#   4. Installs the five core @javierfrancoleal/* plugins into each chosen profile.
 #   5. Creates ~/.dsh/decisions.md (training) and ~/.dsh/supervision.md (log).
 #
 # Usage: right-click > "Run with PowerShell". Safe to re-run.
@@ -82,7 +82,7 @@ if ($profiles -contains "campo") {
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
     provider: deepseek-official
-    model: deepseek-chat
+    model: deepseek-flash
     reasoningEffort: max
 "@ | Out-File -Encoding UTF8 "$campo\cordis.patch.yml"
     @"
@@ -95,7 +95,7 @@ autoInstallPeers: false
   }
 }
 
-# 5. Install the six plugins into each chosen profile
+# 5. Install the five core plugins into each chosen profile
 $plugins = @(
   "jfranco-workflow-master",
   "jfranco-decision-router",
@@ -105,7 +105,7 @@ $plugins = @(
 )
 foreach ($p in $profiles) {
   Write-Host ""
-  Write-Host "Installing the six plugins into profile '$p'..." -ForegroundColor Blue
+  Write-Host "Installing the five core plugins into profile '$p'..." -ForegroundColor Blue
   foreach ($pl in $plugins) {
     & $dsh plugin --profile $p add "$Root\$pl" | Out-Null
     if ($LASTEXITCODE -eq 0) { Write-Host "OK $pl -> $p" -ForegroundColor Green }
