@@ -34,19 +34,54 @@ if (duplicateIds.length > 0) {
   process.exit(1);
 }
 
+const i18nPath = path.join(__dirname, "..", "supervisor", "dashboard-i18n.js");
+const i18nSrc = fs.readFileSync(i18nPath, "utf8");
+
 const allIds = new Set();
 for (const x of html.matchAll(/id="([A-Za-z0-9_-]+)"/g)) allIds.add(x[1]);
 
 const elems = {};
 function mk(id) {
-  return {
+  const classes = new Set();
+  const listeners = {};
+  const el = {
     id, textContent: "", placeholder: "", innerHTML: "", value: "",
-    dataset: {}, classList: { add() {}, remove() {}, toggle() {} }, style: {},
-    addEventListener() {}, appendChild() {}, querySelector() { return null; },
-    querySelectorAll() { return []; }, disabled: false, offsetWidth: 1,
-    setAttribute() {}, options: [{ textContent: "" }, { textContent: "" }, { textContent: "" }, { textContent: "" }],
-    parentNode: { style: {} }, closest() { return { style: {} }; },
+    checked: false,
+    dataset: {},
+    children: [],
+    classList: {
+      add(...cs) { cs.forEach((c) => classes.add(c)); },
+      remove(...cs) { cs.forEach((c) => classes.delete(c)); },
+      contains(c) { return classes.has(c); },
+      toggle(c, force) {
+        if (force === true) { classes.add(c); return true; }
+        if (force === false) { classes.delete(c); return false; }
+        if (classes.has(c)) { classes.delete(c); return false; }
+        classes.add(c); return true;
+      },
+    },
+    style: {},
+    addEventListener(ev, fn) { (listeners[ev] = listeners[ev] || []).push(fn); },
+    click() {
+      if (typeof el.onclick === "function") el.onclick();
+      (listeners.click || []).forEach((fn) => fn());
+    },
+    appendChild(child) { el.children.push(child); return child; },
+    remove() {},
+    querySelector(sel) {
+      if (sel === "tbody") return mk(id + "_tbody");
+      if (sel === "b") return mk(id + "_b");
+      return null;
+    },
+    querySelectorAll() { return []; },
+    disabled: false, offsetWidth: 1,
+    setAttribute() {},
+    options: [{ value: "restaurant", textContent: "" }, { value: "hotel", textContent: "" }, { value: "clinic", textContent: "" }, { value: "school", textContent: "" }],
+    parentNode: { style: {} },
+    closest() { return { style: {} }; },
+    scrollIntoView() {},
   };
+  return el;
 }
 for (const id of allIds) elems[id] = mk(id);
 
@@ -56,9 +91,17 @@ const document = {
     if (!(id in elems)) throw new Error('STRICT: missing element id="' + id + '"');
     return elems[id];
   },
-  querySelectorAll: () => [],
+  querySelector: (sel) => {
+    if (sel === "#wizardView") return elems.wizardView;
+    return null;
+  },
+  querySelectorAll: (sel) => {
+    if (sel === "#wizBody" || sel === "#langStepList .langbtn") return elems.langStepList.children;
+    return [];
+  },
   createElement: () => mk("x"),
   body: {
+    appendChild() {},
     classList: {
       toggle(c, force) {
         if (force === true) { bodyClasses.add(c); return true; }
@@ -68,29 +111,207 @@ const document = {
       },
       add(...cs) { cs.forEach((c) => bodyClasses.add(c)); },
       remove(...cs) { cs.forEach((c) => bodyClasses.delete(c)); },
+      contains(c) { return bodyClasses.has(c); },
     },
   },
 };
-const localStorage = { getItem: () => null, setItem: () => {} };
-const sessionStorage = { getItem: () => null, setItem: () => {}, clear: () => {} };
+const lsStore = new Map();
+const ssStore = new Map();
+const localStorage = {
+  getItem: (k) => (lsStore.has(k) ? lsStore.get(k) : null),
+  setItem: (k, v) => lsStore.set(k, String(v)),
+  removeItem: (k) => lsStore.delete(k),
+  clear: () => lsStore.clear(),
+};
+const sessionStorage = {
+  getItem: (k) => (ssStore.has(k) ? ssStore.get(k) : null),
+  setItem: (k, v) => ssStore.set(k, String(v)),
+  clear: () => ssStore.clear(),
+};
 const navigator = { clipboard: { writeText: async () => {} }, vibrate: () => {} };
-const fetch = async () => ({ json: async () => ({}) });
+const fetchLog = [];
+const fetch = async (url, opts = {}) => {
+  let parsed = null;
+  if (opts && opts.body) { try { parsed = JSON.parse(opts.body); } catch {} }
+  fetchLog.push({ url, method: (opts && opts.method) || "GET", body: parsed });
+  if (url === "/api/setup-status") return { json: async () => ({ users: 0 }) };
+  if (url === "/api/setup") return { json: async () => ({ token: "tok", name: parsed && parsed.user || "owner", role: "owner", label: "owner" }) };
+  if (url === "/api/sector") return { json: async () => ({ id: "hotel" }) };
+  if (url === "/api/settings/brain") return { json: async () => ({ mode: "dual_cloud", deepseek: { configured: true }, gemini: { configured: true } }) };
+  if (url === "/api/intake/config") return { json: async () => ({ ok: true, imap: {}, folder: {} }) };
+  return { json: async () => ({ ok: true }) };
+};
 const location = { search: "", hostname: "x", port: "", origin: "http://x", protocol: "http:" };
-const window = { SpeechRecognition: null, AudioContext: null, webkitAudioContext: null };
-const Notification = function () {}; Notification.permission = "default"; Notification.requestPermission = async () => {};
+const window = { SpeechRecognition: null, AudioContext: null, webkitAudioContext: null, addEventListener() {} };
+const Notification = function () {}; Notification.permission = "default"; Notification.requestPermission = async () => "granted";
 global.requestAnimationFrame = () => 0;
 
-process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e.message); process.exit(1); });
-try {
-  new Function("document", "localStorage", "sessionStorage", "navigator", "fetch", "location", "window", "Notification", src)(
-    document, localStorage, sessionStorage, navigator, fetch, location, window, Notification
-  );
-  if (!bodyClasses.has("simpleview")) {
-    throw new Error("STRICT: simpleview (Inbox-First) must be active by default on fresh load");
+const origSetTimeout = global.setTimeout;
+const queuedTimeouts = [];
+global.setTimeout = (fn, ms) => {
+  if (typeof fn === "function" && Number(ms) <= 1400) {
+    queuedTimeouts.push(fn);
+    return queuedTimeouts.length;
   }
-  console.log("SMOKE TEST PASSED: sin errores runtime — botones vivos, 0 duplicate IDs, Inbox-First activo");
-  process.exit(0);
-} catch (e) {
-  console.log("SMOKE FAILED:", e.message);
-  process.exit(1);
+  return 0;
+};
+global.setInterval = () => 0;
+global.clearInterval = () => {};
+function flushMicroTimeouts() {
+  while (queuedTimeouts.length) {
+    const fn = queuedTimeouts.shift();
+    fn();
+  }
 }
+
+process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e && e.stack || e.message); process.exit(1); });
+(async () => {
+  try {
+    new Function("window", i18nSrc)(window);
+    new Function("document", "localStorage", "sessionStorage", "navigator", "fetch", "location", "window", "Notification", src)(
+      document, localStorage, sessionStorage, navigator, fetch, location, window, Notification
+    );
+    await new Promise((r) => origSetTimeout(r, 10));
+    flushMicroTimeouts();
+
+    if (!bodyClasses.has("simpleview")) {
+      throw new Error("STRICT: simpleview (Inbox-First) must be active by default on fresh load");
+    }
+
+    // Exercise REAL first-run language selection -> 8-step installation wizard -> owner setup
+    const esBtn = elems.langStepList.children.find((b) => String(b.innerHTML).includes("ES"));
+    if (!esBtn) throw new Error("STRICT: Spanish button missing in langStepList");
+    esBtn.click();
+    flushMicroTimeouts();
+
+    if (elems.wizardView.classList.contains("hidden") || elems.wizardView.style.display !== "flex") {
+      throw new Error("STRICT: wizardView did not open after language selection");
+    }
+    if (!String(elems.wizBody.innerHTML || "").includes("🚀")) {
+      throw new Error("STRICT: wizard Step 0 failed to render body (stuck placeholder / purple screen)");
+    }
+
+    // Step 0 -> Step 1 (business name)
+    elems.wizNext.click();
+    flushMicroTimeouts();
+    if (elems.wizCard.classList.contains("slideout")) {
+      throw new Error("STRICT: wizCard stuck with slideout class after Step 0 -> 1");
+    }
+    if (!String(elems.wizBody.innerHTML).includes("wizBizInput")) {
+      throw new Error("STRICT: wizard Step 1 did not render wizBizInput");
+    }
+    elems.wizBizInput = mk("wizBizInput");
+    elems.wizBizInput.value = "Trasunto Beta";
+
+    // Step 1 -> Step 2 (sector)
+    elems.wizNext.click();
+    flushMicroTimeouts();
+    if (!String(elems.wizBody.innerHTML).includes('data-sec="hotel"')) {
+      throw new Error("STRICT: wizard Step 2 did not render sector options");
+    }
+
+    // Step 2 -> Step 3 (Dual BYOK + vault)
+    elems.wizNext.click();
+    flushMicroTimeouts();
+    if (!String(elems.wizBody.innerHTML).includes("wizKeyInput")) {
+      throw new Error("STRICT: wizard Step 3 did not render BYOK inputs");
+    }
+    elems.wizKeyInput = mk("wizKeyInput");
+    elems.wizKeyInput.value = "sk-test-ds-key";
+    elems.wizGeminiKeyInput = mk("wizGeminiKeyInput");
+    elems.wizGeminiKeyInput.value = "AIza-test-gm-key";
+    elems.wizBrainSel = mk("wizBrainSel");
+    elems.wizBrainSel.value = "dual_cloud";
+
+    // Step 3 -> Step 4 -> Back -> Step 4 (must preserve wizDraft values!)
+    elems.wizNext.click();
+    flushMicroTimeouts();
+    elems.wizBack.click();
+    if (!String(elems.wizBody.innerHTML).includes("sk-test-ds-key") || !String(elems.wizBody.innerHTML).includes("AIza-test-gm-key")) {
+      throw new Error("STRICT: navigating back to Step 3 lost typed BYOK keys");
+    }
+    elems.wizNext.click();
+    flushMicroTimeouts();
+
+    // Step 4 (perms) -> Step 5 (constitution)
+    elems.wizNext.click();
+    flushMicroTimeouts();
+    if (!String(elems.wizBody.innerHTML).includes("wizConsInput")) {
+      throw new Error("STRICT: wizard Step 5 did not render wizConsInput");
+    }
+    elems.wizConsInput = mk("wizConsInput");
+    elems.wizConsInput.value = "Siempre firmar rojo";
+
+    // Step 5 -> Step 6 (Recap must show preserved values, NOT dashes!)
+    elems.wizNext.click();
+    flushMicroTimeouts();
+    if (elems.wizRecapBiz.textContent !== "Trasunto Beta" || elems.wizRecapKey.textContent !== "✅ Dual" || elems.wizRecapCons.textContent !== "✔") {
+      throw new Error(`STRICT: wizard Step 6 Recap lost state: biz=${elems.wizRecapBiz.textContent}, key=${elems.wizRecapKey.textContent}, cons=${elems.wizRecapCons.textContent}`);
+    }
+
+    // Step 6 -> Step 7 -> Finish
+    elems.wizNext.click();
+    flushMicroTimeouts();
+    elems.wizNext.click();
+    if (localStorage.getItem("lv-onboarded") !== "1") {
+      throw new Error("STRICT: completing wizard did not set lv-onboarded=1");
+    }
+
+    // Simulate owner account creation + direct Réglages saves -> zero double-wrapped {method:"POST",body:...} payloads allowed!
+    elems.setupUser.value = "Javier";
+    elems.setupPass.value = "claveSegura123";
+    elems.setupBtn.click();
+    await new Promise((r) => origSetTimeout(r, 20));
+    flushMicroTimeouts();
+    await new Promise((r) => origSetTimeout(r, 20));
+
+    elems.vaultDeepseekInput.value = "sk-save-ds";
+    elems.vaultGeminiInput.value = "AIza-save-gm";
+    elems.brainSaveClosed.click();
+    await new Promise((r) => origSetTimeout(r, 20));
+
+    elems.imapEnabledChk.checked = true;
+    elems.imapHostInput.value = "imap.gmail.com";
+    elems.imapUserInput.value = "javier@example.com";
+    elems.imapPassInput.value = "abcd efgh ijkl mnop";
+    elems.intakeFolderInput.value = "Fanal-Inbox";
+    elems.intakeSaveBtn.click();
+    await new Promise((r) => origSetTimeout(r, 20));
+
+    for (const req of fetchLog) {
+      if (req.body && req.body.method === "POST" && "body" in req.body) {
+        throw new Error(`STRICT: ${req.url} sent double-wrapped {method:"POST", body:...} instead of JSON body!`);
+      }
+    }
+    const brainSave = fetchLog.filter((x) => x.url === "/api/settings/brain" && x.method === "POST").pop();
+    if (!brainSave || brainSave.body.deepseekKey !== "sk-save-ds" || brainSave.body.geminiKey !== "AIza-save-gm") {
+      throw new Error("STRICT: /api/settings/brain save did not transmit BYOK keys");
+    }
+    const intakeSave = fetchLog.filter((x) => x.url === "/api/intake/config" && x.method === "POST").pop();
+    if (!intakeSave || !intakeSave.body.imap || intakeSave.body.imap.host !== "imap.gmail.com") {
+      throw new Error("STRICT: /api/intake/config save did not transmit IMAP host");
+    }
+
+    // Verify resumed onboarding path: dsh-lang already set, lv-onboarded missing, users === 0
+    localStorage.removeItem("lv-onboarded");
+    elems.wizardView.classList.add("hidden");
+    elems.wizardView.style.display = "none";
+    elems.wizBody.innerHTML = "";
+    new Function("document", "localStorage", "sessionStorage", "navigator", "fetch", "location", "window", "Notification", src)(
+      document, localStorage, sessionStorage, navigator, fetch, location, window, Notification
+    );
+    await new Promise((r) => origSetTimeout(r, 15));
+    flushMicroTimeouts();
+    if (elems.wizardView.classList.contains("hidden") || !String(elems.wizBody.innerHTML).includes("🚀")) {
+      throw new Error("STRICT: partial first-run (dsh-lang saved, users=0, !lv-onboarded) must resume wizard cleanly");
+    }
+
+    console.log("SMOKE TEST PASSED: sin errores runtime — botones vivos, 0 duplicate IDs, Inbox-First activo, wizard 8/8 OK, API payloads limpios");
+    process.exit(0);
+  } catch (e) {
+    console.log("SMOKE FAILED:", e && e.stack || e.message);
+    process.exit(1);
+  } finally {
+    global.setTimeout = origSetTimeout;
+  }
+})();
