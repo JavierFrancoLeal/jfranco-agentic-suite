@@ -18,7 +18,12 @@ const { globalShortcut, WebContentsView, screen, powerMonitor, systemPreferences
 const fs = require("node:fs");
 const fsx = require("node:fs");
 const {
-  resolveBiometricLink,
+  guardVaultUnlockAttemptAsync,
+  hasVaultAuthConfigured,
+  readStoredVaultAuth,
+  getOrCreateMachineBindingSecret,
+  setupVaultAuth,
+  linkVaultBiometricKey,
   unlockFanalVaultData,
 } = require("./vault-biometric");
 function brainPath(...parts) {
@@ -29,42 +34,138 @@ function brainPath(...parts) {
 }
 let rightDrawerView = null;
 let activeMasterKeyBuf = null;
-let isVaultLocked = true;
+let isVaultLocked = false;
 let idleTimer = null;
+let watchdogStarted = false;
+let vaultIpcRegistered = false;
+let restoreMonitor2OnUnlock = false;
 const IDLE_TIMEOUT_SECONDS = 300;
+function clearActiveMasterKey() {
+  if (activeMasterKeyBuf && Buffer.isBuffer(activeMasterKeyBuf)) {
+    activeMasterKeyBuf.fill(0);
+    activeMasterKeyBuf = null;
+  }
+}
+const vaultCtx = {
+  get primaryWindow() { return win; },
+  get monitor2Window() { return monitor2Window; },
+  get agentPortalView() { return agentPortalView; },
+  get sourceDocView() { return sourceDocView; },
+  isAgentActivelyTyping: () => agentPilotState.mode === "RUNNING",
+  restoreDualScreenFn: () => {
+    if (restoreMonitor2OnUnlock && win && !win.isDestroyed()) {
+      restoreMonitor2OnUnlock = false;
+      applyDualScreenSplitLayout(win, currentSplitRatio);
+    }
+  },
+};
 function lockFanalVaultNow(ctx, reason) {
-  if (isVaultLocked) return;
+  if (!hasVaultAuthConfigured(DATA_DIR) || isVaultLocked) return;
   isVaultLocked = true;
-  if (activeMasterKeyBuf && Buffer.isBuffer(activeMasterKeyBuf)) { activeMasterKeyBuf.fill(0); activeMasterKeyBuf = null; }
+  clearActiveMasterKey();
   try {
     if (ctx.monitor2Window && !ctx.monitor2Window.isDestroyed()) {
-      ctx.monitor2Window.contentView.removeChildView(ctx.agentPortalView);
-      ctx.monitor2Window.contentView.removeChildView(ctx.sourceDocView);
+      restoreMonitor2OnUnlock = ctx.monitor2Window.isVisible();
+      if (ctx.agentPortalView) ctx.monitor2Window.contentView.removeChildView(ctx.agentPortalView);
+      if (ctx.sourceDocView) ctx.monitor2Window.contentView.removeChildView(ctx.sourceDocView);
       ctx.monitor2Window.hide();
     } else if (ctx.primaryWindow && !ctx.primaryWindow.isDestroyed()) {
-      ctx.primaryWindow.contentView.removeChildView(ctx.agentPortalView);
-      ctx.primaryWindow.contentView.removeChildView(ctx.sourceDocView);
+      const children = ctx.primaryWindow.contentView.children || [];
+      restoreMonitor2OnUnlock = (ctx.agentPortalView && children.includes(ctx.agentPortalView))
+        || (ctx.sourceDocView && children.includes(ctx.sourceDocView));
+      if (ctx.agentPortalView) ctx.primaryWindow.contentView.removeChildView(ctx.agentPortalView);
+      if (ctx.sourceDocView) ctx.primaryWindow.contentView.removeChildView(ctx.sourceDocView);
     }
   } catch (e) {}
   try { if (ctx.primaryWindow && !ctx.primaryWindow.isDestroyed()) ctx.primaryWindow.webContents.send("fanal:vault-locked", { reason: reason || "IDLE_TIMEOUT", lockedAtIso: new Date().toISOString() }); } catch (e) {}
 }
-async function unlockFanalVault(o) {
-  const res = await unlockFanalVaultData({
-    ...o,
-    platform: process.platform,
-    systemPreferences,
-    safeStorage,
+async function unlockFanalVault(payload) {
+  const storedVaultAuth = readStoredVaultAuth(DATA_DIR);
+  if (!storedVaultAuth) {
+    return { ok: false, code: "VAULT_NOT_CONFIGURED", error: "Configura tu Contraseña Maestra primero." };
+  }
+  const method = payload && payload.method === "BIOMETRIC" ? "BIOMETRIC" : "MASTER_PASSWORD";
+  const attemptMethod = method === "BIOMETRIC" ? (process.platform === "win32" ? "WINDOWS_HELLO" : "TOUCH_ID") : "MASTER_PASSWORD";
+  const machineBindingSecret = getOrCreateMachineBindingSecret(DATA_DIR, safeStorage);
+  const res = await guardVaultUnlockAttemptAsync({
+    archiveDir: DATA_DIR,
+    machineBindingSecret,
+    attemptMethod,
+    verifyCredentialsFn: () => unlockFanalVaultData({
+      method,
+      passwordInput: payload && typeof payload.password === "string" ? payload.password : "",
+      storedVaultAuth,
+      platform: process.platform,
+      systemPreferences,
+      safeStorage,
+    }),
   });
-  if (!res.ok) return { ok: false, code: res.code, error: res.error };
-  activeMasterKeyBuf = res.keyBuf;
+  if (!res.ok) {
+    return {
+      ok: false,
+      status: res.status,
+      code: res.code || res.status,
+      failedAttempts: res.failedAttempts,
+      waitSeconds: res.waitSeconds,
+      uiMessage: res.uiMessage || res.error,
+      error: res.error || res.uiMessage,
+    };
+  }
+  clearActiveMasterKey();
+  activeMasterKeyBuf = res.keyBuf || null;
   isVaultLocked = false;
-  try { o.restoreDualScreenFn(); } catch (e) {}
-  try { o.primaryWindow.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
-  return { ok: true };
+  try { vaultCtx.restoreDualScreenFn(); } catch (e) {}
+  try { if (win && !win.isDestroyed()) win.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
+  return { ok: true, status: "UNLOCKED" };
+}
+function registerVaultIpcHandlers() {
+  if (vaultIpcRegistered) return;
+  vaultIpcRegistered = true;
+  ipcMain.handle("fanal:vault-status", () => ({
+    configured: hasVaultAuthConfigured(DATA_DIR),
+    locked: isVaultLocked,
+    biometricLinked: Boolean(readStoredVaultAuth(DATA_DIR)?.osProtectedKeyB64),
+  }));
+  ipcMain.handle("fanal:setup-vault", (_ev, payload) => {
+    if (hasVaultAuthConfigured(DATA_DIR) && isVaultLocked) {
+      return { ok: false, code: "VAULT_LOCKED", error: "Desbloquea la bóveda actual antes de cambiar la contraseña maestra." };
+    }
+    const res = setupVaultAuth({
+      archiveDir: DATA_DIR,
+      masterPassword: payload && payload.masterPassword,
+      safeStorage,
+    });
+    if (!res.ok) return { ok: false, code: res.code, error: res.error };
+    clearActiveMasterKey();
+    activeMasterKeyBuf = res.keyBuf;
+    isVaultLocked = false;
+    try { if (win && !win.isDestroyed()) win.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
+    return { ok: true };
+  });
+  ipcMain.handle("fanal:unlock-vault", (_ev, payload) => unlockFanalVault(payload));
+  ipcMain.handle("fanal:lock-vault", (_ev, reason) => {
+    lockFanalVaultNow(vaultCtx, typeof reason === "string" && reason.trim() ? reason.trim() : "MANUAL_LOCK");
+    return { ok: true, locked: isVaultLocked };
+  });
+  ipcMain.handle("fanal:link-biometric", () => {
+    if (hasVaultAuthConfigured(DATA_DIR) && isVaultLocked) {
+      return { success: false, error: "Desbloquea la bóveda antes de vincular biometría." };
+    }
+    return linkVaultBiometricKey({
+      archiveDir: DATA_DIR,
+      keyBuf: activeMasterKeyBuf,
+      platform: process.platform,
+      systemPreferences,
+      safeStorage,
+      reason: "vincular la biometría a la bóveda Fanal (Loi 25)",
+    });
+  });
 }
 function startBankGradeSecurityWatchdog(ctx) {
+  if (watchdogStarted) return;
+  watchdogStarted = true;
   try {
-    ctx.primaryWindow.setContentProtection(true);
+    if (ctx.primaryWindow && !ctx.primaryWindow.isDestroyed()) ctx.primaryWindow.setContentProtection(true);
     if (ctx.monitor2Window && !ctx.monitor2Window.isDestroyed()) ctx.monitor2Window.setContentProtection(true);
     powerMonitor.on("suspend", () => lockFanalVaultNow(ctx, "LAPTOP_LID_CLOSED"));
     powerMonitor.on("lock-screen", () => lockFanalVaultNow(ctx, "OS_SCREEN_LOCKED"));
@@ -75,6 +176,7 @@ function startBankGradeSecurityWatchdog(ctx) {
         if (idleSecs >= IDLE_TIMEOUT_SECONDS && !(ctx.isAgentActivelyTyping && ctx.isAgentActivelyTyping())) lockFanalVaultNow(ctx, "INACTIVITY_5_MIN");
       } catch (e) {}
     }, 5000);
+    if (idleTimer && typeof idleTimer.unref === "function") idleTimer.unref();
   } catch (e) {}
 }
 let secondMonitorWindow = null;
@@ -224,12 +326,6 @@ function bindMonitor2Events(primaryWin) {
         });
       }
     } catch (e) {}
-    ipcMain.handle("fanal:link-biometric", () => resolveBiometricLink({
-      platform: process.platform,
-      systemPreferences,
-      safeStorage,
-      reason: "vincular la biometría a la bóveda Fanal (Loi 25)",
-    }));
   } catch (e) {}
 }
 const agentPilotState = { mode: "RUNNING", stepCursor: 0, currentPlan: [], allowSingleStep: false };
@@ -421,7 +517,13 @@ try {
   process.on("unhandledRejection", (e) => { try { require("node:fs").appendFileSync(require("node:path").join(require("node:os").homedir(), ".dsh", "fanal-startup.log"), new Date().toISOString() + " REJECTION: " + String(e && e.stack || e) + "\n"); } catch (_) {} });
 } catch (e) {}
 let shuttingDown = false;
-app.on("before-quit", () => { shuttingDown = true; armWatchdog(); if (brain) { try { brain.kill(); } catch {} } });
+app.on("before-quit", () => {
+  shuttingDown = true;
+  if (idleTimer) { clearInterval(idleTimer); idleTimer = null; }
+  clearActiveMasterKey();
+  armWatchdog();
+  if (brain) { try { brain.kill(); } catch {} }
+});
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
@@ -460,13 +562,15 @@ if (!app.requestSingleInstanceLock()) {
     if (SMOKE) {
       win.webContents.once("did-finish-load", async () => {
         try {
-          const probe = await win.webContents.executeJavaScript(`(() => ({
+          const probe = await win.webContents.executeJavaScript(`(async () => ({
             url: location.href,
             title: document.title,
-            hasDashboardDom: Boolean(document.getElementById("setupSection") && document.getElementById("fanal-agent-hud"))
+            hasDashboardDom: Boolean(document.getElementById("setupSection") && document.getElementById("fanal-agent-hud") && document.getElementById("fanal-lock-curtain")),
+            hasPreloadBridge: Boolean(window.fanalIPC && typeof window.fanalIPC.unlockVault === "function" && window.electronAPI && typeof window.electronAPI.linkBiometric === "function"),
+            vaultStatus: window.fanalIPC && typeof window.fanalIPC.getVaultStatus === "function" ? await window.fanalIPC.getVaultStatus() : null
           }))()`);
           const expectedOrigin = new URL(TARGET_URL).origin;
-          if (!probe || !String(probe.url || "").startsWith(expectedOrigin) || !String(probe.title || "").includes("Fanal") || !probe.hasDashboardDom) {
+          if (!probe || !String(probe.url || "").startsWith(expectedOrigin) || !String(probe.title || "").includes("Fanal") || !probe.hasDashboardDom || !probe.hasPreloadBridge || !probe.vaultStatus || typeof probe.vaultStatus.locked !== "boolean") {
             console.error("SMOKE FAIL — unexpected page: " + JSON.stringify(probe));
             app.exit(1);
             return;
@@ -476,6 +580,13 @@ if (!app.requestSingleInstanceLock()) {
         } catch (err) {
           console.error("SMOKE FAIL — " + (err && err.message ? err.message : err));
           app.exit(1);
+        }
+      });
+    } else {
+      try { win.setContentProtection(true); } catch {}
+      win.webContents.on("did-finish-load", () => {
+        if (isVaultLocked && win && !win.isDestroyed()) {
+          try { win.webContents.send("fanal:vault-locked", { reason: "STARTUP_LOCKED", lockedAtIso: new Date().toISOString() }); } catch {}
         }
       });
     }
@@ -530,6 +641,8 @@ if (!app.requestSingleInstanceLock()) {
   })
   // (los montajes de la cabina/el visor/el doble monitor viven DENTRO del whenReady — véase arriba)
   app.whenReady().then(async () => {
+    isVaultLocked = hasVaultAuthConfigured(DATA_DIR);
+    registerVaultIpcHandlers();
     if (SMOKE) {
       setTimeout(() => {
         console.error("SMOKE FAIL — timeout waiting for window load: " + TARGET_URL);
@@ -548,6 +661,7 @@ if (!app.requestSingleInstanceLock()) {
     setupCoworkRightDrawer(win);
     watchMonitorPlugEvents(win, rightDrawerView);
     bindMonitor2Events(win);
+    if (!SMOKE) startBankGradeSecurityWatchdog(vaultCtx);
     if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
     try {
       const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));

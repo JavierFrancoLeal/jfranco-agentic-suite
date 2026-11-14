@@ -16,11 +16,18 @@ const req = createRequire(import.meta.url);
 const vb = req(join(ROOT, "apps", "desktop", "vault-biometric.js"));
 
 const {
+  DEFAULT_SCRYPT_OPTS,
   guardVaultUnlockAttempt,
+  guardVaultUnlockAttemptAsync,
   deriveKeyFromMasterPassword,
   verifyMasterPassword,
   resolveBiometricLink,
   unlockFanalVaultData,
+  readStoredVaultAuth,
+  hasVaultAuthConfigured,
+  getOrCreateMachineBindingSecret,
+  setupVaultAuth,
+  linkVaultBiometricKey,
 } = vb;
 
 async function main() {
@@ -137,8 +144,179 @@ async function main() {
     assert.equal(tampered.ok, false);
     assert.equal(tampered.status, "COOLDOWN_ACTIVE");
     assert.equal(tampered.waitSeconds, 900);
+
+    // Sync guard must fail loudly if passed an async verifier
+    assert.throws(
+      () => guardVaultUnlockAttempt({ archiveDir: join(tmpDir, "sync-guard-check"), machineBindingSecret: secret, verifyCredentialsFn: async () => true, nowMs: t0 }),
+      /guardVaultUnlockAttemptAsync/
+    );
   } finally {
     rmSync(tmpDir, { recursive: true, force: true });
+  }
+
+  // 6. Async guard: WINDOWS_HELLO_UNAVAILABLE does not burn attempts; invalid password locks out on #3
+  const asyncDir = mkdtempSync(join(tmpdir(), "fanal-vault-async-"));
+  try {
+    const secret = getOrCreateMachineBindingSecret(asyncDir, { isEncryptionAvailable: () => false });
+    assert.ok(typeof secret === "string" && secret.length === 64);
+    const t0 = 1_700_001_000_000;
+    const hwMissing = await guardVaultUnlockAttemptAsync({
+      archiveDir: asyncDir,
+      machineBindingSecret: secret,
+      attemptMethod: "WINDOWS_HELLO",
+      nowMs: t0,
+      verifyCredentialsFn: async () => ({ ok: false, code: "WINDOWS_HELLO_UNAVAILABLE", error: "Use Master Password" }),
+    });
+    assert.equal(hwMissing.ok, false);
+    assert.equal(hwMissing.code, "WINDOWS_HELLO_UNAVAILABLE");
+    assert.equal(hwMissing.failedAttempts, 0);
+    assert.equal(existsSync(join(asyncDir, "vault_guard_state.json")), false);
+
+    // 7. End-to-end setupVaultAuth + DPAPI linkVaultBiometricKey + unlock + fallback
+    const fastScrypt = { ...DEFAULT_SCRYPT_OPTS, N: 1024 };
+    assert.equal(hasVaultAuthConfigured(asyncDir), false);
+    const weak = setupVaultAuth({ archiveDir: asyncDir, masterPassword: "short", scryptOpts: fastScrypt });
+    assert.equal(weak.ok, false);
+    assert.equal(weak.code, "WEAK_MASTER_PASSWORD");
+
+    const mockSafeStorage = {
+      isEncryptionAvailable: () => true,
+      encryptString: (plain) => Buffer.from("DPAPI:" + plain, "utf8"),
+      decryptString: (buf) => {
+        const s = Buffer.from(buf).toString("utf8");
+        if (!s.startsWith("DPAPI:")) throw new Error("DPAPI decrypt failed");
+        return s.slice("DPAPI:".length);
+      },
+    };
+    const setupOk = setupVaultAuth({
+      archiveDir: asyncDir,
+      masterPassword: "Fanal-Loi25-Strong-Key!",
+      scryptOpts: fastScrypt,
+      safeStorage: mockSafeStorage,
+    });
+    assert.equal(setupOk.ok, true);
+    assert.equal(setupOk.keyBuf.length, 32);
+    assert.equal(hasVaultAuthConfigured(asyncDir), true);
+
+    const linked = await linkVaultBiometricKey({
+      archiveDir: asyncDir,
+      keyBuf: setupOk.keyBuf,
+      platform: "win32",
+      safeStorage: mockSafeStorage,
+    });
+    assert.deepEqual(linked, { success: true });
+
+    const storedAfterLink = readStoredVaultAuth(asyncDir);
+    assert.ok(storedAfterLink && storedAfterLink.osProtectedKeyB64);
+
+    // Biometric unlock yields identical 32-byte vault key
+    const bioUnlock = await guardVaultUnlockAttemptAsync({
+      archiveDir: asyncDir,
+      machineBindingSecret: getOrCreateMachineBindingSecret(asyncDir, mockSafeStorage),
+      attemptMethod: "WINDOWS_HELLO",
+      nowMs: t0 + 100,
+      verifyCredentialsFn: () => unlockFanalVaultData({
+        method: "BIOMETRIC",
+        platform: "win32",
+        safeStorage: mockSafeStorage,
+        storedVaultAuth: storedAfterLink,
+      }),
+    });
+    assert.equal(bioUnlock.ok, true);
+    assert.equal(bioUnlock.keyBuf.equals(setupOk.keyBuf), true);
+    bioUnlock.keyBuf.fill(0);
+
+    // Fallback to master password when DPAPI is unavailable yields same key
+    const dpapiOff = { isEncryptionAvailable: () => false };
+    const bioFallback = await guardVaultUnlockAttemptAsync({
+      archiveDir: asyncDir,
+      machineBindingSecret: getOrCreateMachineBindingSecret(asyncDir, dpapiOff),
+      attemptMethod: "WINDOWS_HELLO",
+      nowMs: t0 + 200,
+      verifyCredentialsFn: () => unlockFanalVaultData({
+        method: "BIOMETRIC",
+        platform: "win32",
+        safeStorage: dpapiOff,
+        storedVaultAuth: storedAfterLink,
+      }),
+    });
+    assert.equal(bioFallback.ok, false);
+    assert.equal(bioFallback.code, "WINDOWS_HELLO_UNAVAILABLE");
+
+    const pwUnlock = await guardVaultUnlockAttemptAsync({
+      archiveDir: asyncDir,
+      machineBindingSecret: getOrCreateMachineBindingSecret(asyncDir, dpapiOff),
+      attemptMethod: "MASTER_PASSWORD",
+      nowMs: t0 + 300,
+      verifyCredentialsFn: () => unlockFanalVaultData({
+        method: "MASTER_PASSWORD",
+        passwordInput: "Fanal-Loi25-Strong-Key!",
+        storedVaultAuth: storedAfterLink,
+        scryptOpts: fastScrypt,
+      }),
+    });
+    assert.equal(pwUnlock.ok, true);
+    assert.equal(pwUnlock.keyBuf.equals(setupOk.keyBuf), true);
+    pwUnlock.keyBuf.fill(0);
+    setupOk.keyBuf.fill(0);
+
+    // 7b. User cancelling TouchID returns BIOMETRIC_CANCELLED and does NOT increment intrusion counter;
+    // whereas corrupt DPAPI decryption (SAFE_STORAGE_DECRYPT_FAILED) DOES count toward lockout.
+    const bioCancelDir = mkdtempSync(join(tmpdir(), "fanal-vault-cancel-"));
+    try {
+      const bioCancelSecret = getOrCreateMachineBindingSecret(bioCancelDir, dpapiOff);
+      const darwinCancel = await guardVaultUnlockAttemptAsync({
+        archiveDir: bioCancelDir,
+        machineBindingSecret: bioCancelSecret,
+        attemptMethod: "TOUCH_ID",
+        nowMs: t0 + 400,
+        verifyCredentialsFn: () => unlockFanalVaultData({
+          method: "BIOMETRIC",
+          platform: "darwin",
+          systemPreferences: { promptTouchID: async () => { throw new Error("User canceled Touch ID"); } },
+          safeStorage: mockSafeStorage,
+          storedVaultAuth: storedAfterLink,
+        }),
+      });
+      assert.equal(darwinCancel.ok, false);
+      assert.equal(darwinCancel.code, "BIOMETRIC_CANCELLED");
+      assert.equal(darwinCancel.failedAttempts, 0);
+      assert.equal(existsSync(join(bioCancelDir, "vault_guard_state.json")), false);
+
+      const decryptFail = await guardVaultUnlockAttemptAsync({
+        archiveDir: bioCancelDir,
+        machineBindingSecret: bioCancelSecret,
+        attemptMethod: "WINDOWS_HELLO",
+        nowMs: t0 + 500,
+        verifyCredentialsFn: () => unlockFanalVaultData({
+          method: "BIOMETRIC",
+          platform: "win32",
+          safeStorage: { isEncryptionAvailable: () => true, decryptString: () => { throw new Error("bad cipher"); } },
+          storedVaultAuth: storedAfterLink,
+        }),
+      });
+      assert.equal(decryptFail.ok, false);
+      assert.equal(decryptFail.code, "SAFE_STORAGE_DECRYPT_FAILED");
+      assert.equal(decryptFail.failedAttempts, 1);
+    } finally {
+      rmSync(bioCancelDir, { recursive: true, force: true });
+    }
+  } finally {
+    rmSync(asyncDir, { recursive: true, force: true });
+  }
+
+  // 8. Static runtime wiring contract across preload.js, main.js, and dashboard.html
+  const preloadSrc = readFileSync(join(ROOT, "apps", "desktop", "preload.js"), "utf8");
+  for (const sym of ["fanalIPC", "electronAPI", "setupVault", "unlockVault", "lockVault", "getVaultStatus", "linkBiometric", "fanal:vault-locked", "fanal:vault-unlocked"]) {
+    assert.ok(preloadSrc.includes(sym), `preload.js missing ${sym}`);
+  }
+  const mainSrc = readFileSync(join(ROOT, "apps", "desktop", "main.js"), "utf8");
+  for (const ch of ["fanal:vault-status", "fanal:setup-vault", "fanal:unlock-vault", "fanal:lock-vault", "fanal:link-biometric", "startBankGradeSecurityWatchdog("]) {
+    assert.ok(mainSrc.includes(ch), `main.js missing ${ch}`);
+  }
+  const dashSrc = readFileSync(join(ROOT, "supervisor", "dashboard.html"), "utf8");
+  for (const fn of ["triggerBiometricUnlock", "triggerPasswordUnlock", "fanal:vault-locked", "setupVault", "vaultSaved"]) {
+    assert.ok(dashSrc.includes(fn), `dashboard.html missing ${fn}`);
   }
 
   console.log("VAULT_BIOMETRIC_TESTS PASSED");
