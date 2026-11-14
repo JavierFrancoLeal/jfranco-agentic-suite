@@ -57,6 +57,10 @@ echo "== supervisor =="
 '
 echo "OK supervisor"
 
+echo "== desktop app =="
+"$NODE" tools/verify-app.mjs
+echo "OK desktop app"
+
 echo "== viaje completo de API =="
 NODE="$NODE" sh tools/api-smoke.sh
 
@@ -70,6 +74,7 @@ sh -n tools/activate-ai.sh
 sh -n tools/autostart/install-autostart.sh
 sh -n tools/sync-all.sh
 sh -n tools/sync-check.sh
+sh -n tools/bundle-sync-check.sh
 echo "OK demo tools"
 
 echo "== installers =="

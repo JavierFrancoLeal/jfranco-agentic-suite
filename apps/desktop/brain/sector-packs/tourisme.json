@@ -1,0 +1,9 @@
+{
+  "id": "tourisme",
+  "tableLabel": { "en": "Counter", "es": "Mostrador", "fr": "Comptoir", "de": "Schalter", "it": "Bancone", "pt": "Balcão" },
+  "ordersTarget": { "en": "Visitors", "es": "Visitantes", "fr": "Visiteurs" },
+  "entity": { "en": "visitor", "es": "visitante", "fr": "visiteur" },
+  "fields": [ { "id": "lang", "label": { "fr": "Langue du visiteur", "es": "Idioma del visitante", "en": "Visitor language" }, "hint": { "fr": "Activez la traduction en temps réel", "es": "Activa la traducción en tiempo real", "en": "Turn on real-time translation" } } ],
+  "presets": [ "Information touristique", "Billetterie", "Réservation d'activités" ],
+  "sectorNote": { "fr": "Tourisme et attraits — coefficient × 1,2", "es": "Turismo y atractivos — coeficiente × 1,2", "en": "Tourism and attractions — × 1.2 coefficient" }
+}

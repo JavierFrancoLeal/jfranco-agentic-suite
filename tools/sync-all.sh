@@ -26,6 +26,9 @@ echo "=== sync-all $(date +%Y-%m-%d\ %H:%M) $([ -n "$DRY" ] && echo '[DRY-RUN]')
 
 npmver(){ curl -s --max-time 10 "https://registry.npmjs.org/$1/latest" | "$NODE" -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{try{console.log(JSON.parse(s).version)}catch(e){console.log("0.0.0")}})'; }
 bump(){ "$NODE" -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p,"utf8"));const v=j.version.split(".");v[2]=String(Number(v[2])+1);j.version=v.join(".");fs.writeFileSync(p,JSON.stringify(j,null,2)+"\n");console.log(j.version);' "$1"; }
+# Portable version-string replacement (BSD/macOS `sed -i ""` is not POSIX and
+# breaks on Linux/CI): rewrite `const VERSION = "..."` in a JS source file.
+replaceConstVersion(){ "$NODE" -e 'const fs=require("fs"),f=process.argv[1],nv=process.argv[2];fs.writeFileSync(f,fs.readFileSync(f,"utf8").replace(/const VERSION = ".*"/,`const VERSION = "${nv}"`));' "$1" "$2"; }
 pub(){ name="$1"; dir="$2";
   if [ -n "$DRY" ]; then echo "   [dry] publicaría $name desde $dir"; return; fi
   (cd "$dir" && "$NPM" publish --access public --registry https://registry.npmjs.org/ 2>&1 | grep -E "^\+ @|being processed|npm error" | head -1)
@@ -52,25 +55,23 @@ for f in "$ROOT"/docs/sector-packs/*.json; do
   b="$(basename "$f")"
   cmp -s "$f" "$ROOT/supervisor-pkg/sector-packs/$b" 2>/dev/null || { cp "$f" "$ROOT/supervisor-pkg/sector-packs/$b"; CHANGED=1; }
 done
-# Desktop app bundle: keep the brain + UI copies fresh
-  for pair in "supervisor/server.js:apps/desktop/brain/server.js" "supervisor/dashboard.html:apps/desktop/brain/dashboard.html" "supervisor/dashboard-i18n.js:apps/desktop/brain/dashboard-i18n.js" "supervisor/browser-cdp.js:apps/desktop/brain/browser-cdp.js" "ui/panel.html:apps/desktop/ui/panel.html" "ui/manifest.webmanifest:apps/desktop/ui/manifest.webmanifest" "ui/sw.js:apps/desktop/ui/sw.js"; do
-    src="${pair%%:*}"; dst="${pair##*:}";
-    cmp -s "$ROOT/$src" "$ROOT/$dst" || { cp "$ROOT/$src" "$ROOT/$dst"; CHANGED=1; }
-  done
-  for f in "$ROOT"/ui/icons/*; do
-    b="$(basename "$f")"
-    cmp -s "$f" "$ROOT/apps/desktop/ui/icons/$b" 2>/dev/null || { cp "$f" "$ROOT/apps/desktop/ui/icons/$b"; CHANGED=1; }
-  done
-  sname="$("$NODE" -e 'console.log(require(process.argv[1]).name)' "$ROOT/supervisor-pkg/package.json")"
+# Desktop app bundle: detect drift against supervisor/ without copying yet —
+# the single manifest lives in tools/sync-desktop.mjs. A stale desktop copy
+# must also trigger a version bump (lesson #17).
+"$NODE" "$ROOT/tools/sync-desktop.mjs" --check >/dev/null 2>&1 || CHANGED=1
+sname="$("$NODE" -e 'console.log(require(process.argv[1]).name)' "$ROOT/supervisor-pkg/package.json")"
 if [ "$CHANGED" = 1 ]; then
   nv="$(bump "$ROOT/supervisor-pkg/package.json")"
   echo "supervisor: fuentes cambiaron → v$nv"
-  sed -i "" "s|const VERSION = \".*\"|const VERSION = \"$nv\"|" "$ROOT/supervisor/server.js"
+  replaceConstVersion "$ROOT/supervisor/server.js" "$nv"
   cp "$ROOT/supervisor/server.js" "$ROOT/supervisor-pkg/server.js"
   pub "$sname" "$ROOT/supervisor-pkg"
 else
   echo "supervisor: sin cambios ✔"
 fi
+# Sync the desktop bundle AFTER any version bump so apps/desktop/brain/ can
+# never be left holding a stale VERSION (lesson #17).
+"$NODE" "$ROOT/tools/sync-desktop.mjs"
 
 # 2. Plugins: changed files → bump + republish; missing npm → publish as-is
 for d in "$ROOT"/jfranco-*; do
@@ -93,7 +94,7 @@ for d in "$ROOT"/jfranco-*; do
   elif [ "$cur" != "$prev" ]; then
     nv="$(bump "$d/package.json")"
     echo "$base: archivos cambiaron → v$nv"
-    if [ "$base" = "supervisor-pkg" ]; then sed -i "" "s|const VERSION = \".*\"|const VERSION = \"$nv\"|" "$ROOT/supervisor/server.js"; cp "$ROOT/supervisor/server.js" "$ROOT/supervisor-pkg/server.js"; fi
+    if [ "$base" = "supervisor-pkg" ]; then replaceConstVersion "$ROOT/supervisor/server.js" "$nv"; cp "$ROOT/supervisor/server.js" "$ROOT/supervisor-pkg/server.js"; fi
     pub "$name" "$d"
     echo "$cur" > "$marker"
   else

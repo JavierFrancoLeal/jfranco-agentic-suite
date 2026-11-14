@@ -1,0 +1,9 @@
+{
+  "id": "agroalimentaire",
+  "tableLabel": { "en": "Batch", "es": "Lote", "fr": "Lot", "de": "Charge", "it": "Lotto", "pt": "Lote" },
+  "ordersTarget": { "en": "Producers", "es": "Productores", "fr": "Producteurs" },
+  "entity": { "en": "producer", "es": "productor", "fr": "producteur" },
+  "fields": [ { "id": "trace", "label": { "fr": "Traçabilité du lot", "es": "Trazabilidad del lote", "en": "Batch traceability" }, "hint": { "fr": "Étiquettes et inventaires", "es": "Etiquetas e inventarios", "en": "Labels and inventory" } } ],
+  "presets": [ "Étiquetage", "Inventaire", "Commandes fournisseurs" ],
+  "sectorNote": { "fr": "Agroalimentaire et détail — coefficient × 1,1", "es": "Agroalimentario y detalle — coeficiente × 1,1", "en": "Agri-food and retail — × 1.1 coefficient" }
+}

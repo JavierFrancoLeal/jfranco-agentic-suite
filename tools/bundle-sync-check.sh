@@ -2,17 +2,13 @@
 # Bundle-sync guard (lesson #17): the app bundle's brain copies must be
 # identical to the supervisor sources — the chain failure that once shipped
 # a page whose server could not serve it. Fails CI when out of sync.
+# Delegates to tools/sync-desktop.mjs --check (the single manifest source).
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-FAIL=0
-for pair in \
-  "supervisor/server.js:apps/desktop/brain/server.js" \
-  "supervisor/dashboard.html:apps/desktop/brain/dashboard.html" \
-  "ui/panel.html:apps/desktop/ui/panel.html" \
-  "ui/manifest.webmanifest:apps/desktop/ui/manifest.webmanifest" \
-  "ui/sw.js:apps/desktop/ui/sw.js"; do
-  src="${pair%%:*}"; dst="${pair##*:}"
-  if ! cmp -s "$ROOT/$src" "$ROOT/$dst"; then
-    echo "BUNDLE SYNC FAILED: $src differs from $dst (run tools/sync-all.sh)"; FAIL=1
-  fi
-done
-[ "$FAIL" = "0" ] && echo "BUNDLE SYNC PASSED: app bundle in step with sources" || exit 1
+NODE="${DSH_NODE:-}"
+if [ -z "$NODE" ]; then
+  for c in "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/primary-runtime/dependencies/node/bin/node" "$(command -v node 2>/dev/null)"; do
+    if [ -n "$c" ] && [ -x "$c" ]; then NODE="$c"; break; fi
+  done
+fi
+[ -z "$NODE" ] && { echo "FAIL node not found"; exit 1; }
+exec "$NODE" "$ROOT/tools/sync-desktop.mjs" --check

@@ -1,5 +1,5 @@
 {
-  "name": "le-veilleux-desktop",
+  "name": "fanal-desktop",
   "version": "0.1.0",
   "description": "Fanal Desktop — the universal sector dashboard as a desktop application (kiosk-ready). Created by J.Franco.",
   "author": "J.Franco",
@@ -61,7 +61,7 @@
     }
   },
   "allowScripts": {
-    "electron@37.10.3": true
+    "electron@45.3.0": true
   },
   "dependencies": {
     "@electron-internal/extract-zip": "^1.0.8"

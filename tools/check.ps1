@@ -34,5 +34,10 @@ Set-Content -Path "$env:TEMP\dsh-dash.js" -Value $m2.Groups[1].Value -Encoding U
 & $node --check "$env:TEMP\dsh-dash.js" | Out-Null
 Write-Host "OK supervisor"
 
+Write-Host "== desktop app =="
+& $node "tools\verify-app.mjs"
+if ($LASTEXITCODE -ne 0) { throw "verify-app failed" }
+Write-Host "OK desktop app"
+
 Write-Host ""
 Write-Host "ALL CHECKS PASSED"
