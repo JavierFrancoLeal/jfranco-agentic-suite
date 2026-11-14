@@ -659,7 +659,7 @@ function runDashboardAndI18nChecks() {
   assert.ok(ctx.window.I18N.zh.alertWaiting.includes("等待管理层"), "zh.alertWaiting must remain Simplified Chinese");
 
   // Verify dashboard.html uses visibility-aware scheduler and preserves smoke test
-  const dashSrc = fs.readFileSync(path.join(ROOT, "supervisor", "dashboard.html"), "utf8");
+  const dashSrc = fs.readFileSync(path.join(ROOT, "supervisor", "dashboard.html"), "utf8").replace(/\r\n/g, "\n");
   const rawSetIntervals = dashSrc.match(/setInterval\s*\(/g) || [];
   assert.equal(rawSetIntervals.length, 1, "Only scheduleVisiblePoll should wrap setInterval in dashboard.html");
   assert.ok(dashSrc.includes('visibilitychange'), "dashboard.html must listen to visibilitychange safely");
