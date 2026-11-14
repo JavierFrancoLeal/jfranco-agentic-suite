@@ -31,6 +31,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // of this list.
 const FILE_PAIRS = [
   ["supervisor/server.js", "apps/desktop/brain/server.js"],
+  ["supervisor/diagnostic-sanitizer.js", "apps/desktop/brain/diagnostic-sanitizer.js"],
   ["supervisor/dashboard.html", "apps/desktop/brain/dashboard.html"],
   ["supervisor/dashboard-i18n.js", "apps/desktop/brain/dashboard-i18n.js"],
   ["supervisor/browser-cdp.js", "apps/desktop/brain/browser-cdp.js"],

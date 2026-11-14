@@ -29,7 +29,7 @@ jobs:
 
   desktop-windows-smoke:
     runs-on: windows-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,8 +37,17 @@ jobs:
           node-version: 24
           cache: 'npm'
           cache-dependency-path: apps/desktop/package-lock.json
+      - name: Cache electron-builder assets
+        uses: actions/cache@v4
+        with:
+          path: ~/AppData/Local/electron-builder/Cache
+          key: ${{ runner.os }}-electron-builder-${{ hashFiles('apps/desktop/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-electron-builder-
       - name: Install desktop dependencies
         working-directory: apps/desktop
         run: npm ci
-      - name: Run Electron desktop smoke test
+      - name: Run Electron desktop smoke test (source)
         run: node tools/smoke-desktop.mjs
+      - name: Run Electron desktop smoke test (packed ASAR)
+        run: node tools/smoke-desktop.mjs --packed

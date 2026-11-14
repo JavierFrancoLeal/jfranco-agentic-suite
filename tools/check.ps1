@@ -28,10 +28,13 @@ Write-Host "OK ui"
 
 Write-Host "== supervisor =="
 & $node --check "supervisor\server.js" | Out-Null
+& $node --check "supervisor\diagnostic-sanitizer.js" | Out-Null
 $html2 = Get-Content "supervisor\dashboard.html" -Raw
 $m2 = [regex]::Match($html2, "(?s)<script>(.*?)</script>")
 Set-Content -Path "$env:TEMP\dsh-dash.js" -Value $m2.Groups[1].Value -Encoding UTF8
 & $node --check "$env:TEMP\dsh-dash.js" | Out-Null
+& $node "tools\test-diagnostic-export.mjs"
+if ($LASTEXITCODE -ne 0) { throw "test-diagnostic-export failed" }
 Write-Host "OK supervisor"
 
 Write-Host "== desktop app =="

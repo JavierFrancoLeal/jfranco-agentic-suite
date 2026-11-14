@@ -45,6 +45,21 @@ VAR="$(curl -sf -X POST "$BASE/api/register/close" -H "$AUTH" -H "Content-Type: 
 step "Z-report export"
 curl -sf -o /dev/null "$BASE/api/export?type=register" -H "$AUTH" || { echo "FAIL"; exit 1; }; echo "ok"
 
+step "sanitized support ticket + diagnostic export (no vault/PII leak)"
+printf '{"sentinel":true}' > "$DATA/vault-last.json"
+BEFORE_V="$(cat "$DATA/vault-last.json")"
+curl -sf -X POST "$BASE/api/support/ticket" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" \
+  -d '{"userProblemDescription":"Bonjour M. Tremblay, email jean@example.com failed with Bearer sk-secret123456789 at /Users/alice/doc.pdf","failingDocumentRawText":"C:\\Users\\alice\\tax.pdf"}' | grep -q '"ok":true' || { echo "FAIL ticket"; exit 1; }
+AFTER_V="$(cat "$DATA/vault-last.json")"
+[ "$BEFORE_V" = "$AFTER_V" ] || { echo "FAIL vault-last.json clobbered"; exit 1; }
+DIAG_JSON="$(curl -sf "$BASE/api/diagnostic/export" -H "$AUTH")"
+echo "$DIAG_JSON" | grep -q '"loi25Redacted":true' || { echo "FAIL diag export"; exit 1; }
+for leak in "sk-secret123456789" "jean@example.com" "/Users/alice" "Users\\\\alice" '"vault":'; do
+  if echo "$DIAG_JSON" | grep -qF "$leak"; then echo "FAIL leak found: $leak"; exit 1; fi
+done
+curl -sf "$BASE/api/diagnostic/export?format=md" -H "$AUTH" | grep -q "Sanitized Diagnostic Export" || { echo "FAIL diag md"; exit 1; }
+echo "ok"
+
 step "orders + paid flag"
 curl -sf -X POST "$BASE/api/live/summary" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"speakers":[{"name":"Mesa 3","requests":[{"text":"dos cafés","tier":"GREEN"}]}]}' >/dev/null
 curl -sf -X POST "$BASE/api/live/confirm" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"requestId":"p1-r1"}' >/dev/null

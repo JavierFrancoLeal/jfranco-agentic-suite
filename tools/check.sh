@@ -48,6 +48,7 @@ echo "OK ui"
 
 echo "== supervisor =="
 "$NODE" --check supervisor/server.js
+"$NODE" --check supervisor/diagnostic-sanitizer.js
 "$NODE" -e '
   const fs=require("fs");
   const h=fs.readFileSync("supervisor/dashboard.html","utf8");
@@ -55,6 +56,7 @@ echo "== supervisor =="
   if(!m) throw new Error("dashboard: script block missing");
   new Function(m[1]);
 '
+"$NODE" tools/test-diagnostic-export.mjs
 echo "OK supervisor"
 
 echo "== desktop app =="

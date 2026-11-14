@@ -37,6 +37,7 @@ if (isWebOrigin) {
     openInRightDrawer: (target, pageNumber) => ipcRenderer.invoke("fanal:open-in-right-drawer", target, pageNumber),
     closeRightDrawer: () => ipcRenderer.invoke("fanal:close-right-drawer"),
     setConnectedFolder: (folderPath) => ipcRenderer.invoke("fanal:set-connected-folder", folderPath),
+    exportDiagnostic: () => ipcRenderer.invoke("fanal:export-diagnostic"),
     on: (channel, listener) => {
       if (!ALLOWED_PUSH_CHANNELS.has(channel) || typeof listener !== "function") {
         return () => {};

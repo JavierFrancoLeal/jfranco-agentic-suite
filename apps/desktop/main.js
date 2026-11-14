@@ -190,6 +190,49 @@ function registerVaultIpcHandlers() {
       reason: "vincular la biometría a la bóveda Fanal (Loi 25)",
     });
   });
+  ipcMain.handle("fanal:export-diagnostic", (ev) => {
+    if (!isTrustedIpcEvent(ev)) {
+      return { ok: false, code: "UNTRUSTED_IPC_ORIGIN", error: "Blocked untrusted origin." };
+    }
+    const { buildSanitizedDiagnosticReport } = require(brainPath("diagnostic-sanitizer.js"));
+    const startupLogs = [];
+    const seenLogFiles = new Set();
+    for (const logPath of [path.join(os.homedir(), ".dsh", "fanal-startup.log"), path.join(DATA_DIR, "fanal-startup.log")]) {
+      const resolvedLog = path.resolve(logPath);
+      if (seenLogFiles.has(resolvedLog)) continue;
+      seenLogFiles.add(resolvedLog);
+      try {
+        if (fs.existsSync(resolvedLog)) {
+          const lines = fs.readFileSync(resolvedLog, "utf8").split(/\r?\n/).filter(Boolean).slice(-25);
+          startupLogs.push(...lines);
+        }
+      } catch {}
+    }
+    let recentTickets = [];
+    try {
+      const tkFile = path.join(DATA_DIR, "support-tickets.jsonl");
+      if (fs.existsSync(tkFile)) {
+        recentTickets = fs.readFileSync(tkFile, "utf8")
+          .split(/\r?\n/)
+          .filter(Boolean)
+          .slice(-10)
+          .map((line) => { try { return JSON.parse(line); } catch { return null; } })
+          .filter(Boolean);
+      }
+    } catch {}
+    const report = buildSanitizedDiagnosticReport({
+      appVersion: app.getVersion(),
+      electronVersion: process.versions.electron || "",
+      vaultStatus: {
+        configured: hasVaultAuthConfigured(DATA_DIR),
+        locked: isVaultLocked,
+        biometricLinked: Boolean(readStoredVaultAuth(DATA_DIR)?.osProtectedKeyB64),
+      },
+      recentTickets,
+      startupLogs,
+    });
+    return { ok: true, diagnostic: report.bundle, markdown: report.markdown };
+  });
 }
 function startBankGradeSecurityWatchdog(ctx) {
   if (watchdogStarted) return;
@@ -717,12 +760,17 @@ if (!app.requestSingleInstanceLock()) {
             url: location.href,
             title: document.title,
             hasDashboardDom: Boolean(document.getElementById("setupSection") && document.getElementById("fanal-agent-hud") && document.getElementById("fanal-lock-curtain")),
-            hasPreloadBridge: Boolean(window.fanalIPC && typeof window.fanalIPC.unlockVault === "function" && window.electronAPI && typeof window.electronAPI.linkBiometric === "function"),
-            vaultStatus: window.fanalIPC && typeof window.fanalIPC.getVaultStatus === "function" ? await window.fanalIPC.getVaultStatus() : null
+            hasPreloadBridge: Boolean(window.fanalIPC && typeof window.fanalIPC.unlockVault === "function" && typeof window.fanalIPC.exportDiagnostic === "function" && window.electronAPI && typeof window.electronAPI.linkBiometric === "function"),
+            vaultStatus: window.fanalIPC && typeof window.fanalIPC.getVaultStatus === "function" ? await window.fanalIPC.getVaultStatus() : null,
+            diagnosticOk: window.fanalIPC && typeof window.fanalIPC.exportDiagnostic === "function" ? Boolean((await window.fanalIPC.exportDiagnostic())?.diagnostic?.loi25Redacted) : false
           }))()`);
+          const packagedPathsOk = !app.isPackaged || (
+            brainPath("server.js").includes("app.asar.unpacked") &&
+            brainPath("diagnostic-sanitizer.js").includes("app.asar.unpacked")
+          );
           const expectedOrigin = TARGET_ORIGIN;
-          if (!probe || !String(probe.url || "").startsWith(expectedOrigin) || !String(probe.title || "").includes("Fanal") || !probe.hasDashboardDom || !probe.hasPreloadBridge || !probe.vaultStatus || typeof probe.vaultStatus.locked !== "boolean") {
-            console.error("SMOKE FAIL — unexpected page: " + JSON.stringify(probe));
+          if (!probe || !String(probe.url || "").startsWith(expectedOrigin) || !String(probe.title || "").includes("Fanal") || !probe.hasDashboardDom || !probe.hasPreloadBridge || !probe.vaultStatus || typeof probe.vaultStatus.locked !== "boolean" || !probe.diagnosticOk || !packagedPathsOk) {
+            console.error("SMOKE FAIL — unexpected page: " + JSON.stringify({ ...probe, packagedPathsOk }));
             app.exit(1);
             return;
           }

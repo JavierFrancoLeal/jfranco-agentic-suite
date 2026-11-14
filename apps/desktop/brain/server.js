@@ -23,6 +23,12 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const crypto = require("crypto");
+const {
+  redactSecretsAndPaths,
+  extractSanitizedText,
+  sanitizeTicketRecord,
+  buildSanitizedDiagnosticReport,
+} = require("./diagnostic-sanitizer");
 
 const PORT = Number(process.env.DSH_SUPERVISOR_PORT || 8787);
 const HTTPS_PORT = Number(process.env.DSH_SUPERVISOR_HTTPS_PORT || 8443);
@@ -350,22 +356,30 @@ function resolveDiagnosticToken(text) {
   return { isDiagnosticResolution: true, token, known: true, botReplyTitle: "🔧 Diagnóstico Automático para " + token + ": " + cat.title, botReplyBody: "Fanal se detuvo para no inventar un dato en '" + (snap.fileName || "la tarea") + "' (" + (snap.detail || "verifique el archivo") + ").", primaryActionBtn: { label: cat.autoFixLabel, actionCode: cat.autoFixAction, targetFile: snap.fileName || "" }, escalateBtnLabel: "🛟 Si el problema continúa, enviar código sanitizado a Soporte Fanal" };
 }
 function buildSanitizedSupportTicket(o) {
-  const v = (t) => { try { return veil(String(t || "")); } catch (e) { return String(t || ""); } };
-  const safeMsg = v(o.userProblemDescription);
-  const safeDoc = o.failingDocumentRawText ? v(String(o.failingDocumentRawText).slice(0, 2500)) : null;
-  const safeLogs = (o.lastLogLinesArray || []).slice(-15).map((l) => v(String(l)));
-  return {
+  const safeVeil = (text) => extractSanitizedText(text, (t) => veil(t, { persistVault: false }));
+  return sanitizeTicketRecord({
     ticketId: "BUG-" + Date.now().toString(36).toUpperCase(),
     createdAtIso: new Date().toISOString(),
-    clientId: (o.clientProfile && o.clientProfile.id) || "",
-    professionProfile: (o.clientProfile && o.clientProfile.professionKey) || "",
-    environment: { platform: process.platform, osRelease: require("node:os").release(), arch: process.arch, ramFreeMb: Math.round(require("node:os").freemem() / 1048576), computeMode: (o.activeScreenState && o.activeScreenState.computeMode) || "", appBinaryVersion: (o.activeScreenState && o.activeScreenState.appVersion) || "", rulesBundleVersion: (o.activeScreenState && o.activeScreenState.rulesVersion) || "" },
-    uiContext: { currentMode: (o.activeScreenState && o.activeScreenState.mode) || "", activeApicesCount: (o.activeScreenState && o.activeScreenState.yellowCount) || 0, activeRedBlockersCount: (o.activeScreenState && o.activeScreenState.redCount) || 0, lastErrorCode: (o.activeScreenState && o.activeScreenState.lastErrorCode) || "NONE" },
-    sanitizedUserReport: safeMsg,
-    sanitizedDocStructureSample: safeDoc,
-    sanitizedRecentLogs: safeLogs,
-    loi25AttestationHash: require("node:crypto").createHash("sha256").update(safeMsg + (safeDoc || "")).digest("hex").slice(0, 16),
-  };
+    professionProfile: (o && o.clientProfile && o.clientProfile.professionKey) || "",
+    environment: {
+      platform: process.platform,
+      osRelease: os.release(),
+      arch: process.arch,
+      ramFreeMb: Math.round(os.freemem() / 1048576),
+      computeMode: (o && o.activeScreenState && o.activeScreenState.computeMode) || "",
+      appBinaryVersion: (o && o.activeScreenState && o.activeScreenState.appVersion) || "",
+      rulesBundleVersion: (o && o.activeScreenState && o.activeScreenState.rulesVersion) || "",
+    },
+    uiContext: {
+      currentMode: (o && o.activeScreenState && o.activeScreenState.mode) || "",
+      activeApicesCount: (o && o.activeScreenState && o.activeScreenState.yellowCount) || 0,
+      activeRedBlockersCount: (o && o.activeScreenState && o.activeScreenState.redCount) || 0,
+      lastErrorCode: (o && o.activeScreenState && o.activeScreenState.lastErrorCode) || "NONE",
+    },
+    sanitizedUserReport: safeVeil((o && o.userProblemDescription) || "") || "",
+    sanitizedDocStructureSample: o && o.failingDocumentRawText ? safeVeil(String(o.failingDocumentRawText).slice(0, 2500)) : null,
+    sanitizedRecentLogs: ((o && o.lastLogLinesArray) || []).slice(-15).map((l) => safeVeil(String(l)) || ""),
+  });
 }
 function verifyOfficialIdImageAgainstForm(ocrText, form) {
   const clean = String(ocrText || "").toUpperCase();
@@ -823,7 +837,7 @@ function memoryWrite(m) { try { fs.writeFileSync(path.join(DATA_DIR, "memory.jso
 const stripAccents = (str) => String(str).normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 const TOPONYM_GUARD = /(?:\b(?:rue|boul|boulevard|av|avenue|ch|chemin|rang|route|pont|saint|sainte|st|ste|lac|mont|ville|parc|place|autoroute|école|hôpital)[.\-\s]+)$/iu;
 const QC_PROPER_NAMES = new Set(["Tremblay","Gagnon","Roy","Bouchard","Gauthier","Morin","Lavoie","Fortin","Gagné","Ouellet","Pelletier","Bélanger","Lévesque","Bergeron","Leblanc","Paquette","Girard","Simard","Boucher","Caron","Beaulieu","Cloutier","Dubé","Poirier","Fournier","Lapointe","Leclerc","Lefebvre","Poulin","Thibault","Nadeau","Martin","Landry","Martel","Bédard","Grenier","Lessard","Richard","Michaud","Hébert","Desjardins","Couture","Turcotte","Savard","Lachance","Gosselin","Blais","Proulx","Demers","Guay"]);
-function veil(text) {
+function veil(text, opts = {}) {
   // v2.1 (Argon Max veil audit): the empty-memory cold leads, the homographs,
   // the hyphen/apostrophe names, the toponyms, the civic addresses.
   let t = String(text || "");
@@ -869,7 +883,9 @@ function veil(text) {
   t = t.replace(/\b(\d{1,5})\s*,?\s*(?=(?:rue|boul|boulevard|av|avenue|ch|chemin|rang|route)\b)/giu, (m0) => tok(m0.trim()) + " ");
   t = t.replace(/\b\d{3}[-.\s]?\d{3}[-.\s]?\d{4}\b/g, "[TEL_]");
   t = t.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, "[COURRIEL_]");
-  try { fs.writeFileSync(path.join(DATA_DIR, "vault-last.json"), JSON.stringify(vault), { mode: 0o600 }); } catch (e) {}
+  if (!opts || opts.persistVault !== false) {
+    try { fs.writeFileSync(path.join(DATA_DIR, "vault-last.json"), JSON.stringify(vault), { mode: 0o600 }); } catch (e) {}
+  }
   return { text: t, vault };
 }
 // La bóveda huérfana se barre al arrancar y cada hora (PII máximo 24 h en disco).
@@ -1952,6 +1968,57 @@ async function api(req, res, pathname) {
       fs.appendFileSync(f, JSON.stringify(t) + "\n", { mode: 0o600 });
     } catch (e) {}
     return send(res, 200, { ok: true, ticketId: t.ticketId });
+  }
+  if (pathname === "/api/diagnostic/export" && req.method === "GET") {
+    if (!managerOnly(res, req)) return;
+    const q = new URL(req.url, "http://localhost").searchParams;
+    const format = (q.get("format") || "json").toLowerCase();
+    let vaultStatus = { configured: false, locked: false, biometricLinked: false };
+    try {
+      const vaPath = path.join(DATA_DIR, "vault-auth.json");
+      if (fs.existsSync(vaPath)) {
+        const va = JSON.parse(fs.readFileSync(vaPath, "utf8"));
+        vaultStatus = {
+          configured: Boolean(va && typeof va === "object" && Object.keys(va).length > 0),
+          locked: false,
+          biometricLinked: Boolean(va && va.osProtectedKeyB64),
+        };
+      }
+    } catch {}
+    let recentTickets = [];
+    try {
+      const tkFile = path.join(DATA_DIR, "support-tickets.jsonl");
+      if (fs.existsSync(tkFile)) {
+        recentTickets = fs.readFileSync(tkFile, "utf8")
+          .split(/\r?\n/)
+          .filter(Boolean)
+          .slice(-10)
+          .map((line) => { try { return JSON.parse(line); } catch { return null; } })
+          .filter(Boolean);
+      }
+    } catch {}
+    let startupLogs = [];
+    try {
+      const logFile = path.join(DATA_DIR, "fanal-startup.log");
+      if (fs.existsSync(logFile)) {
+        startupLogs = fs.readFileSync(logFile, "utf8").split(/\r?\n/).filter(Boolean).slice(-50);
+      }
+    } catch {}
+    const report = buildSanitizedDiagnosticReport({
+      appVersion: process.env.FANAL_APP_VERSION || "",
+      vaultStatus,
+      recentTickets,
+      startupLogs,
+      sanitizeText: (txt) => veil(txt, { persistVault: false }),
+    });
+    if (format === "md" || format === "markdown") {
+      res.writeHead(200, {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="fanal-diagnostic.md"',
+      });
+      return res.end(report.markdown);
+    }
+    return send(res, 200, { ok: true, diagnostic: report.bundle });
   }
   if (pathname === "/api/update/hotpatch-verify" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
