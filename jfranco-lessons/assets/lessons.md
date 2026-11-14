@@ -106,7 +106,30 @@ every future session must obey them so the past does not repeat.
   reviews the `git diff` — DSH implements → Antigravity audits (plan, low
   effort); Antigravity implements → DSH runs tests + checks the diff.
 
-## The agent-event law (lesson #39 — the payload, not the agent, 2026-11-12 & 2026-11-14)
+## The dialogue law (lesson #39 — two-agent turn protocol, 2026-11-14)
+- Two agents relayed through one human have NO shared state, so "who said what,
+  in which order" is ambiguous unless you impose a total order. Fix with four
+  rules + one shared file (`~/.dsh/PROTOCOLO.md` — the canonical source — plus
+  `~/.dsh/dialogue.md` as the active ledger; archive closed rounds under
+  `~/.dsh/dialogues/`):
+  1. **One leader per task** (never broadcast). Mode A: Antigravity leads for
+     facts/docs/web/architecture (it anchors truth, ~4–15% hallucination); DSH
+     is the critic/executor in sub-turns. Mode B: DSH leads for its own plugins
+     / house rules / bounded code; Antigravity audits in sub-turns.
+  2. **Sequential relay by default**: the leader answers (T1); the follower gets
+     "the task + T1's labeled response" (T2); then synthesis + human sign.
+     Exception = "Jurado/Doble Ciego" (parallel independent opinions, marked,
+     never crossed, funneled to ONE synthesizer).
+  3. **Causal envelope + DISK_LOCK**: every relayed/logged message carries
+     `#N | timestamp | DE: <X> | PARA: <Y> | RE: #<parent> | NEXT: <GEMINI|DEEPSEEK|HUMANO> | DISK_LOCK: <NONE|GEMINI|DEEPSEEK>`
+     so `NEXT` and `DISK_LOCK` impose a total order and never two code writers
+     at once (the piece that prevents stomping the same `git diff`).
+  4. **Human-facing clarity (no deadlock)**: whenever `NEXT: HUMANO`, end with an
+     explicit `## ACCIÓN PARA TI` in plain language — which chat, what to decide
+     without jargon, and the exact copy-paste text for the other agent. Never
+     reply with a passive "waiting" message alone.
+
+## The agent-event law (lesson #40 — the payload, not the agent, 2026-11-12 & 2026-11-14)
 - `agent/created`, `agent/disposed` and `agent/status` emit a PAYLOAD
   `{ agent, source, signal }` — never the `agent` object directly. The handler's
   first argument is that payload, so `(agent) => agent.ctx.effect(...)` throws
@@ -120,3 +143,26 @@ every future session must obey them so the past does not repeat.
   because the knowledge stayed in `docs/LEARNINGS.md` and never reached the
   active lessons nor the authoring template. Now guarded in `tools/check-host.mjs`
   (static + runtime) and wired into `tools/check-plugin.sh`.
+
+## The homeostasis law (lesson #41 — adaptive model routing, 2026-11-14)
+- Two brains is one organism: Antigravity (Gemini) = perception/multimodal/long
+  context/external facts; DSH (DeepSeek) = bounded symbolic logic/code/contrast;
+  the corpus callosum = `~/.dsh/PROTOCOLO.md` + `dialogue.md`.
+- Route the model by task level, not by habit — cheapest sufficient, escalate
+  only on a real signal:
+  - **Reflex (read/summarize/classify/format/quick audit)** → Flash / `effort low`.
+  - **Habit (bounded code, closed spec, tests, one-line fix)** → Hydrogen medium
+    / DSH Pro (acotado).
+  - **Neocortex (new architecture, multi-file bugs, external docs/APIs)** →
+    Hydrogen high/xhigh / DSH Pro (as the repo-reading auditor, never memory).
+  - **Frontier (structural redesign, legal/financial, after 2 failures)** →
+    Argon / DSH Pro max.
+- Four pain sensors (nociceptors) drive the shift:
+  1. **2-failure rule** — a test/cross-audit bounce escalates one notch; two
+     bounces at the top = stop and reframe the whole problem.
+  2. **Risk (SEMI/RED)** — never stay on Flash for a write/irreversible action;
+     force Hydrogen/Argon + cross-audit before the human signs.
+  3. **Friction** — a real evidence-backed objection between the two brains
+     escalates the synthesis one notch.
+  4. **Latency/fatigue** — when work turns repetitive/mechanical, DE-escalate
+     (Argon→Hydrogen→Flash / effort low) to stop burning cortex on muscle work.

@@ -41,12 +41,15 @@ const EVENT_RE = /\.on\(\s*(["'`])agent\/(?:created|disposed|status)\1\s*,/g;
   let m;
   while ((m = EVENT_RE.exec(source)) !== null) {
     const rest = source.slice(EVENT_RE.lastIndex);
-    const fn = rest.match(/^\s*(?:async\s+)?(?:function\s*)?\(([^)]*)\)/);
+    // Match `({agent})=>`, `(agent)=>`, bare `agent =>`, `async agent =>`,
+    // `function (agent)`, `function name(agent)` (and async variants). Any
+    // non-destructured first arg (`agent` identifier) is the same bug.
+    const fn = rest.match(/^\s*(?:async\s+)?(?:function(?:\s+[A-Za-z_$][\w$]*)?\s*)?(?:\(([^)]*)\)|([A-Za-z_$][\w$]*)\s*=>)/);
     if (!fn) continue;
-    const params = (fn[1] || "").trim();
+    const params = ((fn[1] || "") + (fn[2] || "")).trim();
     if (params !== "" && !params.includes("{")) {
       const line = source.slice(0, m.index).split("\n").length;
-      failures.push(`line ${line}: handler does not destructure the payload — use \`({ agent }) =>\`, got \`(${params})\` (event emits \`{ agent, source, signal }\`)`);
+      failures.push(`line ${line}: handler does not destructure the payload — use \`({ agent }) =>\`, got \`${params}\` (event emits \`{ agent, source, signal }\`)`);
     }
   }
 }
@@ -94,7 +97,14 @@ async function runRuntime() {
   try {
     mod = await import(pathToFileURL(resolve(file)).href);
   } catch (e) {
-    warnings.push(`runtime skipped: could not import plugin (${e.message})`);
+    const code = e && e.code;
+    const msg = String(e && e.message ? e.message : e);
+    const missingPkg = msg.match(/Cannot find package ['"]([^'"]+)['"]/);
+    if (code === "ERR_MODULE_NOT_FOUND" && missingPkg) {
+      warnings.push(`runtime skipped: missing peer dep "${missingPkg[1]}" — add it to the mock map in check-host.mjs`);
+      return;
+    }
+    failures.push(`runtime: could not import plugin (${msg})`);
     return;
   }
   // Only a NAMED `apply` export matters here: a default-export Service plugin
@@ -104,7 +114,7 @@ async function runRuntime() {
   const apply = mod.apply;
 
   const { ctx, listeners } = mockCtx();
-  try { apply(ctx); }
+  try { await apply(ctx); }
   catch (e) { warnings.push(`apply(ctx) threw: ${e.message}`); }
 
   const handlers = listeners["agent/created"] || [];
@@ -123,7 +133,7 @@ async function runRuntime() {
   ];
   for (const [i, handler] of handlers.entries()) {
     for (const [j, payload] of payloads.entries()) {
-      try { handler(payload); }
+      try { await handler(payload); }
       catch (e) {
         const msg = String(e && e.message ? e.message : e);
         if (/undefined|Cannot read propert/i.test(msg)) {

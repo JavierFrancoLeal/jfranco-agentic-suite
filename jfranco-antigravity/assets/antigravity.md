@@ -12,10 +12,12 @@ The agent calls `antigravity` with an `action`:
 |---|---|---|---|
 | `plan` | `--mode plan` | **GREEN** | Read-only analysis/proposal. Never touches files. |
 | `edit` | `--mode accept-edits` | **SEMI-AUTOMATIC ⚑** | Writes files. Review AFTER with `git diff`. Requires a clean Git tree. |
+| `audit` | `--mode plan` | **GREEN** | Cross-reviews the uncommitted `git diff` (bugs / hallucinated APIs / over-engineering). |
 | *(not exposed)* | `--mode auto` / `--dangerously-skip-permissions` | **RED** | Never by the agent — the human runs those directly. |
 
-Parameters: `action`, `prompt`, `cwd` (must be a Git repo for `edit`), `effort`
-(`low`/`medium`/`high`/`xhigh`/`max`; lower = faster, `medium` default).
+Parameters: `action`, `prompt`, `cwd` (must be a Git repo for `edit`/`audit`),
+`effort` (`low`/`medium`/`high`/`xhigh`/`max`; lower = faster, `medium` default),
+`model` (optional override, e.g. a Gemini Hydrogen/Argon id).
 
 ## Safety
 

@@ -59,9 +59,6 @@ const AGY = resolveAgyBin();
 const DEFAULT_TIMEOUT_S = 300;
 const DEFAULT_EFFORT = "medium";
 
-const ok = (text) => ({ kind: "success", text });
-const err = (text) => ({ kind: "error", text });
-
 // Hash-chained audit trail (tamper-evident), same pattern as cockpit-browser.
 function writeAudit(action, tier, target, value, meta = {}) {
   const dir = dirname(AUDIT_FILE);
@@ -80,14 +77,26 @@ function writeAudit(action, tier, target, value, meta = {}) {
   if (isNew) { try { chmodSync(AUDIT_FILE, 0o600); } catch {} }
 }
 
-// True only when `git status --porcelain` is empty (so `git diff` after an
-// accept-edits run shows exactly what Antigravity changed).
+// True only inside a Git work tree (handles subdirectories, e.g. cwd =
+// "plugins/jfranco-antigravity" with ".git" at "plugins/.git").
+function gitIsInsideWorkTree(cwd) {
+  return new Promise((resolvePromise) => {
+    const child = spawn("git", ["rev-parse", "--is-inside-work-tree"], { cwd });
+    let out = "";
+    child.stdout.on("data", (d) => { out += d; });
+    child.on("close", (code) => resolvePromise(code === 0 && out.trim() === "true"));
+    child.on("error", () => resolvePromise(false));
+  });
+}
+
+// True only when `git status --porcelain` succeeds (exit 0) AND is empty, so
+// `git diff` after an accept-edits run shows exactly what Antigravity changed.
 function gitIsClean(cwd) {
   return new Promise((resolvePromise) => {
     const child = spawn("git", ["status", "--porcelain"], { cwd });
     let out = "";
     child.stdout.on("data", (d) => { out += d; });
-    child.on("close", () => resolvePromise(out.trim() === ""));
+    child.on("close", (code) => resolvePromise(code === 0 && out.trim() === ""));
     child.on("error", () => resolvePromise(false));
   });
 }
@@ -137,7 +146,8 @@ function apply(ctx) {
         description:
           "Delegate a coding task to Google Antigravity (agy CLI) under the J.Franco guardrails. "
           + "action=plan analyzes and proposes WITHOUT touching files (GREEN, read-only); "
-          + "action=edit implements with accept-edits (SEMI-AUTOMATIC: it WRITES files, review with git diff after, requires a clean Git tree). "
+          + "action=edit implements with accept-edits (SEMI-AUTOMATIC: it WRITES files, review with git diff after, requires a clean Git tree); "
+          + "action=audit cross-reviews the uncommitted git diff for bugs / hallucinated APIs / over-engineering (GREEN). "
           + "The agent never uses auto or --dangerously-skip-permissions (RED).",
         parameters: {
           action: {
@@ -168,21 +178,29 @@ function apply(ctx) {
           const prompt = String(args.prompt || "").trim();
           if (!prompt) return { text: "antigravity requires a non-empty prompt." };
 
+          const ACTIONS = ["plan", "edit", "audit"];
+          if (!ACTIONS.includes(args.action)) {
+            return { text: `antigravity: unknown action "${args.action}" (expected ${ACTIONS.join(" | ")}).` };
+          }
+
           const isEdit = args.action === "edit";
           const isAudit = args.action === "audit";
-          if ((isEdit || isAudit) && !existsSync(join(cwd, ".git"))) {
-            return { text: `antigravity ${args.action} requires a Git repository at ${cwd}.` };
+          if (isEdit || isAudit) {
+            const insideGit = await gitIsInsideWorkTree(cwd);
+            if (!insideGit) {
+              return { text: `antigravity ${args.action} requires a Git repository at ${cwd}.` };
+            }
           }
           if (isEdit) {
             const clean = await gitIsClean(cwd);
             if (!clean) {
               return { text: `antigravity edit refused: ${cwd} has uncommitted changes. Commit or stash first so git diff shows only what Antigravity touched.` };
             }
-            writeAudit("antigravity", "SEMI", cwd, prompt, { mode: "accept-edits", effort });
+            writeAudit("antigravity", "SEMI", cwd, prompt, { mode: "accept-edits", effort, model });
           } else if (isAudit) {
-            writeAudit("antigravity", "GREEN", cwd, prompt, { mode: "audit", effort });
+            writeAudit("antigravity", "GREEN", cwd, prompt, { mode: "audit", effort, model });
           } else {
-            writeAudit("antigravity", "GREEN", cwd, prompt, { mode: "plan", effort });
+            writeAudit("antigravity", "GREEN", cwd, prompt, { mode: "plan", effort, model });
           }
 
           const auditPrompt = isAudit

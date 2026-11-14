@@ -6,7 +6,10 @@ coding tasks to Google Antigravity (`agy` CLI) under the guardrails.
 - `plan` (`--mode plan`) → **GREEN** read-only analysis/proposal.
 - `edit` (`--mode accept-edits`) → **SEMI-AUTOMATIC ⚑** writes files, review
   after with `git diff`; requires a clean Git tree.
+- `audit` (`--mode plan`) → **GREEN** cross-review of the uncommitted `git diff`.
 - `auto` / `--dangerously-skip-permissions` → **RED**, never by the agent.
+
+Options: `effort` (`low`…`max`, default `medium`) and `model` (optional override).
 
 Permissions are session-scoped (`--sandbox --settings '{"toolPermission":
 "proceed-in-sandbox"}'`); the global Antigravity `settings.json` is never
@@ -16,7 +19,7 @@ SHA-256 hash chain.
 ## Prerequisites
 
 - `agy` on PATH (`/Users/.../.local/bin/agy`), logged in once (`agy` in Terminal).
-- `git` for `edit`.
+- `git` for `edit`/`audit`.
 
 ## Install
 
