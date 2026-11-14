@@ -16,7 +16,18 @@ const net = require("node:net");
 const { spawn } = require("node:child_process");
 const { globalShortcut, WebContentsView, screen, powerMonitor, systemPreferences, safeStorage } = require("electron");
 const fs = require("node:fs");
-const fsx = require("node:fs");
+const {
+  escapeHtml,
+  parseAllowedTargetOrigin,
+  isAllowedExternalUrl,
+  isAllowedDrawerPopupUrl,
+  isAllowedMainNavigation,
+  isTrustedIpcSender,
+  isValidSectorId,
+  looksLikeBlockedUriScheme,
+  canonicalizeFolderPath,
+  resolveSandboxedFile,
+} = require("./desktop-sandbox");
 const {
   guardVaultUnlockAttemptAsync,
   hasVaultAuthConfigured,
@@ -121,12 +132,20 @@ async function unlockFanalVault(payload) {
 function registerVaultIpcHandlers() {
   if (vaultIpcRegistered) return;
   vaultIpcRegistered = true;
-  ipcMain.handle("fanal:vault-status", () => ({
-    configured: hasVaultAuthConfigured(DATA_DIR),
-    locked: isVaultLocked,
-    biometricLinked: Boolean(readStoredVaultAuth(DATA_DIR)?.osProtectedKeyB64),
-  }));
-  ipcMain.handle("fanal:setup-vault", (_ev, payload) => {
+  ipcMain.handle("fanal:vault-status", (ev) => {
+    if (!isTrustedIpcEvent(ev)) {
+      return { configured: false, locked: true, biometricLinked: false, blocked: true };
+    }
+    return {
+      configured: hasVaultAuthConfigured(DATA_DIR),
+      locked: isVaultLocked,
+      biometricLinked: Boolean(readStoredVaultAuth(DATA_DIR)?.osProtectedKeyB64),
+    };
+  });
+  ipcMain.handle("fanal:setup-vault", (ev, payload) => {
+    if (!isTrustedIpcEvent(ev)) {
+      return { ok: false, code: "UNTRUSTED_IPC_ORIGIN", error: "Blocked untrusted origin." };
+    }
     if (hasVaultAuthConfigured(DATA_DIR) && isVaultLocked) {
       return { ok: false, code: "VAULT_LOCKED", error: "Desbloquea la bóveda actual antes de cambiar la contraseña maestra." };
     }
@@ -142,12 +161,23 @@ function registerVaultIpcHandlers() {
     try { if (win && !win.isDestroyed()) win.webContents.send("fanal:vault-unlocked", { unlockedAtIso: new Date().toISOString() }); } catch (e) {}
     return { ok: true };
   });
-  ipcMain.handle("fanal:unlock-vault", (_ev, payload) => unlockFanalVault(payload));
-  ipcMain.handle("fanal:lock-vault", (_ev, reason) => {
+  ipcMain.handle("fanal:unlock-vault", (ev, payload) => {
+    if (!isTrustedIpcEvent(ev)) {
+      return { ok: false, code: "UNTRUSTED_IPC_ORIGIN", error: "Blocked untrusted origin." };
+    }
+    return unlockFanalVault(payload);
+  });
+  ipcMain.handle("fanal:lock-vault", (ev, reason) => {
+    if (!isTrustedIpcEvent(ev)) {
+      return { ok: false, code: "UNTRUSTED_IPC_ORIGIN", error: "Blocked untrusted origin." };
+    }
     lockFanalVaultNow(vaultCtx, typeof reason === "string" && reason.trim() ? reason.trim() : "MANUAL_LOCK");
     return { ok: true, locked: isVaultLocked };
   });
-  ipcMain.handle("fanal:link-biometric", () => {
+  ipcMain.handle("fanal:link-biometric", (ev) => {
+    if (!isTrustedIpcEvent(ev)) {
+      return { success: false, code: "UNTRUSTED_IPC_ORIGIN", error: "Blocked untrusted origin." };
+    }
     if (hasVaultAuthConfigured(DATA_DIR) && isVaultLocked) {
       return { success: false, error: "Desbloquea la bóveda antes de vincular biometría." };
     }
@@ -180,39 +210,25 @@ function startBankGradeSecurityWatchdog(ctx) {
   } catch (e) {}
 }
 let secondMonitorWindow = null;
-const FORBIDDEN_BUTTON_WORDS = /envoyer|soumettre|transmettre|payer|signer|supprimer|submit|pay|delete/i;
-async function runAgenticTaskInRightDrawer(view, plan, anchor) {
-  const wc = view.webContents;
-  const report = [];
-  try {
-    if (!wc.debugger.isAttached()) wc.debugger.attach("1.3");
-    for (const step of plan || []) {
-      if (step.type === "CLICK" && FORBIDDEN_BUTTON_WORDS.test(String(step.targetLabel || ""))) {
-        report.push({ stepId: step.id, status: "STOPPED_FOR_HUMAN_SKIN_IN_THE_GAME", reason: "Fanal llenó el formulario y se detuvo antes del botón '" + step.targetLabel + "' para que TÚ verifiques y envíes." });
-        break;
-      }
-      if (step.type === "FILL_FIELD") {
-        const exactValue = (anchor && anchor[step.anchorFieldKey] !== undefined) ? anchor[step.anchorFieldKey] : step.value;
-        await wc.executeJavaScript('(() => { const el = document.querySelector(' + JSON.stringify(step.cssSelector) + '); if (!el) return false; el.focus(); el.value = ' + JSON.stringify(String(exactValue)) + '; el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); el.style.outline = "2px solid #10b981"; el.style.backgroundColor = "rgba(16, 185, 129, 0.08)"; return true; })()');
-        report.push({ stepId: step.id, field: step.cssSelector, status: "FILLED_AND_HIGHLIGHTED" });
-      }
-    }
-  } catch (e) { report.push({ status: "ERROR", reason: String(e.message) }); }
-  return { completedInInternalChromium: true, stepsExecuted: report };
-}
 function syncDualMonitorLayout(primaryWin, view) {
   try {
+    const activeWin = (primaryWin && !primaryWin.isDestroyed()) ? primaryWin : getActivePrimaryWindow();
+    if (!activeWin || !view || !view.webContents || view.webContents.isDestroyed()) {
+      return { layoutMode: "NO_ACTIVE_WINDOW" };
+    }
     const displays = screen.getAllDisplays();
     const primary = screen.getPrimaryDisplay();
     const external = displays.find((d) => d.id !== primary.id);
     if (external) {
       const pArea = primary.workArea;
-      primaryWin.setBounds({ x: pArea.x + pArea.width - 440, y: pArea.y, width: 440, height: pArea.height });
+      activeWin.setBounds({ x: pArea.x + pArea.width - 440, y: pArea.y, width: 440, height: pArea.height });
       const eArea = external.workArea;
       if (!secondMonitorWindow || secondMonitorWindow.isDestroyed()) {
         secondMonitorWindow = new BrowserWindow({ x: eArea.x, y: eArea.y, width: eArea.width, height: eArea.height, title: "Fanal · Lienzo Agéntico (Pantalla 2)", backgroundColor: "#090d16", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
+        if (!SMOKE) { try { secondMonitorWindow.setContentProtection(true); } catch {} }
+        secondMonitorWindow.on("closed", () => { secondMonitorWindow = null; });
       } else { secondMonitorWindow.setBounds(eArea); }
-      try { primaryWin.contentView.removeChildView(view); } catch (e) {}
+      try { activeWin.contentView.removeChildView(view); } catch (e) {}
       secondMonitorWindow.contentView.addChildView(view);
       view.setBounds({ x: 0, y: 0, width: eArea.width, height: eArea.height });
       secondMonitorWindow.show();
@@ -223,7 +239,7 @@ function syncDualMonitorLayout(primaryWin, view) {
       secondMonitorWindow.close();
       secondMonitorWindow = null;
     }
-    primaryWin.contentView.addChildView(view);
+    activeWin.contentView.addChildView(view);
     return { layoutMode: "SINGLE_MONITOR_DOCKED", monitorsDetected: 1 };
   } catch (e) { return { layoutMode: "SINGLE_MONITOR_DOCKED", error: String(e.message) }; }
 }
@@ -232,33 +248,58 @@ let sourceDocView = null;
 let monitor2Window = null;
 let currentSplitRatio = 0.5;
 let activeSingleMonitorTab = "PORTAL";
+let monitorEventsRegistered = false;
 const TOP_BAR_HEIGHT = 40;
 const MONITOR1_COMPACT_W = 420;
 const MONITOR1_EXPANDED_W = 1080;
-function initDualSynchronizedViews() {
+function ensureDualSynchronizedViews() {
   try {
-    agentPortalView = new WebContentsView({ webPreferences: { partition: "persist:fanal-client-workspace", contextIsolation: true, nodeIntegration: false, sandbox: true } });
-    agentPortalView.webContents.on("will-navigate", (ev, url) => { if (String(url).startsWith("file://")) ev.preventDefault(); });
-    sourceDocView = new WebContentsView({ webPreferences: { partition: "in-memory-local-proof-viewer", contextIsolation: true, nodeIntegration: false, sandbox: true, plugins: true } });
-    sourceDocView.webContents.session.webRequest.onBeforeRequest((details, callback) => {
-      const local = String(details.url).startsWith("file://") || String(details.url).startsWith("data:") || String(details.url).startsWith("chrome-extension://");
-      callback({ cancel: !local });
-    });
+    if (!agentPortalView || !agentPortalView.webContents || agentPortalView.webContents.isDestroyed()) {
+      agentPortalView = new WebContentsView({ webPreferences: { partition: "persist:fanal-client-workspace", contextIsolation: true, nodeIntegration: false, sandbox: true } });
+      agentPortalView.webContents.on("will-navigate", (ev, navUrl) => { if (!isAllowedExternalUrl(navUrl)) ev.preventDefault(); });
+      agentPortalView.webContents.on("will-redirect", (ev, navUrl) => { if (!isAllowedExternalUrl(navUrl)) ev.preventDefault(); });
+      agentPortalView.webContents.setWindowOpenHandler(({ url }) => {
+        if (isAllowedExternalUrl(url)) { try { agentPortalView.webContents.loadURL(url); } catch {} }
+        return { action: "deny" };
+      });
+      agentPortalView.webContents.on("before-input-event", (_ev, input) => {
+        if (input.type === "keyDown" || input.type === "mouseDown") {
+          agentPilotState.mode = "MANUAL";
+          const activeWin = getActivePrimaryWindow();
+          if (activeWin) { try { activeWin.webContents.send("fanal:hud-state-change", { state: "MANUAL", reason: "HUMAN_TOUCHED_PAGE" }); } catch (e) {} }
+        }
+      });
+    }
+    if (!sourceDocView || !sourceDocView.webContents || sourceDocView.webContents.isDestroyed()) {
+      sourceDocView = new WebContentsView({ webPreferences: { partition: "in-memory-local-proof-viewer", contextIsolation: true, nodeIntegration: false, sandbox: true, plugins: true } });
+      sourceDocView.webContents.on("will-navigate", (ev) => ev.preventDefault());
+      sourceDocView.webContents.on("will-redirect", (ev) => ev.preventDefault());
+      sourceDocView.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+      sourceDocView.webContents.session.webRequest.onBeforeRequest((details, callback) => {
+        const local = String(details.url).startsWith("file://") || String(details.url).startsWith("data:") || String(details.url).startsWith("chrome-extension://");
+        callback({ cancel: !local });
+      });
+    }
   } catch (e) {}
 }
 function applyDualScreenSplitLayout(primaryWin, ratio) {
   try {
+    const activeWin = (primaryWin && !primaryWin.isDestroyed()) ? primaryWin : getActivePrimaryWindow();
+    if (!activeWin) return { mode: "NO_ACTIVE_WINDOW" };
+    ensureDualSynchronizedViews();
     currentSplitRatio = Math.min(0.75, Math.max(0.25, Number(ratio || 0.5)));
     const displays = screen.getAllDisplays();
     const primary = screen.getPrimaryDisplay();
     const m2 = displays.find((d) => d.id !== primary.id);
     if (m2) {
       const pWork = primary.workArea;
-      primaryWin.setBounds({ x: pWork.x + pWork.width - MONITOR1_COMPACT_W, y: pWork.y, width: MONITOR1_COMPACT_W, height: pWork.height });
-      try { primaryWin.contentView.removeChildView(agentPortalView); primaryWin.contentView.removeChildView(sourceDocView); } catch (e) {}
+      activeWin.setBounds({ x: pWork.x + pWork.width - MONITOR1_COMPACT_W, y: pWork.y, width: MONITOR1_COMPACT_W, height: pWork.height });
+      try { activeWin.contentView.removeChildView(agentPortalView); activeWin.contentView.removeChildView(sourceDocView); } catch (e) {}
       const m2Work = m2.workArea;
       if (!monitor2Window || monitor2Window.isDestroyed()) {
         monitor2Window = new BrowserWindow({ x: m2Work.x, y: m2Work.y, width: m2Work.width, height: m2Work.height, title: "Fanal · Cabina Sincronizada", backgroundColor: "#090d16", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
+        if (!SMOKE) { try { monitor2Window.setContentProtection(true); } catch {} }
+        monitor2Window.on("closed", () => { monitor2Window = null; });
         const header = "<html><body style='margin:0;background:#0f172a;color:#f8fafc;font-family:system-ui;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid #334155;font-size:12px'><span style='color:#6ee7b7;font-family:monospace;font-weight:700'>🌐 IZQUIERDA: PORTAL / AGENTE</span><span style='color:#38bdf8;font-family:monospace;font-size:11px'>⇄ sincronizado en vivo con la prueba</span><span style='color:#fde68a;font-family:monospace;font-weight:700'>📄 DERECHA: DOCUMENTO ORIGINAL</span></body></html>";
         monitor2Window.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(header));
       } else { monitor2Window.setBounds(m2Work); }
@@ -276,56 +317,70 @@ function applyDualScreenSplitLayout(primaryWin, ratio) {
       try { monitor2Window.contentView.removeChildView(agentPortalView); monitor2Window.contentView.removeChildView(sourceDocView); } catch (e) {}
       monitor2Window.close(); monitor2Window = null;
     }
-    const pb = primaryWin.getBounds();
+    const pb = activeWin.getBounds();
     const active = activeSingleMonitorTab === "PORTAL" ? agentPortalView : sourceDocView;
     const inactive = activeSingleMonitorTab === "PORTAL" ? sourceDocView : agentPortalView;
-    try { primaryWin.contentView.removeChildView(inactive); } catch (e) {}
-    primaryWin.contentView.addChildView(active);
+    try { activeWin.contentView.removeChildView(inactive); } catch (e) {}
+    activeWin.contentView.addChildView(active);
     active.setBounds({ x: MONITOR1_COMPACT_W, y: TOP_BAR_HEIGHT, width: MONITOR1_EXPANDED_W - MONITOR1_COMPACT_W, height: pb.height - TOP_BAR_HEIGHT });
     return { mode: "MONITOR_1_TABBED_FALLBACK", activeTab: activeSingleMonitorTab };
   } catch (e) { return { mode: "ERROR", error: String(e.message) }; }
 }
-async function executeSynchronizedStepOnMonitor2(step, connectedFolderPath) {
+async function executeSynchronizedStepOnMonitor2(step) {
   try {
-    const safePath = path.resolve(connectedFolderPath, path.basename(String(step.sourceFileName || "")));
-    if (!safePath.startsWith(path.resolve(connectedFolderPath))) return { status: "FNL-SANDBOX-502" };
+    // Enforce main-process allowedClientFolder strictly; ignore any renderer folder override.
+    const safe = resolveSandboxedFile(allowedClientFolder, step && step.sourceFileName, { basenameOnly: true, requireExisting: true });
+    if (!safe.ok) return { status: "FNL-SANDBOX-502", error: safe.error };
+    ensureDualSynchronizedViews();
+    const safePath = safe.resolvedPath;
     const ext = path.extname(safePath).toLowerCase();
-    const fileUrl = "file://" + safePath;
+    const fileUrl = safe.fileUrl;
     if (ext === ".pdf") {
-      const pageNum = Number(step.sourcePage || 1);
-      const searchParam = step.verbatimQuote ? ("&search=" + encodeURIComponent(String(step.verbatimQuote).slice(0, 32))) : "";
+      const pageNum = Number.isFinite(Number(step && step.sourcePage)) && Number(step.sourcePage) >= 1 ? Math.floor(Number(step.sourcePage)) : 1;
+      const searchParam = step && step.verbatimQuote ? ("&search=" + encodeURIComponent(String(step.verbatimQuote).slice(0, 32))) : "";
       await sourceDocView.webContents.loadURL(fileUrl + "#page=" + pageNum + "&view=FitH" + searchParam);
-    } else if ([".jpg", ".jpeg", ".png", ".webp"].includes(ext)) {
-      const label = String(step.fieldLabel || "").replace(/[<>&"]/g, "");
-      const val = String(step.valueToFill || "").replace(/[<>&"]/g, "");
-      const html = "<html><body style='margin:0;background:#020617;color:#f8fafc;font-family:system-ui;display:flex;flex-direction:column;height:100vh'><div style='background:#064e3b;color:#a7f3d0;padding:8px 12px;font-family:monospace;font-size:12px;border-bottom:2px solid #10b981'>📌 ORIGEN EN IDENTIFICACIÓN OFICIAL → " + label + "</div><div style='flex:1;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto'><img src='" + fileUrl + "' style='max-width:98%;max-height:94%;object-fit:contain;border:2px solid #38bdf8;border-radius:4px'/></div></body></html>";
+    } else if ([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".bmp"].includes(ext)) {
+      const label = escapeHtml(step && step.fieldLabel ? step.fieldLabel : "");
+      const html = "<html><body style='margin:0;background:#020617;color:#f8fafc;font-family:system-ui;display:flex;flex-direction:column;height:100vh'><div style='background:#064e3b;color:#a7f3d0;padding:8px 12px;font-family:monospace;font-size:12px;border-bottom:2px solid #10b981'>📌 ORIGEN EN IDENTIFICACIÓN OFICIAL → " + label + "</div><div style='flex:1;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto'><img src='" + escapeHtml(fileUrl) + "' style='max-width:98%;max-height:94%;object-fit:contain;border:2px solid #38bdf8;border-radius:4px'/></div></body></html>";
       await sourceDocView.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
     }
     const forbidden = /envoyer|soumettre|transmettre|payer|signer|submit|pay/i;
-    if (step.action === "CLICK" && forbidden.test(String(step.fieldLabel || ""))) return { status: "PAUSED_BEFORE_SUBMIT" };
-    await agentPortalView.webContents.executeJavaScript("(() => { const input = document.querySelector(" + JSON.stringify(step.cssSelector) + "); if (!input) return false; input.scrollIntoView({ behavior: 'smooth', block: 'center' }); input.focus(); input.value = " + JSON.stringify(String(step.valueToFill)) + "; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); input.style.outline = '3px solid #38bdf8'; input.style.backgroundColor = 'rgba(56, 189, 248, 0.12)'; return true; })()");
-    return { status: "SYNCED_LEFT_AND_RIGHT", filledSelector: step.cssSelector, proofOpened: path.basename(safePath), proofPage: step.sourcePage || 1 };
+    if (step && step.action === "CLICK" && forbidden.test(String(step.fieldLabel || ""))) return { status: "PAUSED_BEFORE_SUBMIT" };
+    await agentPortalView.webContents.executeJavaScript("(() => { const input = document.querySelector(" + JSON.stringify(step && step.cssSelector) + "); if (!input) return false; input.scrollIntoView({ behavior: 'smooth', block: 'center' }); input.focus(); input.value = " + JSON.stringify(String(step && step.valueToFill)) + "; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); input.style.outline = '3px solid #38bdf8'; input.style.backgroundColor = 'rgba(56, 189, 248, 0.12)'; return true; })()");
+    return { status: "SYNCED_LEFT_AND_RIGHT", filledSelector: step && step.cssSelector, proofOpened: safe.basename, proofPage: (step && step.sourcePage) || 1 };
   } catch (e) { return { status: "ERROR", reason: String(e.message) }; }
 }
-function bindMonitor2Events(primaryWin) {
+function bindMonitor2Events() {
+  if (monitorEventsRegistered) return;
+  monitorEventsRegistered = true;
   try {
-    initDualSynchronizedViews();
-    const refresh = () => applyDualScreenSplitLayout(primaryWin, currentSplitRatio);
+    ensureDualSynchronizedViews();
+    const refresh = () => applyDualScreenSplitLayout(getActivePrimaryWindow(), currentSplitRatio);
     screen.on("display-added", refresh);
     screen.on("display-removed", refresh);
     screen.on("display-metrics-changed", refresh);
-    ipcMain.handle("fanal:set-monitor2-split", (_ev, ratioNumber) => applyDualScreenSplitLayout(primaryWin, ratioNumber));
-    ipcMain.handle("fanal:run-synced-step", (_ev, payload) => executeSynchronizedStepOnMonitor2((payload && payload.step) || {}, (payload && payload.connectedFolderPath) || ""));
-    ipcMain.handle("fanal:set-agent-control", (_ev, payload) => { agentPilotState.mode = String((payload && payload.mode) || "RUNNING"); return { ok: true, activeMode: agentPilotState.mode }; });
-    ipcMain.handle("fanal:step-agent-once", () => { agentPilotState.allowSingleStep = true; return { ok: true }; });
-    ipcMain.handle("fanal:run-agent-plan", (_ev, payload) => runHudGovernedAgentPlan(primaryWin.webContents, agentPortalView, (payload && payload.connectedFolderPath) || "", (payload && payload.plan) || []));
-    try {
-      if (agentPortalView && agentPortalView.webContents) {
-        agentPortalView.webContents.on("before-input-event", (_ev, input) => {
-          if (input.type === "keyDown" || input.type === "mouseDown") { agentPilotState.mode = "MANUAL"; try { primaryWin.webContents.send("fanal:hud-state-change", { state: "MANUAL", reason: "HUMAN_TOUCHED_PAGE" }); } catch (e) {} }
-        });
-      }
-    } catch (e) {}
+    ipcMain.handle("fanal:set-monitor2-split", (ev, ratioNumber) => {
+      if (!isTrustedIpcEvent(ev)) return { mode: "UNTRUSTED_IPC_ORIGIN" };
+      return applyDualScreenSplitLayout(getActivePrimaryWindow(), ratioNumber);
+    });
+    ipcMain.handle("fanal:run-synced-step", (ev, payload) => {
+      if (!isTrustedIpcEvent(ev)) return { status: "UNTRUSTED_IPC_ORIGIN" };
+      return executeSynchronizedStepOnMonitor2((payload && payload.step) || {});
+    });
+    ipcMain.handle("fanal:set-agent-control", (ev, payload) => {
+      if (!isTrustedIpcEvent(ev)) return { ok: false, code: "UNTRUSTED_IPC_ORIGIN" };
+      agentPilotState.mode = String((payload && payload.mode) || "RUNNING");
+      return { ok: true, activeMode: agentPilotState.mode };
+    });
+    ipcMain.handle("fanal:step-agent-once", (ev) => {
+      if (!isTrustedIpcEvent(ev)) return { ok: false, code: "UNTRUSTED_IPC_ORIGIN" };
+      agentPilotState.allowSingleStep = true;
+      return { ok: true };
+    });
+    ipcMain.handle("fanal:run-agent-plan", (ev, payload) => {
+      if (!isTrustedIpcEvent(ev)) return { status: "UNTRUSTED_IPC_ORIGIN" };
+      return runHudGovernedAgentPlan((payload && payload.plan) || []);
+    });
   } catch (e) {}
 }
 const agentPilotState = { mode: "RUNNING", stepCursor: 0, currentPlan: [], allowSingleStep: false };
@@ -339,7 +394,7 @@ function waitUntilAgentAllowedToProceed() {
     check();
   });
 }
-async function runHudGovernedAgentPlan(hudWc, view, folder, plan) {
+async function runHudGovernedAgentPlan(plan) {
   agentPilotState.currentPlan = plan || [];
   agentPilotState.stepCursor = 0;
   agentPilotState.mode = "RUNNING";
@@ -347,18 +402,23 @@ async function runHudGovernedAgentPlan(hudWc, view, folder, plan) {
     await waitUntilAgentAllowedToProceed();
     agentPilotState.stepCursor = i + 1;
     const step = plan[i];
+    const activeWin = getActivePrimaryWindow();
+    const hudWc = activeWin ? activeWin.webContents : null;
     if (step.action === "CLICK" && /envoyer|soumettre|transmettre|payer|signer|submit|pay/i.test(String(step.fieldLabel || ""))) {
       agentPilotState.mode = "BRAKED";
-      try { hudWc.send("fanal:hud-state-change", { state: "BRAKED", stoppedAtLabel: step.fieldLabel }); } catch (e) {}
+      try { if (hudWc && !hudWc.isDestroyed()) hudWc.send("fanal:hud-state-change", { state: "BRAKED", stoppedAtLabel: step.fieldLabel }); } catch (e) {}
       break;
     }
-    try { hudWc.send("fanal:hud-step-tick", { currentStep: i + 1, totalSteps: plan.length, fieldLabel: step.fieldLabel, anchorRef: step.anchorFieldKey || "Verificado", proofPage: step.sourcePage || 1 }); } catch (e) {}
-    await executeSynchronizedStepOnMonitor2(step, folder);
+    try { if (hudWc && !hudWc.isDestroyed()) hudWc.send("fanal:hud-step-tick", { currentStep: i + 1, totalSteps: plan.length, fieldLabel: step.fieldLabel, anchorRef: step.anchorFieldKey || "Verificado", proofPage: step.sourcePage || 1 }); } catch (e) {}
+    await executeSynchronizedStepOnMonitor2(step);
   }
 }
-function watchMonitorPlugEvents(primaryWin, view) {
+let monitorPlugEventsRegistered = false;
+function watchMonitorPlugEvents() {
+  if (monitorPlugEventsRegistered) return;
+  monitorPlugEventsRegistered = true;
   try {
-    const refresh = () => syncDualMonitorLayout(primaryWin, view);
+    const refresh = () => syncDualMonitorLayout(getActivePrimaryWindow(), ensureRightDrawerView());
     screen.on("display-added", refresh);
     screen.on("display-removed", refresh);
     screen.on("display-metrics-changed", refresh);
@@ -366,45 +426,101 @@ function watchMonitorPlugEvents(primaryWin, view) {
 }
 const COMPACT_WIDTH = 380;
 const EXPANDED_WIDTH = 1040;
-function setupCoworkRightDrawer(mainWindow) {
+let drawerEventsRegistered = false;
+function ensureRightDrawerView() {
+  if (rightDrawerView && rightDrawerView.webContents && !rightDrawerView.webContents.isDestroyed()) {
+    return rightDrawerView;
+  }
+  rightDrawerView = new WebContentsView({
+    webPreferences: {
+      partition: "persist:fanal-client-workspace",
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      plugins: true,
+    },
+  });
+  rightDrawerView.webContents.on("will-navigate", (ev, navUrl) => {
+    if (!isAllowedExternalUrl(navUrl)) ev.preventDefault();
+  });
+  rightDrawerView.webContents.on("will-redirect", (ev, navUrl) => {
+    if (!isAllowedExternalUrl(navUrl)) ev.preventDefault();
+  });
+  rightDrawerView.webContents.setWindowOpenHandler(({ url }) => {
+    if (isAllowedDrawerPopupUrl(url)) {
+      try { rightDrawerView.webContents.loadURL(url); } catch (e) {}
+    }
+    return { action: "deny" };
+  });
+  return rightDrawerView;
+}
+function setupCoworkRightDrawer() {
+  if (drawerEventsRegistered) return;
+  drawerEventsRegistered = true;
   try {
-    rightDrawerView = new WebContentsView({
-      webPreferences: {
-        partition: "persist:fanal-client-workspace",
-        contextIsolation: true,
-        nodeIntegration: false,
-        sandbox: true,
-        plugins: true,
-      },
-    });
-    rightDrawerView.webContents.setWindowOpenHandler(({ url }) => {
-      if (String(url).startsWith("https://") || String(url).startsWith("http://127.0.0.1")) { try { rightDrawerView.webContents.loadURL(url); } catch (e) {} }
-      return { action: "deny" };
-    });
-    ipcMain.handle("fanal:open-in-right-drawer", async (_e, target, pageNumber) => {
-      const bounds = mainWindow.getBounds();
-      if (bounds.width < EXPANDED_WIDTH) {
-        mainWindow.setBounds({ x: Math.max(0, bounds.x - (EXPANDED_WIDTH - COMPACT_WIDTH)), y: bounds.y, width: EXPANDED_WIDTH, height: bounds.height });
-      }
-      mainWindow.contentView.addChildView(rightDrawerView);
-      rightDrawerView.setBounds({ x: COMPACT_WIDTH, y: 36, width: EXPANDED_WIDTH - COMPACT_WIDTH, height: bounds.height - 36 });
-      const t = String(target || "");
-      try {
-        if (/^https?:\/\//i.test(t)) { await rightDrawerView.webContents.loadURL(t); return { opened: true, mode: "WEB_ECOSYSTEM" }; }
-        const ext = path.extname(t).toLowerCase();
-        const fileUrl = "file://" + path.resolve(t);
-        if (ext === ".pdf") { await rightDrawerView.webContents.loadURL(fileUrl + "#page=" + (pageNumber || 1) + "&view=FitH"); }
-        else if ([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".bmp"].includes(ext)) { const html = "<html><body style='margin:0;background:#090d16;display:flex;align-items:center;justify-content:center;height:100vh'><img src='" + fileUrl + "' style='max-width:96%;max-height:96%;object-fit:contain'/></body></html>"; await rightDrawerView.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html)); }
-        else if ([".csv", ".tsv", ".txt", ".jsonl", ".md"].includes(ext)) { const raw = fsx.readFileSync(t, "utf8").slice(0, 100000).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); const html = "<html><body style='margin:0;padding:14px;background:#090d16;color:#e2e8f0;font-family:monospace;font-size:12px;white-space:pre-wrap'>" + raw + "</body></html>"; await rightDrawerView.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html)); }
-        else { await rightDrawerView.webContents.loadURL(fileUrl); }
-      } catch (e) {}
-      return { opened: true, mode: "LOCAL_FILE", ext };
-    });
-    ipcMain.handle("fanal:close-right-drawer", () => {
-      try {
+    ensureRightDrawerView();
+    ipcMain.handle("fanal:open-in-right-drawer", async (ev, target, pageNumber) => {
+      if (!isTrustedIpcEvent(ev)) return { opened: false, status: "UNTRUSTED_IPC_ORIGIN" };
+      const mainWindow = getActivePrimaryWindow();
+      if (!mainWindow) return { opened: false, status: "NO_ACTIVE_WINDOW" };
+      const t = String(target || "").trim();
+      const showDrawerInWindow = () => {
+        const view = ensureRightDrawerView();
         const bounds = mainWindow.getBounds();
-        mainWindow.contentView.removeChildView(rightDrawerView);
-        if (bounds.width > COMPACT_WIDTH) { mainWindow.setBounds({ x: bounds.x + (bounds.width - COMPACT_WIDTH), y: bounds.y, width: COMPACT_WIDTH, height: bounds.height }); }
+        if (bounds.width < EXPANDED_WIDTH) {
+          mainWindow.setBounds({ x: Math.max(0, bounds.x - (EXPANDED_WIDTH - COMPACT_WIDTH)), y: bounds.y, width: EXPANDED_WIDTH, height: bounds.height });
+        }
+        mainWindow.contentView.addChildView(view);
+        view.setBounds({ x: COMPACT_WIDTH, y: 36, width: EXPANDED_WIDTH - COMPACT_WIDTH, height: bounds.height - 36 });
+        return view;
+      };
+      if (/^https?:\/\//i.test(t)) {
+        if (!isAllowedExternalUrl(t)) return { opened: false, status: "FNL-SANDBOX-502", error: "Blocked external URL" };
+        try {
+          const view = showDrawerInWindow();
+          await view.webContents.loadURL(t);
+          return { opened: true, mode: "WEB_ECOSYSTEM" };
+        } catch (e) {
+          return { opened: false, mode: "WEB_ECOSYSTEM", error: String(e && e.message ? e.message : e) };
+        }
+      }
+      if (looksLikeBlockedUriScheme(t)) {
+        return { opened: false, status: "FNL-SANDBOX-502", error: "Blocked URI scheme in right drawer" };
+      }
+      const safe = resolveSandboxedFile(allowedClientFolder, t, { basenameOnly: false, requireExisting: true });
+      if (!safe.ok) {
+        return { opened: false, status: safe.status || "FNL-SANDBOX-502", error: safe.error };
+      }
+      const ext = path.extname(safe.resolvedPath).toLowerCase();
+      try {
+        const view = showDrawerInWindow();
+        if (ext === ".pdf") {
+          const safePage = Number.isFinite(Number(pageNumber)) && Number(pageNumber) >= 1 ? Math.floor(Number(pageNumber)) : 1;
+          await view.webContents.loadURL(safe.fileUrl + "#page=" + safePage + "&view=FitH");
+        } else if ([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".bmp"].includes(ext)) {
+          const html = "<html><body style='margin:0;background:#090d16;display:flex;align-items:center;justify-content:center;height:100vh'><img src='" + escapeHtml(safe.fileUrl) + "' style='max-width:96%;max-height:96%;object-fit:contain'/></body></html>";
+          await view.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
+        } else if ([".csv", ".tsv", ".txt", ".jsonl", ".md"].includes(ext)) {
+          const raw = escapeHtml(fs.readFileSync(safe.resolvedPath, "utf8").slice(0, 100000));
+          const html = "<html><body style='margin:0;padding:14px;background:#090d16;color:#e2e8f0;font-family:monospace;font-size:12px;white-space:pre-wrap'>" + raw + "</body></html>";
+          await view.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
+        } else {
+          await view.webContents.loadURL(safe.fileUrl);
+        }
+        return { opened: true, mode: "LOCAL_FILE", ext };
+      } catch (e) {
+        return { opened: false, mode: "LOCAL_FILE", ext, error: String(e && e.message ? e.message : e) };
+      }
+    });
+    ipcMain.handle("fanal:close-right-drawer", (ev) => {
+      if (!isTrustedIpcEvent(ev)) return { closed: false, status: "UNTRUSTED_IPC_ORIGIN" };
+      try {
+        const mainWindow = getActivePrimaryWindow();
+        if (mainWindow && rightDrawerView) {
+          const bounds = mainWindow.getBounds();
+          try { mainWindow.contentView.removeChildView(rightDrawerView); } catch {}
+          if (bounds.width > COMPACT_WIDTH) { mainWindow.setBounds({ x: bounds.x + (bounds.width - COMPACT_WIDTH), y: bounds.y, width: COMPACT_WIDTH, height: bounds.height }); }
+        }
       } catch (e) {}
       return { closed: true };
     });
@@ -414,19 +530,37 @@ const DATA_DIR = process.env.DSH_SUPERVISOR_DATA
   ? path.resolve(process.env.DSH_SUPERVISOR_DATA)
   : path.join(os.homedir(), ".dsh", "supervisor-data");
 const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
+const DB_FILE = path.join(DATA_DIR, "supervisor.db");
 const bundledDsh = () => { const c = path.join(process.resourcesPath, "runtime", "cli", "bin", "dsh"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
 const bundledNode = () => { const c = path.join(process.resourcesPath, "runtime", "primary-runtime", "dependencies", "node", "bin", "node"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
-function firstRun() { try { return !fs.existsSync(USERS_FILE); } catch { return true; } }
+function firstRun() { try { return !fs.existsSync(USERS_FILE) && !fs.existsSync(DB_FILE); } catch { return true; } }
 
-const TARGET_URL = process.env.LE_VEILLEUX_URL || "http://127.0.0.1:8787/dashboard";
+const TARGET_INFO = parseAllowedTargetOrigin(process.env.LE_VEILLEUX_URL);
+const TARGET_URL = TARGET_INFO.url;
+const TARGET_ORIGIN = TARGET_INFO.origin;
 const KIOSK = process.argv.includes("--kiosk");
 const SMOKE = process.env.LE_VEILLEUX_SMOKE === "1";
-const LOCAL = (() => { try { const u = new URL(TARGET_URL); return u.hostname === "127.0.0.1" || u.hostname === "localhost"; } catch { return false; } })();
-const TARGET = (() => { try { const u = new URL(TARGET_URL); return { host: u.hostname, port: u.port ? Number(u.port) : 80 }; } catch { return { host: "127.0.0.1", port: 8787 }; } })();
+const LOCAL = TARGET_INFO.isLocal;
+const TARGET = { host: TARGET_INFO.host, port: TARGET_INFO.port };
 
 let win = null;
 let tray = null;
 let brain = null;
+
+function getActivePrimaryWindow() {
+  return win && !win.isDestroyed() ? win : null;
+}
+
+function isTrustedIpcEvent(ev) {
+  const activeWin = getActivePrimaryWindow();
+  if (!ev || !activeWin) return false;
+  const senderUrl = (ev.senderFrame && ev.senderFrame.url) || (ev.sender && typeof ev.sender.getURL === "function" ? ev.sender.getURL() : "");
+  return isTrustedIpcSender({
+    senderMatchesPrimary: ev.sender === activeWin.webContents,
+    senderUrl,
+    targetOrigin: TARGET_ORIGIN,
+  });
+}
 
 function portOpen(host, port) {
   return new Promise((resolve) => {
@@ -446,14 +580,12 @@ function armWatchdog() {
 // El sandbox de la carpeta conectada (el chip [📁]): Fanal solo toca el expediente activo
 let allowedClientFolder = null;
 try {
-  ipcMain.handle("fanal:set-connected-folder", (_e, p) => {
-    if (typeof p !== "string" || !p.trim()) throw new Error("Invalid folder path");
-    const r = path.resolve(p.trim());
-    let st;
-    try { st = fs.statSync(r); } catch { throw new Error("Folder does not exist: " + r); }
-    if (!st.isDirectory()) throw new Error("Path is not a directory: " + r);
-    allowedClientFolder = r;
-    return { activeFolderChip: path.basename(r), fullPath: r };
+  ipcMain.handle("fanal:set-connected-folder", (ev, p) => {
+    if (!isTrustedIpcEvent(ev)) throw new Error("Blocked untrusted IPC origin");
+    const res = canonicalizeFolderPath(p);
+    if (!res.ok) throw new Error(res.error);
+    allowedClientFolder = res.resolvedPath;
+    return { activeFolderChip: res.activeFolderChip, fullPath: res.resolvedPath };
   });
 } catch (e) {}
 
@@ -497,16 +629,17 @@ async function ensureBrain() {
 }
 
 function errorPage() {
-  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const safeTarget = escapeHtml(TARGET_URL);
+  const safeTargetJs = escapeHtml(JSON.stringify(TARGET_URL));
   return "data:text/html;charset=utf-8," + encodeURIComponent(`<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>Fanal</title></head>
 <body style="margin:0;font-family:-apple-system,'Segoe UI',sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center">
 <div style="max-width:420px;padding:24px">
 <svg width="96" height="96" viewBox="0 0 64 64"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/></svg>
 <h1 style="font-size:22px;margin:14px 0 6px">Fanal</h1>
-<p style="opacity:.9;margin:0 0 22px;font-size:14px">Cannot reach the dashboard at<br><code>${esc(TARGET_URL)}</code></p>
+<p style="opacity:.9;margin:0 0 22px;font-size:14px">Cannot reach the dashboard at<br><code>${safeTarget}</code></p>
 <p style="opacity:.85;font-size:13px;line-height:1.6">If this computer is the brain, the bundled supervisor could not start.<br>Open a terminal and run:<br><code style="background:rgba(255,255,255,.15);padding:3px 8px;border-radius:8px">node supervisor/server.js --lan</code></p>
-<button onclick="location.replace('${esc(TARGET_URL)}')" style="margin-top:18px;background:#fff;color:#4D6BFE;border:none;border-radius:999px;padding:13px 28px;font-size:16px;font-weight:800;cursor:pointer">Retry</button>
+<button onclick="location.replace(${safeTargetJs})" style="margin-top:18px;background:#fff;color:#4D6BFE;border:none;border-radius:999px;padding:13px 28px;font-size:16px;font-weight:800;cursor:pointer">Retry</button>
 </div></body></html>`);
 }
 
@@ -527,7 +660,16 @@ app.on("before-quit", () => {
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => { if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); } });
+  function showOrCreateMainWindow() {
+    if (win && !win.isDestroyed()) {
+      win.show();
+      win.focus();
+    } else {
+      createWindow();
+    }
+  }
+
+  app.on("second-instance", () => showOrCreateMainWindow());
 
   function createWindow() {
     win = new BrowserWindow({
@@ -551,11 +693,20 @@ if (!app.requestSingleInstanceLock()) {
     });
     win.on("closed", () => { win = null; });
     win.setMenuBarVisibility(false);
+    win.webContents.on("will-navigate", (ev, navUrl) => {
+      if (!isAllowedMainNavigation(navUrl, TARGET_ORIGIN)) ev.preventDefault();
+    });
+    win.webContents.on("will-redirect", (ev, navUrl) => {
+      if (!isAllowedMainNavigation(navUrl, TARGET_ORIGIN)) ev.preventDefault();
+    });
     win.webContents.setWindowOpenHandler(({ url }) => {
-      shell.openExternal(url);
+      if (isAllowedExternalUrl(url)) {
+        try { shell.openExternal(url); } catch {}
+      }
       return { action: "deny" };
     });
-    win.webContents.once("did-fail-load", (_e, code, desc) => {
+    win.webContents.on("did-fail-load", (_e, code, desc, _validatedUrl, isMainFrame) => {
+      if (code === -3 || isMainFrame === false) return;
       if (SMOKE) { console.log("SMOKE FAIL: " + desc + " (" + code + ")"); app.exit(1); return; }
       try { win.loadURL(errorPage()); } catch {}
     });
@@ -569,7 +720,7 @@ if (!app.requestSingleInstanceLock()) {
             hasPreloadBridge: Boolean(window.fanalIPC && typeof window.fanalIPC.unlockVault === "function" && window.electronAPI && typeof window.electronAPI.linkBiometric === "function"),
             vaultStatus: window.fanalIPC && typeof window.fanalIPC.getVaultStatus === "function" ? await window.fanalIPC.getVaultStatus() : null
           }))()`);
-          const expectedOrigin = new URL(TARGET_URL).origin;
+          const expectedOrigin = TARGET_ORIGIN;
           if (!probe || !String(probe.url || "").startsWith(expectedOrigin) || !String(probe.title || "").includes("Fanal") || !probe.hasDashboardDom || !probe.hasPreloadBridge || !probe.vaultStatus || typeof probe.vaultStatus.locked !== "boolean") {
             console.error("SMOKE FAIL — unexpected page: " + JSON.stringify(probe));
             app.exit(1);
@@ -593,7 +744,10 @@ if (!app.requestSingleInstanceLock()) {
     win.loadURL(TARGET_URL);
   }
 
-  ipcMain.on("leveilleux-setup", async (_e, p) => {
+  let legacySetupStarted = false;
+  ipcMain.on("leveilleux-setup", async (ev, p) => {
+    if (!isTrustedIpcEvent(ev) || !firstRun() || legacySetupStarted || !p || typeof p !== "object") return;
+    legacySetupStarted = true;
     const serverJs = brainPath("server.js");
     const packs = brainPath("sector-packs");
     const runInit = () => new Promise((res) => {
@@ -603,15 +757,24 @@ if (!app.requestSingleInstanceLock()) {
       c.on("exit", (code) => res(code));
     });
     const code = await runInit();
-    if (code === 0 && p.sector) {
-      try { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.copyFileSync(path.join(packs, String(p.sector) + ".json"), path.join(DATA_DIR, "sector.json")); } catch {}
+    if (code !== 0) {
+      if (firstRun()) legacySetupStarted = false;
+      return;
+    }
+    if (p.sector && isValidSectorId(String(p.sector))) {
+      const safePack = resolveSandboxedFile(packs, String(p.sector) + ".json", { basenameOnly: true, requireExisting: true });
+      if (safePack.ok) {
+        try { fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 }); fs.copyFileSync(safePack.resolvedPath, path.join(DATA_DIR, "sector.json")); } catch {}
+      }
     }
     // The brain contract (Layer 0 + Layer 1 of the distribution).
-    if (code === 0) {
-      try { fs.mkdirSync(path.join(os.homedir(), ".dsh"), { recursive: true }); fs.writeFileSync(path.join(os.homedir(), ".dsh", "brain.json"), JSON.stringify({ key: String(p.key || ""), fast: String(p.model || "deepseek-chat"), deep: "deepseek-reasoner" }, null, 2)); } catch {}
-    }
+    try {
+      const dshDir = path.join(os.homedir(), ".dsh");
+      fs.mkdirSync(dshDir, { recursive: true, mode: 0o700 });
+      fs.writeFileSync(path.join(dshDir, "brain.json"), JSON.stringify({ key: String(p.key || ""), fast: String(p.model || "deepseek-chat"), deep: "deepseek-reasoner" }, null, 2), { mode: 0o600 });
+    } catch {}
     // If the harness is present and a key was given, light the always-connected agent.
-    if (code === 0 && p.key) {
+    if (p.key) {
       const candidates = [
         "/Applications/DeepSeek Harness.app/Contents/Resources/runtime/cli/bin/dsh",
       ];
@@ -638,7 +801,7 @@ if (!app.requestSingleInstanceLock()) {
       }
     }
     if (win && !win.isDestroyed()) win.loadURL(TARGET_URL + (TARGET_URL.includes("?") ? "&" : "?") + "lang=" + encodeURIComponent(String(p.lang || "en")));
-  })
+  });
   // (los montajes de la cabina/el visor/el doble monitor viven DENTRO del whenReady — véase arriba)
   app.whenReady().then(async () => {
     isVaultLocked = hasVaultAuthConfigured(DATA_DIR);
@@ -658,9 +821,9 @@ if (!app.requestSingleInstanceLock()) {
     createWindow();
     // La cabina, el visor y los eventos del sistema se montan AQUÍ (el hilo de la UI está listo) —
     // jamás al nivel del módulo: el chequeo del hilo de Chromium lo exige (la lección #36).
-    setupCoworkRightDrawer(win);
-    watchMonitorPlugEvents(win, rightDrawerView);
-    bindMonitor2Events(win);
+    setupCoworkRightDrawer();
+    watchMonitorPlugEvents();
+    bindMonitor2Events();
     if (!SMOKE) startBankGradeSecurityWatchdog(vaultCtx);
     if (!ok) { await new Promise((r) => setTimeout(r, 400)); try { if (win && !win.isDestroyed()) win.loadURL(errorPage()); } catch {} }
     try {
@@ -668,14 +831,12 @@ if (!app.requestSingleInstanceLock()) {
       tray = new Tray(icon.resize({ width: 18, height: 18 }));
       tray.setToolTip("Fanal — l'IA travaille, l'humain veille");
       tray.setContextMenu(Menu.buildFromTemplate([
-        { label: "Abrir Fanal", click: () => { if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); } } },
+        { label: "Abrir Fanal", click: () => showOrCreateMainWindow() },
         { type: "separator" },
         { label: "Salir", click: () => app.quit() },
       ]));
     } catch (e) { /* tray optional (kiosk) */ }
-    app.on("activate", () => {
-      if (win && !win.isDestroyed()) { win.show(); win.focus(); } else { createWindow(); }
-    });
+    app.on("activate", () => showOrCreateMainWindow());
   });
 
   app.on("window-all-closed", () => {

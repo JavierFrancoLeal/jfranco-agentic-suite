@@ -108,6 +108,7 @@ const brandTargets = [
   join(APP, "main.js"),
   join(APP, "preload.js"),
   join(APP, "vault-biometric.js"),
+  join(APP, "desktop-sandbox.js"),
   join(APP, "package.json"),
   join(APP, "welcome.html"),
   join(APP, "brain"),

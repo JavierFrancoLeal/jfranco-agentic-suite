@@ -21,6 +21,7 @@
       "main.js",
       "preload.js",
       "vault-biometric.js",
+      "desktop-sandbox.js",
       "assets/**",
       "brain/**",
       "ui/**",

@@ -37,6 +37,8 @@ Write-Host "OK supervisor"
 Write-Host "== desktop app =="
 & $node "tools\test-vault-biometric.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-vault-biometric failed" }
+& $node "tools\test-desktop-sandbox.mjs"
+if ($LASTEXITCODE -ne 0) { throw "test-desktop-sandbox failed" }
 & $node "tools\verify-app.mjs"
 if ($LASTEXITCODE -ne 0) { throw "verify-app failed" }
 Write-Host "OK desktop app"

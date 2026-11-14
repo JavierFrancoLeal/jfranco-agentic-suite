@@ -59,6 +59,7 @@ echo "OK supervisor"
 
 echo "== desktop app =="
 "$NODE" tools/test-vault-biometric.mjs
+"$NODE" tools/test-desktop-sandbox.mjs
 "$NODE" tools/verify-app.mjs
 echo "OK desktop app"
 
