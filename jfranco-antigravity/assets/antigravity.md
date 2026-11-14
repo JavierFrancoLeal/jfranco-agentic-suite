@@ -17,7 +17,9 @@ The agent calls `antigravity` with an `action`:
 
 Parameters: `action`, `prompt`, `cwd` (must be a Git repo for `edit`/`audit`),
 `effort` (`low`/`medium`/`high`/`xhigh`/`max`; lower = faster, `medium` default),
-`model` (optional override, e.g. a Gemini Hydrogen/Argon id).
+`model` (optional override, e.g. a Gemini Hydrogen/Argon id),
+`conversationId` (optional; resume a previous Antigravity conversation via
+`--conversation`).
 
 ## Safety
 
@@ -26,9 +28,15 @@ Parameters: `action`, `prompt`, `cwd` (must be a Git repo for `edit`/`audit`),
   user's global `~/.gemini/antigravity-cli/settings.json` is never changed.
 - `edit` refuses unless the Git tree is clean, so `git diff` afterwards shows
   exactly what Antigravity changed.
+- `edit` also checks the active ledger (`DISK_LOCK`): it refuses when the
+  Antigravity IDE holds the lock (`GEMINI`), and serializes concurrent edits
+  with an exclusive lockfile so only one `antigravity(edit)` runs at a time.
 - Every delegation is logged to `~/.dsh/antigravity/audit.jsonl` with a
   SHA-256 hash chain (tamper-evident), for `accountability-auditor` and
-  `autonomy-grader`.
+  `autonomy-grader`. Each run writes a `phase: "start"` entry and a
+  post-execution `phase: "end"` entry (`antigravity_result`) capturing
+  `status`, `conversationId`, `durationSeconds`, and `deniedCount` when
+  present (`edit` also logs `ledgerLock`).
 
 ## Working pattern
 
