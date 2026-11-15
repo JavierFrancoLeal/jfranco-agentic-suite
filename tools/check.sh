@@ -40,7 +40,20 @@ echo "== ui =="
   const h=fs.readFileSync("ui/panel.html","utf8");
   const m=h.match(/<script>([\s\S]*?)<\/script>/);
   if(!m) throw new Error("panel: script block missing");
-  new Function(m[1]); // compiles without running
+  if(/DSH Assistant|DeepSeek Harness/i.test(h)) throw new Error("panel: legacy DSH/DeepSeek Harness branding found");
+  if(!h.includes("id=\"panelBackBtn\"")) throw new Error("panel: missing #panelBackBtn");
+  if(!/<button[^>]+id="darkBtn"[\s\S]*?<svg/i.test(h)) throw new Error("panel: #darkBtn must use inline SVG icon");
+  const mk=(id)=>({id,style:{},value:"",textContent:"",innerHTML:"",placeholder:"",title:"",dataset:{},children:[],classList:{_s:new Set(),toggle(k,v){v===undefined?(this._s.has(k)?this._s.delete(k):this._s.add(k)):(v?this._s.add(k):this._s.delete(k));},add(k){this._s.add(k)},remove(k){this._s.delete(k)},contains(k){return this._s.has(k)}},appendChild(c){this.children.push(c);},focus(){},addEventListener(){}});
+  const elems={};
+  const getEl=(id)=>elems[id]||(elems[id]=mk(id));
+  const doc={getElementById:getEl,createElement:(t)=>mk(t),querySelectorAll:()=>[],body:mk("body")};
+  const ls={_m:new Map(),getItem(k){return this._m.get(k)||null;},setItem(k,v){this._m.set(k,String(v));}};
+  const win={location:{origin:"http://127.0.0.1:8787",search:""},navigator:{}};
+  new Function("document","localStorage","location","window","navigator","fetch","setInterval","addEventListener",
+    m[1]
+  )(doc,ls,win.location,win,win.navigator,async()=>({ok:true,json:async()=>({})}),()=>0,()=>{});
+  if(!elems.langs||elems.langs.children.length!==10) throw new Error("panel: expected 10 language pills");
+  for(const pill of elems.langs.children){ pill.onclick(); }
 '
 "$NODE" --check ui/sw.js
 "$NODE" -e 'JSON.parse(require("fs").readFileSync("ui/manifest.webmanifest","utf8"))'

@@ -85,6 +85,7 @@ function mk(id) {
   return el;
 }
 for (const id of allIds) elems[id] = mk(id);
+if (elems.loginUser && elems.loginView) elems.loginUser.parentNode = elems.loginView;
 
 const bodyClasses = new Set();
 const document = {
@@ -220,8 +221,29 @@ process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e && e.sta
     if (/id="(?:modeLocalBtn|localSovereignPanel|brainLocalModelSel|brainLocalDetectBtn|wizBrainSel)"/.test(src) || /local_sovereign/.test(src)) {
       throw new Error("STRICT: removed Ollama / local_sovereign UI still present in dashboard.html");
     }
-    if (/#090d16|#020617|#064e3b|#38bdf8/i.test(html)) {
-      throw new Error("STRICT: off-brand dark-terminal inline colors found in dashboard.html (violates Trasunto luminous purple palette)");
+    if (/#090d16|#020617|#064e3b|#38bdf8|#1b2436|#fff5f5/i.test(html)) {
+      throw new Error("STRICT: off-brand dark-terminal or pink colors found in dashboard.html (violates Trasunto luminous purple palette)");
+    }
+    const panelHtml = fs.readFileSync(path.join(__dirname, "..", "ui", "panel.html"), "utf8");
+    const welcomeHtml = fs.readFileSync(path.join(__dirname, "..", "apps", "desktop", "welcome.html"), "utf8");
+    const mainJs = fs.readFileSync(path.join(__dirname, "..", "apps", "desktop", "main.js"), "utf8");
+    for (const [label, content] of [["ui/panel.html", panelHtml], ["apps/desktop/welcome.html", welcomeHtml], ["apps/desktop/main.js", mainJs]]) {
+      if (/#090d16|#020617|#064e3b|#38bdf8|#1b2436|#fff5f5/i.test(content)) {
+        throw new Error(`STRICT: off-brand dark-terminal or pink colors found in ${label}`);
+      }
+    }
+    if (/#0f172a/i.test(mainJs)) {
+      throw new Error("STRICT: off-brand #0f172a background found in apps/desktop/main.js");
+    }
+    if (/DSH Assistant|DeepSeek Harness/i.test(panelHtml)) {
+      throw new Error("STRICT: legacy DSH/DeepSeek Harness branding found in ui/panel.html");
+    }
+    if (!html.includes('id="wallBackBtn"') || !panelHtml.includes('id="panelBackBtn"')) {
+      throw new Error("STRICT: missing #wallBackBtn in dashboard.html or #panelBackBtn in ui/panel.html");
+    }
+    for (const btnId of ["viewBtn", "darkBtn", "notifBell", "soundBtn"]) {
+      const re = new RegExp(`id="${btnId}"[\\s\\S]*?<svg`, "i");
+      if (!re.test(html)) throw new Error(`STRICT: chrome button #${btnId} must render an inline <svg> icon`);
     }
     const toastZ = Number((html.match(/\.toast\{[^}]*z-index:(\d+)/) || [])[1] || 0);
     const wizZ = Number((html.match(/\.wizard\{[^}]*z-index:(\d+)/) || [])[1] || 0);
@@ -339,7 +361,36 @@ process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e && e.sta
       throw new Error("STRICT: partial first-run (dsh-lang saved, users=0, !lv-onboarded) must resume wizard cleanly");
     }
 
-    console.log("SMOKE TEST PASSED: sin errores runtime — botones vivos, 0 duplicate IDs, Inbox-First activo, wizard 8/8 OK, API payloads limpios");
+    // Verify SVG icon chrome toggles keep inner <svg> intact (no textContent wipeout)
+    for (const btnId of ["viewBtn", "darkBtn", "soundBtn"]) {
+      if (typeof elems[btnId].onclick === "function") await elems[btnId].onclick();
+      if (elems[btnId].textContent !== "") {
+        throw new Error(`STRICT: #${btnId} click overwrote SVG children via textContent`);
+      }
+    }
+
+    // Verify reopen continuity: closing and reopening after onboarding with users === 0 must keep #loginView & #setupSection visible (never collapse parentNode!)
+    localStorage.setItem("dsh-lang", "fr");
+    localStorage.setItem("lv-onboarded", "1");
+    elems.wizardView.classList.add("hidden");
+    elems.wizardView.style.display = "none";
+    elems.loginView.classList.remove("hidden");
+    elems.loginView.style.display = "";
+    elems.setupSection.classList.add("hidden");
+    elems.loginUser.style.display = "";
+    new Function("document", "localStorage", "sessionStorage", "navigator", "fetch", "location", "window", "Notification", src)(
+      document, localStorage, sessionStorage, navigator, fetch, location, window, Notification
+    );
+    await new Promise((r) => origSetTimeout(r, 15));
+    flushMicroTimeouts();
+    if (elems.loginView.style.display === "none" || elems.loginView.classList.contains("hidden")) {
+      throw new Error("STRICT: reopen with users=0 & lv-onboarded=1 collapsed #loginView (blank language-only screen regression!)");
+    }
+    if (elems.setupSection.classList.contains("hidden") || elems.loginUser.style.display !== "none") {
+      throw new Error("STRICT: reopen with users=0 must hide #loginUser cleanly while showing #setupSection inside #loginView");
+    }
+
+    console.log("SMOKE TEST PASSED: sin errores runtime — botones vivos, 0 duplicate IDs, Inbox-First activo, wizard 8/8 OK, API payloads limpios, reopen & SVG/Trasunto parity OK");
     process.exit(0);
   } catch (e) {
     console.log("SMOKE FAILED:", e && e.stack || e.message);

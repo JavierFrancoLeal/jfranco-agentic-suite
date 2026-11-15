@@ -1,4 +1,4 @@
-# Filosofía Visual de Trasunto & Fanal — Geometría Luminosa y Soberanía Humana (v1.0)
+# Filosofía Visual de Trasunto & Fanal — Geometría Luminosa y Soberanía Humana (v1.1)
 
 *Documento rector de diseño de interfaz, experiencia de usuario y coherencia espacial para todas las aplicaciones del ecosistema **Trasunto** (escritorio macOS/Windows/Linux, tabletas de mostrador/cocina, teléfonos inteligentes iOS/Android y consola web).*
 
@@ -39,7 +39,7 @@ Toda aplicación Trasunto —sin importar si corre en Electron, SwiftUI/iOS, Kot
 | `--trasunto-ink-meta` | `#98a2b3` | Metadatos secundarios, etiquetas de tiempo, separadores |
 
 ### 2.2 Modo Nocturno / Wallboard (`body.dark`, `body.wall`)
-Cuando la app opera en sala oscura o tablero de taller a distancia, el fondo cambia a **Índigo de Medianoche** (`linear-gradient(165deg, #0b1220 0%, #141f31 50%, #1e1b4b 100%)`), conservando el subtono `#1e1b4b`. **Queda prohibido** mezclar paneles negros de terminal (`#090d16`, `#020617`) con acentos cian neón (`#38bdf8`) o verde pantano (`#064e3b`) dentro de pantallas claras u onboarding.
+Cuando la app opera en sala oscura, Wallboard Live o tablero de taller a distancia, el fondo cambia a **Índigo de Medianoche** (`linear-gradient(165deg, #0b1220 0%, #141f31 50%, #1e1b4b 100%)`), conservando el subtono `#1e1b4b`. **Queda prohibido** mezclar paneles negros de terminal (`#090d16`, `#020617`, `#0f172a`, `#1b2436`) o fondos rosados/cian neón (`#38bdf8`, `#fff5f5`, `#064e3b`) en ninguna vista secundaria (`#wallView`, `/panel`, visores de prueba o ventanas `BrowserWindow` de escritorio).
 
 ### 2.3 Semáforo Fiduciario (Semántica Estricta — Cero Decoración)
 En la 4.ª Revolución Industrial, el color significa **nivel de autonomía y responsabilidad**:
@@ -66,14 +66,17 @@ Siguiendo el principio de **curvas concéntricas de Apple**, cada radio exterior
 
 ---
 
-## 4. Las 6 Leyes de Interacción Trasunto (Aplicables a Cualquier Plataforma)
+## 4. Las 9 Leyes de Interacción Trasunto (Aplicables a Cualquier Plataforma)
 
 1. **Test de Una Oración por Pantalla**: Si una pantalla no puede explicarse en una sola frase honesta al dueño del negocio, debe dividirse o simplificarse.
 2. **Retroalimentación Inmediata y Visible en Capas Superiores**: Ningún clic puede quedarse "mudo". Las notificaciones flotantes (`.toast`) viven siempre en la capa superior absoluta (`z-index` por encima de asistentes y cortinas de seguridad), y toda acción crítica (como vincular Touch ID / Contraseña Maestra) muestra **estado en línea junto al botón**, foco automático al campo faltante y mensaje localizado en el idioma elegido.
 3. **La Inacción No Envía (`Default Safe = NO`)**: Ante alertas o envíos externos, si el humano no confirma explícitamente (ej. temporizador de 10 s), el sistema elige no actuar y conserva el borrador intacto.
 4. **De la Simplicidad al Poder Oculto (`Inbox-First / Progressive Disclosure`)**: Al abrir la app el usuario ve únicamente **lo que requiere su firma ahora**; los controles avanzados de configuración permanecen a un toque en **Ajustes** o modo avanzado.
 5. **Cero Desperdicio de Cómputo (`0% CPU/GPU en Reposo`)**: Prohibidos `backdrop-filter` masivos en listas largas, prohibidos `setInterval` activos con la pestaña oculta (`visibilitychange`), animaciones discretas (`<= 0.35s`) con respeto estricto a `prefers-reduced-motion` y suspensión automática de tareas pesadas con batería baja.
-6. **Continuidad Visual entre Estados Críticos**: El asistente inicial, el dashboard operativo, el HUD de piloto agéntico y la cortina de bloqueo biométrico comparten la **misma paleta morado-índigo**, tipografía y geometría. Un bloqueo por Loi 25 debe sentirse tan sereno y confiable como desbloquear la pantalla de un iPhone o Mac.
+6. **Continuidad Visual entre Estados Críticos**: El asistente inicial, el dashboard operativo, el Live Wallboard (`/dashboard?wall=1`), el Panel de Acción (`/panel`), el HUD de piloto agéntico, las ventanas de prueba sincronizada en escritorio y la cortina de bloqueo biométrico comparten la **misma paleta morado-índigo**, tipografía y geometría. Un bloqueo por Loi 25 debe sentirse tan sereno y confiable como desbloquear la pantalla de un iPhone o Mac.
+7. **Iconografía Vectorial Unificada (Zero-Emoji Chrome)**: Los botones utilitarios de cabecera (modo simple/avanzado, modo nocturno, notificaciones, síntesis de voz y limpieza rápida) se construyen siempre con **iconografía SVG de trazo continuo (`stroke-width: 1.9`, esquinas redondeadas)** alojada en cápsulas de cristal esmerilado (`38 × 38 px`, `border-radius: 11px`, `backdrop-filter: blur(8px)`). Nunca se colocan emojis genéricos de sistema operativo (`👁️`, `🌙`, `🔊`, `🔔`, `🗑️`) como controles principales de cabecera porque rompen la unidad tipográfica entre macOS, Windows e iOS.
+8. **Navegación Sin Callejones (Zero Dead-Ends)**: Toda vista secundaria o modal de pantalla completa (`Live Wallboard`, `/panel`, configuraciones avanzadas) debe ofrecer siempre un botón visible `← Volver` (`#wallBackBtn`, `#panelBackBtn`) arriba a la izquierda dentro de la misma ventana, sin abrir pestañas atrapadas con `target="_blank"` dentro de la aplicación de escritorio.
+9. **Continuidad al Reabrir y Protección Antiespía Nativa**: Cerrar y reabrir Fanal debe restaurar inmediatamente el estado activo (asistente si faltan usuarios, acceso PIN/biométrico si existe dueño) sin ocultar jamás contenedores padres por efectos secundarios del DOM. En paralelo, todas las ventanas de escritorio mantienen activa la protección nativa `setContentProtection(true)`: cualquier captura de pantalla o grabador externo ve únicamente el fondo del escritorio, blindando PII, biometría y datos fiscales bajo Loi 25 por diseño.
 
 ---
 
@@ -97,8 +100,11 @@ Para prevenir errores humanos graves (por ejemplo, operar cuentas de terceros de
 
 ## 7. Lista de Verificación Anti-Deriva (Antes de Aprobar Cualquier Pantalla)
 
-- [ ] ¿Todos los fondos, botones, modales y cortinas de seguridad pertenecen a `#4D6BFE` / `#7c5cff` / `#a78bfa`, blanco o superficie `#f5f7ff` (sin parches `#090d16` ni `#064e3b` insertados a mano)?
+- [ ] ¿Todos los fondos, botones, modales, vistas secundarias (`#wallView`, `/panel`, visores de escritorio) y cortinas de seguridad pertenecen a `#4D6BFE` / `#7c5cff` / `#a78bfa`, `#0b1220 -> #1e1b4b`, blanco o superficie `#f5f7ff` (sin `#090d16`, `#020617`, `#0f172a`, `#1b2436`, `#38bdf8` ni `#064e3b`)?
+- [ ] ¿Todos los controles de cabecera (`#viewBtn`, `#darkBtn`, `#notifBell`, `#soundBtn`) usan SVG vectoriales de trazo limpio dentro de cápsulas `.ico-btn` (sin emojis sueltos en chrome)?
+- [ ] ¿Toda vista secundaria (`/dashboard?wall=1` y `/panel`) tiene un botón `← Volver` visible y funcional sin depender del botón Atrás del navegador ni de `target="_blank"` en Electron?
+- [ ] ¿Cerrar y reabrir la app con `users === 0` después de seleccionar idioma mantiene `#loginView` y `#setupSection` visibles (verificado por prueba automática en `tools/smoke-dashboard.js`)?
 - [ ] ¿Las alertas `.toast` flotan por encima de absolutamente cualquier overlay, asistente o cortina (`z-index` superior)?
 - [ ] ¿Cada botón responde visualmente al clic en < 100 ms (estado en línea, deshabilitado temporal o foco al requisito previo)?
-- [ ] ¿Las 10 lenguas soportadas (`en`, `es`, `fr`, `de`, `it`, `pt`, `zh`, `ja`, `ko`, `ar`) tienen traducción completa sin textos duros en un solo idioma?
-- [ ] ¿Se conserva compatibilidad total con `prefers-reduced-motion`, teclado (`Enter` / `Tab`) y pantallas `<= 560 px`?
+- [ ] ¿Las 10 lenguas soportadas (`en`, `es`, `fr`, `de`, `it`, `pt`, `zh`, `ja`, `ko`, `ar`) tienen traducción completa sin textos duros en un solo idioma ni marcas heredadas fuera de Fanal/Trasunto?
+- [ ] ¿Se conserva compatibilidad total con `prefers-reduced-motion`, teclado (`Enter` / `Tab`), pantallas `<= 560 px` y `setContentProtection(true)` en ventanas Electron?

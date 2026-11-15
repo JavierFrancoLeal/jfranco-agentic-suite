@@ -317,7 +317,7 @@ function syncDualMonitorLayout(primaryWin, view) {
       activeWin.setBounds({ x: pArea.x + pArea.width - 440, y: pArea.y, width: 440, height: pArea.height });
       const eArea = external.workArea;
       if (!secondMonitorWindow || secondMonitorWindow.isDestroyed()) {
-        secondMonitorWindow = new BrowserWindow({ x: eArea.x, y: eArea.y, width: eArea.width, height: eArea.height, title: "Fanal · Lienzo Agéntico (Pantalla 2)", backgroundColor: "#090d16", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
+        secondMonitorWindow = new BrowserWindow({ x: eArea.x, y: eArea.y, width: eArea.width, height: eArea.height, title: "Fanal · Lienzo Agéntico (Pantalla 2)", backgroundColor: "#1e1b4b", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
         if (!SMOKE) { try { secondMonitorWindow.setContentProtection(true); } catch {} }
         secondMonitorWindow.on("closed", () => { secondMonitorWindow = null; });
       } else { secondMonitorWindow.setBounds(eArea); }
@@ -390,10 +390,10 @@ function applyDualScreenSplitLayout(primaryWin, ratio) {
       try { activeWin.contentView.removeChildView(agentPortalView); activeWin.contentView.removeChildView(sourceDocView); } catch (e) {}
       const m2Work = m2.workArea;
       if (!monitor2Window || monitor2Window.isDestroyed()) {
-        monitor2Window = new BrowserWindow({ x: m2Work.x, y: m2Work.y, width: m2Work.width, height: m2Work.height, title: "Fanal · Cabina Sincronizada", backgroundColor: "#090d16", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
+        monitor2Window = new BrowserWindow({ x: m2Work.x, y: m2Work.y, width: m2Work.width, height: m2Work.height, title: "Fanal · Cabina Sincronizada", backgroundColor: "#1e1b4b", webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true } });
         if (!SMOKE) { try { monitor2Window.setContentProtection(true); } catch {} }
         monitor2Window.on("closed", () => { monitor2Window = null; });
-        const header = "<html><body style='margin:0;background:#0f172a;color:#f8fafc;font-family:system-ui;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid #334155;font-size:12px'><span style='color:#6ee7b7;font-family:monospace;font-weight:700'>🌐 IZQUIERDA: PORTAL / AGENTE</span><span style='color:#38bdf8;font-family:monospace;font-size:11px'>⇄ sincronizado en vivo con la prueba</span><span style='color:#fde68a;font-family:monospace;font-weight:700'>📄 DERECHA: DOCUMENTO ORIGINAL</span></body></html>";
+        const header = "<html><body style='margin:0;background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#ffffff;font-family:system-ui;height:40px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid rgba(255,255,255,.24);font-size:12px'><span style='color:#ffffff;font-family:monospace;font-weight:700'>IZQUIERDA: PORTAL / AGENTE</span><span style='color:#e0e7ff;font-family:monospace;font-size:11px'>⇄ sincronizado en vivo con la prueba</span><span style='color:#f5f3ff;font-family:monospace;font-weight:700'>DERECHA: DOCUMENTO ORIGINAL</span></body></html>";
         monitor2Window.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(header));
       } else { monitor2Window.setBounds(m2Work); }
       const contentHeight = m2Work.height - TOP_BAR_HEIGHT;
@@ -434,12 +434,12 @@ async function executeSynchronizedStepOnMonitor2(step) {
       await sourceDocView.webContents.loadURL(fileUrl + "#page=" + pageNum + "&view=FitH" + searchParam);
     } else if ([".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg", ".bmp"].includes(ext)) {
       const label = escapeHtml(step && step.fieldLabel ? step.fieldLabel : "");
-      const html = "<html><body style='margin:0;background:#020617;color:#f8fafc;font-family:system-ui;display:flex;flex-direction:column;height:100vh'><div style='background:#064e3b;color:#a7f3d0;padding:8px 12px;font-family:monospace;font-size:12px;border-bottom:2px solid #10b981'>📌 ORIGEN EN IDENTIFICACIÓN OFICIAL → " + label + "</div><div style='flex:1;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto'><img src='" + escapeHtml(fileUrl) + "' style='max-width:98%;max-height:94%;object-fit:contain;border:2px solid #38bdf8;border-radius:4px'/></div></body></html>";
+      const html = "<html><body style='margin:0;background:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%);color:#f8fafc;font-family:system-ui;display:flex;flex-direction:column;height:100vh'><div style='background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#ffffff;padding:8px 14px;font-family:monospace;font-size:12px;border-bottom:1px solid rgba(255,255,255,.24)'>ORIGEN EN DOCUMENTO OFICIAL → " + label + "</div><div style='flex:1;display:flex;align-items:center;justify-content:center;padding:12px;overflow:auto'><img src='" + escapeHtml(fileUrl) + "' style='max-width:98%;max-height:94%;object-fit:contain;border:2px solid #7c5cff;border-radius:12px'/></div></body></html>";
       await sourceDocView.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
     }
     const forbidden = /envoyer|soumettre|transmettre|payer|signer|submit|pay/i;
     if (step && step.action === "CLICK" && forbidden.test(String(step.fieldLabel || ""))) return { status: "PAUSED_BEFORE_SUBMIT" };
-    await agentPortalView.webContents.executeJavaScript("(() => { const input = document.querySelector(" + JSON.stringify(step && step.cssSelector) + "); if (!input) return false; input.scrollIntoView({ behavior: 'smooth', block: 'center' }); input.focus(); input.value = " + JSON.stringify(String(step && step.valueToFill)) + "; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); input.style.outline = '3px solid #38bdf8'; input.style.backgroundColor = 'rgba(56, 189, 248, 0.12)'; return true; })()");
+    await agentPortalView.webContents.executeJavaScript("(() => { const input = document.querySelector(" + JSON.stringify(step && step.cssSelector) + "); if (!input) return false; input.scrollIntoView({ behavior: 'smooth', block: 'center' }); input.focus(); input.value = " + JSON.stringify(String(step && step.valueToFill)) + "; input.dispatchEvent(new Event('input', { bubbles: true })); input.dispatchEvent(new Event('change', { bubbles: true })); input.style.outline = '3px solid #7c5cff'; input.style.backgroundColor = 'rgba(124, 92, 255, 0.14)'; return true; })()");
     return { status: "SYNCED_LEFT_AND_RIGHT", filledSelector: step && step.cssSelector, proofOpened: safe.basename, proofPage: (step && step.sourcePage) || 1 };
   } catch (e) { return { status: "ERROR", reason: String(e.message) }; }
 }
@@ -591,11 +591,11 @@ function setupCoworkRightDrawer() {
           const safePage = Number.isFinite(Number(pageNumber)) && Number(pageNumber) >= 1 ? Math.floor(Number(pageNumber)) : 1;
           await view.webContents.loadURL(safe.fileUrl + "#page=" + safePage + "&view=FitH");
         } else if ([".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg", ".bmp"].includes(ext)) {
-          const html = "<html><body style='margin:0;background:#090d16;display:flex;align-items:center;justify-content:center;height:100vh'><img src='" + escapeHtml(safe.fileUrl) + "' style='max-width:96%;max-height:96%;object-fit:contain'/></body></html>";
+          const html = "<html><body style='margin:0;background:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%);display:flex;align-items:center;justify-content:center;height:100vh'><img src='" + escapeHtml(safe.fileUrl) + "' style='max-width:96%;max-height:96%;object-fit:contain;border-radius:12px;border:1px solid rgba(167,139,250,.35)'/></body></html>";
           await view.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
         } else if ([".csv", ".tsv", ".txt", ".jsonl", ".md"].includes(ext)) {
           const raw = escapeHtml(fs.readFileSync(safe.resolvedPath, "utf8").slice(0, 100000));
-          const html = "<html><body style='margin:0;padding:14px;background:#090d16;color:#e2e8f0;font-family:monospace;font-size:12px;white-space:pre-wrap'>" + raw + "</body></html>";
+          const html = "<html><body style='margin:0;padding:16px;background:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%);color:#e6ecf7;font-family:monospace;font-size:12px;white-space:pre-wrap'>" + raw + "</body></html>";
           await view.webContents.loadURL("data:text/html;charset=utf-8," + encodeURIComponent(html));
         } else {
           await view.webContents.loadURL(safe.fileUrl);
@@ -806,7 +806,7 @@ if (!app.requestSingleInstanceLock()) {
       kiosk: KIOSK,
       frame: !KIOSK,
       title: "Fanal",
-      backgroundColor: "#0f172a",
+      backgroundColor: "#4D6BFE",
       transparent: false,
       icon: path.join(__dirname, "assets", "icon.png"),
       webPreferences: {
