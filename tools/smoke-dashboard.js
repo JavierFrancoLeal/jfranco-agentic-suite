@@ -216,12 +216,13 @@ process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e && e.sta
     if (!String(elems.wizBody.innerHTML).includes("wizKeyInput")) {
       throw new Error("STRICT: wizard Step 3 did not render BYOK inputs");
     }
+    if (/id="(?:modeLocalBtn|localSovereignPanel|brainLocalModelSel|brainLocalDetectBtn|wizBrainSel)"/.test(src) || /local_sovereign/.test(src)) {
+      throw new Error("STRICT: removed Ollama / local_sovereign UI still present in dashboard.html");
+    }
     elems.wizKeyInput = mk("wizKeyInput");
     elems.wizKeyInput.value = "sk-test-ds-key";
     elems.wizGeminiKeyInput = mk("wizGeminiKeyInput");
     elems.wizGeminiKeyInput.value = "AIza-test-gm-key";
-    elems.wizBrainSel = mk("wizBrainSel");
-    elems.wizBrainSel.value = "dual_cloud";
 
     // Step 3 -> Step 4 -> Back -> Step 4 (must preserve wizDraft values!)
     elems.wizNext.click();

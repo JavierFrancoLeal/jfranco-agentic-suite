@@ -2,23 +2,21 @@
 
 *Québec Loi 25 (art. 17-18): the written evaluation required before
 personal information is communicated outside Québec. Updated
-2026-11-14 for Fanal v0.1 / Dual BYOK + Local Ollama architecture.*
+2026-11-14 for Fanal v0.1 / closed Dual BYOK (DeepSeek + Gemini) architecture.*
 
 ## The flow under evaluation
 
 Fanal reads a conversation, incoming email/folder item, or form on the
-CLIENT's machine and sends the redacted prompt text to the closed
-curated brain selected and consigned by the client at setup:
-- **100 % Local (`local_only`)**: local Ollama inference — zero external
-  transmission.
+CLIENT's machine and sends ONLY the PII-veiled prompt text to the closed
+curated dual brain configured by the client at setup:
 - **Closed Dual BYOK (`dual_cloud`)**: client's own DeepSeek API key
   (`deepseek-flash` / `deepseek-v4-pro`) and/or Google Gemini key
   (`gemini-3.8-flash` / `gemini-4-argon`), both outside Québec.
 
 ## What travels and what does not
 
-- **Travels (only in `dual_cloud`, never in `local_only`)**: the
-  PII-veiled text fragment or structured fields needed for the proposal.
+- **Travels (PII-veiled)**: the redacted text fragment or structured
+  fields needed for the proposal (stripped of known names, phones, emails).
 - **Does NOT travel**: unredacted client names/phones/emails (when PII
   Veil 2.0 masks them), local constitution (`decisions.md`), company
   memory, vault keys, IMAP credentials, raw files inside `Fanal-Inbox`,
@@ -30,7 +28,7 @@ curated brain selected and consigned by the client at setup:
 |---|---|---|
 | Destination outside Québec/Canada (DeepSeek / Gemini) | cross-border transfer | CLIENT holds the account and BYOK keys inside their own local vault; Trasunto holds no multi-tenant copy |
 | Consent & closed catalog | absent or arbitrary endpoint drift → non-compliant | Closed catalog in [`brain-catalog.js`](../supervisor/brain-catalog.js) rejects uncurated endpoints (`400 closed_curated_catalog`); choice is consigned locally |
-| Data retention / cloud exposure | foreign provider retention | First-class **`local_only` (Ollama)** mode — zero data leaves the machine |
+| Data retention / cloud exposure | foreign provider retention | PII Veil 2.0 masks names/phones/emails locally before any dispatch; client holds direct API-tier account terms (`dual_cloud`) |
 | Credential storage on disk | plaintext secret exposure | Electron Vault uses scrypt (`N=65536`) + `AES-256-GCM` (`AESGCM2:`) with OS biometric key wrapping, RAM zeroization on lock (`POST /api/internal/vault-key`), and chmod `0600` silo |
 | Telemetry & support exports | accidental PII / API-key leaks | Telemetry records types/tiers only; [`diagnostic-sanitizer.js`](../supervisor/diagnostic-sanitizer.js) strips secrets & PII before diagnostic export |
 | Incoming email & inbox files | unintended mailbox mutation or path traversal | [`intake-engine.js`](../supervisor/intake-engine.js) reads IMAP strictly read-only (`EXAMINE` + `BODY.PEEK[]`), confines `Fanal-Inbox` via [`desktop-sandbox.js`](../apps/desktop/desktop-sandbox.js), and uses constant-time/serialized cursors |
@@ -40,11 +38,11 @@ curated brain selected and consigned by the client at setup:
 
 ## The conclusion
 
-Compliant **when** the client's brain mode (`local_only` or `dual_cloud`),
-BYOK keys, and written pilot agreement are consigned before processing
-client personal data. Residual risk: provider-side retention for cloud
-API tiers chosen in `dual_cloud` — mitigated by `local_only` mode, PII
-Veil 2.0, and the client's direct provider terms.
+Compliant **when** the client's closed Dual BYOK configuration (`dual_cloud`),
+encrypted Vault keys, and written pilot agreement are consigned before processing
+client personal data. Residual risk: provider-side API retention under
+the client's direct DeepSeek / Google Gemini terms — mitigated by PII
+Veil 2.0, local-only silo files, and human red-light sign-off.
 
 ## Status of the 6 Loi 25 system safeguards
 

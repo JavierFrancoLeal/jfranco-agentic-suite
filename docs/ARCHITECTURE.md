@@ -3,7 +3,7 @@
 **Formal definition:** Fanal is Trasunto's closed-architecture human-in-the-loop
 work assistant (**L'IA travaille. L'humain veille, décide, révise.**).
 It pairs an **Electron desktop shell** (`apps/desktop/`) with a zero-dependency
-**Node.js supervisor & dashboard** (`supervisor/`), closed **Dual BYOK + Local Ollama**
+**Node.js supervisor & dashboard** (`supervisor/`), Apple-style closed **Dual BYOK (DeepSeek + Gemini)**
 model governance, PII Veil 2.0, encrypted local vault, and read-only autonomous
 intake (`IMAP` + `Fanal-Inbox`).
 
@@ -22,7 +22,6 @@ intake (`IMAP` + `Fanal-Inbox`).
 │ Layer 2 · Curated Brain Contract (Closed Catalog — brain-catalog.js)    │
 │   dual_cloud: DeepSeek (deepseek-flash / deepseek-v4-pro)               │
 │               ↔ Google Gemini failover (gemini-3.8-flash / gemini-4-argon)│
-│   local_only: 100 % on-device Ollama (zero cloud egress)                │
 ├─────────────────────────────────────────────────────────────────────────┤
 │ Layer 1 · Trasunto Developer Organs (optional DSH suite, 26 jfranco-*)  │
 │   Authoring, auditing, DSH↔Antigravity dialogue, and CLI automation     │
@@ -41,13 +40,12 @@ intake (`IMAP` + `Fanal-Inbox`).
 ## The closed brain contract (`brain-catalog.js`)
 
 Fanal intentionally closes model selection ("Apple-style curated
-hemispheres" — no arbitrary LLM picker):
+hemispheres" — no arbitrary LLM picker, no third-party local Ollama setup):
 
 - **`dual_cloud` (Dual BYOK in Vault)**:
   - **Primary fast brain**: `deepseek-flash`
   - **Deep / complex reasoning**: `deepseek-v4-pro` (DeepSeek) or `gemini-4-argon` (Gemini when configured)
   - **Automatic cross-provider failover & rescue**: `processStudio()` fails over from `deepseek-flash` to `gemini-3.8-flash` (`rescue`) on provider error, and escalates deep rescue to `gemini-4-argon` (or `deepseek-v4-pro`).
-- **`local_only`**: routes strictly to local Ollama (`127.0.0.1:11434`), blocking external egress.
 - **Vault encryption**: client API keys and IMAP credentials are encrypted with `AES-256-GCM` (`AESGCM2:`) using the scrypt-derived `FANAL_MASTER_KEY` handed off via authenticated loopback (`POST /api/internal/vault-key`) from Electron Main and zeroized in RAM on lock.
 
 ## Homeostasis, Intake & KPI Neto (`power-kpi.js` & `intake-engine.js`)
@@ -67,4 +65,4 @@ hemispheres" — no arbitrary LLM picker):
 
 | Fanal Desktop | Supervisor & `supervisor-pkg` | Curated Brains | Workspace Organs (`jfranco-*`) |
 |---|---|---|---|
-| `0.1.0` (Electron 45) | `1.0.182+` (`Node >= 24`) | `deepseek-flash`/`v4-pro` + `gemini-3.8-flash`/`4-argon` + Ollama | `26` classified in `docs/ACTIVE-CATALOG.md` |
+| `0.1.0` (Electron 45) | `1.0.182+` (`Node >= 24`) | `deepseek-flash`/`v4-pro` + `gemini-3.8-flash`/`4-argon` | `26` classified in `docs/ACTIVE-CATALOG.md` |

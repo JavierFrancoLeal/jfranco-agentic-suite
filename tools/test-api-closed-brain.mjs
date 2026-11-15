@@ -93,6 +93,22 @@ async function run() {
     const badJson = await badRes.json();
     assert.equal(badJson.error, "closed_curated_catalog");
 
+    // Retired local Ollama mode/model and /auto endpoint must be rejected cleanly
+    const badLocalRes = await fetch(`${baseUrl}/api/settings/brain`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ mode: "local_sovereign" }),
+    });
+    assert.equal(badLocalRes.status, 400);
+    const autoRes = await fetch(`${baseUrl}/api/settings/brain/auto`, {
+      method: "POST",
+      headers: authHeaders,
+      body: "{}",
+    });
+    assert.equal(autoRes.status, 410);
+    const autoJson = await autoRes.json();
+    assert.equal(autoJson.error, "local_engine_removed");
+
     // Save Dual BYOK keys and verify encrypted-at-rest storage + GET masking + diag redaction
     const dsKey = "sk-win-linux-mac-ds-9988";
     const gemKey = "AIzaSyWinLinuxMacGemKey77665544";

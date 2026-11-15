@@ -8,9 +8,9 @@ and `@javierfrancoleal/dsh-supervisor` (`supervisor-pkg/`):
 - **Owner & RBAC (`server.js`)** — salted scrypt accounts (`Owner / Lead / Employee`),
   Inbox-First (`simpleview`) approval cards, morning *Reprise Matinale*, house
   rules (`decisions.md`), and company memory.
-- **Closed Dual BYOK + Local Brain (`brain-catalog.js`)** — curated `dual_cloud`
-  (`deepseek-flash` / `deepseek-v4-pro` ↔ Gemini `gemini-3.8-flash` / `gemini-4-argon`
-  failover) or `local_only` (Ollama), rejecting uncurated providers.
+- **Closed Dual BYOK Brain (`brain-catalog.js`)** — Apple-style closed synergy
+  (`dual_cloud`: DeepSeek `deepseek-flash` / `deepseek-v4-pro` ↔ Google Gemini
+  `gemini-3.8-flash` / `gemini-4-argon` failover), rejecting arbitrary providers or uncurated local engines.
 - **KPI Neto & Power Governor (`power-kpi.js`)** — net time saved (`saved − edited`),
   battery/wake-aware UI polling, and `POST /api/system/wake`.
 - **Autonomous Intake (`intake-engine.js`)** — read-only IMAP incremental UID

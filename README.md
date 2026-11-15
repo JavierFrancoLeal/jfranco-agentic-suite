@@ -129,7 +129,7 @@ workers (see the [enterprise model](docs/ENTERPRISE.md)).
 
 ## 🚀 Quick start
 
-1. **For SMB / end-user pilots:** install **Fanal Desktop** (`apps/desktop/`) — it bundles the Electron Node runtime, encrypted Dual BYOK Vault (`DeepSeek + Gemini` or `100 % Local Ollama`), Inbox-First dashboard (`simpleview`), KPI Neto, and read-only IMAP / `Fanal-Inbox` intake in one installer (`docs/INSTALLERS.md`).
+1. **For SMB / end-user pilots:** install **Fanal Desktop** (`apps/desktop/`) — it bundles the Electron Node runtime, encrypted Dual BYOK Vault (`DeepSeek + Google Gemini` closed synergy), Inbox-First dashboard (`simpleview`), KPI Neto, and read-only IMAP / `Fanal-Inbox` intake in one installer (`docs/INSTALLERS.md`).
 
 2. **For DeepSeek Harness developers & CLI workflows:** install DeepSeek Harness and run the installer:
 

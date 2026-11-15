@@ -7,9 +7,8 @@ propres facteurs. Version 1.0, 2026-11-06.*
 
 ## 1. Le flux
 
-Fanal lit [conversations/formulaires] sur la machine du client et envoie
-le texte nécessaire au fournisseur de modèle choisi par le client :
-[DeepSeek — nuage / Ollama — local, à consigner].
+Fanal lit [conversations/formulaires] sur la machine du client, applique le voile PII 2.0 localement, et envoie uniquement le texte voilé au cerveau dual curé de Fanal :
+[DeepSeek + Google Gemini — clés BYOK du client dans son coffre local].
 
 ## 2. La sensibilité
 
@@ -23,11 +22,9 @@ entraînement, aucune conservation par Trasunto.
 
 ## 4. Les mesures
 
-Clé détenue par le client · choix consigné à l'installation · option
-locale de première classe · télémétrie anonymisée · effacement à la
-demande.
+Clés BYOK détenues par le client dans son coffre AES-256-GCM · voile PII 2.0 avant tout envoi · catalogue fermé DeepSeek + Gemini · télémétrie anonymisée · effacement à la demande.
 
 ## 5. La conclusion du client
 
 Signature : ____________________  Date : ____________________
-"J'ai évalué les facteurs et je choisis : [nuage / local]."
+"J'ai évalué les facteurs pour le cerveau dual fermé DeepSeek + Gemini (avec voile PII 2.0 et clés BYOK en coffre local)."

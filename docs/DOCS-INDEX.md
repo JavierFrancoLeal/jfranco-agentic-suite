@@ -7,7 +7,7 @@ Pre-Piloto #1 cleanup so agents and partners know what is authoritative).*
 
 | Document | Purpose |
 |---|---|
-| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | System layers, closed Dual BYOK + Local contract, Intake, Power/KPI Neto, cross-platform CI |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | System layers, closed Dual BYOK (`DeepSeek ↔ Gemini`) contract, Intake, Power/KPI Neto, cross-platform CI |
 | [`MAP.md`](./MAP.md) | Quick technical directory across `supervisor/`, `apps/desktop/`, `supervisor-pkg/`, `tools/` |
 | [`ACTIVE-CATALOG.md`](./ACTIVE-CATALOG.md) | Canonical taxonomy of all 26 `jfranco-*` organs (`desktop`/`campo`/dormant) |
 | [`UI-DOCTRINE.md`](./UI-DOCTRINE.md) | Inbox-First (`simpleview`), 0% idle CPU/GPU, simplicity & accountability UX rules |
@@ -22,8 +22,8 @@ Pre-Piloto #1 cleanup so agents and partners know what is authoritative).*
 
 | Document | Scope |
 |---|---|
-| [`../POLITIQUE-CONFIDENTIALITE.md`](../POLITIQUE-CONFIDENTIALITE.md) & [`LEGAL/POLITIQUE-CONFIDENTIALITE.md`](./LEGAL/POLITIQUE-CONFIDENTIALITE.md) | Reconciled v1.1 public privacy policy (Dual BYOK Vault + Local Ollama + PII Veil 2.0 + read-only IMAP) |
-| [`EFVP-TRASUNTO.md`](./EFVP-TRASUNTO.md) | Updated 2026-11-14 Privacy Impact Assessment (deep/gemini/ollama, vault crypto, diagnostic sanitization) |
+| [`../POLITIQUE-CONFIDENTIALITE.md`](../POLITIQUE-CONFIDENTIALITE.md) & [`LEGAL/POLITIQUE-CONFIDENTIALITE.md`](./LEGAL/POLITIQUE-CONFIDENTIALITE.md) | Reconciled v1.1 public privacy policy (Dual BYOK Vault DeepSeek + Gemini + PII Veil 2.0 + read-only IMAP) |
+| [`EFVP-TRASUNTO.md`](./EFVP-TRASUNTO.md) | Updated 2026-11-14 Privacy Impact Assessment (closed DeepSeek + Gemini, vault crypto, diagnostic sanitization) |
 | [`LEGAL/EFVP-MODELE-CLIENT.md`](./LEGAL/EFVP-MODELE-CLIENT.md) | Fill-in client EFVP template |
 | [`LEGAL/PROTOCOLE-INCIDENTS.md`](./LEGAL/PROTOCOLE-INCIDENTS.md) | Incident triage & 72h CAI reporting protocol |
 | [`LEGAL/RETENTION-DESTRUCTION.md`](./LEGAL/RETENTION-DESTRUCTION.md) | Local silo retention & demand-erasure schedule |

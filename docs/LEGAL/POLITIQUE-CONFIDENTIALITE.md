@@ -30,9 +30,9 @@ l'IA et les PME : nous installons, configurons et accompagnons Fanal.
   IMAP, votre constitution, votre mémoire et vos données restent dans votre
   silo chiffré (purge en RAM au verrouillage), exportables et effaçables
   à la demande.
-- **Cerveau Dual curé ou 100 % Local :** vous choisissez et consignez à
-  l'installation entre le mode **100 % Local** (Ollama) ou vos propres clés
-  **BYOK Dual** (**DeepSeek + Google Gemini**).
+- **Cerveau Dual curé exclusif (DeepSeek + Gemini) :** Fanal fonctionne de
+  façon fermée et consignée à l'installation avec vos propres clés
+  **BYOK Dual** (**DeepSeek + Google Gemini**), protégées par le voile PII 2.0.
 
 ## Vos droits
 

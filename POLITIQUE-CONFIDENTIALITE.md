@@ -34,10 +34,10 @@ de conséquences, pendant que l'humain signe ce qui en a.
   machine dans un silo chiffré (déverrouillage par mot de passe maître et
   biométrie OS, purge en RAM au verrouillage), exportables et effaçables
   à la demande.
-- **Cerveau Dual curé ou 100 % Local :** vous choisissez à l'installation
-  entre le mode **100 % Local** (Ollama — aucune donnée ne quitte votre
-  machine) ou vos propres clés **BYOK Dual** (**DeepSeek + Google Gemini**,
-  avec bascule curée et contrat directement sous votre compte).
+- **Cerveau Dual curé exclusif (DeepSeek + Gemini) :** Fanal fonctionne de
+  façon fermée sur vos propres clés **BYOK Dual** (**DeepSeek + Google Gemini**)
+  stockées dans votre coffre local, avec bascule curée, voile PII 2.0
+  avant tout appel externe et contrat directement sous votre compte.
 
 ## La responsabilité
 

@@ -182,25 +182,26 @@ async function runUnitTests() {
   // 2. PowerGovernor sleep/wake & battery saver logic
   let fakeClock = 1000000;
   const gov = powerKpi.createPowerGovernor({ now: () => fakeClock, batterySaver: true });
-  assert.equal(gov.shouldDeferBackgroundCompute({ isLocalSovereign: true, manual: false }).defer, false);
+  assert.equal(gov.shouldDeferBackgroundCompute({ manual: false }).defer, false);
   gov.onSleep("suspend");
-  assert.deepEqual(gov.shouldDeferBackgroundCompute({ isLocalSovereign: false, manual: false }), {
+  assert.deepEqual(gov.shouldDeferBackgroundCompute({ manual: false }), {
     defer: true,
     reason: "sleeping",
   });
-  assert.equal(gov.shouldDeferBackgroundCompute({ isLocalSovereign: true, manual: true }).defer, false);
+  assert.equal(gov.shouldDeferBackgroundCompute({ manual: true }).defer, false);
   fakeClock += 28800000; // 8 hours sleep
   const wakeEvt = gov.onWake("os_resume");
   assert.equal(wakeEvt.sleepDurationMs, 28800000);
   assert.equal(wakeEvt.state.wakeCount, 1);
 
   gov.onPowerChange({ onBattery: true });
-  assert.deepEqual(gov.shouldDeferBackgroundCompute({ isLocalSovereign: true, manual: false }), {
+  assert.deepEqual(gov.shouldDeferBackgroundCompute({ manual: false }), {
     defer: true,
     reason: "battery_saver",
   });
-  assert.equal(gov.shouldDeferBackgroundCompute({ isLocalSovereign: false, manual: false }).defer, false);
-  assert.equal(gov.shouldDeferBackgroundCompute({ isLocalSovereign: true, manual: true }).defer, false);
+  assert.equal(gov.shouldDeferBackgroundCompute({ manual: true }).defer, false);
+  gov.onPowerChange({ onBattery: false });
+  assert.equal(gov.shouldDeferBackgroundCompute({ manual: false }).defer, false);
 
   // 3. Crypto seal/unseal of IMAP password & public masking
   const masterKey = crypto.randomBytes(32).toString("hex");
@@ -578,12 +579,7 @@ async function runHttpE2ETests() {
     const watchMatches = (studioAfterWatch.tasks || []).filter((x) => String(x.text || "").includes("Demande urgente soumission toit concurrent"));
     assert.equal(watchMatches.length, 1, "withStateLock must prevent duplicate ingestion under concurrent watch + sync");
 
-    // Battery saver under local_sovereign defers background intake dispatch until AC power returns
-    await fetch(baseUrl + "/api/settings/brain", {
-      method: "POST",
-      headers: authHeaders,
-      body: JSON.stringify({ mode: "local_sovereign" }),
-    });
+    // Battery saver defers automatic background intake dispatch until AC power returns
     await fetch(baseUrl + "/api/system/power", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Fanal-Csrf": "1", "X-Fanal-Internal": internalToken },
@@ -602,7 +598,7 @@ async function runHttpE2ETests() {
       }),
     }).then((r) => r.json());
     assert.equal(deferredIngest.accepted, true);
-    assert.equal(deferredIngest.deferredCount, 1, "Background local_sovereign dispatch must defer on battery");
+    assert.equal(deferredIngest.deferredCount, 1, "Background intake dispatch must defer on battery when batterySaver is active");
 
     // Plugging back into AC automatically drains deferred items
     await fetch(baseUrl + "/api/system/power", {

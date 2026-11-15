@@ -609,7 +609,6 @@ function createIntakeEngine({
   getSettings,
   saveSettings,
   powerGovernor,
-  isLocalSovereign,
   onDispatchItem,
   onBatchTelemetry,
   imapFetcher = fetchImapIncremental,
@@ -821,9 +820,8 @@ function createIntakeEngine({
   }
 
   async function drainQueueToStudio(st, { manual = false, reason = "sync" } = {}) {
-    const localSov = typeof isLocalSovereign === "function" ? Boolean(isLocalSovereign()) : false;
     const guard = powerGovernor
-      ? powerGovernor.shouldDeferBackgroundCompute({ isLocalSovereign: localSov, manual })
+      ? powerGovernor.shouldDeferBackgroundCompute({ manual })
       : { defer: false, reason: null };
 
     const pending = st.queue

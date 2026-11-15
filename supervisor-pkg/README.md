@@ -8,7 +8,7 @@ workflow suite (packaged cleanly from `supervisor/` via `tools/sync-desktop.mjs`
 A zero-dependency Node.js server (`Node >= 24`) that provides:
 
 - **User accounts & RBAC** (`Field / Lead / Owner`) backed by salted scrypt hashes and local state in `~/.dsh/supervisor-data`.
-- **Closed Dual BYOK Vault + Local Ollama** (`brain-catalog.js`): curated DeepSeek (`deepseek-flash` / `deepseek-v4-pro`) and Google Gemini (`gemini-3.8-flash` / `gemini-4-argon`) failover with PII Veil 2.0 redaction and sanitized diagnostics (`diagnostic-sanitizer.js`).
+- **Closed Dual BYOK Brain (`brain-catalog.js`)**: Apple-style closed synergy between DeepSeek (`deepseek-flash` / `deepseek-v4-pro`) and Google Gemini (`gemini-3.8-flash` / `gemini-4-argon`) failover with PII Veil 2.0 redaction and sanitized diagnostics (`diagnostic-sanitizer.js`).
 - **Inbox-First KPI & Power Governance** (`power-kpi.js`): net human time saved (`saved − edited`) and laptop wake-aware UI polling.
 - **Autonomous Intake** (`intake-engine.js`): read-only IMAP incremental polling (`EXAMINE` / `BODY.PEEK[]`), sandboxed `Fanal-Inbox` folder watcher, and webhook intake (`POST /api/intake`).
 - **Universal sector dashboard** (`dashboard.html` + `dashboard-i18n.js`, 10 languages, PWA panel, 9 sector skins).

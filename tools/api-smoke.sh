@@ -76,8 +76,8 @@ DIAG_AFTER_KEY="$(curl -sf "$BASE/api/diagnostic/export" -H "$AUTH")"
 for leak in "sk-smoke-ds-key-9876" "AIzaSySmokeGemKey5432109876"; do
   if echo "$DIAG_AFTER_KEY" | grep -qF "$leak"; then echo "FAIL diag leaked BYOK key: $leak"; exit 1; fi
 done
-curl -sf -X POST "$BASE/api/settings/brain" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" \
-  -d '{"mode":"local_sovereign","localModel":"qwen2.5:7b"}' | grep -q '"mode":"local_sovereign"' || { echo "FAIL switch local_sovereign"; exit 1; }
+BAD_LOCAL_CODE="$(curl -s -o /dev/null -w '%{http_code}' -X POST "$BASE/api/settings/brain" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"mode":"local_sovereign","localModel":"qwen2.5:7b"}')"
+[ "$BAD_LOCAL_CODE" = "400" ] || { echo "FAIL local_sovereign override accepted (code=$BAD_LOCAL_CODE)"; exit 1; }
 echo "ok"
 
 step "orders + paid flag"

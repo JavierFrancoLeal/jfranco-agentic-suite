@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // test-closed-brain.mjs — unit & UI wiring tests for Fanal's Apple-style
-// closed curated dual brain (DeepSeek + Gemini / Local Sovereign), Dual BYOK
-// key isolation, AESGCM provider decryption parity, and open-selector removal.
+// closed curated dual brain (exclusively DeepSeek + Google Gemini), Dual BYOK
+// key isolation, AESGCM2 provider decryption parity, and Ollama/open-selector removal.
 
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -17,8 +17,6 @@ const bc = req(join(ROOT, "supervisor", "brain-catalog.js"));
 const {
   DEEPSEEK_CHAT_URL,
   GEMINI_OPENAI_BASE,
-  LOCAL_OLLAMA_BASE,
-  CURATED_LOCAL_MODELS,
   sealSettingsObject,
   unsealSettingsObject,
   decryptProvidersText,
@@ -32,7 +30,7 @@ const {
 } = bc;
 
 function run() {
-  // 1. Open model / arbitrary baseUrl overrides are strictly rejected at API boundary
+  // 1. Open model / arbitrary baseUrl / retired local Ollama overrides are strictly rejected at API boundary
   for (const badPayload of [
     null,
     [],
@@ -41,7 +39,8 @@ function run() {
     { deep: { model: "claude-3" } },
     { rescue: { model: "gemini-3.1-pro", baseUrl: GEMINI_OPENAI_BASE } },
     { mode: "custom_anything" },
-    { mode: "local_sovereign", localModel: "uncensored-random:70b" },
+    { mode: "local_sovereign" },
+    { localModel: "qwen2.5:7b" },
     { deepseekKey: "sk-bad\ninjected-header" },
   ]) {
     const res = validateClosedBrainUpdate(badPayload);
@@ -51,8 +50,6 @@ function run() {
 
   for (const okPayload of [
     { mode: "dual_cloud", deepseekKey: "sk-ds-123456789", geminiKey: "AIzaSyGeminiTestKey12345" },
-    { mode: "local_sovereign", localModel: CURATED_LOCAL_MODELS[0] },
-    { mode: "local_sovereign", localModel: CURATED_LOCAL_MODELS[1] },
     { clearDeepseekKey: true, clearGeminiKey: true },
   ]) {
     assert.equal(validateClosedBrainUpdate(okPayload).ok, true);
@@ -99,17 +96,15 @@ function run() {
   assert.equal(safeFast.baseUrl, DEEPSEEK_CHAT_URL);
   assert.equal(safeFast.model, "deepseek-flash");
 
-  // 4. Local Sovereign mode keeps ALL tiers local (including rescue) with zero cloud keys
-  const localSettings = { ...dualSettings, brainMode: "local_sovereign", localModel: "qwen2.5:7b" };
-  const locFast = routeBrainRequest({ model: "deepseek-flash", settings: localSettings, env: {} });
-  const locRescue = routeBrainRequest({ model: "deepseek-v4-pro", tierArg: "rescue", settings: localSettings, env: {} });
-  assert.equal(locFast.isLocal, true);
-  assert.equal(locFast.baseUrl, LOCAL_OLLAMA_BASE);
-  assert.equal(locFast.model, "qwen2.5:7b");
-  assert.equal(locFast.key, "");
-  assert.equal(locRescue.isLocal, true, "local_sovereign must never egress rescue calls to cloud");
-  assert.equal(locRescue.baseUrl, LOCAL_OLLAMA_BASE);
-  assert.equal(locRescue.key, "");
+  // 4. Legacy local_sovereign configs normalize cleanly to closed DeepSeek + Gemini dual_cloud
+  const legacyLocal = { ...dualSettings, brainMode: "local_sovereign", localModel: "qwen2.5:7b" };
+  const upgradedFast = routeBrainRequest({ model: "deepseek-flash", settings: legacyLocal, env: {} });
+  const upgradedRescue = routeBrainRequest({ model: "deepseek-v4-pro", tierArg: "rescue", settings: legacyLocal, env: {} });
+  assert.equal(upgradedFast.mode, "dual_cloud");
+  assert.equal(upgradedFast.isLocal, false);
+  assert.equal(upgradedFast.baseUrl, DEEPSEEK_CHAT_URL);
+  assert.equal(upgradedRescue.baseUrl, GEMINI_OPENAI_BASE);
+  assert.equal(normalizeBrainMode({}, { fast: { baseUrl: "http://localhost:11434/v1" } }), "dual_cloud");
 
   // 5. Public summary never exposes plaintext keys or stale gemini-3.1-pro
   const pub = buildBrainPublicSummary({ settings: dualSettings, providers: buildDerivedProvidersRecord(dualSettings), env: {} });
@@ -157,14 +152,11 @@ function run() {
   assert.equal(gemHotSwapFlash.provider, "gemini");
   assert.equal(gemHotSwapFlash.model, "gemini-3.8-flash", "deepseek-flash with rescue tierArg must route to gemini-3.8-flash");
   const outGemMissing = buildBrainHttpRequest({ rt: gemRescueNoKey, prompt: "verify" });
-  const outLocal = buildBrainHttpRequest({ rt: locFast, prompt: "local" });
   assert.equal(outDs.url, DEEPSEEK_CHAT_URL);
   assert.equal(outDs.headers.Authorization, "Bearer sk-deepseek-only-secret-9999");
   assert.equal(outGem.url, `${GEMINI_OPENAI_BASE}/chat/completions`);
   assert.equal(outGem.headers.Authorization, "Bearer AIzaSyGeminiHemisphere33334444");
   assert.equal(outGemMissing.headers.Authorization, undefined);
-  assert.equal(outLocal.url, `${LOCAL_OLLAMA_BASE}/chat/completions`);
-  assert.equal(outLocal.headers.Authorization, undefined);
 
   // 7. Salted AESGCM2 settings/providers encryption & wrong-key / missing-key safety
   const mk = "master-passphrase-32-chars-minimum";
@@ -184,19 +176,23 @@ function run() {
   assert.ok(sealed.startsWith("AESGCM2:"));
   assert.deepEqual(decryptProvidersText(sealed, mk), { fast: { model: "deepseek-flash" } });
   assert.deepEqual(decryptProvidersText(sealed, "wrong-passphrase"), {});
-  assert.equal(normalizeBrainMode({}, { fast: { baseUrl: "http://localhost:11434/v1" } }), "local_sovereign");
+  assert.deepEqual(buildDerivedProvidersRecord(dualSettings).mode, "dual_cloud");
 
-  // 8. Closed UI, honest storage labels, all-10-locale coverage & server wiring assertions
+  // 8. Closed UI, honest storage labels, Ollama removal & all-10-locale coverage assertions
   const serverSrc = readFileSync(join(ROOT, "supervisor", "server.js"), "utf8");
   const dashSrc = readFileSync(join(ROOT, "supervisor", "dashboard.html"), "utf8");
   const i18nSrc = readFileSync(join(ROOT, "supervisor", "dashboard-i18n.js"), "utf8");
   assert.equal(serverSrc.includes("gemini-3.1-pro"), false, "server.js must not reference stale gemini-3.1-pro");
+  assert.equal(serverSrc.includes("11434"), false, "server.js must not connect to Ollama port 11434");
   assert.equal(dashSrc.includes('id="brainFast"'), false, "dashboard.html must remove open #brainFast input");
   assert.equal(dashSrc.includes('id="brainDeep"'), false, "dashboard.html must remove open #brainDeep input");
   assert.equal(dashSrc.includes('id="brainBase"'), false, "dashboard.html must remove open #brainBase input");
-  assert.equal(dashSrc.includes("llama3.3"), false, "dashboard.html must remove stale hardcoded llama3.3");
-  assert.ok(dashSrc.includes('id="modeDualBtn"'), "dashboard.html must render curated Dual Cloud button");
-  assert.ok(dashSrc.includes('id="modeLocalBtn"'), "dashboard.html must render curated Local Sovereign button");
+  assert.equal(dashSrc.includes("llama3."), false, "dashboard.html must not reference local llama models");
+  assert.equal(dashSrc.includes("qwen2.5"), false, "dashboard.html must not reference local qwen models");
+  assert.equal(dashSrc.includes('id="modeLocalBtn"'), false, "dashboard.html must remove Local Ollama button");
+  assert.equal(dashSrc.includes('id="localSovereignPanel"'), false, "dashboard.html must remove Local Ollama panel");
+  assert.equal(dashSrc.includes('id="brainLocalDetectBtn"'), false, "dashboard.html must remove Ollama detect button");
+  assert.equal(dashSrc.includes('id="wizBrainSel"'), false, "dashboard.html must remove Local vs Cloud wizard dropdown");
   assert.ok(dashSrc.includes('id="vaultDeepseekInput"'), "dashboard.html must include DeepSeek Vault slot");
   assert.ok(dashSrc.includes('id="vaultGeminiInput"'), "dashboard.html must include Gemini Vault slot");
 

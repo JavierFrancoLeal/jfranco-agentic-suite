@@ -7,7 +7,7 @@ Updated 2026-11-14 (Post-Bloque 3 · Paso 3 + Pre-Piloto #1).*
 ## The layers (top to bottom)
 
 1. **The doctrine & index** — `docs/DOCS-INDEX.md` · `docs/NAMING.md` · `docs/KNOWLEDGE-LEDGER.md` · `jfranco-lessons/assets/lessons.md` · `docs/UI-DOCTRINE.md` · `docs/OPERATIONS-MANUAL.md`
-2. **The brain & modules (`supervisor/`)** — `server.js` · `brain-catalog.js` (closed Dual BYOK `DeepSeek ↔ Gemini` + Local Ollama) · `diagnostic-sanitizer.js` · `power-kpi.js` (KPI Neto + sleep/wake) · `intake-engine.js` (IMAP read-only + `Fanal-Inbox` + Reprise Matinale) · PII Veil 2.0
+2. **The brain & modules (`supervisor/`)** — `server.js` · `brain-catalog.js` (closed Dual BYOK `DeepSeek ↔ Gemini`) · `diagnostic-sanitizer.js` · `power-kpi.js` (KPI Neto + sleep/wake) · `intake-engine.js` (IMAP read-only + `Fanal-Inbox` + Reprise Matinale) · PII Veil 2.0
 3. **The hands** — `supervisor/browser-cdp.js` (visible Chrome pilot + brake) · read-only IMAP / `Fanal-Inbox` connectors · `apps/desktop/desktop-sandbox.js`
 4. **The face** — `supervisor/dashboard.html` (`simpleview` Inbox-First default, zero duplicate IDs) + `dashboard-i18n.js` (10 locales) · `ui/panel.html` · `ui/sw.js` + `manifest.webmanifest`
 5. **The desktop app (`apps/desktop/`)** — `main.js` (Electron 45, scrypt + biometric Vault, `FANAL_MASTER_KEY` RAM handoff, Tray 10-lang, `powerMonitor`), `preload.js`, `vault-biometric.js`, `desktop-sandbox.js`, `apps/desktop/brain/`

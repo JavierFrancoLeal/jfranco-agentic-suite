@@ -31,13 +31,11 @@ const {
 } = require("./diagnostic-sanitizer");
 const {
   DEEPSEEK_CHAT_URL,
-  CURATED_LOCAL_MODELS,
   sealSettingsObject,
   unsealSettingsObject,
   decryptProvidersText,
   encryptProvidersText,
   normalizeBrainMode,
-  normalizeLocalModel,
   validateClosedBrainUpdate,
   routeBrainRequest,
   buildDerivedProvidersRecord,
@@ -809,7 +807,7 @@ function providersWrite(p) {
   } catch (e) {}
 }
 // Closed curated brain router: routes strictly to Apple-curated dual cloud hemispheres
-// (DeepSeek + Google Gemini) or allowlisted local sovereign engine — never arbitrary URLs.
+// (DeepSeek + Google Gemini) — never arbitrary URLs or local Ollama engines.
 function route(model, tierArg) {
   return routeBrainRequest({
     model,
@@ -879,8 +877,7 @@ function geminiClientKey() {
   return (pr.rescue && typeof pr.rescue.key === "string" && pr.rescue.key.trim()) || "";
 }
 function brainOn() {
-  return normalizeBrainMode(settingsRead(), providersRead()) === "local_sovereign"
-    || !!clientKey()
+  return !!clientKey()
     || !!process.env.DEEPSEEK_API_KEY
     || !!geminiClientKey()
     || !!process.env.GEMINI_API_KEY;
@@ -1304,9 +1301,7 @@ function shouldRunLocalForBranch(branch, localQueueEmpty) {
 }
 function processStudio(item) {
   if (item._queuedAt === undefined) item._queuedAt = Date.now();
-  // El carril LOCAL (Ollama) no espera en la cola: es el reflejo de la médula.
-  const isLocal = route("deepseek-flash").isLocal;
-  if (STUDIO_BUSY >= 4 && !isLocal) {
+  if (STUDIO_BUSY >= 4) {
     if (Date.now() - item._queuedAt > Number(process.env.FANAL_QUEUE_CEILING_MS || 45000)) {
       const tkQ = tasksRead();
       const itQ = tkQ.tasks.find((x) => x.id === item.id);
@@ -1356,9 +1351,8 @@ function processStudio(item) {
   };
   const primaryAttempt = () =>
     brain("deepseek-flash", prompt).catch((primaryErr) => {
-      const modeNow = normalizeBrainMode(settingsRead(), providersRead());
       const hasGemini = Boolean(geminiClientKey() || process.env.GEMINI_API_KEY);
-      if (modeNow === "dual_cloud" && hasGemini) {
+      if (hasGemini) {
         telemetryTick("action", {
           tier: "SEMI",
           what: "Primary DeepSeek flash failed — automatic failover to Gemini 3.8 Flash",
@@ -1367,6 +1361,14 @@ function processStudio(item) {
         return brain("gemini-3.8-flash", prompt, 0, "rescue");
       }
       throw primaryErr;
+    });
+  const retryAttempt = (correctionPrompt) =>
+    brain("deepseek-flash", correctionPrompt).catch((retryErr) => {
+      const hasGemini = Boolean(geminiClientKey() || process.env.GEMINI_API_KEY);
+      if (hasGemini) {
+        return brain("gemini-3.8-flash", correctionPrompt, 0, "rescue");
+      }
+      throw retryErr;
     });
   primaryAttempt().then((out) => {
     const j = jsonBlock(out);
@@ -1384,7 +1386,7 @@ function processStudio(item) {
         telemetryTick("action", { tier: "GREEN", what: "Studio draft passed the deterministic validation", countForKpi: false });
       } else {
         // One retry with the error fed back; then escalate; the human is the last validator.
-        brain("deepseek-flash", prompt + " [CORRECTION OBLIGATOIRE PAR VALIDATEUR]: " + err + " RÈGLE SUPRÊME: corrige ces erreurs MAIS garde intactes toutes les règles de la Constitution — zéro rabais implicite, zéro prix sous le plancher. Réponds UNIQUEMENT en JSON.").then((out2) => {
+        retryAttempt(prompt + " [CORRECTION OBLIGATOIRE PAR VALIDATEUR]: " + err + " RÈGLE SUPRÊME: corrige ces erreurs MAIS garde intactes toutes les règles de la Constitution — zéro rabais implicite, zéro prix sous le plancher. Réponds UNIQUEMENT en JSON.").then((out2) => {
           const j2 = jsonBlock(out2);
           const tk2 = tasksRead();
           const it2 = tk2.tasks.find((x) => x.id === item.id);
@@ -1681,7 +1683,6 @@ const intakeEngine = createIntakeEngine({
   getSettings: settingsRead,
   saveSettings: settingsWrite,
   powerGovernor,
-  isLocalSovereign: () => normalizeBrainMode(settingsRead(), providersRead()) === "local_sovereign",
   basePollMs: Number(process.env.FANAL_INTAKE_BASE_POLL_MS || 120000),
   maxPollMs: Number(process.env.FANAL_INTAKE_MAX_POLL_MS || 600000),
   onBatchTelemetry: ({ accepted, filtered }) => {
@@ -1951,44 +1952,14 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/settings/brain/auto" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
-    const out = { ok: true, detected: {}, fast: null, localModel: null };
-    try {
-      const r = await fetch("http://localhost:11434/api/tags", { signal: AbortSignal.timeout(4000) });
-      if (r.ok) {
-        const j = await r.json();
-        const models = (j.models || []).map((m) => String(m.name || ""));
-        out.detected = { ollama: true, models };
-        let pick = CURATED_LOCAL_MODELS.find((allowed) => models.some((m) => m === allowed || m === allowed + ":latest")) || null;
-        if (!pick) {
-          // El cliente jamás escribe comandos: si Ollama está vacío, Fanal baja el modelo curado SOLO.
-          try {
-            const pullRes = await fetch("http://localhost:11434/api/pull", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ model: CURATED_LOCAL_MODELS[0] }),
-              signal: AbortSignal.timeout(600000),
-            });
-            if (pullRes.ok) {
-              pick = CURATED_LOCAL_MODELS[0];
-              out.detected.pulled = true;
-            }
-          } catch (e) { out.detected.pulled = false; }
-        }
-        if (pick) {
-          const s0 = settingsRead();
-          s0.brainMode = "local_sovereign";
-          s0.localModel = normalizeLocalModel(pick);
-          settingsWrite(s0);
-          const pr = buildDerivedProvidersRecord(s0, providersRead());
-          providersWrite(pr);
-          out.mode = "local_sovereign";
-          out.localModel = s0.localModel;
-          out.fast = s0.localModel;
-          telemetryTick("action", { tier: "GREEN", what: "Local Sovereign brain activated (" + s0.localModel + ")" });
-        }
-      } else { out.detected = { ollama: false }; }
-    } catch (e) { out.detected = { ollama: false }; }
-    return send(res, 200, out);
+    return send(res, 410, {
+      ok: false,
+      closedCatalog: true,
+      error: "local_engine_removed",
+      mode: "dual_cloud",
+      detected: { ollama: false },
+      message: "Fanal operates exclusively with the curated DeepSeek + Gemini dual brain (local Ollama installation removed).",
+    });
   }
   if (pathname === "/api/settings/brain" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
@@ -2002,9 +1973,8 @@ async function api(req, res, pathname) {
       return send(res, check.status || 400, { error: check.error, message: check.message });
     }
     const s0 = settingsRead();
-    if (b.mode !== undefined) s0.brainMode = b.mode;
-    else if (!s0.brainMode) s0.brainMode = normalizeBrainMode(s0, providersRead());
-    if (b.localModel) s0.localModel = normalizeLocalModel(b.localModel);
+    s0.brainMode = "dual_cloud";
+    delete s0.localModel;
     if (b.clearDeepseekKey === true) delete s0.apiKey;
     else if (typeof b.deepseekKey === "string" && b.deepseekKey.trim()) s0.apiKey = b.deepseekKey.trim();
     if (b.clearGeminiKey === true) {
@@ -2019,7 +1989,7 @@ async function api(req, res, pathname) {
     const pr = buildDerivedProvidersRecord(s0, providersRead());
     providersWrite(pr);
     const summary = buildBrainPublicSummary({ settings: s0, providers: pr, env: activeEnv() });
-    telemetryTick("action", { tier: "GREEN", what: "Curated brain mode updated (" + summary.mode + ")" });
+    telemetryTick("action", { tier: "GREEN", what: "Curated DeepSeek + Gemini brain updated", countForKpi: false });
     return send(res, 200, { ok: true, ...summary });
   }
   if (pathname === "/api/settings/balance" && req.method === "GET") {
@@ -2180,12 +2150,7 @@ async function api(req, res, pathname) {
   }
   if (pathname === "/api/debug/local" && req.method === "GET") {
     if (!ownerOnly(res, req)) return;
-    try {
-      const r = await fetch("http://localhost:11434/api/version", { signal: AbortSignal.timeout(5000) });
-      return send(res, 200, { ok: true, serverSeesOllama: true, status: r.status, body: await r.text() });
-    } catch (e) {
-      return send(res, 200, { ok: true, serverSeesOllama: false, error: e.message });
-    }
+    return send(res, 200, { ok: true, mode: "dual_cloud", localEngineSupported: false, serverSeesOllama: false });
   }
   if (pathname === "/api/pilot/qualify" && req.method === "POST") {
     if (!ownerOnly(res, req)) return;
@@ -2196,19 +2161,10 @@ async function api(req, res, pathname) {
     const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" });
     const con = constitutionRead();
     const staff = Number((con && con.staffCount) || 1);
-    const local = providersRead().local || {};
-    const localDisabled = local.enabled === false;
-    let localUp = !localDisabled;
-    if (!localDisabled && local && local.baseUrl) {
-      try {
-        const t = await fetch(String(local.baseUrl).replace(/\/$/, "") + "/models", { signal: AbortSignal.timeout(600) });
-        localUp = t.ok;
-      } catch (e) { localUp = false; }
-    }
     const solo = staff === 1;
     return send(res, 200, {
-      hardwareMode: localUp ? "HYBRID_LOCAL" : "ZERO_HARDWARE_LIGHT",
-      ladder: localUp ? ["local", "deep", "rescue", "human"] : ["deep", "rescue", "human"],
+      hardwareMode: "CLOSED_DUAL_CLOUD",
+      ladder: ["deepseek-flash", "deepseek-v4-pro", "gemini-3.8-flash", "gemini-4-argon", "human"],
       uiProfile: {
         showOwnerInbox380px: true,
         showSecretaireAndDossiers: true,
@@ -2216,7 +2172,7 @@ async function api(req, res, pathname) {
         showWall3Meters: !solo,
         showShiftHandoffButton: !solo,
         enableUdpMesh: !solo,
-        zeroHardwareNote: !localUp ? "Modo Ultraligero: el velo y los validadores corren 100% en esta PC; el primer cerebro es la nube." : null,
+        zeroHardwareNote: "Cerveau Fanal Dual (DeepSeek + Gemini) : le voile PII et le coffre AES-256-GCM tournent 100 % sur cette machine.",
       },
     });
   }
@@ -2661,7 +2617,6 @@ async function api(req, res, pathname) {
       source: clientKey() ? "client" : (process.env.DEEPSEEK_API_KEY ? "env" : "none"),
       geminiSource: geminiClientKey() ? "client" : (process.env.GEMINI_API_KEY ? "env" : "none"),
       mode: pub.mode,
-      localModel: pub.localModel,
       keysEncryptedAtRest: pub.keysEncryptedAtRest,
       keyStorageMode: pub.keyStorageMode,
       deepseek: pub.deepseek,

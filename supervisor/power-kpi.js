@@ -277,10 +277,10 @@ function createPowerGovernor(options = {}) {
     return getState();
   }
 
-  function shouldDeferBackgroundCompute({ isLocalSovereign = false, manual = false } = {}) {
+  function shouldDeferBackgroundCompute({ manual = false } = {}) {
     if (manual) return { defer: false, reason: null };
     if (state.powerState === "sleeping") return { defer: true, reason: "sleeping" };
-    if (state.batterySaver && state.onBattery && isLocalSovereign) {
+    if (state.batterySaver && state.onBattery) {
       return { defer: true, reason: "battery_saver" };
     }
     return { defer: false, reason: null };

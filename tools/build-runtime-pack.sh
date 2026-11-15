@@ -5,7 +5,7 @@
 # Copies the DeepSeek Harness runtime, all J.Franco plugins in the workspace,
 # and the license notices into dist/trasunto-runtime, ready to be included as
 # extraResources in the Fanal desktop installer. Result: the client
-# installs ONE app and configures their Dual BYOK Vault (or local Ollama mode).
+# installs ONE app and configures their closed Dual BYOK Vault (DeepSeek + Gemini).
 #
 # Usage: sh tools/build-runtime-pack.sh
 set -e

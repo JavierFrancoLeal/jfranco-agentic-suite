@@ -1,6 +1,6 @@
-// supervisor/brain-catalog.js — Closed Apple-style curated AI brain modes,
-// dual-hemisphere BYOK key isolation (DeepSeek + Google Gemini), local sovereign
-// allowlist, and optional AES-256-GCM silo encryption compatibility.
+// supervisor/brain-catalog.js — Closed Apple-style curated AI brain catalog:
+// exclusive DeepSeek + Google Gemini dual-hemisphere synergy, Dual BYOK key
+// isolation, and AES-256-GCM silo encryption compatibility.
 // Created by J.Franco. MIT license.
 "use strict";
 
@@ -8,9 +8,6 @@ const crypto = require("node:crypto");
 
 const DEEPSEEK_CHAT_URL = "https://api.deepseek.com/chat/completions";
 const GEMINI_OPENAI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai";
-const LOCAL_OLLAMA_BASE = "http://localhost:11434/v1";
-
-const CURATED_LOCAL_MODELS = Object.freeze(["qwen2.5:7b", "llama3.2:3b"]);
 
 const CURATED_BRAIN_MODES = Object.freeze({
   dual_cloud: Object.freeze({
@@ -24,13 +21,6 @@ const CURATED_BRAIN_MODES = Object.freeze({
       model: "gemini-3.8-flash",
       deepModel: "gemini-4-argon",
     }),
-  }),
-  local_sovereign: Object.freeze({
-    id: "local_sovereign",
-    local: true,
-    baseUrl: LOCAL_OLLAMA_BASE,
-    defaultModel: "qwen2.5:7b",
-    allowedModels: CURATED_LOCAL_MODELS,
   }),
 });
 
@@ -170,23 +160,9 @@ function encryptProvidersText(obj, masterKey) {
   return encryptSecretValue(raw, masterKey);
 }
 
-function normalizeBrainMode(settings = {}, providers = {}) {
-  const sMode = settings && typeof settings.brainMode === "string" ? settings.brainMode.trim() : "";
-  if (sMode === "local_sovereign" || sMode === "dual_cloud") return sMode;
-  const pMode = providers && typeof providers.mode === "string" ? providers.mode.trim() : "";
-  if (pMode === "local_sovereign" || pMode === "dual_cloud") return pMode;
-  const fastUrl = providers && providers.fast && providers.fast.baseUrl ? String(providers.fast.baseUrl) : "";
-  if (/localhost|127\.0\.0\.1/.test(fastUrl)) return "local_sovereign";
+function normalizeBrainMode() {
+  // Fanal closes brain selection to the curated DeepSeek + Gemini synergy (dual_cloud).
   return "dual_cloud";
-}
-
-function normalizeLocalModel(candidate) {
-  const raw = trimStr(candidate);
-  if (CURATED_LOCAL_MODELS.includes(raw)) return raw;
-  for (const allowed of CURATED_LOCAL_MODELS) {
-    if (raw.startsWith(allowed + ":") || raw === allowed) return allowed;
-  }
-  return CURATED_BRAIN_MODES.local_sovereign.defaultModel;
 }
 
 function resolveDeepseekKey(settings = {}, env = process.env) {
@@ -202,34 +178,28 @@ function validateClosedBrainUpdate(payload) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
     return { ok: false, status: 400, error: "invalid_payload", message: "Request body must be a JSON object." };
   }
-  // Reject arbitrary open model/endpoint overrides at the API boundary.
-  if (payload.baseUrl !== undefined || payload.fast !== undefined || payload.deep !== undefined || payload.rescue !== undefined) {
+  // Reject arbitrary open model/endpoint/localModel overrides at the API boundary.
+  if (
+    payload.baseUrl !== undefined
+    || payload.fast !== undefined
+    || payload.deep !== undefined
+    || payload.rescue !== undefined
+    || payload.localModel !== undefined
+  ) {
     return {
       ok: false,
       status: 400,
       error: "closed_curated_catalog",
-      message: "Fanal operates exclusively in curated modes: dual_cloud or local_sovereign.",
+      message: "Fanal operates exclusively with the curated DeepSeek + Gemini dual brain (dual_cloud).",
     };
   }
-  if (payload.mode !== undefined) {
-    if (payload.mode !== "dual_cloud" && payload.mode !== "local_sovereign") {
-      return {
-        ok: false,
-        status: 400,
-        error: "invalid_curated_mode",
-        message: "Allowed modes: dual_cloud, local_sovereign.",
-      };
-    }
-  }
-  if (payload.localModel !== undefined && payload.localModel !== "") {
-    if (typeof payload.localModel !== "string" || !CURATED_LOCAL_MODELS.includes(payload.localModel.trim())) {
-      return {
-        ok: false,
-        status: 400,
-        error: "invalid_curated_local_model",
-        message: "Allowed curated local models: " + CURATED_LOCAL_MODELS.join(", "),
-      };
-    }
+  if (payload.mode !== undefined && payload.mode !== "dual_cloud") {
+    return {
+      ok: false,
+      status: 400,
+      error: "invalid_curated_mode",
+      message: "Allowed mode: dual_cloud (DeepSeek + Gemini).",
+    };
   }
   for (const field of ["deepseekKey", "geminiKey"]) {
     if (payload[field] !== undefined) {
@@ -247,26 +217,12 @@ function validateClosedBrainUpdate(payload) {
 }
 
 function routeBrainRequest({ model = "", tierArg = "", settings = {}, providers = {}, env = process.env } = {}) {
-  const mode = normalizeBrainMode(settings, providers);
   const modelStr = String(model || "");
   let tier = String(tierArg || "").trim();
   if (!tier) {
     if (/gemini/i.test(modelStr)) tier = "rescue";
     else if (/v4-pro|reasoner|\bdeep\b|argon/i.test(modelStr)) tier = "deep";
     else tier = "fast";
-  }
-
-  if (mode === "local_sovereign") {
-    const localModel = normalizeLocalModel(settings.localModel || (providers.fast && providers.fast.model));
-    return {
-      mode: "local_sovereign",
-      provider: "local",
-      isLocal: true,
-      tier,
-      baseUrl: LOCAL_OLLAMA_BASE,
-      model: localModel,
-      key: "",
-    };
   }
 
   if (tier === "rescue") {
@@ -305,28 +261,18 @@ function routeBrainRequest({ model = "", tierArg = "", settings = {}, providers 
   };
 }
 
-function buildDerivedProvidersRecord(settings = {}, existingProviders = {}) {
-  const mode = normalizeBrainMode(settings, existingProviders);
-  const localModel = normalizeLocalModel(settings.localModel || (existingProviders.fast && existingProviders.fast.model));
-  const out = {};
-  if (existingProviders && existingProviders.local) out.local = existingProviders.local;
-  out.mode = mode;
-  if (mode === "local_sovereign") {
-    out.fast = { baseUrl: LOCAL_OLLAMA_BASE, model: localModel, provider: "local" };
-    out.deep = { baseUrl: LOCAL_OLLAMA_BASE, model: localModel, provider: "local" };
-    out.rescue = { baseUrl: LOCAL_OLLAMA_BASE, model: localModel, provider: "local" };
-  } else {
-    out.fast = { baseUrl: DEEPSEEK_CHAT_URL, model: CURATED_BRAIN_MODES.dual_cloud.fast.model, provider: "deepseek" };
-    out.deep = { baseUrl: DEEPSEEK_CHAT_URL, model: CURATED_BRAIN_MODES.dual_cloud.deep.model, provider: "deepseek" };
-    out.rescue = { baseUrl: GEMINI_OPENAI_BASE, model: CURATED_BRAIN_MODES.dual_cloud.rescue.model, provider: "gemini" };
-  }
-  return out;
+function buildDerivedProvidersRecord() {
+  return {
+    mode: "dual_cloud",
+    fast: { baseUrl: DEEPSEEK_CHAT_URL, model: CURATED_BRAIN_MODES.dual_cloud.fast.model, provider: "deepseek" },
+    deep: { baseUrl: DEEPSEEK_CHAT_URL, model: CURATED_BRAIN_MODES.dual_cloud.deep.model, provider: "deepseek" },
+    rescue: { baseUrl: GEMINI_OPENAI_BASE, model: CURATED_BRAIN_MODES.dual_cloud.rescue.model, provider: "gemini" },
+  };
 }
 
 function buildBrainHttpRequest({ rt, prompt, maxTokens } = {}) {
   let url = String((rt && rt.baseUrl) || "");
   if (!/chat\/completions/.test(url)) url = url.replace(/\/$/, "") + "/chat/completions";
-  const isLocal = Boolean((rt && rt.isLocal) || /localhost|127\.0\.0\.1/.test(url));
   const model = String((rt && rt.model) || "");
   const payload = {
     model,
@@ -334,16 +280,13 @@ function buildBrainHttpRequest({ rt, prompt, maxTokens } = {}) {
     max_tokens: maxTokens || (model.includes("v4-pro") ? 12000 : 8000),
     temperature: 0,
   };
-  if (isLocal) payload.response_format = { type: "json_object" };
   const headers = { "Content-Type": "application/json" };
   const key = trimStr(rt && rt.key);
-  if (!isLocal && key) headers.Authorization = "Bearer " + key;
-  return { url, isLocal, headers, payload };
+  if (key) headers.Authorization = "Bearer " + key;
+  return { url, isLocal: false, headers, payload };
 }
 
 function buildBrainPublicSummary({ settings = {}, providers = {}, env = process.env } = {}) {
-  const mode = normalizeBrainMode(settings, providers);
-  const localModel = normalizeLocalModel(settings.localModel || (providers.fast && providers.fast.model));
   const dsClient = trimStr(settings.apiKey);
   const dsKey = resolveDeepseekKey(settings, env);
   const gemProvider = providers && providers.rescue && typeof providers.rescue.key === "string" ? trimStr(providers.rescue.key) : "";
@@ -355,9 +298,7 @@ function buildBrainPublicSummary({ settings = {}, providers = {}, env = process.
     closedCatalog: true,
     keysEncryptedAtRest: encryptedAtRest,
     keyStorageMode: encryptedAtRest ? "aes256gcm_scrypt" : "silo_0o600",
-    mode,
-    localModel,
-    allowedLocalModels: [...CURATED_LOCAL_MODELS],
+    mode: "dual_cloud",
     deepseek: {
       configured: Boolean(dsKey),
       source: dsClient ? "silo" : (trimStr(env.DEEPSEEK_API_KEY) ? "env" : "none"),
@@ -376,23 +317,20 @@ function buildBrainPublicSummary({ settings = {}, providers = {}, env = process.
         deep: CURATED_BRAIN_MODES.dual_cloud.rescue.deepModel,
       },
     },
-    fast: mode === "local_sovereign"
-      ? { model: localModel, provider: "local", configured: true }
-      : { model: CURATED_BRAIN_MODES.dual_cloud.fast.model, provider: "deepseek", configured: Boolean(dsKey) },
-    deep: mode === "local_sovereign"
-      ? { model: localModel, provider: "local", configured: true }
-      : { model: CURATED_BRAIN_MODES.dual_cloud.deep.model, provider: "deepseek", configured: Boolean(dsKey) },
-    rescue: mode === "local_sovereign"
-      ? { model: localModel, provider: "local", configured: true }
-      : { model: CURATED_BRAIN_MODES.dual_cloud.rescue.model, deepModel: CURATED_BRAIN_MODES.dual_cloud.rescue.deepModel, provider: "gemini", configured: Boolean(gemKey) },
+    fast: { model: CURATED_BRAIN_MODES.dual_cloud.fast.model, provider: "deepseek", configured: Boolean(dsKey) },
+    deep: { model: CURATED_BRAIN_MODES.dual_cloud.deep.model, provider: "deepseek", configured: Boolean(dsKey) },
+    rescue: {
+      model: CURATED_BRAIN_MODES.dual_cloud.rescue.model,
+      deepModel: CURATED_BRAIN_MODES.dual_cloud.rescue.deepModel,
+      provider: "gemini",
+      configured: Boolean(gemKey),
+    },
   };
 }
 
 module.exports = {
   DEEPSEEK_CHAT_URL,
   GEMINI_OPENAI_BASE,
-  LOCAL_OLLAMA_BASE,
-  CURATED_LOCAL_MODELS,
   CURATED_BRAIN_MODES,
   maskKeyTail,
   encryptSecretValue,
@@ -402,7 +340,6 @@ module.exports = {
   decryptProvidersText,
   encryptProvidersText,
   normalizeBrainMode,
-  normalizeLocalModel,
   resolveDeepseekKey,
   resolveGeminiKey,
   validateClosedBrainUpdate,
