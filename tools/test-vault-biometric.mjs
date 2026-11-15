@@ -88,6 +88,29 @@ async function main() {
   const linkLinux = await resolveBiometricLink({ platform: "linux" });
   assert.deepEqual(linkLinux, { success: false, error: "PLATAFORMA_SIN_BIOMETRIA" });
 
+  // 3b. macOS TouchID unavailable (canPromptTouchID === false or un-enrolled error) fails fast
+  const linkMacCantPrompt = await resolveBiometricLink({
+    platform: "darwin",
+    systemPreferences: {
+      canPromptTouchID: () => false,
+      promptTouchID: async () => { throw new Error("should not call promptTouchID"); },
+    },
+  });
+  assert.deepEqual(linkMacCantPrompt, { success: false, error: "TOUCH_ID_UNAVAILABLE" });
+
+  const unlockMacCantPrompt = await unlockFanalVaultData({
+    method: "BIOMETRIC",
+    platform: "darwin",
+    systemPreferences: {
+      canPromptTouchID: () => false,
+      promptTouchID: async () => { throw new Error("should not call promptTouchID"); },
+    },
+    safeStorage: { isEncryptionAvailable: () => true },
+    storedVaultAuth: { osProtectedKeyB64: Buffer.from("cipher").toString("base64") },
+  });
+  assert.equal(unlockMacCantPrompt.ok, false);
+  assert.equal(unlockMacCantPrompt.code, "TOUCH_ID_UNAVAILABLE");
+
   // 4. Master password scrypt derivation + NFKC + timing-safe verifier (production N=65536 once)
   const saltHex = "01".repeat(16);
   const masterKey = deriveKeyFromMasterPassword("Fanal-Test-Key!", saltHex);

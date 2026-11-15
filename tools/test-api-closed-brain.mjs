@@ -4,7 +4,7 @@
 // masking, open-override 400 rejection, and Loi 25 diagnostic export isolation.
 
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -69,8 +69,13 @@ async function run() {
       body: JSON.stringify({ user: "Owner", password: "password12345", sector: "accounting" }),
     });
     assert.equal(setupRes.status, 200);
+    assert.equal(setupRes.headers.get("access-control-allow-origin"), null, "/api/setup must not broadcast wildcard CORS");
     const setupJson = await setupRes.json();
     assert.ok(setupJson.token);
+    if (process.platform !== "win32") {
+      const usersMode = statSync(join(dataDir, "supervisor-users.json")).mode & 0o777;
+      assert.equal(usersMode, 0o600, "supervisor-users.json must be private 0o600");
+    }
 
     const authHeaders = {
       Authorization: `Bearer ${setupJson.token}`,
@@ -183,6 +188,13 @@ async function run() {
     const statusAfterUnlock = await (await fetch(`${baseUrl}/api/settings/status`, { headers: authHeaders })).json();
     assert.equal(statusAfterUnlock.hasKey, true, "DeepSeek key must be available after unlock");
     assert.equal(statusAfterUnlock.hasGeminiKey, true, "Gemini key must be available after unlock");
+
+    const badSectorRes = await fetch(`${baseUrl}/api/sector/pick`, {
+      method: "POST",
+      headers: authHeaders,
+      body: JSON.stringify({ id: "../../etc/passwd" }),
+    });
+    assert.equal(badSectorRes.status, 400, "path traversal in sector/pick must return 400");
 
     console.log("API_CLOSED_BRAIN_TESTS PASSED");
   } finally {

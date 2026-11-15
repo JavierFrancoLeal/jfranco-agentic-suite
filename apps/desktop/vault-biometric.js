@@ -223,6 +223,9 @@ async function resolveBiometricLink({ platform = process.platform, systemPrefere
       if (!systemPreferences || typeof systemPreferences.promptTouchID !== "function") {
         return { success: false, error: "TOUCH_ID_UNAVAILABLE" };
       }
+      if (typeof systemPreferences.canPromptTouchID === "function" && !systemPreferences.canPromptTouchID()) {
+        return { success: false, error: "TOUCH_ID_UNAVAILABLE" };
+      }
       await systemPreferences.promptTouchID(reason || "vincular la biometría a la bóveda Fanal (Loi 25)");
       return { success: true };
     }
@@ -233,7 +236,11 @@ async function resolveBiometricLink({ platform = process.platform, systemPrefere
     }
     return { success: false, error: "PLATAFORMA_SIN_BIOMETRIA" };
   } catch (e) {
-    return { success: false, error: String(e && e.message ? e.message : e) };
+    const msg = String(e && e.message ? e.message : e || "");
+    if (/not available|unavailable|not enrolled|disabled|no identity/i.test(msg)) {
+      return { success: false, error: "TOUCH_ID_UNAVAILABLE" };
+    }
+    return { success: false, error: msg || "TOUCH_ID_UNAVAILABLE" };
   }
 }
 
@@ -243,6 +250,9 @@ async function unlockFanalVaultData(o) {
     if (o.method === "BIOMETRIC") {
       if (platform === "darwin") {
         if (!o.systemPreferences || typeof o.systemPreferences.promptTouchID !== "function") {
+          return { ok: false, code: "TOUCH_ID_UNAVAILABLE", error: "Touch ID no disponible. Usa tu Contraseña Maestra." };
+        }
+        if (typeof o.systemPreferences.canPromptTouchID === "function" && !o.systemPreferences.canPromptTouchID()) {
           return { ok: false, code: "TOUCH_ID_UNAVAILABLE", error: "Touch ID no disponible. Usa tu Contraseña Maestra." };
         }
         try {

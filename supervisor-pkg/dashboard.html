@@ -15,7 +15,7 @@ body.dark{background:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%)
 .empty .ico{font-size:30px;display:block;margin-bottom:6px}
 .skel{background:linear-gradient(90deg,var(--line) 25%,var(--line2) 50%,var(--line) 75%);background-size:200% 100%;animation:shimmer 1.2s infinite;border-radius:10px;min-height:16px}
 @keyframes shimmer{to{background-position:-200% 0}}
-.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86%;text-align:center}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;z-index:1000000;box-shadow:0 12px 30px rgba(15,23,42,.28);opacity:0;transition:opacity .25s;pointer-events:none;max-width:86%;text-align:center}
 .toast.show{opacity:1}
 body.dark .toast{background:#e6ecf7;color:#0b1220}
 .bnav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:none;justify-content:space-around;padding:6px 0 8px;z-index:50}
@@ -112,6 +112,20 @@ tbody tr:hover{background:rgba(77,107,254,.07)}
 .wiz-sectors .ws small{display:block;font-weight:400;color:#98a2b3;font-size:12px;margin-top:2px}
 .wiz-sectors .ws.on{border-color:#4D6BFE;background:rgba(77,107,254,.07);box-shadow:0 0 0 3px rgba(77,107,254,.15)}
 .wiz-actions{display:flex;gap:10px;justify-content:center;margin-top:20px}
+.wiz-subcard{background:#f5f7ff;border:1.5px solid rgba(77,107,254,.22);border-radius:16px;padding:14px;margin-top:12px;text-align:left}
+.wiz-subcard input{margin:6px 0 8px}
+.wiz-subcard.bio{background:linear-gradient(135deg,rgba(77,107,254,.07),rgba(124,92,255,.07));border-color:rgba(77,107,254,.28)}
+.wiz-subcard.bio.linked{background:rgba(21,128,61,.07);border-color:rgba(21,128,61,.35)}
+.wiz-subhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.wiz-sublbl{font-size:12px;font-weight:700;color:#101828}
+.wiz-pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:rgba(77,107,254,.12);color:#4D6BFE;white-space:nowrap}
+.wiz-pill.weak{background:#fee2e2;color:#b91c1c}
+.wiz-pill.ok{background:#fef3c7;color:#b45309}
+.wiz-pill.strong{background:#dcfce7;color:#15803d}
+.wiz-meter{height:6px;width:100%;background:rgba(77,107,254,.14);border-radius:999px;overflow:hidden;margin:4px 0 6px}
+.wiz-meter>div{height:100%;width:0%;background:#dc2626;border-radius:999px;transition:width .2s,background .2s}
+.wiz-bio-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.wiz-bio-status{font-size:12px;margin-top:8px;line-height:1.45;color:#667085}
 .btn.ghost{background:rgba(15,23,42,.06);color:#101828;box-shadow:none}
 *{box-sizing:border-box}
 *{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
@@ -308,7 +322,7 @@ body.wall pre{max-height:40vh}
   <div id="wizardView" class="wizard hidden" style="display:none">
     <div class="wiz-card" id="wizCard">
       <div class="wiz-stepbar"><div class="wiz-stepfill" id="wizStepFill"></div></div>
-      <div class="wiz-counter" id="wizCounter">Étape 1 sur 7</div>
+      <div class="wiz-counter" id="wizCounter">Étape 1 sur 8</div>
       <div class="wiz-dots" id="wizDots"></div>
       <h2 id="wizTitle">Bienvenue</h2>
       <div class="wiz-body" id="wizBody"></div>
@@ -1034,7 +1048,7 @@ const HOST_TEXT={
 const HT=(k)=>((HOST_TEXT[HOST.os]&&HOST_TEXT[HOST.os][k])||HOST_TEXT.other[k]);
 function pollState(){api("/api/state").then(st=>renderStateCards(st)).catch(()=>{});}
 const WIZ_STEPS=8;let wizStep=0,wizSector="restaurant",wizAdvancing=false;
-const wizDraft={bizName:"",sector:"restaurant",key:"",geminiKey:"",constitution:"",vaultSaved:false};
+const wizDraft={bizName:"",sector:"restaurant",key:"",geminiKey:"",constitution:"",vaultSaved:false,vaultBioLinked:false,vaultBioMsg:"",vaultBioKind:""};
 function wizCaptureStep(){
   if($("wizBizInput"))wizDraft.bizName=$("wizBizInput").value.trim();
   wizDraft.sector=wizSector||"restaurant";
@@ -1047,9 +1061,30 @@ function wizBodyHTML(){
   if(wizStep===0)return '<span class="wiz-ico">🚀</span><p>'+L("wizStartBody")+'</p><p class="hint">'+HT("home")+'</p>';
   if(wizStep===1)return '<span class="wiz-ico">🏪</span><p>'+L("wizBizBody")+'</p><input id="wizBizInput" value="'+esc(wizDraft.bizName)+'" placeholder="'+L("wizBizPh")+'">';
   if(wizStep===2){const secs=[["restaurant",L("wizSecRest")],["hotel",L("wizSecHotel")],["tourisme",L("wizSecTour")],["agroalimentaire",L("wizSecAgro")],["generic",L("wizSecGeneric")]];return '<p>'+L("wizSectorBody")+'</p><div class="wiz-sectors">'+secs.map(x=>'<div class="ws'+(wizSector===x[0]?" on":"")+'" data-sec="'+x[0]+'">'+x[1]+'<small>'+(x[0]==="restaurant"?L("wizSecRestD"):x[0]==="hotel"?L("wizSecHotelD"):x[0]==="tourisme"?L("wizSecTourD"):x[0]==="agroalimentaire"?L("wizSecAgroD"):L("wizSecGenericD"))+'</small></div>').join("")+'</div>';}
-  if(wizStep===3)return '<p>'+L("wizKeyBody")+'</p><input type="password" id="wizKeyInput" value="'+esc(wizDraft.key)+'" placeholder="DeepSeek API key (sk-…)"><input type="password" id="wizGeminiKeyInput" value="'+esc(wizDraft.geminiKey)+'" placeholder="Google Gemini API key (AIza… — optionnel)"><p class="hint">'+L("wizKeyHint")+'</p><p class="hint">'+L("wizBrainNote")+'</p>'
-    +'<div style="background:#090d16;padding:10px;border-radius:4px;border:1px solid #334155;margin-top:10px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><label style="font-size:10px;color:#38bdf8;font-weight:700">'+esc(L("vaultMasterLbl"))+'</label><span id="entropy-badge" style="font-size:9px;font-family:monospace;padding:1px 6px;border-radius:10px;background:#1e293b;color:#94a3b8">'+esc(L("vaultEntropyNone"))+'</span></div><input id="master-pwd-input" type="password" oninput="evalLiveEntropy(this.value);this.dataset.vaultSaved=\'\'" placeholder="'+esc(L("vaultMasterPh"))+'" data-vault-saved="'+(wizDraft.vaultSaved?"1":"")+'" style="width:100%;box-sizing:border-box;background:#020617;color:#fff;border:1px solid #475569;padding:7px;border-radius:3px;font-family:monospace;font-size:11px;margin-bottom:6px"/><div style="height:4px;width:100%;background:#1e293b;border-radius:2px;overflow:hidden;margin-bottom:6px"><div id="entropy-bar" style="height:100%;width:0%;background:#ef4444;transition:width .2s,background .2s"></div></div><div id="entropy-feedback" style="font-size:9px;color:#94a3b8;font-family:monospace">'+esc(L("vaultMasterHint"))+'</div></div>'
-    +'<div style="background:#064e3b;border:1px solid #10b981;padding:8px 10px;border-radius:4px;display:flex;justify-content:space-between;align-items:center;margin-top:8px"><div><div style="font-size:11px;font-weight:800;color:#6ee7b7">'+esc(L("vaultBioCardTitle"))+'</div><div style="font-size:9px;color:#a7f3d0">'+esc(L("vaultBioCardDesc"))+'</div></div><button type="button" onclick="linkBiometricOneClick()" style="background:#10b981;color:#022c22;border:none;padding:6px 12px;border-radius:3px;font-weight:800;font-size:11px;cursor:pointer;white-space:nowrap">'+esc(L("vaultBioLinkBtn"))+'</button></div>';
+  if(wizStep===3){
+    const badgeCls=wizDraft.vaultSaved?"wiz-pill strong":"wiz-pill";
+    const badgeTxt=wizDraft.vaultSaved?L("vaultSavedChip"):L("vaultEntropyNone");
+    const bioCls="wiz-subcard bio"+(wizDraft.vaultBioLinked?" linked":"");
+    const bioBtnTxt=wizDraft.vaultBioLinked?("✔ "+L("vaultBioLinkedBtn")):L("vaultBioLinkBtn");
+    const bioStColor=wizDraft.vaultBioKind==="ok"?"#15803d":(wizDraft.vaultBioKind==="err"?"#b91c1c":"#667085");
+    return '<p>'+L("wizKeyBody")+'</p>'
+      +'<input type="password" id="wizKeyInput" value="'+esc(wizDraft.key)+'" placeholder="DeepSeek API key (sk-…)">'
+      +'<input type="password" id="wizGeminiKeyInput" value="'+esc(wizDraft.geminiKey)+'" placeholder="Google Gemini API key (AIza… — optionnel)">'
+      +'<p class="hint">'+L("wizKeyHint")+' · '+L("wizBrainNote")+'</p>'
+      +'<div class="wiz-subcard">'
+        +'<div class="wiz-subhead"><label class="wiz-sublbl" for="master-pwd-input">'+esc(L("vaultMasterLbl"))+'</label><span id="entropy-badge" class="'+badgeCls+'">'+esc(badgeTxt)+'</span></div>'
+        +'<input id="master-pwd-input" type="password" oninput="this.style.borderColor=\'\';evalLiveEntropy(this.value);this.dataset.vaultSaved=\'\'" placeholder="'+esc(L("vaultMasterPh"))+'" data-vault-saved="'+(wizDraft.vaultSaved?"1":"")+'"/>'
+        +'<div class="wiz-meter"><div id="entropy-bar" style="width:'+(wizDraft.vaultSaved?"100%":"0%")+';background:'+(wizDraft.vaultSaved?"#15803d":"#dc2626")+'"></div></div>'
+        +'<div id="entropy-feedback" class="hint" style="margin:0">'+esc(wizDraft.vaultSaved?L("vaultMasterSubnote"):L("vaultMasterHint"))+'</div>'
+      +'</div>'
+      +'<div id="vault-bio-card" class="'+bioCls+'">'
+        +'<div class="wiz-bio-row">'
+          +'<div style="flex:1;min-width:170px"><div class="wiz-sublbl">'+esc(L("vaultBioCardTitle"))+'</div><div class="hint" style="margin:2px 0 0">'+esc(L("vaultBioCardDesc"))+'</div></div>'
+          +'<button type="button" id="vault-bio-btn" class="btn small" onclick="linkBiometricOneClick()">'+esc(bioBtnTxt)+'</button>'
+        +'</div>'
+        +'<div id="vault-bio-status" class="wiz-bio-status" style="color:'+bioStColor+';font-weight:'+(wizDraft.vaultBioKind?"600":"400")+(wizDraft.vaultBioMsg?"":";display:none")+'">'+esc(wizDraft.vaultBioMsg||"")+'</div>'
+      +'</div>';
+  }
   if(wizStep===4)return '<p>'+L("wizPermsBody")+'</p><div class="wiz-sectors"><div class="ws wiz-perm" data-p="mic"><small>🎙️ '+L("wizPermMic")+' — '+HT("permMic")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws wiz-perm" data-p="notif"><small>🔔 '+L("wizPermNotif")+' — <b>'+L("wizPermTry")+'</b></small></div><div class="ws" style="cursor:default"><small>📁 '+HT("permFinder")+'</small></div><div class="ws" style="cursor:default"><small>🌐 '+L("wizPermLan")+'</small></div></div>';
   if(wizStep===5)return '<p>'+L("wizConsBody")+'</p><textarea id="wizConsInput" rows="4" placeholder="'+L("wizConsPh")+'">'+esc(wizDraft.constitution)+'</textarea><p class="hint">'+L("wizConsHint")+'</p>';
   if(wizStep===6)return '<p>'+L("wizRecapBody")+'</p><div class="wiz-sectors" style="cursor:default"><div class="ws" style="cursor:default"><small>🏪 '+L("wizBizLabel")+': <b id="wizRecapBiz">—</b></small></div><div class="ws" style="cursor:default"><small>🏷️ '+L("wizSectorTitle")+': <b id="wizRecapSec">—</b></small></div><div class="ws" style="cursor:default"><small>🔑 '+L("wizKeyTitle")+': <b id="wizRecapKey">—</b></small></div><div class="ws" style="cursor:default"><small>⚖️ '+L("wizConsTitle")+': <b id="wizRecapCons">—</b></small></div></div>';
@@ -1088,10 +1123,10 @@ async function wizNext(){
     if(mp&&mpEl.dataset.vaultSaved!=="1"){
       if(window.fanalIPC&&typeof window.fanalIPC.setupVault==="function"){
         const sr=await window.fanalIPC.setupVault(mp);
-        if(!sr||!sr.ok){toast("⚠️ "+(sr&&sr.error||"Contraseña inválida."));return;}
+        if(!sr||!sr.ok){toast("⚠️ "+(sr&&sr.error||t("vaultMasterHint")));mpEl.focus();mpEl.style.borderColor="#b91c1c";return;}
         mpEl.dataset.vaultSaved="1";
         wizDraft.vaultSaved=true;
-      }else if(mp.length<12){toast("⚠️ La contraseña maestra debe tener al menos 12 caracteres.");return;}
+      }else if(mp.length<12){toast("⚠️ "+t("vaultMasterHint"));mpEl.focus();mpEl.style.borderColor="#b91c1c";return;}
       else{wizDraft.vaultSaved=true;}
     }
   }
@@ -1161,7 +1196,19 @@ function pollKeyStatus(){api("/api/settings/status").then(r=>{if(!r||!$("keyStat
 function evalLiveEntropy(val){
   const bar=$("entropy-bar");const badge=$("entropy-badge");const fb=$("entropy-feedback");
   if(!bar)return;
-  if(!val){bar.style.width="0%";bar.style.background="#ef4444";badge.textContent=t("vaultEntropyNone");badge.style.color="#94a3b8";fb.textContent=t("vaultMasterHint");return;}
+  badge.classList.remove("weak","ok","strong");
+  if(!val){
+    if(wizDraft.vaultSaved){
+      bar.style.width="100%";bar.style.background="#15803d";
+      badge.classList.add("strong");badge.textContent=t("vaultSavedChip");
+      fb.textContent=t("vaultMasterSubnote");fb.style.color="#15803d";
+    }else{
+      bar.style.width="0%";bar.style.background="#dc2626";
+      badge.textContent=t("vaultEntropyNone");
+      fb.textContent=t("vaultMasterHint");fb.style.color="";
+    }
+    return;
+  }
   let score=0;
   if(val.length>=12)score+=30;
   if(val.length>=16)score+=15;
@@ -1169,23 +1216,91 @@ function evalLiveEntropy(val){
   if(/[0-9]/.test(val))score+=20;
   if(/[^A-Za-z0-9]/.test(val))score+=20;
   bar.style.width=Math.min(100,score)+"%";
-  if(score<45){bar.style.background="#ef4444";badge.textContent=t("vaultEntropyWeak");badge.style.color="#fca5a5";fb.textContent="⚠️ "+t("vaultMasterHint");}
-  else if(score<75){bar.style.background="#f59e0b";badge.textContent=t("vaultEntropyOk");badge.style.color="#fde68a";fb.textContent="👍 "+t("vaultMasterHint");}
-  else{bar.style.background="#10b981";badge.textContent=t("vaultEntropyStrong");badge.style.color="#6ee7b7";fb.textContent="🔒 "+t("vaultEntropyStrong");}
+  if(score<45){bar.style.background="#dc2626";badge.classList.add("weak");badge.textContent=t("vaultEntropyWeak");fb.textContent="⚠️ "+t("vaultMasterHint");fb.style.color="#b91c1c";}
+  else if(score<75){bar.style.background="#d97706";badge.classList.add("ok");badge.textContent=t("vaultEntropyOk");fb.textContent="👍 "+t("vaultMasterHint");fb.style.color="#b45309";}
+  else{bar.style.background="#15803d";badge.classList.add("strong");badge.textContent=t("vaultEntropyStrong");fb.textContent="🔒 "+t("vaultEntropyStrong");fb.style.color="#15803d";}
 }
 async function linkBiometricOneClick(){
+  const bioSt=$("vault-bio-status");
+  const bioBtn=$("vault-bio-btn");
+  const bioCard=$("vault-bio-card");
+  const setBioUi=(kind,msg)=>{
+    wizDraft.vaultBioKind=kind||"";
+    wizDraft.vaultBioMsg=msg||"";
+    if(bioSt){
+      bioSt.textContent=msg||"";
+      bioSt.style.display=msg?"block":"none";
+      bioSt.style.color=kind==="ok"?"#15803d":(kind==="err"?"#b91c1c":"#4D6BFE");
+      bioSt.style.fontWeight=kind?"600":"400";
+    }
+    if(bioCard){bioCard.classList.toggle("linked",kind==="ok");}
+    if(bioBtn){bioBtn.textContent=kind==="ok"?("✔ "+t("vaultBioLinkedBtn")):t("vaultBioLinkBtn");}
+  };
   try{
     const mpEl=$("master-pwd-input");
-    if(mpEl&&mpEl.value&&mpEl.dataset.vaultSaved!=="1"&&window.fanalIPC&&typeof window.fanalIPC.setupVault==="function"){
-      const sr=await window.fanalIPC.setupVault(String(mpEl.value));
-      if(!sr||!sr.ok){toast("⚠️ "+(sr&&sr.error||t("vaultMasterHint")));return;}
+    const mp=mpEl?String(mpEl.value||""):"";
+    const alreadySaved=Boolean(wizDraft.vaultSaved||(mpEl&&mpEl.dataset.vaultSaved==="1"));
+    if(!alreadySaved){
+      if(!mp||mp.length<12){
+        const msg=t("vaultNeedMasterFirst");
+        setBioUi("err",msg);
+        toast("⚠️ "+msg);
+        if(mpEl){mpEl.focus();mpEl.style.borderColor="#b91c1c";}
+        return;
+      }
+      if(window.fanalIPC&&typeof window.fanalIPC.setupVault==="function"){
+        const sr=await window.fanalIPC.setupVault(mp);
+        if(!sr||!sr.ok){
+          const errMsg=(sr&&sr.error)||t("vaultMasterHint");
+          setBioUi("err",errMsg);
+          toast("⚠️ "+errMsg);
+          if(mpEl){mpEl.focus();mpEl.style.borderColor="#b91c1c";}
+          return;
+        }
+        if(mpEl)mpEl.dataset.vaultSaved="1";
+        wizDraft.vaultSaved=true;
+      }else{
+        wizDraft.vaultSaved=true;
+      }
+    }else if(mp&&mpEl&&mpEl.dataset.vaultSaved!=="1"&&window.fanalIPC&&typeof window.fanalIPC.setupVault==="function"){
+      const sr=await window.fanalIPC.setupVault(mp);
+      if(!sr||!sr.ok){
+        const errMsg=(sr&&sr.error)||t("vaultMasterHint");
+        setBioUi("err",errMsg);
+        toast("⚠️ "+errMsg);
+        return;
+      }
       mpEl.dataset.vaultSaved="1";
       wizDraft.vaultSaved=true;
     }
-    if(window.electronAPI&&typeof window.electronAPI.linkBiometric==="function"){const r=await window.electronAPI.linkBiometric();toast(r.success?"✓ "+t("vaultBioLinkBtn"):"⚠️ "+r.error);}
-    else{toast("✓ "+t("vaultBioLinkBtn"));}
-  }catch(e){toast("⚠️ "+t("vaultBioUnavail"));}
+    const ipc=window.electronAPI||window.fanalIPC;
+    if(!ipc||typeof ipc.linkBiometric!=="function"){
+      const msg=t("vaultBioDesktopOnly");
+      setBioUi("err",msg);
+      toast("⚠️ "+msg);
+      return;
+    }
+    if(bioBtn){bioBtn.disabled=true;bioBtn.textContent="⏳ …";}
+    const r=await ipc.linkBiometric();
+    if(bioBtn)bioBtn.disabled=false;
+    if(r&&r.success){
+      wizDraft.vaultBioLinked=true;
+      setBioUi("ok",t("vaultBioLinkedMsg"));
+      toast("✓ "+t("vaultBioLinkedMsg"));
+    }else{
+      const rawErr=String((r&&r.error)||"");
+      const friendly=(rawErr==="TOUCH_ID_UNAVAILABLE"||rawErr==="WINDOWS_HELLO_UNAVAILABLE"||rawErr==="PLATAFORMA_SIN_BIOMETRIA"||rawErr==="SAFE_STORAGE_UNAVAILABLE")?t("vaultBioUnavail"):(rawErr||t("vaultBioUnavail"));
+      setBioUi("err",friendly);
+      toast("⚠️ "+friendly);
+    }
+  }catch(e){
+    if(bioBtn)bioBtn.disabled=false;
+    const msg=(e&&e.message)?String(e.message):t("vaultBioUnavail");
+    setBioUi("err",msg);
+    toast("⚠️ "+msg);
+  }
 }
+try{if(typeof window==="object"&&window)window.linkBiometricOneClick=linkBiometricOneClick;}catch(e){}
 const VAULT_LOCK_REASON_KEYS={
   STARTUP_LOCKED:"vaultCurtainStartup",
   INACTIVITY_5_MIN:"vaultCurtainIdle",
@@ -1265,7 +1380,7 @@ try{
 }catch(e){}
 function viewToggle(){const simple=document.body.classList.toggle("simpleview");try{localStorage.setItem("dsh-simpleview",simple?"1":"0");}catch(e){}$("viewBtn").textContent=simple?"👁️🗨️":"👁️";$("viewBtn").title=simple?t("viewAdvanced"):t("viewSimple");}
 try{$("inboxOpenBtn").addEventListener("click",()=>{$("inboxView").style.display="flex";});const pendFirst=document.getElementById("inboxFirst");if(pendFirst)scheduleVisiblePoll("inboxFirst",()=>{if(!me||(me.role!=="owner"&&me.role!=="lead"))return;api("/api/studio").then(r=>{const n=(r&&r.tasks||[]).filter(x=>x.status==="done").length;if($("inboxCount"))$("inboxCount").textContent=n;if(pendFirst)pendFirst.style.display=n>0?"block":"none";});},15000);}catch(e){}
-async function pollDiscover(){try{const r=await api("/api/capabilities");if(!r||r.error)return;const dc=$("discoverCard");if(!dc)return;if(r.pending>0||!r.cards||!r.cards.length){dc.style.display="none";return;}dc.style.display="block";$("discoverList").innerHTML=r.cards.map(c=>'<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><b>'+esc(c.title)+'</b><p class="hint" style="margin:2px 0">'+esc(c.pitch)+'</p><button class="btn small" data-cap="'+esc(c.id)+'" style="background:#16a34a">'+esc(c.cta)+'</button></div>').join("");document.querySelectorAll("[data-cap]").forEach(b=>b.onclick=async()=>{await api("/api/capabilities/use",{id:b.dataset.cap});pollDiscover();});}catch(e){}}
+async function pollDiscover(){try{const r=await api("/api/capabilities");if(!r||r.error)return;const dc=$("discoverCard");if(!dc)return;if(r.pending>0||!r.cards||!r.cards.length){dc.style.display="none";return;}dc.style.display="block";$("discoverList").innerHTML=r.cards.map(c=>'<div style="padding:8px 0;border-bottom:1px solid var(--line2)"><b>'+esc(c.title)+'</b><p class="hint" style="margin:2px 0">'+esc(c.pitch)+'</p><button class="btn small" data-cap="'+esc(c.id)+'">'+esc(c.cta)+'</button></div>').join("");document.querySelectorAll("[data-cap]").forEach(b=>b.onclick=async()=>{await api("/api/capabilities/use",{id:b.dataset.cap});pollDiscover();});}catch(e){}}
 try{if(document.getElementById("discoverCard")){scheduleVisiblePoll("discover",()=>{if(me)pollDiscover();},20000);}}catch(e){}
 try{$("viewBtn").addEventListener("click",viewToggle);if(localStorage.getItem("dsh-simpleview")!=="0"){document.body.classList.add("simpleview");$("viewBtn").textContent="👁️🗨️";}}catch(e){}
 function phoneLog(who,text){const l=$("phoneLog");if(l)l.innerHTML+="<div style=\"margin:4px 0\"><b>"+who+":</b> "+esc(text)+"</div>";l.scrollTop=l.scrollHeight;}
@@ -1801,29 +1916,31 @@ if(location.search.indexOf("wall=1")>=0){
 }
 </script>
 <style>
-  .fanal-agent-hud{box-sizing:border-box;height:36px;width:100%;background:#090d16;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;color:#f8fafc;user-select:none;overflow:hidden}
-  .fanal-agent-hud[data-state="RUNNING"]{border-bottom-color:#10b981;background:#061814}
-  .fanal-agent-hud[data-state="MANUAL"]{border-bottom-color:#38bdf8;background:#081629}
-  .fanal-agent-hud[data-state="BRAKED"]{border-bottom-color:#f59e0b;background:#1c1305}
+  .fanal-agent-hud{box-sizing:border-box;height:38px;width:100%;background:linear-gradient(90deg,#eef2ff 0%,#f5f3ff 100%);border-bottom:1px solid rgba(77,107,254,.22);display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:11.5px;color:#101828;user-select:none;overflow:hidden}
+  .fanal-agent-hud[data-state="RUNNING"]{border-bottom-color:rgba(21,128,61,.3);background:linear-gradient(90deg,#ecfdf5 0%,#eef2ff 100%)}
+  .fanal-agent-hud[data-state="MANUAL"]{border-bottom-color:rgba(77,107,254,.35);background:linear-gradient(90deg,#eef2ff 0%,#f5f3ff 100%)}
+  .fanal-agent-hud[data-state="BRAKED"]{border-bottom-color:rgba(217,119,6,.35);background:linear-gradient(90deg,#fffbeb 0%,#fef3c7 100%)}
+  body.dark .fanal-agent-hud{background:#141f31;border-bottom-color:#26334d;color:#e6ecf7}
   .hud-left{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
   .status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-  .fanal-agent-hud[data-state="RUNNING"] .status-dot{background:#10b981;box-shadow:0 0 8px #10b981;animation:fanalPulse 1.1s infinite ease-in-out}
-  .fanal-agent-hud[data-state="MANUAL"] .status-dot{background:#38bdf8}
-  .fanal-agent-hud[data-state="BRAKED"] .status-dot{background:#f59e0b;box-shadow:0 0 8px #f59e0b}
+  .fanal-agent-hud[data-state="RUNNING"] .status-dot{background:#15803d;box-shadow:0 0 8px rgba(21,128,61,.45);animation:fanalPulse 1.1s infinite ease-in-out}
+  .fanal-agent-hud[data-state="MANUAL"] .status-dot{background:#4D6BFE}
+  .fanal-agent-hud[data-state="BRAKED"] .status-dot{background:#d97706;box-shadow:0 0 8px rgba(217,119,6,.45)}
   @keyframes fanalPulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.35);opacity:.55}}
-  .hud-badge{font-family:monospace;font-size:10px;font-weight:800;padding:2px 6px;border-radius:3px;letter-spacing:.3px;white-space:nowrap}
-  .fanal-agent-hud[data-state="RUNNING"] .hud-badge{background:#064e3b;color:#6ee7b7;border:1px solid #059669}
-  .fanal-agent-hud[data-state="MANUAL"] .hud-badge{background:#0c4a6e;color:#bae6fd;border:1px solid #0284c7}
-  .fanal-agent-hud[data-state="BRAKED"] .hud-badge{background:#78350f;color:#fde68a;border:1px solid #d97706}
-  .hud-step-ticker{font-family:monospace;font-size:11px;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .hud-progress-track{width:54px;height:5px;background:#1e293b;border-radius:3px;overflow:hidden;flex-shrink:0}
-  .hud-progress-fill{height:100%;width:0%;background:#10b981;transition:width .2s ease}
-  .hud-controls{display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:8px}
-  .hud-btn{height:24px;padding:0 8px;border-radius:3px;font-size:10.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:1px solid transparent}
-  .btn-pause{background:#1e293b;color:#f8fafc;border-color:#475569}
-  .btn-wheel{background:#0284c7;color:#fff;border-color:#38bdf8}
-  .btn-resume{background:#059669;color:#fff;border-color:#10b981}
-  .btn-ratio{background:#0f172a;color:#94a3b8;border-color:#334155;font-family:monospace;font-size:10px}
+  .hud-badge{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:999px;letter-spacing:.2px;white-space:nowrap}
+  .fanal-agent-hud[data-state="RUNNING"] .hud-badge{background:#dcfce7;color:#15803d;border:1px solid rgba(21,128,61,.28)}
+  .fanal-agent-hud[data-state="MANUAL"] .hud-badge{background:rgba(77,107,254,.12);color:#4D6BFE;border:1px solid rgba(77,107,254,.3)}
+  .fanal-agent-hud[data-state="BRAKED"] .hud-badge{background:#fef3c7;color:#b45309;border:1px solid rgba(180,83,9,.3)}
+  .hud-step-ticker{font-size:11.5px;color:#475467;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:500}
+  body.dark .hud-step-ticker{color:#cbd5e1}
+  .hud-progress-track{width:56px;height:6px;background:rgba(77,107,254,.15);border-radius:999px;overflow:hidden;flex-shrink:0}
+  .hud-progress-fill{height:100%;width:0%;background:linear-gradient(90deg,#4D6BFE,#7c5cff);border-radius:999px;transition:width .2s ease}
+  .hud-controls{display:flex;align-items:center;gap:6px;flex-shrink:0;margin-left:8px}
+  .hud-btn{height:26px;padding:0 10px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:4px;border:1px solid transparent}
+  .btn-pause{background:#fff;color:#101828;border-color:rgba(15,23,42,.12)}
+  .btn-wheel{background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff}
+  .btn-resume{background:#15803d;color:#fff}
+  .btn-ratio{background:rgba(77,107,254,.1);color:#4D6BFE;border-color:rgba(77,107,254,.22);font-size:10.5px}
 </style>
 <div id="fanal-agent-hud" class="fanal-agent-hud" data-state="RUNNING" style="display:none">
   <div class="hud-left"><span class="status-dot"></span><span id="hud-mode-badge" class="hud-badge">⚡ AGENTE FANAL</span><div class="hud-progress-track"><div id="hud-progress-bar" class="hud-progress-fill"></div></div><span id="hud-step-text" class="hud-step-ticker">[—/—] Listo para conducir</span></div>
@@ -1836,17 +1953,17 @@ if(location.search.indexOf("wall=1")>=0){
     <button class="hud-btn btn-ratio" onclick="closeRightDrawer()">✕</button>
   </div>
 </div>
-<div id="fanal-lock-curtain" style="display:none;flex-direction:column;justify-content:center;align-items:center;position:fixed;inset:0;z-index:999999;background:#090d16;color:#f8fafc;font-family:system-ui,sans-serif;padding:20px;text-align:center;user-select:none">
-  <div style="background:#0f172a;border:1px solid #334155;border-top:4px solid #38bdf8;border-radius:6px;padding:20px;width:100%;max-width:320px">
-    <div style="font-size:28px;margin-bottom:6px">🔒</div>
-    <div id="vaultCurtainTitleEl" style="font-weight:800;font-size:14px;color:#fff;margin-bottom:4px">BÓVEDA FANAL CONGELADA</div>
-    <div id="lock-reason-label" style="font-size:11px;color:#94a3b8;font-family:monospace;margin-bottom:14px">Protección Loi 25 por inactividad · Tu expediente sigue intacto</div>
-    <button id="vaultUnlockBioBtnEl" onclick="triggerBiometricUnlock()" style="width:100%;background:#0284c7;color:#fff;border:none;padding:10px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer;margin-bottom:10px">🫆 Desbloquear con Touch ID / Windows Hello</button>
-    <div id="vaultUnlockOrEl" style="font-size:10px;color:#64748b;margin-bottom:8px;text-transform:uppercase;font-weight:700">— O usa tu Contraseña Maestra —</div>
-    <input id="vault-master-pwd" type="password" placeholder="Contraseña Maestra de Fanal..." style="width:100%;box-sizing:border-box;background:#020617;color:#fff;border:1px solid #475569;padding:8px;border-radius:4px;font-family:monospace;font-size:12px;margin-bottom:8px"/>
-    <button id="vaultUnlockBtnEl" onclick="triggerPasswordUnlock()" style="width:100%;background:#059669;color:#fff;border:none;padding:8px;border-radius:4px;font-weight:700;font-size:12px;cursor:pointer">Desbloquear y Continuar donde estaba</button>
+<div id="fanal-lock-curtain" style="display:none;flex-direction:column;justify-content:center;align-items:center;position:fixed;inset:0;z-index:999999;background:linear-gradient(160deg,#4D6BFE 0%,#7c5cff 55%,#a78bfa 100%);color:#101828;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;padding:20px;text-align:center;user-select:none">
+  <div style="background:rgba(255,255,255,.97);border-radius:26px;box-shadow:0 30px 80px rgba(15,23,42,.35);padding:34px 28px;width:min(380px,92vw)">
+    <div style="font-size:38px;margin-bottom:8px">🔒</div>
+    <div id="vaultCurtainTitleEl" style="font-weight:800;font-size:20px;color:#101828;letter-spacing:-.02em;margin-bottom:6px">BÓVEDA FANAL CONGELADA</div>
+    <div id="lock-reason-label" style="font-size:13px;color:#667085;line-height:1.5;margin-bottom:18px">Protección Loi 25 por inactividad · Tu expediente sigue intacto</div>
+    <button id="vaultUnlockBioBtnEl" onclick="triggerBiometricUnlock()" class="btn" style="width:100%;border-radius:14px;padding:13px 16px;font-size:14.5px;margin-bottom:12px">🫆 Desbloquear con Touch ID / Windows Hello</button>
+    <div id="vaultUnlockOrEl" style="font-size:11px;color:#98a2b3;margin:6px 0 10px;text-transform:uppercase;font-weight:700;letter-spacing:.06em">— O usa tu Contraseña Maestra —</div>
+    <input id="vault-master-pwd" type="password" placeholder="Contraseña Maestra de Fanal..." style="width:100%;box-sizing:border-box;background:#fff;color:#101828;border:1.5px solid rgba(77,107,254,.35);padding:13px;border-radius:14px;font-family:inherit;font-size:15px;margin-bottom:10px"/>
+    <button id="vaultUnlockBtnEl" onclick="triggerPasswordUnlock()" style="width:100%;background:rgba(77,107,254,.10);color:#4D6BFE;border:1.5px solid rgba(77,107,254,.35);padding:12px 16px;border-radius:14px;font-weight:700;font-size:14px;cursor:pointer">Desbloquear y Continuar donde estaba</button>
   </div>
-  <div id="vaultUnlockFooterEl" style="margin-top:12px;font-size:10px;color:#475569;font-family:monospace">Llave AES-256-GCM purgada de RAM · Pantallas 1 y 2 protegidas</div>
+  <div id="vaultUnlockFooterEl" style="margin-top:14px;font-size:11.5px;color:rgba(255,255,255,.85);font-weight:600">Llave AES-256-GCM purgada de RAM · Pantallas 1 y 2 protegidas</div>
 </div>
 </body>
 </html>

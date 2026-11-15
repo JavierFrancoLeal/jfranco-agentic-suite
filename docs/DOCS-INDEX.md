@@ -11,6 +11,7 @@ Pre-Piloto #1 cleanup so agents and partners know what is authoritative).*
 | [`MAP.md`](./MAP.md) | Quick technical directory across `supervisor/`, `apps/desktop/`, `supervisor-pkg/`, `tools/` |
 | [`ACTIVE-CATALOG.md`](./ACTIVE-CATALOG.md) | Canonical taxonomy of all 26 `jfranco-*` organs (`desktop`/`campo`/dormant) |
 | [`UI-DOCTRINE.md`](./UI-DOCTRINE.md) | Inbox-First (`simpleview`), 0% idle CPU/GPU, simplicity & accountability UX rules |
+| [`TRASUNTO-VISUAL-PHILOSOPHY.md`](./TRASUNTO-VISUAL-PHILOSOPHY.md) | Canónica de diseño Trasunto/Fanal (morado-índigo luminoso, lógica Apple adaptada, multiplataforma desktop/móvil/tablet) |
 | [`INSTALLERS.md`](./INSTALLERS.md) | Packaging macOS/Windows installers, `verify-app` + `smoke-desktop --packed`, code-signing notes |
 | [`PRE-PILOT-CHECKLIST.md`](./PRE-PILOT-CHECKLIST.md) | 10-point readiness verification before external SME pilots |
 | [`OPERATIONS-MANUAL.md`](./OPERATIONS-MANUAL.md) | Commercial model, TPS/TVQ, vault security, blind support diagnostics, exit guarantees |

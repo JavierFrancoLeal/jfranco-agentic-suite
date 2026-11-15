@@ -2,12 +2,22 @@
 // Doctrine: the machine NEVER drives the client's browser invisibly.
 // The badge is injected on every page and cannot be hidden.
 const { spawn } = require("node:child_process");
+const fs = require("node:fs");
+const os = require("node:os");
+const path = require("node:path");
 const CHROME = process.env.FANAL_CHROME_BIN || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const PORT = 9222;
 let child = null;
 
+function browserRuntimeDir() {
+  const base = process.env.DSH_SUPERVISOR_DATA || path.join(os.homedir(), ".dsh", "supervisor-data");
+  const dir = path.join(base, "browser-profile");
+  fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+  try { fs.chmodSync(dir, 0o700); } catch {}
+  return dir;
+}
+
 function chromeExists() {
-  const fs = require("node:fs");
   return !!process.env.FANAL_CHROME_BIN || fs.existsSync(CHROME);
 }
 
@@ -15,11 +25,13 @@ function launch(url) {
   return new Promise((resolve, reject) => {
     if (!chromeExists()) return reject(new Error("Chrome not found"));
     if (child) return resolve({ ok: false, error: "already running" });
-    const errLog = require("node:fs").createWriteStream("/tmp/fanal-browser-stderr.log", { flags: "a" });
-    child = spawn(CHROME, ["--remote-debugging-port=" + PORT, "--user-data-dir=/tmp/fanal-browser-profile", "--no-first-run", "--no-default-browser-check", String(url || "about:blank")], { stdio: ["ignore", "ignore", "pipe"] });
+    const profileDir = browserRuntimeDir();
+    const errLog = fs.createWriteStream(path.join(profileDir, "browser-stderr.log"), { flags: "a", mode: 0o600 });
+    const exitLogPath = path.join(profileDir, "browser-exit.log");
+    child = spawn(CHROME, ["--remote-debugging-port=" + PORT, "--user-data-dir=" + profileDir, "--no-first-run", "--no-default-browser-check", String(url || "about:blank")], { stdio: ["ignore", "ignore", "pipe"] });
     child.stderr.on("data", (d) => { try { errLog.write(d); } catch {} });
-    child.on("error", (e) => { try { require("node:fs").appendFileSync("/tmp/fanal-browser-exit.log", "spawn error: " + e.message + "\n"); } catch {} reject(e); });
-    child.on("exit", (code) => { try { require("node:fs").appendFileSync("/tmp/fanal-browser-exit.log", "exit code: " + code + "\n"); } catch {} child = null; });
+    child.on("error", (e) => { try { fs.appendFileSync(exitLogPath, "spawn error: " + e.message + "\n", { mode: 0o600 }); } catch {} reject(e); });
+    child.on("exit", (code) => { try { fs.appendFileSync(exitLogPath, "exit code: " + code + "\n", { mode: 0o600 }); } catch {} child = null; });
     resolve({ ok: true });
   });
 }

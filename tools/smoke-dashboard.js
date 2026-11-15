@@ -80,6 +80,7 @@ function mk(id) {
     parentNode: { style: {} },
     closest() { return { style: {} }; },
     scrollIntoView() {},
+    focus() {},
   };
   return el;
 }
@@ -218,6 +219,37 @@ process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e && e.sta
     }
     if (/id="(?:modeLocalBtn|localSovereignPanel|brainLocalModelSel|brainLocalDetectBtn|wizBrainSel)"/.test(src) || /local_sovereign/.test(src)) {
       throw new Error("STRICT: removed Ollama / local_sovereign UI still present in dashboard.html");
+    }
+    if (/#090d16|#020617|#064e3b|#38bdf8/i.test(html)) {
+      throw new Error("STRICT: off-brand dark-terminal inline colors found in dashboard.html (violates Trasunto luminous purple palette)");
+    }
+    const toastZ = Number((html.match(/\.toast\{[^}]*z-index:(\d+)/) || [])[1] || 0);
+    const wizZ = Number((html.match(/\.wizard\{[^}]*z-index:(\d+)/) || [])[1] || 0);
+    const curtainZ = Number((html.match(/id="fanal-lock-curtain"[^>]*z-index:(\d+)/) || [])[1] || 0);
+    if (!(toastZ > wizZ && toastZ > curtainZ)) {
+      throw new Error(`STRICT: .toast z-index (${toastZ}) must exceed .wizard (${wizZ}) and #fanal-lock-curtain (${curtainZ})`);
+    }
+    elems["master-pwd-input"] = mk("master-pwd-input");
+    elems["vault-bio-status"] = mk("vault-bio-status");
+    elems["vault-bio-btn"] = mk("vault-bio-btn");
+    elems["vault-bio-card"] = mk("vault-bio-card");
+    if (typeof window.linkBiometricOneClick === "function") {
+      await window.linkBiometricOneClick();
+      if (!elems["vault-bio-status"].textContent || elems["vault-bio-status"].style.display === "none") {
+        throw new Error("STRICT: linkBiometricOneClick() with empty master password must surface inline error in #vault-bio-status");
+      }
+      if (elems["vault-bio-card"].classList.contains("linked")) {
+        throw new Error("STRICT: linkBiometricOneClick() without master password must not mark bio card linked");
+      }
+      window.fanalIPC = { setupVault: async () => ({ ok: true }), linkBiometric: async () => ({ success: true }) };
+      window.electronAPI = window.fanalIPC;
+      elems["master-pwd-input"].value = "Fanal-Strong-2026!";
+      await window.linkBiometricOneClick();
+      if (!elems["vault-bio-card"].classList.contains("linked") || elems["vault-bio-status"].style.color !== "#15803d") {
+        throw new Error("STRICT: linkBiometricOneClick() happy path did not update #vault-bio-card / #vault-bio-status");
+      }
+      delete window.fanalIPC;
+      delete window.electronAPI;
     }
     elems.wizKeyInput = mk("wizKeyInput");
     elems.wizKeyInput.value = "sk-test-ds-key";

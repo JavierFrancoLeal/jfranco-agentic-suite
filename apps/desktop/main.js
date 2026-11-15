@@ -725,7 +725,9 @@ async function ensureBrain() {
     FANAL_INTERNAL_TOKEN,
   };
   delete cleanEnv.NODE_OPTIONS; delete cleanEnv.NODE_PATH; delete cleanEnv.ELECTRON_RUN_AS_NODE_POLL;
-  brain = spawn(process.execPath, [serverJs, "--lan"], {
+  const allowLan = process.argv.includes("--lan") || process.env.FANAL_ALLOW_LAN === "1";
+  const serverArgs = allowLan ? [serverJs, "--lan"] : [serverJs];
+  brain = spawn(process.execPath, serverArgs, {
     env: cleanEnv,
     stdio: "ignore",
     detached: false,

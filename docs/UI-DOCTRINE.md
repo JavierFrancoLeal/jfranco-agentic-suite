@@ -77,7 +77,7 @@ explanation self-destructs after the third successful use.
   silent GREEN.
 - The pedagogical semaphore: every color speaks the 3-block formula —
   who acted + which rule was kept + why you intervene or not — with the
-  BENEFIT names, never the internal architecture (no Ollama, no TFEP,
-  no "velo regex": say "Escudo de Datos", "Cerebro Local Privado").
+  BENEFIT names, never the internal architecture (no model IDs, no TFEP,
+  no "velo regex": say "Escudo de Datos", "Cerebro Privado Dual").
 - Zero noise when work is queued (pending > 0): the pedagogy switches
   off at 100%.
