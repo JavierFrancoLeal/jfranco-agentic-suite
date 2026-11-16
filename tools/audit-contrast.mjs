@@ -68,7 +68,9 @@ function findChromeBinary() {
     "/usr/bin/chromium",
     "/usr/bin/chromium-browser",
     "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+    "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
     "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+    "C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe",
   ];
   for (const c of candidates) {
     if (existsSync(c)) return c;
@@ -149,25 +151,43 @@ async function startChrome() {
   const bin = findChromeBinary();
   if (!bin) return null;
   const userDataDir = mkdtempSync(join(tmpdir(), "fanal-contrast-chrome-"));
+  const chromeArgs = [
+    "--headless=new",
+    "--disable-gpu",
+    "--disable-software-rasterizer",
+    "--disable-dev-shm-usage",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-extensions",
+    "--disable-background-networking",
+    "--disable-sync",
+    "--window-size=1440,960",
+    "--remote-debugging-port=0",
+    `--user-data-dir=${userDataDir}`,
+  ];
+  if (process.platform === "linux") {
+    chromeArgs.push("--no-sandbox", "--disable-setuid-sandbox");
+  }
+  chromeArgs.push("about:blank");
+
   const proc = spawn(
     bin,
-    [
-      "--headless=new",
-      "--disable-gpu",
-      "--no-first-run",
-      "--no-default-browser-check",
-      "--disable-extensions",
-      "--window-size=1440,960",
-      "--remote-debugging-port=0",
-      `--user-data-dir=${userDataDir}`,
-      "about:blank",
-    ],
-    { stdio: ["ignore", "pipe", "pipe"] }
+    chromeArgs,
+    {
+      env: {
+        ...process.env,
+        ...(process.platform === "linux" ? { DBUS_SESSION_BUS_ADDRESS: "/dev/null" } : {}),
+      },
+      stdio: ["ignore", "pipe", "pipe"],
+    }
   );
 
   const wsEndpoint = await new Promise((res, rej) => {
     let stderr = "";
-    const timer = setTimeout(() => rej(new Error(`Chrome DevTools startup timeout: ${stderr.slice(-400)}`)), 12000);
+    const timer = setTimeout(() => {
+      try { proc.kill("SIGKILL"); } catch {}
+      rej(new Error(`Chrome DevTools startup timeout: ${stderr.slice(-400)}`));
+    }, 25000);
     proc.stderr.on("data", (chunk) => {
       stderr += chunk.toString("utf8");
       const m = stderr.match(/DevTools listening on (ws:\/\/[^\s]+)/);

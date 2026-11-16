@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 const htmlPath = path.join(__dirname, "..", "supervisor", "dashboard.html");
-const html = fs.readFileSync(htmlPath, "utf8");
+const html = fs.readFileSync(htmlPath, "utf8").replace(/\r\n/g, "\n");
 const m = html.match(/<script>([\s\S]*?)<\/script>/);
 if (!m) { console.log("SMOKE FAILED: no <script> found"); process.exit(1); }
 const src = m[1];
@@ -854,7 +854,7 @@ process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e && e.sta
     if (openWallPos < workersCardStart || openWallPos > ordersCardStart) {
       throw new Error("STRICT: #openWall must live inside authenticated #workersCard");
     }
-    const serverSrc = fs.readFileSync(path.join(__dirname, "..", "supervisor", "server.js"), "utf8");
+    const serverSrc = fs.readFileSync(path.join(__dirname, "..", "supervisor", "server.js"), "utf8").replace(/\r\n/g, "\n");
     if (!serverSrc.includes('if (pathname === "/api/wall" && req.method === "GET") {\n    if (process.env.DSH_DEMO_MODE !== "1" && !auth(req)) return send(res, 401')) {
       throw new Error("STRICT: GET /api/wall must require authentication unless DSH_DEMO_MODE=1");
     }
