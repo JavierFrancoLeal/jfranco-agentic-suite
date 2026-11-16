@@ -224,9 +224,16 @@ async function startChrome() {
   return {
     cdp,
     stop: async () => {
-      await cdp.close();
+      try { await cdp.close(); } catch {}
+      const exitPromise = proc.exitCode === null
+        ? new Promise((r) => {
+            const t = setTimeout(r, 1200);
+            proc.once("exit", () => { clearTimeout(t); r(); });
+          })
+        : Promise.resolve();
       try { proc.kill("SIGKILL"); } catch {}
-      rmSync(userDataDir, { recursive: true, force: true });
+      await exitPromise;
+      try { rmSync(userDataDir, { recursive: true, force: true, maxRetries: 8, retryDelay: 150 }); } catch {}
     },
   };
 }
@@ -779,10 +786,16 @@ async function runChromeAudit() {
     await auditScreen(cdp, "welcome:cascade-solo(dark)", results);
   } finally {
     await stop();
+    const waitExit = (p) => (p && p.exitCode === null)
+      ? new Promise((r) => { const t = setTimeout(r, 800); p.once("exit", () => { clearTimeout(t); r(); }); })
+      : Promise.resolve();
+    const cWait = waitExit(clientProc);
+    const sWait = waitExit(studioProc);
     try { clientProc.kill("SIGKILL"); } catch {}
     try { studioProc.kill("SIGKILL"); } catch {}
-    rmSync(tmpClientDir, { recursive: true, force: true });
-    rmSync(tmpStudioDir, { recursive: true, force: true });
+    await Promise.all([cWait, sWait]);
+    try { rmSync(tmpClientDir, { recursive: true, force: true, maxRetries: 6, retryDelay: 120 }); } catch {}
+    try { rmSync(tmpStudioDir, { recursive: true, force: true, maxRetries: 6, retryDelay: 120 }); } catch {}
   }
 
   let totalChecked = 0;
