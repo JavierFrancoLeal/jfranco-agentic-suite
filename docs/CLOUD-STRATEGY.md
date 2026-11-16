@@ -1,82 +1,46 @@
-# Cloud strategy — local, hybrid, or fully cloud?
+# Stratégie infonuagique et vérification asynchrone sans serveur 24/7 (Fanal & Fanal Studio)
 
-The real-world demo exposed a family of errors. This document turns them
-into an architecture decision: where should the brain live?
+Les essais terrain ont exposé une famille d'incidents récurrents : perte de lien LAN sur téléphone (`HTTPS-Only`), expiration de tunnels gratuits (`~2 h`), mise en veille d'un portable durant une démonstration, et contrainte opérationnelle de ne pas maintenir d'ordinateur personnel ou de serveur lourd allumé en continu 24h/24 pour contrôler les installations clients.
 
-## The errors we lived, and their root cause
+Constat clé : **toutes ces pannes provenaient du besoin d'une connexion synchrone directe vers une machine locale**. Le moteur local (DSH + plugins + superviseur) n'a jamais failli.
 
-| Error | Root cause | Layer affected |
-|---|---|---|
-| Phone timed out on the LAN link | Browser HTTPS-Only / router isolation | Access |
-| Public tunnel died ("no tunnel") | Free relays expire (~2h) | Access |
-| Mac sleep killed the demo | Laptop power management | Brain (host) |
-| npm token saga (granular-only, 2FA, async) | Platform changes | Distribution |
-| Scope `@jfranco` taken | Identity/reservation | Distribution |
+---
 
-Key insight: **every access-layer error came from the LOCAL nature of the
-service.** The brain itself (DSH + plugins + supervisor) never failed.
+## 1. Principe directeur : zéro machine personnelle allumée 24/7
 
-## Three architectures
+L'architecture de déploiement et de contrôle vers **Fanal Studio** est conçue pour être **antifragile et asynchrone** dès le premier client :
 
-### 1. Fully local (current)
+1. **Souveraineté d'exécution chez le client (`85 Mo` RAM)** : tout le travail opérationnel (Voile PII Loi 25, Constitution Fermée V2, Caisse Z, Secrétaire, Téléphoniste) s'exécute localement sur le poste du client, avec persistance autonome même hors ligne.
+2. **Preuve cryptographique asynchrone (`FANAL-INSTALL-ATTEST-V1`)** : la vérification d'une installation dans **Fanal Studio** ne dépend d'aucune connexion permanente entre le poste du client et celui du fondateur.
 
-- Brain + UI on the business computer; workers and owner use the LAN.
-- **Cost:** ~$0/month infrastructure (hardware once: $1,200–2,000).
-- **Solves:** privacy (data never leaves the business), offline resilience,
-  no recurring fee.
-- **Friction:** the network errors above; owner can only watch from the
-  LAN; we support every site individually.
+---
 
-### 2. Hybrid (recommended) — local brain, cloud control plane
+## 2. Vérification d'installation vers Fanal Studio : Niveau 1 (Bêta) et Niveau 2 (Croissance)
 
-- The brain stays in the business. Only the **control plane** (owner
-  dashboard, telemetry, orders, backups) syncs to a small cloud service.
-  Workers stay local (fast voice, offline tolerance).
-- **Cost:** cloud sync service ≈ $20–100/month **for hundreds of
-  businesses** (tiny payloads: numbers and text, not audio). Per business:
-  effectively a few dollars/month, bundled into the subscription.
-- **Solves:** owner access from anywhere (phone over 4G — exactly what the
-  public tunnel simulated), multi-site aggregation for chains, automatic
-  backups, central updates.
-- **New friction (small):** internet needed for the owner's remote view
-  (the field keeps working offline); a privacy page to explain what syncs.
+| Palier | Capacité | Infrastructure & Coût récurrent | Mécanisme cryptographique (Chaîne Logiciel + IA + Humain) | Exposition de PII client |
+| :--- | :--- | :--- | :--- | :--- |
+| **Niveau 1 — Bêta (0 à 14 clients)** *(Implémenté)* | Vérification asynchrone directe sans serveur central | **Aucun serveur 24/7 · `0,00 $ CAD/mois`** | 1. Côté client : `GET /api/installation/attestation` génère un certificat **Ed25519** signé contenant uniquement métadonnées de genèse et profil structurel.<br>2. Transmission asynchrone (import fichier/presse-papiers par l'implantateur ou le client).<br>3. Côté Studio : `POST /api/studio/verify-installation` valide Ed25519 (**Logiciel**), audite la cohérence fiscale/plancher (**IA**) et enregistre la signature du fondateur (**Humain**). | **Zéro PII** (aucun nom, téléphone, courriel ni clé API dans le certificat). |
+| **Niveau 2 — Échelle commerciale (15+ clients)** *(Architecture cible)* | Synchronisation asynchrone automatique en boîte morte chiffrée | **Relais serverless chiffré minimal (`~5 à 20 $/mois` pour des centaines de PME)** — toujours **zéro PC portable allumé 24/7** | Les nœuds clients déposent leurs attestations signées **Ed25519** et métriques agrégées (`usage-telemetry.js`, `billing_meter`) scellées bout en bout par la clé publique **X25519** de Fanal Studio dans une boîte de dépôt éphémère (*dead-drop* Cloudflare Workers / KV). À l'ouverture ponctuelle de **Fanal Studio**, la console déchiffre, vérifie et acquitte les paquets en attente. | **Zéro PII lisible dans le nuage** (le relais cloud ne voit que du texte chiffré scellé pour la clé privée de Studio). |
 
-### 3. Fully cloud (hosted SaaS)
+### Pourquoi ne pas exiger de serveur 24/7 en Bêta ?
+- Un ordinateur portable personnel mis en veille casserait les vérifications synchrones et créerait un point de défaillance unique.
+- Louer et administrer des machines virtuelles multi-locataires (`40–150 $/mois` + base de données + sauvegarde + astreinte sécurité) avant les 15 premiers clients ajouterait de la complexité juridique (hébergement de données de santé/fiscales en nuage central) sans valeur opérationnelle immédiate.
+- La séparation **Niveau 1 (`0 $/mois`, Ed25519 asynchrone implémenté)** → **Niveau 2 (`X25519` *dead-drop* serverless)** garantit que **le fondateur peut fermer son ordinateur à tout moment** tout en disposant d'une preuve cryptographique inviolable de chaque déploiement client.
 
-- The whole brain runs on our servers; businesses just open a URL.
-- **Cost:** per-business VM ≈ $20–60/month; multi-tenant server ≈
-  $100–400/month for many SMBs; plus DeepSeek usage, database, backups,
-  and operations labor. A realistic SaaS price to the customer: $49–149/
-  month.
-- **Solves:** every access-layer error disappears; zero local install;
-  central everything.
-- **Friction it ADDS:** monthly cost for the business, internet dependency
-  (restaurant offline = system down), data privacy concerns (health,
-  legal, employee data), latency for voice, and the security burden on us.
+---
 
-## Recommendation: phased
+## 3. Comparatif des trois modèles de déploiement produit
 
-1. **Phase 1 — pilots (now):** fully local + free public tunnel for demos.
-   Zero infrastructure cost; the friction is ours, not the customer's.
-2. **Phase 2 — first paying customers:** **hybrid**. Local brain + cloud
-   control plane for the owner. This is what the tunnel simulated; making
-   it permanent is a small engineering step (a sync endpoint + a hosted
-   dashboard) and it directly removes the errors we experienced.
-3. **Phase 3 — scale:** offer a **hosted tier** (fully cloud) for
-   businesses that prefer zero hardware, priced into the subscription.
+| Architecture | Hébergement | Résilience hors ligne | Coût d'infrastructure | Usage recommandé |
+| :--- | :--- | :--- | :--- | :--- |
+| **1. Local souverain + Vérification Studio Niveau 1** *(Actuel Bêta)* | Poste macOS / Windows du client (`127.0.0.1`) + certificat `FANAL-INSTALL-ATTEST-V1` | **100 % autonome hors ligne** | **`0 $/mois`** | Cohorte fondatrice (14 premiers clients Solo & Équipe). |
+| **2. Hybride (Cerveau local + Boîte morte `X25519` Niveau 2)** | Cerveau et Voile Loi 25 chez le client ; relais chiffré minimal pour tableau mobile et vérifications Studio | **Terrain 100 % autonome hors ligne** | **`~5–25 $/mois` global** | Croissance `15+` PME et multi-sites nécessitant un suivi mobile sans ouvrir de tunnel LAN. |
+| **3. Nuage géré spécialisé (Option ultérieure ciblée)** | Conteneurs isolés dédiés par entreprise (uniquement pour postes sans ordinateur local) | Dépendante d'Internet | **`49–149 $/mois/client`** | Uniquement lorsque le client refuse tout poste informatique dédié sur place. |
 
-## Answer to "does cloud add friction or solve problems?"
+---
 
-- Cloud **solves** the access-layer friction (the errors we lived).
-- Cloud **adds** cost, internet-dependency, and privacy friction.
-- The **hybrid** captures ~80% of the benefits with minimal new friction,
-  and it is the natural evolution of what we already built: the tunnel
-  proved the cloud link works; the local brain proved the value.
+## 4. Règle de décision Trasunto inc.
 
-## Pricing frame for SADC clients
-
-| Tier | Hardware | Subscription | For whom |
-|---|---|---|---|
-| Local pilot | $1,200–2,000 once | $0 | First two weeks |
-| Hybrid | same | $29–49/month | SMBs (dashboard anywhere, backups, support) |
-| Hosted | $0 | $49–149/month | Businesses without a computer |
+1. **Aucune dépendance à un PC du fondateur allumé 24h/24** : ni en Bêta, ni en phase commerciale.
+2. **Aucune PII dans le nuage de contrôle** : le Voile Loi 25 local et l'attestation Ed25519 zéro-PII garantissent qu'en toute phase, les dossiers clients demeurent sous la souveraineté exclusive du dirigeant.
+3. **Transition sans rupture** : le même format `FANAL-INSTALL-ATTEST-V1` vérifié aujourd'hui localement par **Fanal Studio** servira de charge utile interne du futur relais *dead-drop* `X25519`, sans refonte des postes clients déjà déployés.

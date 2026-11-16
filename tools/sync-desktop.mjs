@@ -35,10 +35,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 // Canonical list of runtime/UI source files under supervisor/ required by server.js.
 const SUPERVISOR_FILES = [
   "server.js",
+  "edition.js",
   "brain-catalog.js",
   "diagnostic-sanitizer.js",
   "power-kpi.js",
   "intake-engine.js",
+  "quebec-profiles.js",
+  "setup-validator.js",
+  "usage-telemetry.js",
   "dashboard.html",
   "dashboard-i18n.js",
   "browser-cdp.js",

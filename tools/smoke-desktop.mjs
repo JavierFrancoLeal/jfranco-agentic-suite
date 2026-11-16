@@ -134,6 +134,7 @@ function buildPackedDir(packOutDir) {
   assertExists(join(located.resourcesDir, "app.asar"), "app.asar");
   const unpackedDir = join(located.resourcesDir, "app.asar.unpacked");
   assertExists(join(unpackedDir, "brain", "server.js"), "app.asar.unpacked/brain/server.js");
+  assertExists(join(unpackedDir, "brain", "edition.js"), "app.asar.unpacked/brain/edition.js");
   assertExists(join(unpackedDir, "brain", "brain-catalog.js"), "app.asar.unpacked/brain/brain-catalog.js");
   assertExists(join(unpackedDir, "brain", "diagnostic-sanitizer.js"), "app.asar.unpacked/brain/diagnostic-sanitizer.js");
   assertExists(join(unpackedDir, "brain", "power-kpi.js"), "app.asar.unpacked/brain/power-kpi.js");

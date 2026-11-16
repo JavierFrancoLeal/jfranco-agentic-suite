@@ -12,9 +12,15 @@ Pre-Piloto #1 cleanup so agents and partners know what is authoritative).*
 | [`ACTIVE-CATALOG.md`](./ACTIVE-CATALOG.md) | Canonical taxonomy of all 26 `jfranco-*` organs (`desktop`/`campo`/dormant) |
 | [`UI-DOCTRINE.md`](./UI-DOCTRINE.md) | Inbox-First (`simpleview`), 0% idle CPU/GPU, simplicity & accountability UX rules |
 | [`TRASUNTO-VISUAL-PHILOSOPHY.md`](./TRASUNTO-VISUAL-PHILOSOPHY.md) | Canónica de diseño Trasunto/Fanal (morado-índigo luminoso, lógica Apple adaptada, multiplataforma desktop/móvil/tablet) |
-| [`INSTALLERS.md`](./INSTALLERS.md) | Packaging macOS/Windows installers, `verify-app` + `smoke-desktop --packed`, code-signing notes |
+| [`INSTALLERS.md`](./INSTALLERS.md) | Déploiement, éditions Fanal vs Studio, signature & vérification empaquetée (FR) |
+| [`INSTALL-SOP-90MIN.md`](./INSTALL-SOP-90MIN.md) | Protocole officiel d'implantation client pas à pas en 90 minutes (FR) |
 | [`PRE-PILOT-CHECKLIST.md`](./PRE-PILOT-CHECKLIST.md) | 10-point readiness verification before external SME pilots |
-| [`OPERATIONS-MANUAL.md`](./OPERATIONS-MANUAL.md) | Commercial model, TPS/TVQ, vault security, blind support diagnostics, exit guarantees |
+| [`OPERATIONS-MANUAL.md`](./OPERATIONS-MANUAL.md) | Manuel complet opérations, facturation 350 $/490 $, comptabilité 2 comptes, TPS/TVQ, jetons & sortie honorable (FR) |
+| [`BUSINESS.md`](./BUSINESS.md) | Modèle d'affaires unifié et prévisions financières vérifiées à 3 ans (FR) |
+| [`MICRO-MARKET.md`](./MICRO-MARKET.md) | Travailleurs autonomes & micro-opérateurs à fort levier 1:300, topologie `SOLO` sans Ollama (FR) |
+| [`AI-MSP.md`](./AI-MSP.md) | Économie unitaire, calcul exact des jetons par dossier (`DeepSeek ↔ Gemini`) et marges (FR) |
+| [`FONDATEUR-CONSTITUTION.md`](./FONDATEUR-CONSTITUTION.md) | Paramètres et règles invariants du fondateur (FR) |
+| [`../TRASUNTO-MANUEL-OPERATIONS-FINANCES.pdf`](../TRASUNTO-MANUEL-OPERATIONS-FINANCES.pdf) | Version officielle illustrée Fanal (.pdf / .docx) — Installation, Facturation, Comptabilité & Prévisions 3 ans |
 | [`PLUGIN-AUTHORING.md`](./PLUGIN-AUTHORING.md) | Extended Cordis DSH guide (canonical English spec in `jfranco-plugin-authoring/assets/plugin-authoring.md`) |
 | [`KNOWLEDGE-LEDGER.md`](./KNOWLEDGE-LEDGER.md) | Standard rules; **live lessons #34–#45+ live in [`jfranco-lessons/assets/lessons.md`](../jfranco-lessons/assets/lessons.md)** |
 | [`SKIN-IN-THE-GAME.md`](./SKIN-IN-THE-GAME.md) | Core accountability doctrine ("la machine exécute; l'humain signe") |

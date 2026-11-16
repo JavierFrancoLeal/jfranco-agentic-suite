@@ -42,6 +42,7 @@ echo "== ui =="
   if(!m) throw new Error("panel: script block missing");
   if(/DSH Assistant|DeepSeek Harness/i.test(h)) throw new Error("panel: legacy DSH/DeepSeek Harness branding found");
   if(!h.includes("id=\"panelBackBtn\"")) throw new Error("panel: missing #panelBackBtn");
+  if(!h.includes("id=\"fanalTooltip\"")||!h.includes("PTIP")) throw new Error("panel: missing cursor tooltip cloud (#fanalTooltip / PTIP)");
   if(!/<button[^>]+id="darkBtn"[\s\S]*?<svg/i.test(h)) throw new Error("panel: #darkBtn must use inline SVG icon");
   const mk=(id)=>({id,style:{},value:"",textContent:"",innerHTML:"",placeholder:"",title:"",dataset:{},children:[],classList:{_s:new Set(),toggle(k,v){v===undefined?(this._s.has(k)?this._s.delete(k):this._s.add(k)):(v?this._s.add(k):this._s.delete(k));},add(k){this._s.add(k)},remove(k){this._s.delete(k)},contains(k){return this._s.has(k)}},appendChild(c){this.children.push(c);},focus(){},addEventListener(){}});
   const elems={};
@@ -72,10 +73,16 @@ echo "== supervisor =="
   if(!m) throw new Error("dashboard: script block missing");
   new Function(m[1]);
 '
+"$NODE" --check supervisor/edition.js
+"$NODE" --check supervisor/quebec-profiles.js
+"$NODE" --check supervisor/setup-validator.js
+"$NODE" --check supervisor/usage-telemetry.js
 "$NODE" tools/smoke-dashboard.js
+"$NODE" tools/audit-contrast.mjs
 "$NODE" tools/test-diagnostic-export.mjs
 "$NODE" tools/test-closed-brain.mjs
 "$NODE" tools/test-api-closed-brain.mjs
+"$NODE" tools/test-editions.mjs
 "$NODE" tools/test-intake-pipeline.mjs
 echo "OK supervisor"
 

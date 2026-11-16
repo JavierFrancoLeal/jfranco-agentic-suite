@@ -1,173 +1,85 @@
-# OPERATIONS-MANUAL — the founder's backstage (2026-11-10)
+# OPERATIONS-MANUAL — Manuel des opérations, de la facturation et de la comptabilité (Trasunto inc.)
 
-*The client is the gym owner plugging the coffee machine into the
-wall; Trasunto is Hydro-Québec: the turbines, the transformers and the
-high-tension wiring stay behind the wall. The client never opens a DSH
-account, never opens Google Cloud, never installs an API, never sees a
-token.*
+> **Analogie de service public :** Le client branche ses opérations dans Fanal comme on branche un appareil dans le mur ; Trasunto agit comme Hydro-Québec : les sous-clés, l'arbitrage DeepSeek/Gemini, les plafonds de sécurité et la résilience restent derrière le mur. Le client n'ouvre jamais de compte développeur cloud, ne configure jamais d'API et ne paie jamais de compteur anxiogène au jeton ou au dossier.
 
-## The backstage in 4 steps
+---
 
-1. TWO master accounts, Trasunto only: the DeepSeek corporate account +
-   the Google Cloud project (the credits). One corporate card pays the
-   wholesale tokens.
-2. ONE sub-key per client with a HARD CAP ($5 USD/month — the real
-   consumption is $0.32-1.35): if the machine is stolen or a virus
-   uses the key, the universe's worst damage is $5 and the key dies
-   from the phone in 3 seconds.
-3. The encrypted injection at install: the key enters the local file,
-   AES-256-GCM via the OS keychain (safeStorage), the plaintext is
-   destroyed. The client never sees the key.
-4. The local electricity meter (billing_meter.json): the supervisor
-   counts the tokens (internal cost control) and the signed dossiers
-   with their exact edit percentage (the automatic symmetry credit).
+## 1. Architecture en arrière-plan (Hydro-Québec de l'IA)
 
-## What you charge and why (one Solo client, 10 dossiers/month)
+1. **Deux comptes maîtres corporatifs uniquement** : un compte corporatif **DeepSeek** et un projet **Google Cloud (Gemini)** détenus par Trasunto inc. et payés par une seule carte corporative.
+2. **Une sous-clé isolée par client avec plafond matériel strict (`5,00 $ USD/mois`)** : la consommation mensuelle réelle moyenne se situe entre `1,50 $` et `4,50 $ CAD` (`~1,07 $ à 3,21 $ USD`). En cas de vol d'ordinateur ou de compromission, la perte financière maximale théorique chez le fournisseur est bornée à `5 $ USD` et révocable en trois secondes.
+3. **Chiffrement au repos et Voile Loi 25** : chaque sous-clé est chiffrée via AES-256-GCM et le trousseau du système d'exploitation (`safeStorage`). Les noms, téléphones et courriels issus de la mémoire locale sont remplacés par des jetons neutres (`[PER_1]`, `[TEL_1]`, `[COURRIEL_1]`) avant tout appel externe. L'accès est protégé dès l'installation par la politique informatique stricte (`>= 12` caractères, 4 classes, unicité des identifiants insensible à la casse) et par le scellement de la **Constitution Fermée V2 (`FANAL-CONSTITUTION-V2`)** incluant le régime fiscal (`< 30 000 $ petit fournisseur` ou `TPS/TVQ`), la désignation obligatoire du RPRP Loi 25 et l'attestation cryptographique **Ed25519 (`FANAL-INSTALL-ATTEST-V1`)**.
+4. **Contrôle asynchrone des installations vers Fanal Studio (Zéro PC allumé 24/7)** :
+   - **Niveau 1 (Bêta, `0 $/mois`)** : le client exporte son attestation signée **zéro-PII** (`GET /api/installation/attestation`), vérifiée de manière asynchrone dans **Fanal Studio** (`/api/studio/verify-installation`) selon la chaîne **Logiciel (`Ed25519` + zéro PII) + IA (cohérence secteur/régime fiscal/plancher) + Humain (approbation du fondateur)**.
+   - **Niveau 2 (Échelle `15+` clients)** : dépôt asynchrone via boîte morte serverless chiffrée **X25519** sans serveur lourd ni machine personnelle laissée ouverte 24h/24.
+5. **Compteur local silencieux (`billing_meter.json`)** : Fanal mesure le volume technique de jetons (contrôle interne des marges Trasunto) et le taux d'édition humaine sur chaque dossier signé pour calculer la **Garantie de Symétrie Mensuelle**.
 
-Setup 350 $ (month 1 only) + retainer 165 $ + 10 dossiers × 16 $ − the
-symmetry credit (the dossier edited 22% gets 50% off = −8 $) →
-subtotal 317 $ + TPS 5% + TVQ 9.975% → the PAD bank debit takes
-1.50 $/charge (never the 2.9% credit-card fee). The clean monthly
-margin per client: ~313.60 $ (98.9%).
+---
 
-## Your own accounting (the 3-step routine, day 1 of every month)
+## 2. Analyse économique des jetons et décision tarifaire : Forfait tout inclus (350 $/mois) vs Facturation par dossier (165 $ + 16 $/dossier)
 
-1. One invoicing file: the script reads the 20 clients' meters,
-   applies TPS/TVQ, emails the PDF with the symmetry breakdown, fires
-   the PAD.
-2. The 2-account rule: the moment the money lands, the TPS/TVQ net +
-   an 18% income-tax provision moves to a separate fiscal savings
-   account. What remains in the operating account is 100% free.
-3. One CSV for the CPA at year end: exportLedgerDayToAccountingCsv
-   exports the 12 months of issued invoices and the expense receipts.
+### A. Calcul exact du coût en jetons par dossier signé
 
-With 20 Solo clients: ~7 390 $/month of revenue, ~6 597 $ of clean
-operating cash (89.3% margin). The invoice engine lives at
-/api/invoice (buildMonthlyClientInvoice) with the symmetry built in.
+Base vérifiée (`jfranco-deepseek-prices`, novembre 2026 ; taux de change conservateur **`1 $ USD = 1,40 $ CAD`**) :
+- **`DeepSeek-Flash`** (tarif par 1M jetons USD) : CacheHit `0,003 $` creux / `0,006 $` pointe · CacheMiss `0,15 $` creux / `0,30 $` pointe · Sortie `0,60 $` creux / `1,20 $` pointe.
+- **`DeepSeek-V4-Pro`** (tarif par 1M jetons USD) : CacheHit `0,022 $` creux / `0,044 $` pointe · CacheMiss `0,66 $` creux / `1,32 $` pointe · Sortie `1,98 $` creux / `3,96 $` pointe.
+- **Avantage horaire Québec (`UTC-5`)** : les heures ouvrables québécoises (`08h00–18h00 EST`, soit `13h00–23h00 UTC`) tombent à **100 % hors des fenêtres de pointe DeepSeek** (`01h00–04h00 UTC` et `06h00–10h00 UTC`), offrant automatiquement **50 % de rabais** sur les tarifs nuagiques.
 
-## The honorable exit (the last use — the trust argument)
+| Scénario de dossier signé | Profil de jetons consommés | Coût USD (heures QC / pointe) | Coût réel CAD (`× 1,40`) |
+| :--- | :--- | :--- | :--- |
+| **1. Dossier courant (Flash)** | `4k` cache + `8k` miss + `2k` sortie | `0,00241 $` (creux) · `0,00482 $` (pointe) | **`0,0034 $` – `0,0068 $ CAD`** |
+| **2. Dossier complexe Juridique/CPA (2× Flash + 1× V4-Pro)** | `13k` cache + `40k` miss + `8k` sortie | `0,02665 $` (creux) · `0,05331 $` (pointe) | **`0,0373 $` – `0,0746 $ CAD`** |
+| **3. Dossier multimodal lourd (OCR Gemini + V4-Pro)** | `30k` in / `3k` out Gemini + `V4-Pro` | `0,05896 $` (pire cas pointe) | **`0,0825 $ CAD`** |
 
-The uninstall offers ONE button: [Export my entire sovereign archive
-to the Desktop] (the daily PDFs, the Acomba/QuickBooks CSVs, the
-ledger.jsonl in plain readable text) — then destroys the temporary
-vault, stamps the last Loi 25 purge proof, deletes the API sub-key
-from the keychain, and removes the executable with no ghost processes.
-Saying on Day 1 "if you leave, you take 100% of your data in one
-click" kills the lock-in fear forever.
+### B. Faut-il facturer à la pièce (`165 $ + 16 $/dossier`) ou inclure les dossiers dans le forfait `350 $/mois` ? Faut-il augmenter au-dessus de `350 $` ?
 
-## The Founder Mode, the Prestige scale and the right drawer (2026-11-11)
+| Volume mensuel | Ancien modèle (`165 $ + 16 $/dossier`) | Forfait Solo Tout Inclus (`350 $`) | Coût API + PAD bancaire (`1,50 $`) | Marge nette sur coûts variables |
+| :--- | :--- | :--- | :--- | :--- |
+| `5` dossiers/mois | `245,00 $` | `350,00 $` | `2,33 $` | **`347,67 $ (99,34 %)`** |
+| `10` dossiers/mois | `325,00 $` | `350,00 $` | `2,45 $` | **`347,55 $ (99,30 %)`** |
+| `12` dossiers/mois | `357,00 $` | `350,00 $` | `2,50 $` | **`347,50 $ (99,29 %)`** |
+| `15` dossiers/mois | `405,00 $` | `350,00 $` | `2,58 $` | **`347,42 $ (99,26 %)`** |
+| `25` dossiers/mois | `565,00 $` | `350,00 $` | `2,83 $` | **`347,17 $ (99,19 %)`** |
+| `40` dossiers/mois *(exemple à fort volume)* | `805,00 $` | `350,00 $` | `3,21 $` | **`346,79 $ (99,08 %)`** |
 
-1. The founder uses the SAME executable; the master key unlocks the
-   fourth hidden view (Cmd+Shift+M): the fleet (one 44px row per
-   client with the health light), the machine room (the sub-keys with
-   the $5 hard caps), the master invoicer (the PAD + the TPS/TVQ) and
-   the apices laboratory. The endpoints exist; the console UI is the
-   beta-period build.
-2. The Prestige scale (the price-quality bias — CONFIRMED with the
-   honest counsel): $500 setup + $295/month Solo, $950 + $490/month
-   Équipe as the PUBLIC list. The BETA recommends the founding tier
-   ($249 Solo / $420 Équipe, announced from day 1 as "founding price,
-   rises to the public list at the launch") — the anchor creates the
-   perception, the discount protects the beta. The 6-month beta with
-   2 clients/month = 14 founding clients, ~$31.5K invoiced, ~$6.9K
-   MRR at the exit.
-3. The car/driver: Google/Microsoft is the car (the folders sync, the
-   docs, the email — their responsibility); Fanal is the driver (the
-   governance, the semaphore, the dossiers). Never build a word
-   processor or a mail server.
-4. The right drawer (BUILT in main.js): the WebContentsView with the
-   persistent encrypted partition (the Google/Microsoft session lives
-   in the OS keychain — Trasunto never touches the password), the
-   automatic 380→1040px expansion, the PDF page jump, the image zoom
-   viewer, the CSV/text renderer — the Claude Cowork pattern.
+**Décision stratégique et mathématique tranchée (Buffet Fixe Pur) :**
+1. **NON à la facturation à l'acte et NON à tout plafond artificiel de « 40 dossiers »** : le seuil d'équivalence arithmétique se situe à **`11,56 dossiers/mois`**, mais imposer une surtaxe ou un quota couperet crée une *« anxiété du compteur »* qui freine l'adoption quotidienne. Avec le modèle **Buffet Fixe Pur (`PURE_FIXED_BUFFET_MONTHLY`)**, tous les dossiers du dirigeant sont inclus sans décompte commercial.
+2. **Protection économique par mutualisation et garde-fous techniques** : même à très fort volume mensuel, le forfait Solo à `350 $/mois` (`490 $/mois` pour Équipe) conserve une marge sur coûts variables supérieure à **`98,8 %`** grâce à la mutualisation de cohorte (`p50` observé entre `1,50 $` et `4,00 $ CAD/mois`), au routage *DeepSeek-Flash* prioritaire et au plafond technique de `5,00 $ USD/mois` sur chaque sous-clé BYOK. Les données de télémétrie agrégées (`usage-telemetry.js`, `p50`/`p90` par modèle, tâche et acteur pseudonymisé) servent à calibrer objectivement la grille post-Bêta sans pénaliser les clients actifs.
+3. **Comment garder la « peau dans le jeu » sans péage unitaire ?** Par la **Garantie de Symétrie Mensuelle** intégrée dans [`buildMonthlyClientInvoice`](../supervisor/server.js) : lorsque le client signe au moins 3 dossiers dans le mois, si l'écart moyen de correction humaine dépasse **`25 %`**, un crédit automatique de **`50 %`** s'applique sur la mensualité ; au-delà de **`35 %`**, la mensualité passe à **`0 $` (crédit de `100 %`)**.
 
-## The inverted modes, the blind support and the two-lane updater (2026-11-11)
+---
 
-1. Fanal INVERTS the AI apps: the Execution/Dossier mode is the
-   permanent front stage (90% — the work arrives as decision cards,
-   the human decides and signs), the conversational drawer is the
-   secondary 10% (the ? key): three chambers — A the local help base
-   (0 tokens, 0 ms), B the "ask this file" (the veil on), C the
-   general assistant (the same ladder). The chat NEVER touches the
-   ledger: it explains and offers [↗ send to the Execution mode to
-   validate with the semaphore] — the Execution mode is the only door
-   that signs.
-2. The blind diagnostic capsule (BUILT): /api/support/ticket — the
-   user's report, the failing document's skeleton and the last 15 log
-   lines ALL pass through the veil 2.1 BEFORE leaving the machine; the
-   founder receives the radiography, never the biography. Never
-   Sentry/Datadog/LogRocket (the third-party telemetry would leak the
-   forms' text to US servers).
-3. The two-lane updater: Lane 1 the signed hot-patch (50 KB, Ed25519
-   verified — BUILT as /api/update/hotpatch-verify; the beta's current
-   mechanism is the sync, the signed patch formalizes it); Lane 2 the
-   binary electron-updater with .blockmap differential, autoInstallOnAppQuit
-   (never a mid-day forced restart during a signature ceremony) —
-   active AFTER the signing: $119 CAD/year Apple Developer ID +
-   ~$156 CAD/year Azure Trusted Signing (~$275 total).
+## 3. Grille tarifaire officielle et processus de facturation mensuelle
 
-## The vault freeze (2026-11-11, adopted)
+| Forfait | Cible structurelle | Implantation (Mois 1) | Mensualité HT | Mensualité TTC Québec (TPS 5 % + TVQ 9,975 %) |
+| :--- | :--- | :--- | :--- | :--- |
+| **Fanal Solo** | Travailleur autonome / métier reconnu Québec (`1 personne`, buffet illimité `0 $/dossier`) | `500,00 $` *(Bêta fondateurs : `350,00 $`)* | **`350,00 $`** | **`402,41 $`** |
+| **Fanal Équipe** | Microentreprise (2–5) ou PME / Cellule (6–35 personnes, volume d'équipe inclus) | `950,00 $` *(Bêta fondateurs : `750,00 $`)* | **`490,00 $`** | **`563,38 $`** |
+| **Hub Fiduciaire `.fanal`** | Réseau multi-dossiers haute conformité / cabinets comptables & juridiques | `1 200,00 $` | **`650,00 $`** | **`747,34 $`** |
 
-The 1Password/Signal pattern, never the bank's reload: 5 minutes of
-idle (or the lid closed, or the OS lock, or the Cmd+Shift+L panic
-shortcut) → the two monitors hide in ~2 ms, the master key is
-ZEROIZED in RAM (fill(0)), the curtain overlays the DOM WITHOUT
-reloading (the work stays intact) — the unlock via Touch ID / Windows
-Hello or the scrypt master password (N=65536, r=8, p=1, the 64 MB
-per-attempt cost) restores the exact same page and field in 0.4 s.
-The setContentProtection(true) blocks the OS thumbnails (Mission
-Control / Alt+Tab) from photographing the windows. The biometric
-unlock reaches its full form after the Apple signing; the scrypt path
-works today. The curtain is a top-level layer: ZERO changes to the
-existing screens.
+### Routine mensuelle de facturation (le 1er de chaque mois)
 
-## The unlock guard (2026-11-11, adopted)
+1. **Lecture des compteurs et calcul des taxes** : appel à `/api/invoice` (`buildMonthlyClientInvoice`) générant la ventilation par client (mensualité de base, nombre de dossiers inclus à `0 $/dossier`, écart moyen d'édition, crédit de symétrie éventuel, sous-total HT, **TPS 5 %**, **TVQ 9,975 %**, total TTC).
+2. **Encaissement par Prélèvement Préautorisé (PAD / TEF bancaire)** : frais fixes de **`1,50 $` par transaction** (contre `~11,97 $` à `16,64 $` sur carte de crédit à `2,9 % + 0,30 $`).
+3. **Émission du PDF justificatif** : envoi automatisé au dirigeant et classement dans le grand livre.
 
-The exponential persistent guard: the failed-attempts counter and the
-lockedUntil timestamp live in DISK (vault_guard_state.json) sealed
-with an HMAC bound to the machine — restarting the app does NOT reset
-the penalty, and a tampered file triggers a preventive 15-minute
-cooldown. The cooldown check runs in 0.01 ms BEFORE the scrypt (no CPU
-exhaustion during the penalty). Attempts 1-2 = 0 seconds (the owner's
-typo tolerance); from attempt 3: 30s, 60s, 120s... capped at 3,600 s.
-Every attempt ≥3 is recorded in registre_incidents_loi25.jsonl with
-the CAI's 7 fields — the typed password is NEVER logged (only the
-method and the length). The biometric failures follow the same ramp.
-No file self-destruction ever (the owner's child pressing Enter 15
-times must not kill the business's books).
+---
 
-## The UI beta decision (2026-11-11, my suggestions for the director)
+## 4. Gestion de l'entreprise et comptabilité québécoise (Règle des 2 comptes)
 
-The master prototype (tools/fanal-ui-master-prototype.html) is the
-BETA REFERENCE — the 6 lifecycle stages in one file with the founder's
-simulation bar. MY suggestions, with the reasons:
+Trasunto inc. applique la discipline stricte des **deux comptes bancaires séparés** dès l'encaissement du moindre dollar :
 
-ACCEPT AS-IS: the 6-stage flow (the 4-hands install → the lighthouse
-→ the identity mirror → the Professor → the signature+the symmetry →
-the sovereign exit); the 380→1060px drawer with the HUD; the FNL
-diagnostic banner; the symmetry slider.
+1. **Compte A — Fiducie fiscale et réserves obligatoires** : dès qu'un paiement client TTC est encaissé (ex. `402,41 $` Solo), le virement automatique isole immédiatement :
+   - La **TPS perçue (`17,50 $`)** et la **TVQ perçue (`34,91 $`)**, diminuées des intrants (CTI/RTI) admissibles ;
+   - Une **provision pour impôt des sociétés PME (`~18 %` prudent du bénéfice estimé, couvrant largement le taux réel combiné Québec/Fédéral de `~12,2 %` grâce à la Déduction pour petite entreprise)** ;
+   - Aucune dépense opérationnelle ne puise jamais dans le Compte A.
+2. **Compte B — Exploitation courante et croissance** : reçoit les sommes nettes d'impôts et taxes (`~82 %` du bénéfice opérationnel + couverture des charges fixes). Permet à tout instant de connaître la trésorerie réellement disponible sans mauvaise surprise lors de la remise trimestrielle/annuelle à **Revenu Québec** et à l'**ARC**.
+3. **Clôture annuelle CPA en un fichier (`exportAccountingCsv`)** : exportation annuelle du journal normalisé compatible **Acomba / QuickBooks**, incluant le registre complet des factures émises, des prélèvements PAD, des crédits de symétrie accordés et des factures fournisseurs d'API.
 
-MODIFY (my honest corrections):
-1. The simulation bar stays ONLY in the demo/prototype — the
-   production console is the Cmd+Shift+M view (the founder's tools
-   never ship to the client).
-2. The demo password shortcut ("Fanal2026!" or length>=8) MUST NOT
-   ship — the production path is the real scrypt verifier already in
-   main.js. The prototype's shortcut exists only to demo the
-   exponential cooldown.
-3. The production UI is the EXISTING dashboard (v1.0.176) with the
-   already-integrated pieces (the HUD, the curtain, the entropy meter,
-   the vault lock); the prototype is the SPEC + the sales demo, not a
-   second app — one codebase, never two.
+---
 
-SIMPLIFY (the beta rule): no decorative graphs, no empty menus — every
-pixel shows either real work done by the agents or a button to a
-signature. The i18n: the prototype speaks Spanish; the production
-carries the 10 locales of the house.
+## 5. Sécurité, confidentialité et Sortie Honorable (Loi 25)
 
-## The founder as the first client (2026-11-11)
-Trasunto manages Fanal WITH Fanal: the founder is client #1. The
-fresh-boot reset: quit Fanal, rename ~/.dsh/supervisor-data (the app's
-silo) — the virgin wizard appears on the next launch (the language
-card → the 8 steps). The founder's constitution lives in
-docs/FONDATEUR-CONSTITUTION.md (the exact texts for each wizard step).
+- **Protection d'écran et Coffre** : sur macOS et Windows, `setContentProtection(true)` empêche la capture des fenêtres sensibles ; toute inactivité ou fermeture d'écran purge la clé AES-256-GCM de la RAM et fige l'interface derrière l'écran de déverrouillage `scrypt` / biométrique. Un registre d'incidents (`registre_incidents_loi25.jsonl`) trace toute tentative d'accès répétée (à partir du 3e échec avec délai exponentiel jusqu'à `3 600 s`) sans jamais consigner le mot de passe saisi.
+- **Support aveugle sans exposition de données** : les exports techniques (`.md` / `.json`) transmis vers **Fanal Studio** subissent un caviardage déterministe retirant noms propres, chemins locaux, courriels, téléphones et clés API.
+- **Sortie Honorable en un clic** : la désinstallation génère une archive complète lisible sur le Bureau (rapports PDF, journaux CSV comptables, `ledger.jsonl` en clair), révoque instantanément la sous-clé API corporative, purge le coffre et consigne le certificat final de destruction conforme Loi 25. Aucun verrouillage propriétaire (*zero lock-in*).

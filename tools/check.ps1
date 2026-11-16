@@ -36,14 +36,26 @@ $html2 = Get-Content "supervisor\dashboard.html" -Raw
 $m2 = [regex]::Match($html2, "(?s)<script>(.*?)</script>")
 Set-Content -Path "$env:TEMP\dsh-dash.js" -Value $m2.Groups[1].Value -Encoding UTF8
 & $node --check "$env:TEMP\dsh-dash.js" | Out-Null
+& $node --check "supervisor\edition.js"
+if ($LASTEXITCODE -ne 0) { throw "edition.js check failed" }
+& $node --check "supervisor\quebec-profiles.js"
+if ($LASTEXITCODE -ne 0) { throw "quebec-profiles.js check failed" }
+& $node --check "supervisor\setup-validator.js"
+if ($LASTEXITCODE -ne 0) { throw "setup-validator.js check failed" }
+& $node --check "supervisor\usage-telemetry.js"
+if ($LASTEXITCODE -ne 0) { throw "usage-telemetry.js check failed" }
 & $node "tools\smoke-dashboard.js"
 if ($LASTEXITCODE -ne 0) { throw "smoke-dashboard failed" }
+& $node "tools\audit-contrast.mjs"
+if ($LASTEXITCODE -ne 0) { throw "audit-contrast failed" }
 & $node "tools\test-diagnostic-export.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-diagnostic-export failed" }
 & $node "tools\test-closed-brain.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-closed-brain failed" }
 & $node "tools\test-api-closed-brain.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-api-closed-brain failed" }
+& $node "tools\test-editions.mjs"
+if ($LASTEXITCODE -ne 0) { throw "test-editions failed" }
 & $node "tools\test-intake-pipeline.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-intake-pipeline failed" }
 Write-Host "OK supervisor"

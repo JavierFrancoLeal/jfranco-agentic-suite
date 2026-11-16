@@ -83,7 +83,7 @@ def m1(out):
     doc=new_doc(img)
     para(doc,"ENTRE : Trasunto, Charlevoix (Québec), ci-après « Trasunto » ; ET : [Nom de l'entreprise], [ville], ci-après « le Client ».",space_after=6)
     title(doc,"Objet et durée",space_before=2)
-    para(doc,"Pilote de 6 mois — implantation de Fanal (flux de travail agentique + caisse virtuelle + contre-registre), à tarif opérationnel (couvre uniquement les frais, sans marge) : 349 $/mois.")
+    para(doc,"Pilote de 6 mois — implantation de Fanal (Cerveau Dual Fermé + Voile PII + caisse virtuelle), au tarif Bêta Fondateurs tout inclus : Fanal Solo 350 $/mois (implantation 350 $) ou Fanal Équipe 490 $/mois (implantation 750 $), 0 $/dossier.")
     title(doc,"Inclus")
     bullet(doc,"Implantation clé en main : ","diagnostic, installation, personnalisation, formation du personnel.")
     bullet(doc,"Accompagnement continu : ","support, itérations et ajustements pendant les 6 mois.")
@@ -113,8 +113,8 @@ def m2(out):
         ("1","Diagnostic de préparation à l'IA","Gratuit (inclus)"),
         ("2","Implantation et automatisation — par problème à résoudre","1 500 $ – 4 000 $ (forfait après estimation)"),
         ("3","Intégration d'outils existants et formation","750 $/journée (ou inclus au forfait)"),
-        ("4a","Accompagnement continu — Essentiel : 1 site, jusqu'à 10 travailleurs, caisse + rapports + support courriel","249 $/mois"),
-        ("4b","Accompagnement continu — Pro : double cerveau, rapports avancés, support prioritaire, révision mensuelle","449 $/mois"),
+        ("4a","Accompagnement continu — Fanal Solo (Buffet Fixe Pur) : 1 personne, dossiers illimités à 0 $/dossier, caisse + rapports + support","350 $/mois"),
+        ("4b","Accompagnement continu — Fanal Équipe : 2 à 35 postes, Cerveau Dual Fermé, Wallboard SME, support prioritaire","490 $/mois"),
         ("4c","Accompagnement continu — Sur mesure (multi-sites, kiosque, matériel)","Sur devis"),
         ("5","Ateliers, conférences et formations","750 $/demi-journée · 1 200 $/journée"),
     ]

@@ -46,6 +46,13 @@ function brainPath(...parts) {
     : path.join(__dirname, "brain", ...parts);
   return fs.existsSync(unpacked) ? unpacked : path.join(__dirname, "brain", ...parts);
 }
+const { resolveEdition } = require(brainPath("edition.js"));
+const EDITION = resolveEdition({ cliArgs: process.argv.slice(2), env: process.env, appDir: __dirname });
+const EDITION_ICON = (() => {
+  const studioIco = path.join(__dirname, "assets", "icon-studio.png");
+  if (EDITION.id === "studio" && fs.existsSync(studioIco)) return studioIco;
+  return path.join(__dirname, "assets", "icon.png");
+})();
 let rightDrawerView = null;
 let activeMasterKeyBuf = null;
 let isVaultLocked = false;
@@ -209,7 +216,10 @@ function registerVaultIpcHandlers() {
     const { buildSanitizedDiagnosticReport } = require(brainPath("diagnostic-sanitizer.js"));
     const startupLogs = [];
     const seenLogFiles = new Set();
-    for (const logPath of [path.join(os.homedir(), ".dsh", "fanal-startup.log"), path.join(DATA_DIR, "fanal-startup.log")]) {
+    const logCandidates = EDITION.id === "studio"
+      ? [path.join(DATA_DIR, "fanal-startup.log")]
+      : [path.join(os.homedir(), ".dsh", "fanal-startup.log"), path.join(DATA_DIR, "fanal-startup.log")];
+    for (const logPath of logCandidates) {
       const resolvedLog = path.resolve(logPath);
       if (seenLogFiles.has(resolvedLog)) continue;
       seenLogFiles.add(resolvedLog);
@@ -348,7 +358,7 @@ const MONITOR1_EXPANDED_W = 1080;
 function ensureDualSynchronizedViews() {
   try {
     if (!agentPortalView || !agentPortalView.webContents || agentPortalView.webContents.isDestroyed()) {
-      agentPortalView = new WebContentsView({ webPreferences: { partition: "persist:fanal-client-workspace", contextIsolation: true, nodeIntegration: false, sandbox: true } });
+      agentPortalView = new WebContentsView({ webPreferences: { partition: EDITION.electronPartition, contextIsolation: true, nodeIntegration: false, sandbox: true } });
       agentPortalView.webContents.on("will-navigate", (ev, navUrl) => { if (!isAllowedExternalUrl(navUrl)) ev.preventDefault(); });
       agentPortalView.webContents.on("will-redirect", (ev, navUrl) => { if (!isAllowedExternalUrl(navUrl)) ev.preventDefault(); });
       agentPortalView.webContents.setWindowOpenHandler(({ url }) => {
@@ -526,7 +536,7 @@ function ensureRightDrawerView() {
   }
   rightDrawerView = new WebContentsView({
     webPreferences: {
-      partition: "persist:fanal-client-workspace",
+      partition: EDITION.electronPartition,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
@@ -621,14 +631,14 @@ function setupCoworkRightDrawer() {
 }
 const DATA_DIR = process.env.DSH_SUPERVISOR_DATA
   ? path.resolve(process.env.DSH_SUPERVISOR_DATA)
-  : path.join(os.homedir(), ".dsh", "supervisor-data");
+  : EDITION.defaultDesktopDataDir;
 const USERS_FILE = path.join(DATA_DIR, "supervisor-users.json");
 const DB_FILE = path.join(DATA_DIR, "supervisor.db");
 const bundledDsh = () => { const c = path.join(process.resourcesPath, "runtime", "cli", "bin", "dsh"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
 const bundledNode = () => { const c = path.join(process.resourcesPath, "runtime", "primary-runtime", "dependencies", "node", "bin", "node"); try { return fs.existsSync(c) ? c : null; } catch { return null; } };
 function firstRun() { try { return !fs.existsSync(USERS_FILE) && !fs.existsSync(DB_FILE); } catch { return true; } }
 
-const TARGET_INFO = parseAllowedTargetOrigin(process.env.LE_VEILLEUX_URL);
+const TARGET_INFO = parseAllowedTargetOrigin(process.env.LE_VEILLEUX_URL, EDITION.targetUrl);
 const TARGET_URL = TARGET_INFO.url;
 const TARGET_ORIGIN = TARGET_INFO.origin;
 const KIOSK = process.argv.includes("--kiosk");
@@ -719,6 +729,7 @@ async function ensureBrain() {
   const cleanEnv = {
     ...process.env,
     ELECTRON_RUN_AS_NODE: "1",
+    FANAL_EDITION: EDITION.id,
     DSH_SUPERVISOR_DATA: DATA_DIR,
     DSH_SUPERVISOR_PORT: String(TARGET.port),
     DSH_SECTOR_PACKS_DIR: packs,
@@ -770,11 +781,23 @@ function errorPage() {
 }
 
 // El registro de arranque (el regalo forense): cualquier error del proceso principal
-// queda escrito en ~/.dsh/fanal-startup.log — jamás un silencio sin diagnóstico.
+// queda escrito en fanal-startup.log dentro del silo de esta edición — jamás un silencio sin diagnóstico.
+function appendStartupLog(msg) {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
+    fs.appendFileSync(path.join(DATA_DIR, "fanal-startup.log"), new Date().toISOString() + " " + msg + "\n");
+  } catch (_) {}
+}
 try {
-  process.on("uncaughtException", (e) => { try { require("node:fs").appendFileSync(require("node:path").join(require("node:os").homedir(), ".dsh", "fanal-startup.log"), new Date().toISOString() + " UNCAUGHT: " + String(e && e.stack || e) + "\n"); } catch (_) {} });
-  process.on("unhandledRejection", (e) => { try { require("node:fs").appendFileSync(require("node:path").join(require("node:os").homedir(), ".dsh", "fanal-startup.log"), new Date().toISOString() + " REJECTION: " + String(e && e.stack || e) + "\n"); } catch (_) {} });
+  process.on("uncaughtException", (e) => appendStartupLog("UNCAUGHT: " + String(e && e.stack || e)));
+  process.on("unhandledRejection", (e) => appendStartupLog("REJECTION: " + String(e && e.stack || e)));
 } catch (e) {}
+try {
+  if (typeof app.setName === "function") app.setName(EDITION.productName);
+  if (typeof app.setPath === "function" && typeof app.getPath === "function") {
+    app.setPath("userData", path.join(app.getPath("appData"), EDITION.electronUserDataName));
+  }
+} catch {}
 let shuttingDown = false;
 app.on("before-quit", () => {
   shuttingDown = true;
@@ -805,11 +828,12 @@ if (!app.requestSingleInstanceLock()) {
       show: !SMOKE,
       kiosk: KIOSK,
       frame: !KIOSK,
-      title: "Fanal",
-      backgroundColor: "#4D6BFE",
+      title: EDITION.windowTitle,
+      backgroundColor: EDITION.id === "studio" ? "#1e1b4b" : "#4D6BFE",
       transparent: false,
-      icon: path.join(__dirname, "assets", "icon.png"),
+      icon: EDITION_ICON,
       webPreferences: {
+        partition: EDITION.electronPartition,
         contextIsolation: true,
         nodeIntegration: false,
         sandbox: true,
@@ -885,10 +909,21 @@ if (!app.requestSingleInstanceLock()) {
   ipcMain.on("leveilleux-setup", async (ev, p) => {
     if (!isTrustedIpcEvent(ev) || !firstRun() || legacySetupStarted || !p || typeof p !== "object") return;
     legacySetupStarted = true;
+    const sv = require(brainPath("setup-validator.js"));
+    const qp = require(brainPath("quebec-profiles.js"));
+    const val = sv.validateSetupPayload(p, {}, {
+      soloProfessionKeys: Object.keys(qp.QUEBEC_APICES_REGISTRY || {}),
+      sectorIds: (qp.QUEBEC_ECONOMIC_SECTORS || []).map((s) => s.id),
+    });
+    if (!val.valid) {
+      legacySetupStarted = false;
+      return;
+    }
+    const n = val.normalized;
     const serverJs = brainPath("server.js");
     const packs = brainPath("sector-packs");
     const runInit = () => new Promise((res) => {
-      const c = spawn(process.execPath, [serverJs, "init", "--owner", String(p.user || "Owner"), "--password", String(p.password || "password123"), "--owner-label", String(p.user || "Owner")], {
+      const c = spawn(process.execPath, [serverJs, "init", "--owner", n.user, "--password", n.password, "--owner-label", n.user], {
         env: { ...process.env, ELECTRON_RUN_AS_NODE: "1", DSH_SUPERVISOR_DATA: DATA_DIR, DSH_SECTOR_PACKS_DIR: packs }, stdio: "ignore",
       });
       c.on("exit", (code) => res(code));
@@ -898,12 +933,23 @@ if (!app.requestSingleInstanceLock()) {
       if (firstRun()) legacySetupStarted = false;
       return;
     }
-    if (p.sector && isValidSectorId(String(p.sector))) {
-      const safePack = resolveSandboxedFile(packs, String(p.sector) + ".json", { basenameOnly: true, requireExisting: true });
+    const defaults = qp.resolveProfessionSetupDefaults({
+      scaleType: n.scaleType,
+      professionKey: n.scaleType === "AUTONOMOUS_SOLO" ? (n.professionKey || "AUTRE_AUTONOME") : n.professionKey,
+      sectorId: n.sector || "",
+    });
+    const secId = (defaults.sectorId && isValidSectorId(String(defaults.sectorId))) ? String(defaults.sectorId) : "";
+    if (secId) {
+      const safePack = resolveSandboxedFile(packs, secId + ".json", { basenameOnly: true, requireExisting: true });
       if (safePack.ok) {
         try { fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 }); fs.copyFileSync(safePack.resolvedPath, path.join(DATA_DIR, "sector.json")); } catch {}
       }
     }
+    try {
+      const conDoc = sv.buildClosedConstitutionDocument(n, defaults, {});
+      fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o700 });
+      fs.writeFileSync(path.join(DATA_DIR, "constitution.json"), JSON.stringify(conDoc), { mode: 0o600 });
+    } catch {}
     // The brain contract (Layer 0 + Layer 1 of the distribution).
     try {
       const dshDir = path.join(os.homedir(), ".dsh");
@@ -930,7 +976,7 @@ if (!app.requestSingleInstanceLock()) {
         if (fs.existsSync(standby)) {
           try {
             spawn("sh", [standby], {
-              env: { ...process.env, DEEPSEEK_API_KEY: String(p.key), DSH_SUPERVISOR_URL: "http://127.0.0.1:8787", DSH_BIN: dsh, PATH: process.env.PATH },
+              env: { ...process.env, DEEPSEEK_API_KEY: String(p.key), DSH_SUPERVISOR_URL: TARGET_ORIGIN, DSH_BIN: dsh, PATH: process.env.PATH },
               stdio: "ignore", detached: true,
             }).unref();
           } catch {}
@@ -992,11 +1038,11 @@ if (!app.requestSingleInstanceLock()) {
         trayLang = TRAY_I18N[sysLoc] ? sysLoc : "fr";
       }
       const tl = TRAY_I18N[trayLang];
-      const icon = nativeImage.createFromPath(path.join(__dirname, "assets", "icon.png"));
+      const icon = nativeImage.createFromPath(EDITION_ICON);
       tray = new Tray(icon.resize({ width: 18, height: 18 }));
-      tray.setToolTip(tl.tip);
+      tray.setToolTip(EDITION.id === "studio" ? tl.tip.replace("Fanal", "Fanal Studio") : tl.tip);
       tray.setContextMenu(Menu.buildFromTemplate([
-        { label: tl.open, click: () => showOrCreateMainWindow() },
+        { label: EDITION.id === "studio" ? tl.open.replace("Fanal", "Fanal Studio") : tl.open, click: () => showOrCreateMainWindow() },
         { type: "separator" },
         { label: tl.quit, click: () => { shuttingDown = true; app.quit(); } },
       ]));

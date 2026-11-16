@@ -3,44 +3,70 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fanal — Bienvenue</title>
+<title>Fanal</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#4D6BFE,#7c5cff 55%,#a78bfa);min-height:100vh;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
+body{margin:0;font-family:-apple-system,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#354ed6,#573bd4 55%,#6842cc);min-height:100vh;color:#fff;display:flex;align-items:center;justify-content:center;padding:24px}
 .step{max-width:460px;width:100%;text-align:center;animation:rise .5s ease}
 @keyframes rise{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
-.langbox{width:min(460px,90vw);height:80px;margin:44px auto 0;background:rgba(255,255,255,.10);border:1px solid rgba(255,255,255,.30);border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:background .2s;box-shadow:0 10px 30px rgba(15,23,42,.15)}
-.langbox:hover{background:rgba(255,255,255,.18)}
+.langbox{width:min(460px,90vw);height:80px;margin:44px auto 0;background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.38);border-radius:10px;overflow:hidden;cursor:pointer;position:relative;transition:background .2s;box-shadow:0 10px 30px rgba(15,23,42,.15)}
+.langbox:hover{background:rgba(15,23,42,.52)}
 .ticks{display:flex;flex-direction:column;will-change:transform}
-.tick{height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;opacity:.85}
-.overlay{position:fixed;inset:0;background:linear-gradient(160deg,#4D6BFE,#7c5cff 60%,#a78bfa);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:60;animation:rise .28s ease}
+.tick{height:80px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#fff;opacity:.96}
+.overlay{position:fixed;inset:0;background:linear-gradient(160deg,#354ed6,#573bd4 60%,#6842cc);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:60;animation:rise .28s ease}
 .overlay .top{position:absolute;top:22px;right:26px}
-.overlay .close{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;width:44px;height:44px;font-size:18px;cursor:pointer}
+.overlay .close{background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.38);color:#fff;border-radius:999px;width:44px;height:44px;font-size:18px;cursor:pointer}
 .orow{width:min(520px,92vw);display:flex;justify-content:space-between;align-items:center;padding:15px 22px;border-radius:14px;font-size:19px;color:#fff;cursor:pointer;transition:background .15s,transform .1s}
-.orow:hover{background:rgba(255,255,255,.12)}
+.orow:hover{background:rgba(15,23,42,.3)}
 .orow:active{transform:scale(.98)}
-.orow .sub{font-size:13px;opacity:.7}
-.orow.center{background:rgba(255,255,255,.30);font-size:23px;font-weight:800;border:1px solid rgba(255,255,255,.45)}
-.orow.center .sub{opacity:.9}
+.orow .sub{font-size:13px;opacity:.92}
+.orow *{pointer-events:none}
+.orow.center{background:rgba(15,23,42,.48);font-size:23px;font-weight:800;border:1px solid rgba(255,255,255,.48)}
+.orow.center .sub{opacity:1}
 svg .stroke{stroke-dasharray:100;stroke-dashoffset:100;animation:draw 1.6s cubic-bezier(.4,0,.2,1) forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
-.card{background:rgba(255,255,255,.95);border-radius:24px;box-shadow:0 30px 70px rgba(15,23,42,.35);max-width:440px;width:100%;padding:34px 30px;text-align:center;color:#101828;animation:rise .5s ease}
+.welcome-medallion{width:144px;height:144px;border-radius:36px;margin:0 auto;background:linear-gradient(155deg,#ffffff 0%,#f3f6ff 100%);border:2px solid #ffffff;box-shadow:0 24px 56px rgba(15,23,42,.30),0 0 0 10px rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center}
+.welcome-medallion svg{width:122px;height:122px;display:block}
+.fanal-tip{position:fixed;left:0;top:0;z-index:1000010;pointer-events:none;max-width:240px;padding:7px 11px;border-radius:10px;background:rgba(16,24,40,.94);color:#f8fafc;border:1px solid rgba(167,139,250,.45);box-shadow:0 12px 28px rgba(15,23,42,.30);font-size:12px;font-weight:500;line-height:1.38;text-align:left;opacity:0;transform:translateY(3px);transition:opacity .14s ease,transform .14s ease}
+.fanal-tip.show{opacity:1;transform:translateY(0)}
+@media (hover: none), (pointer: coarse){#fanalTooltip{display:none!important}}
+.card{background:rgba(255,255,255,.97);border-radius:24px;box-shadow:0 30px 70px rgba(15,23,42,.35);max-width:540px;width:100%;padding:28px 24px;text-align:center;color:#101828;animation:rise .5s ease}
 .card h1{font-size:22px;margin:0 0 4px}
-.card .tag{color:#667085;font-size:13px;margin:0 0 18px}
-input,select{width:100%;border:1px solid #e3e6ee;border-radius:12px;padding:12px 14px;font-size:15px;margin-bottom:10px;font-family:inherit}
-input:focus,select:focus{outline:none;border-color:#4D6BFE;box-shadow:0 0 0 3px rgba(77,107,254,.18)}
-button{width:100%;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#4D6BFE,#7c5cff);cursor:pointer;transition:transform .12s}
+.card .tag{color:#475467;font-size:13px;margin:0 0 18px}
+.wlbl{display:block;text-align:left;font-size:12px;font-weight:700;color:#101828;margin:4px 0}
+.wgate{background:#f8fafc;border:1px solid #cbd5e1;border-radius:14px;padding:10px 12px;margin-bottom:12px;text-align:left}
+.wgate-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px}
+.wgate-prog{padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#fef9c3;color:#854d0e}
+.wgate-prog.all-ok{background:#dcfce7;color:#166534}
+.wgate-list,.wpw-list{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:4px}
+.wgate-item{display:flex;align-items:center;gap:7px;font-size:12px;color:#1e293b}
+.wgate-tag{margin-left:auto;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px}
+.wgate-tag.ok{background:#dcfce7;color:#166534}
+.wgate-tag.req{background:#fef9c3;color:#854d0e}
+.wgate-tag.opt{background:#e2e8f0;color:#334155}
+.wbox{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;margin-bottom:10px;text-align:left}
+.wgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:500px){.wgrid{grid-template-columns:1fr}}
+.wtog{background:#eef2ff;color:#1e3a8a;border:1px solid #c7d2fe;font-size:12px;padding:8px 10px;margin:2px 0 6px}
+.wpw-list{background:#f8fafc;border:1px solid #cbd5e1;border-radius:12px;padding:8px 10px;margin-bottom:8px;text-align:left}
+.wpw-list.hidden,.wcons-hide{display:none}
+.wpw-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:#334155}
+.wpw-item.met{color:#166534;font-weight:700}
+.werr{font-size:12px;font-weight:600;color:#b91c1c;margin:2px 0 8px;text-align:left}
+input,select{width:100%;border:1px solid #cbd5e1;border-radius:12px;padding:12px 14px;font-size:15px;margin-bottom:10px;font-family:inherit;background:#fff;color:#101828}
+input:focus,select:focus{outline:none;border-color:#3b56e6;box-shadow:0 0 0 3px rgba(59,86,230,.18)}
+button{width:100%;border:none;border-radius:14px;padding:14px;font-size:16px;font-weight:800;color:#fff;background:linear-gradient(135deg,#3b56e6,#6544e8);cursor:pointer;transition:transform .12s}
 button:active{transform:scale(.97)}
 button:disabled{opacity:.6;cursor:wait}
-.back{background:none;border:none;color:#667085;font-size:13px;cursor:pointer;margin-top:12px;width:auto;padding:6px 12px}
-.hint{font-size:12px;color:#667085;margin-top:10px;line-height:1.5}
+.back{background:none;border:none;color:#475467;font-size:13px;cursor:pointer;margin-top:12px;width:auto;padding:6px 12px}
+.hint{font-size:12px;color:#475467;margin-top:10px;line-height:1.5}
 </style>
 </head>
 <body>
 
 <!-- STEP 1: language first, like Apple's "Hello" -->
 <div class="step" id="step1">
-  <svg width="200" height="200" viewBox="0 0 64 64" aria-hidden="true"><path class="stroke" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div class="welcome-medallion"><svg width="122" height="122" viewBox="6 6 52 52" aria-hidden="true"><defs><linearGradient id="fanalWelcomeGd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4D6BFE"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><path class="stroke" pathLength="100" d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="url(#fanalWelcomeGd)" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div class="langbox" id="langBox"><div class="ticks" id="ticks"></div></div>
   <div class="overlay hidden" id="overlay" style="display:none">
     <div class="top"><button class="close" id="closeOverlay">✕</button></div>
@@ -52,44 +78,128 @@ button:disabled{opacity:.6;cursor:wait}
 <div class="card hidden" id="step2" style="display:none">
   <h1 id="wTitle">Welcome to Fanal</h1>
   <p class="tag" id="tagline">The AI works. The human watches, decides, reviews.</p>
-  <input id="owner" placeholder="Your name (the owner)">
-  <input id="password" type="password" placeholder="Password (min. 8 characters)" minlength="8">
-  <input id="key" type="password" placeholder="DeepSeek API key (optional — paste now or later)">
-  <select id="model">
-    <option value="deepseek-chat">DeepSeek-V4-Pro Max (deepseek-chat)</option>
-    <option value="deepseek-reasoner">DeepSeek Reasoner (deepseek-reasoner)</option>
+  <div id="welcomeGatePanel" class="wgate">
+    <div class="wgate-head"><span id="wGateTitle">Installation readiness check</span><span id="wGateProg" class="wgate-prog">0 / 4</span></div>
+    <ul id="wGateList" class="wgate-list"></ul>
+  </div>
+  <select id="scale">
+    <option value="">— 1. Choose your structure first —</option>
+    <option value="AUTONOMOUS_SOLO">🧑‍💻 Solo / Self-employed (1 person)</option>
+    <option value="MICRO_SINGLE_OWNER">🏠 Micro-business (2–5 people)</option>
+    <option value="SME_CELL">🏢 SME / Team (6+ people)</option>
   </select>
-  <select id="sector">
-    <option value="restaurant">🍽️ Restaurant</option>
-    <option value="hotel">🏨 Hotel</option>
-    <option value="clinic">🏥 Clinic</option>
-    <option value="pharmacy">💊 Pharmacy</option>
-    <option value="workshop">🔧 Workshop</option>
-    <option value="realestate">🏠 Real estate</option>
-    <option value="school">🎓 School</option>
+  <div id="sectorWrap" style="display:none">
+    <label id="sectorLbl" class="wlbl" for="sector">2. Activity sector</label>
+    <select id="sector">
+      <option value="solo">💼 Professional services / Practice</option>
+      <option value="restaurant">🍽️ Restaurant</option>
+      <option value="hotel">🏨 Lodging / Hotel</option>
+      <option value="clinic">🏥 Clinic / Practice</option>
+      <option value="pharmacy">💊 Pharmacy</option>
+      <option value="workshop">🔧 Workshop / Trade</option>
+      <option value="realestate">🏠 Real estate</option>
+      <option value="school">🎓 School / Training</option>
+      <option value="tourisme">🧭 Tourism</option>
+      <option value="agroalimentaire">🥐 Agri-food &amp; retail</option>
+      <option value="generic">⚡ Other / generic</option>
+    </select>
+  </div>
+  <div class="wbox" id="wConsBox">
+    <label id="wConsTitle" class="wlbl" style="margin-top:0">⚖️ Closed Constitution &amp; Loi 25</label>
+    <input id="wBizName" placeholder="Legal business or practice name">
+    <select id="wTaxRegime">
+      <option value="PETIT_FOURNISSEUR_EXEMPT">Small supplier (&lt; $30,000 CAD — TPS/TVQ exempt)</option>
+      <option value="INSCRIT_TPS_TVQ">Registered TPS &amp; TVQ (&gt;= $30,000 CAD)</option>
+    </select>
+    <input id="wNeq" placeholder="Quebec NEQ (10 digits, optional if solo)">
+    <div id="wFiscalRow" class="wgrid wcons-hide">
+      <input id="wTps" placeholder="TPS (123456789RT0001)">
+      <input id="wTvq" placeholder="TVQ (1234567890TQ0001)">
+    </div>
+    <div class="wgrid">
+      <input id="wRprpName" placeholder="Loi 25 RPRP full name">
+      <input id="wRprpEmail" type="email" placeholder="rprp@company.ca">
+    </div>
+    <div class="wgrid">
+      <select id="wTone">
+        <option value="VOUVOIEMENT_CHALEUREUX">Vouvoiement chaleureux</option>
+        <option value="TUTOIEMENT_PROCHE">Tutoiement cordial</option>
+        <option value="FORMEL_FIDUCIAIRE">Formel fiduciaire strict</option>
+      </select>
+      <input id="wFloor" type="number" min="1" value="250" placeholder="Floor ($ CAD)">
+    </div>
+    <div class="wgrid">
+      <select id="wDiscount">
+        <option value="LOCKED_0_PCT">0% automatic discount locked</option>
+        <option value="TIERED_MAX_5_PCT">Up to 5% on documented grid</option>
+        <option value="TIERED_MAX_10_PCT">Up to 10% logged</option>
+      </select>
+      <input id="wInitials" maxlength="16" placeholder="Initials (e.g. JFL-CPA)">
+    </div>
+  </div>
+  <input id="owner" placeholder="Unique owner username">
+  <input id="password" type="password" placeholder="Strong password (min. 12 chars)" minlength="12">
+  <input id="passwordConfirm" type="password" placeholder="Confirm password">
+  <button type="button" id="toggleWelcomePwReq" class="wtog" aria-expanded="false">Show password requirements</button>
+  <ul id="welcomePwReqList" class="wpw-list hidden"></ul>
+  <div id="wFormErr" class="werr"></div>
+  <input id="key" type="password" placeholder="DeepSeek API key (optional — configure now or later)">
+  <select id="model">
+    <option value="deepseek-flash">DeepSeek-Flash + Gemini (Closed Dual Brain)</option>
+    <option value="deepseek-v4-pro">DeepSeek-V4-Pro + Gemini (Deep Reasoning)</option>
   </select>
   <button id="go">Create my Fanal</button>
   <p class="hint" id="hint">This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.</p>
   <button class="back" id="back">← Change language</button>
 </div>
+<div id="fanalTooltip" class="fanal-tip" role="tooltip" aria-hidden="true"></div>
 
+<script src="brain/dashboard-i18n.js"></script>
+<script src="brain/setup-validator.js"></script>
 <script>
 "use strict";
 const GREET=["Bonjour","Hola","Hello","你好","مرحبا","안녕하세요","こんにちは","Hallo","Ciao","Olá"];
 const LANGS={fr:"Français",en:"English",es:"Español",de:"Deutsch",it:"Italiano",pt:"Português",zh:"中文",ja:"日本語",ko:"한국어",ar:"العربية"};
 const TAGS={en:"The AI works. The human watches, decides, reviews.",es:"La IA trabaja. El humano vela, decide, revisa.",fr:"L'IA travaille. L'humain veille, décide, revoit.",de:"Die KI arbeitet. Der Mensch wacht, entscheidet, prüft.",it:"L'IA lavora. L'umano veglia, decide, rivede.",pt:"A IA trabalha. O humano vela, decide, revê.",zh:"AI 工作，人来守护、决定、复核。",ja:"AIが働き、人間が見守り、決め、見直す。",ko:"AI가 일하고 사람이 지키고, 결정하고, 검토합니다.",ar:"الذكاء الاصطناعي يعمل، والإنسان يراقب ويقرر ويراجع."};
 const S={
-en:{title:"Welcome to Fanal",name:"Your name (the owner)",pass:"Password (min. 8 characters)",btn:"Create my Fanal",hint:"This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.",back:"← Change language",key:"DeepSeek API key (optional — paste now or later)",model:"Model"},
-es:{title:"Bienvenido a Fanal",name:"Tu nombre (el dueño)",pass:"Contraseña (mín. 8 caracteres)",btn:"Crear mi Fanal",hint:"Esto crea el cerebro en esta computadora: tu cuenta, tu sector, tus reglas. Nada sale de la máquina.",back:"← Cambiar idioma",key:"Clave API de DeepSeek (opcional — pégala ahora o después)",model:"Modelo"},
-fr:{title:"Bienvenue chez Fanal",name:"Votre nom (le propriétaire)",pass:"Mot de passe (min. 8 caractères)",btn:"Créer mon Fanal",hint:"Cela crée le cerveau sur cet ordinateur : votre compte, votre secteur, vos règles. Rien ne quitte la machine.",back:"← Changer de langue",key:"Clé API DeepSeek (facultatif — collez-la maintenant ou plus tard)",model:"Modèle"},
-de:{title:"Willkommen bei Fanal",name:"Ihr Name (der Inhaber)",pass:"Passwort (min. 8 Zeichen)",btn:"Mein Fanal erstellen",hint:"Das erstellt das Gehirn auf diesem Computer: Ihr Konto, Ihre Branche, Ihre Regeln. Nichts verlässt den Rechner.",back:"← Sprache ändern",key:"DeepSeek-API-Schlüssel (optional — jetzt oder später einfügen)",model:"Modell"},
-it:{title:"Benvenuto in Fanal",name:"Il tuo nome (il proprietario)",pass:"Password (min. 8 caratteri)",btn:"Crea il mio Fanal",hint:"Crea il cervello su questo computer: il tuo account, il tuo settore, le tue regole. Nulla esce dalla macchina.",back:"← Cambia lingua",key:"Chiave API DeepSeek (facoltativa — incollala ora o dopo)",model:"Modello"},
-pt:{title:"Bem-vindo ao Fanal",name:"O seu nome (o dono)",pass:"Senha (mín. 8 caracteres)",btn:"Criar o meu Fanal",hint:"Isto cria o cérebro neste computador: a sua conta, o seu setor, as suas regras. Nada sai da máquina.",back:"← Mudar idioma",key:"Chave API DeepSeek (opcional — cole agora ou depois)",model:"Modelo"},
-zh:{title:"欢迎使用 Fanal",name:"您的姓名（所有者）",pass:"密码（至少8个字符）",btn:"创建我的 Fanal",hint:"这将在此计算机上创建大脑：您的账户、行业和规则。一切都不离开机器。",back:"← 更改语言",key:"DeepSeek API 密钥（可选 — 现在或稍后粘贴）",model:"模型"},
-ja:{title:"Fanal へようこそ",name:"お名前（オーナー）",pass:"パスワード（8文字以上）",btn:"Fanal を作成",hint:"このコンピュータ上に頭脳を作成します：アカウント、セクター、ルール。すべてマシン内に留まります。",back:"← 言語を変更",key:"DeepSeek APIキー（任意 — 今または後で貼り付け）",model:"モデル"},
-ko:{title:"Fanal에 오신 것을 환영합니다",name:"이름(소유자)",pass:"비밀번호(8자 이상)",btn:"내 Fanal 만들기",hint:"이 컴퓨터에 두뇌를 만듭니다: 계정, 업종, 규칙. 모든 것이 기기 안에 머무릅니다.",back:"← 언어 변경",key:"DeepSeek API 키(선택 — 지금 또는 나중에 붙여넣기)",model:"모델"},
-ar:{title:"مرحبًا بك في Fanal",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Fanal الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة",key:"مفتاح DeepSeek API (اختياري — الصقه الآن أو لاحقًا)",model:"النموذج"}
+en:{title:"Welcome to Fanal",docTitle:"Fanal — Welcome",name:"Your name (the owner)",pass:"Password (min. 8 characters)",btn:"Create my Fanal",hint:"This creates the brain on this computer: your account, your sector, your rules. Nothing leaves the machine.",back:"← Change language",key:"DeepSeek API key (optional — paste now or later)",model:"Model",mFast:"DeepSeek-Flash + Gemini (Closed Dual Brain)",mDeep:"DeepSeek-V4-Pro + Gemini (Deep Reasoning)",scSolo:"🧑‍💻 Solo / Self-employed (1 person)",scMicro:"🏠 Micro-business (2–5 people)",scSme:"🏢 SME / Team (6+ people)",sec:{solo:"💼 Professional services / Practice",restaurant:"🍽️ Restaurant",hotel:"🏨 Lodging / Hotel",clinic:"🏥 Clinic / Practice",pharmacy:"💊 Pharmacy",workshop:"🔧 Workshop / Trade",realestate:"🏠 Real estate",school:"🎓 School / Training",tourisme:"🧭 Tourism",agroalimentaire:"🥐 Agri-food & retail",generic:"⚡ Other / generic"}},
+es:{title:"Bienvenido a Fanal",docTitle:"Fanal — Bienvenido",name:"Tu nombre (el dueño)",pass:"Contraseña (mín. 8 caracteres)",btn:"Crear mi Fanal",hint:"Esto crea el cerebro en esta computadora: tu cuenta, tu sector, tus reglas. Nada sale de la máquina.",back:"← Cambiar idioma",key:"Clave API de DeepSeek (opcional — pégala ahora o después)",model:"Modelo",mFast:"DeepSeek-Flash + Gemini (Cerebro Dual Cerrado)",mDeep:"DeepSeek-V4-Pro + Gemini (Análisis Profundo)",scSolo:"🧑‍💻 Trabajador autónomo (1 persona)",scMicro:"🏠 Microempresa (2–5 personas)",scSme:"🏢 Empresa / PyME (6+ personas)",sec:{solo:"💼 Servicios profesionales / Despacho",restaurant:"🍽️ Restaurante",hotel:"🏨 Alojamiento / Hotel",clinic:"🏥 Clínica / Consultorio",pharmacy:"💊 Farmacia",workshop:"🔧 Taller / Oficio",realestate:"🏠 Inmobiliaria",school:"🎓 Escuela / Academia",tourisme:"🧭 Turismo",agroalimentaire:"🥐 Agroalimentario y comercio",generic:"⚡ Otro / genérico"}},
+fr:{title:"Bienvenue chez Fanal",docTitle:"Fanal — Bienvenue",name:"Votre nom (le propriétaire)",pass:"Mot de passe (min. 8 caractères)",btn:"Créer mon Fanal",hint:"Cela crée le cerveau sur cet ordinateur : votre compte, votre secteur, vos règles. Rien ne quitte la machine.",back:"← Changer de langue",key:"Clé API DeepSeek (facultatif — collez-la maintenant ou plus tard)",model:"Modèle",mFast:"DeepSeek-Flash + Gemini (Cerveau Dual Fermé)",mDeep:"DeepSeek-V4-Pro + Gemini (Raisonnement Profond)",scSolo:"🧑‍💻 Travailleur autonome (1 personne)",scMicro:"🏠 Microentreprise (2–5 personnes)",scSme:"🏢 PME / Entreprise (6+ personnes)",sec:{solo:"💼 Services professionnels / Cabinet",restaurant:"🍽️ Restauration",hotel:"🏨 Hébergement / Hôtel",clinic:"🏥 Clinique / Cabinet",pharmacy:"💊 Pharmacie",workshop:"🔧 Atelier / Métier",realestate:"🏠 Immobilier",school:"🎓 École / Formation",tourisme:"🧭 Tourisme",agroalimentaire:"🥐 Agroalimentaire et détail",generic:"⚡ Autre / générique"}},
+de:{title:"Willkommen bei Fanal",docTitle:"Fanal — Willkommen",name:"Ihr Name (der Inhaber)",pass:"Passwort (min. 8 Zeichen)",btn:"Mein Fanal erstellen",hint:"Das erstellt das Gehirn auf diesem Computer: Ihr Konto, Ihre Branche, Ihre Regeln. Nichts verlässt den Rechner.",back:"← Sprache ändern",key:"DeepSeek-API-Schlüssel (optional — jetzt oder später einfügen)",model:"Modell",mFast:"DeepSeek-Flash + Gemini (Geschlossenes Dual-Gehirn)",mDeep:"DeepSeek-V4-Pro + Gemini (Tiefenanalyse)",scSolo:"🧑‍💻 Solo / Selbstständig (1 Person)",scMicro:"🏠 Kleinstunternehmen (2–5 Personen)",scSme:"🏢 Unternehmen / KMU (6+ Personen)",sec:{solo:"💼 Beratung / Kanzlei & Praxis",restaurant:"🍽️ Gastronomie",hotel:"🏨 Hotel / Unterkunft",clinic:"🏥 Praxis / Klinik",pharmacy:"💊 Apotheke",workshop:"🔧 Werkstatt / Handwerk",realestate:"🏠 Immobilien",school:"🎓 Schule / Bildung",tourisme:"🧭 Tourismus",agroalimentaire:"🥐 Lebensmittel & Handel",generic:"⚡ Sonstige / Allgemein"}},
+it:{title:"Benvenuto in Fanal",docTitle:"Fanal — Benvenuto",name:"Il tuo nome (il proprietario)",pass:"Password (min. 8 caratteri)",btn:"Crea il mio Fanal",hint:"Crea il cervello su questo computer: il tuo account, il tuo settore, le tue regole. Nulla esce dalla macchina.",back:"← Cambia lingua",key:"Chiave API DeepSeek (facoltativa — incollala ora o dopo)",model:"Modello",mFast:"DeepSeek-Flash + Gemini (Cervello Duale Chiuso)",mDeep:"DeepSeek-V4-Pro + Gemini (Analisi Profonda)",scSolo:"🧑‍💻 Autonomo (1 persona)",scMicro:"🏠 Microimpresa (2–5 persone)",scSme:"🏢 PMI / Azienda (6+ persone)",sec:{solo:"💼 Servizi professionali / Studio",restaurant:"🍽️ Ristorante",hotel:"🏨 Ospitalità / Hotel",clinic:"🏥 Clinica / Studio",pharmacy:"💊 Farmacia",workshop:"🔧 Officina / Artigiano",realestate:"🏠 Immobiliare",school:"🎓 Scuola / Formazione",tourisme:"🧭 Turismo",agroalimentaire:"🥐 Agroalimentare e dettaglio",generic:"⚡ Altro / generico"}},
+pt:{title:"Bem-vindo ao Fanal",docTitle:"Fanal — Bem-vindo",name:"O seu nome (o dono)",pass:"Senha (mín. 8 caracteres)",btn:"Criar o meu Fanal",hint:"Isto cria o cérebro neste computador: a sua conta, o seu setor, as suas regras. Nada sai da máquina.",back:"← Mudar idioma",key:"Chave API DeepSeek (opcional — cole agora ou depois)",model:"Modelo",mFast:"DeepSeek-Flash + Gemini (Cérebro Dual Fechado)",mDeep:"DeepSeek-V4-Pro + Gemini (Raciocínio Profundo)",scSolo:"🧑‍💻 Trabalhador autônomo (1 pessoa)",scMicro:"🏠 Microempresa (2–5 pessoas)",scSme:"🏢 PME / Empresa (6+ pessoas)",sec:{solo:"💼 Serviços profissionais / Consultório",restaurant:"🍽️ Restaurante",hotel:"🏨 Alojamento / Hotel",clinic:"🏥 Clínica / Consultório",pharmacy:"💊 Farmácia",workshop:"🔧 Oficina / Ofício",realestate:"🏠 Imobiliária",school:"🎓 Escola / Formação",tourisme:"🧭 Turismo",agroalimentaire:"🥐 Agroalimentar e retalho",generic:"⚡ Outro / genérico"}},
+zh:{title:"欢迎使用 Fanal",docTitle:"Fanal — 欢迎",name:"您的姓名（所有者）",pass:"密码（至少8个字符）",btn:"创建我的 Fanal",hint:"这将在此计算机上创建大脑：您的账户、行业和规则。一切都不离开机器。",back:"← 更改语言",key:"DeepSeek API 密钥（可选 — 现在或稍后粘贴）",model:"模型",mFast:"DeepSeek-Flash + Gemini（封闭双脑）",mDeep:"DeepSeek-V4-Pro + Gemini（深度推理）",scSolo:"🧑‍💻 自由职业 / 单人执业（1人）",scMicro:"🏠 微型企业（2–5人）",scSme:"🏢 中小企业 / 团队（6人+）",sec:{solo:"💼 专业服务 / 事务所",restaurant:"🍽️ 餐饮",hotel:"🏨 住宿 / 酒店",clinic:"🏥 诊所 / 工作室",pharmacy:"💊 药房",workshop:"🔧 工坊 / 维修技师",realestate:"🏠 房地产",school:"🎓 学校 / 培训",tourisme:"🧭 旅游",agroalimentaire:"🥐 食品与零售",generic:"⚡ 其他 / 通用"}},
+ja:{title:"Fanal へようこそ",docTitle:"Fanal — ようこそ",name:"お名前（オーナー）",pass:"パスワード（8文字以上）",btn:"Fanal を作成",hint:"このコンピュータ上に頭脳を作成します：アカウント、セクター、ルール。すべてマシン内に留まります。",back:"← 言語を変更",key:"DeepSeek APIキー（任意 — 今または後で貼り付け）",model:"モデル",mFast:"DeepSeek-Flash + Gemini（クローズド二重頭脳）",mDeep:"DeepSeek-V4-Pro + Gemini（深層推論）",scSolo:"🧑‍💻 個人事業主・独立（1名）",scMicro:"🏠 小規模事業者（2〜5名）",scSme:"🏢 中小企業・チーム（6名以上）",sec:{solo:"💼 専門サービス・事務所",restaurant:"🍽️ 飲食・レストラン",hotel:"🏨 宿泊・ホテル",clinic:"🏥 クリニック・専門院",pharmacy:"💊 薬局",workshop:"🔧 工房・整備業",realestate:"🏠 不動産",school:"🎓 教室・学校",tourisme:"🧭 観光",agroalimentaire:"🥐 食品・小売",generic:"⚡ その他・汎用"}},
+ko:{title:"Fanal에 오신 것을 환영합니다",docTitle:"Fanal — 환영합니다",name:"이름(소유자)",pass:"비밀번호(8자 이상)",btn:"내 Fanal 만들기",hint:"이 컴퓨터에 두뇌를 만듭니다: 계정, 업종, 규칙. 모든 것이 기기 안에 머무릅니다.",back:"← 언어 변경",key:"DeepSeek API 키(선택 — 지금 또는 나중에 붙여넣기)",model:"모델",mFast:"DeepSeek-Flash + Gemini (폐쇄형 이중 두뇌)",mDeep:"DeepSeek-V4-Pro + Gemini (심층 추론)",scSolo:"🧑‍💻 1인 자영업 / 프리랜서 (1명)",scMicro:"🏠 소기업 (2–5명)",scSme:"🏢 중소기업 / 팀 (6명+)",sec:{solo:"💼 전문 서비스 / 사무소",restaurant:"🍽️ 음식점",hotel:"🏨 숙박 / 호텔",clinic:"🏥 병원 / 의원",pharmacy:"💊 약국",workshop:"🔧 공방 / 정비소",realestate:"🏠 부동산",school:"🎓 학교 / 학원",tourisme:"🧭 관광",agroalimentaire:"🥐 식품 · 소매",generic:"⚡ 기타 / 일반"}},
+ar:{title:"مرحبًا بك في Fanal",docTitle:"Fanal — مرحبًا",name:"اسمك (المالك)",pass:"كلمة المرور (8 أحرف على الأقل)",btn:"إنشاء Fanal الخاص بي",hint:"هذا ينشئ العقل على هذا الكمبيوتر: حسابك وقطاعك وقواعدك. لا شيء يغادر الجهاز.",back:"← تغيير اللغة",key:"مفتاح DeepSeek API (اختياري — الصقه الآن أو لاحقًا)",model:"النموذج",mFast:"DeepSeek-Flash + Gemini (عقل مزدوج مغلق)",mDeep:"DeepSeek-V4-Pro + Gemini (تحليل عميق)",scSolo:"🧑‍💻 عمل حر / مستقل (شخص واحد)",scMicro:"🏠 منشأة صغرى (2–5 أشخاص)",scSme:"🏢 شركة / فريق (6+ أشخاص)",sec:{solo:"💼 خدمات مهنية / مكتب استشاري",restaurant:"🍽️ مطعم",hotel:"🏨 فندق / إيواء",clinic:"🏥 عيادة / مكتب مهني",pharmacy:"💊 صيدلية",workshop:"🔧 ورشة / حرفة",realestate:"🏠 عقارات",school:"🎓 مدرسة / تدريب",tourisme:"🧭 سياحة",agroalimentaire:"🥐 أغذية وتجزئة",generic:"⚡ أخرى / عام"}}
 };
+const WEXT={
+  en:{scPrompt:"— 1. Choose your structure first —",profLbl:"2. Recognized Quebec self-employed trade",secLbl:"2. Economic sector (SCIAN)",needScale:"Choose your structure first."},
+  es:{scPrompt:"— 1. Elige primero tu estructura —",profLbl:"2. Oficio autónomo reconocido (Quebec)",secLbl:"2. Sector económico (SCIAN)",needScale:"Elige primero tu estructura."},
+  fr:{scPrompt:"— 1. Choisissez d'abord votre structure —",profLbl:"2. Métier autonome reconnu (Québec)",secLbl:"2. Secteur économique (SCIAN)",needScale:"Choisissez d'abord votre structure."},
+  de:{scPrompt:"— 1. Zuerst Struktur wählen —",profLbl:"2. Anerkannter Solo-Beruf (Québec)",secLbl:"2. Wirtschaftszweig (SCIAN)",needScale:"Wählen Sie zuerst Ihre Struktur."},
+  it:{scPrompt:"— 1. Scegli prima la struttura —",profLbl:"2. Mestiere autonomo riconosciuto (Québec)",secLbl:"2. Settore economico (SCIAN)",needScale:"Scegli prima la struttura."},
+  pt:{scPrompt:"— 1. Escolha primeiro a estrutura —",profLbl:"2. Ofício autónomo reconhecido (Québec)",secLbl:"2. Setor económico (SCIAN)",needScale:"Escolha primeiro a estrutura."},
+  zh:{scPrompt:"— 1. 请先选择您的业务结构 —",profLbl:"2. 魁北克认可的自由职业 / 专业工种",secLbl:"2. 所属经济行业（SCIAN）",needScale:"请先选择业务结构。"},
+  ja:{scPrompt:"— 1. まず事業形態を選択してください —",profLbl:"2. 公認の個人事業職種（ケベック）",secLbl:"2. 経済業種（SCIAN）",needScale:"まず事業形態を選択してください。"},
+  ko:{scPrompt:"— 1. 먼저 사업 구조를 선택하세요 —",profLbl:"2. 공인 1인 자영업 직종 (퀘벡)",secLbl:"2. 경제 업종 (SCIAN)",needScale:"먼저 사업 구조를 선택하세요."},
+  ar:{scPrompt:"— 1. اختر نوع الهيكل أولاً —",profLbl:"2. مهنة حرة معترف بها في كيبيك",secLbl:"2. القطاع الاقتصادي (SCIAN)",needScale:"اختر نوع الهيكل أولاً."}
+};
+Object.keys(WEXT).forEach((l)=>{if(S[l])Object.assign(S[l],WEXT[l]);});
+const WPROFS=[
+  {key:"CPA_COMPTABLE",sec:"solo",labels:{fr:"🧮 Comptable / CPA / Tenue de livres",en:"🧮 Accountant / CPA / Bookkeeping",es:"🧮 Contador / CPA / Contabilidad",de:"🧮 Buchhalter / CPA",it:"🧮 Commercialista / CPA",pt:"🧮 Contabilista / CPA",zh:"🧮 注册会计师 CPA / 记账",ja:"🧮 会計士 / CPA / 記帳",ko:"🧮 공인회계사 CPA / 기장",ar:"🧮 محاسب قانوني / CPA"}},
+  {key:"AVOCAT_BARREAU",sec:"solo",labels:{fr:"⚖️ Avocat(e) autonome (Barreau)",en:"⚖️ Solo Lawyer (Barreau QC)",es:"⚖️ Abogado autónomo (Barreau)",de:"⚖️ Einzelanwalt (Barreau QC)",it:"⚖️ Avvocato individuale (Barreau)",pt:"⚖️ Advogado(a) autónomo",zh:"⚖️ 独立执业律师（Barreau）",ja:"⚖️ 個人開業弁護士（Barreau）",ko:"⚖️ 독립 변호사 (Barreau)",ar:"⚖️ محامٍ مستقل (نقابة كيبيك)"}},
+  {key:"NOTAIRE_CHAMBRE",sec:"solo",labels:{fr:"📜 Notaire / Actes & Successions",en:"📜 Notary / Legal & Estates",es:"📜 Notario / Actas y Sucesiones",de:"📜 Notar / Urkunden & Nachlass",it:"📜 Notaio / Atti e Successioni",pt:"📜 Notário / Escrituras",zh:"📜 独立公证人（CNQ）",ja:"📜 公証人 / 登記・相続",ko:"📜 공증인 / 등기·상속",ar:"📜 موثق / كاتب عدل"}},
+  {key:"COURTIER_OACIQ",sec:"realestate",labels:{fr:"🏡 Courtier immobilier autonome (OACIQ)",en:"🏡 Real Estate Broker (OACIQ)",es:"🏡 Corredor inmobiliario (OACIQ)",de:"🏡 Immobilienmakler (OACIQ)",it:"🏡 Agente immobiliare (OACIQ)",pt:"🏡 Corretor imobiliário (OACIQ)",zh:"🏡 独立地产经纪人（OACIQ）",ja:"🏡 不動産仲介士（OACIQ）",ko:"🏡 독립 부동산 중개인 (OACIQ)",ar:"🏡 وسيط عقاري مستقل (OACIQ)"}},
+  {key:"CRIC_IMMIGRATION",sec:"solo",labels:{fr:"🛂 Consultant immigration CRIC (MIFI)",en:"🛂 Immigration Consultant RCIC (CICC)",es:"🛂 Consultor de inmigración RCIC",de:"🛂 Einwanderungsberater CRIC",it:"🛂 Consulente immigrazione CRIC",pt:"🛂 Consultor de imigração CRIC",zh:"🛂 持牌移民顾问 RCIC / CRIC",ja:"🛂 公認移民コンサルタント RCIC",ko:"🛂 공인 이민 컨설턴트 RCIC",ar:"🛂 مستشار هجرة مرخص CRIC"}},
+  {key:"CLINICIEN_CNESST_SAAQ",sec:"clinic",labels:{fr:"🩺 Clinicien / Thérapeute (CNESST)",en:"🩺 Independent Clinician (CNESST)",es:"🩺 Clínico / Terapeuta autónomo",de:"🩺 Therapeut / Kliniker (CNESST)",it:"🩺 Clinico / Terapeuta autonomo",pt:"🩺 Clínico / Terapeuta autónomo",zh:"🩺 独立临床治疗师（CNESST）",ja:"🩺 個人開業セラピスト（CNESST）",ko:"🩺 독립 임상 치료사 (CNESST)",ar:"🩺 أخصائي علاجي مستقل (CNESST)"}},
+  {key:"GYM_PROPRIETAIRE_OPC",sec:"clinic",labels:{fr:"🏋️ Entraîneur privé / Studio (OPC + Q-AAP)",en:"🏋️ Personal Trainer / Studio (OPC)",es:"🏋️ Entrenador personal / Estudio (OPC)",de:"🏋️ Personal Trainer / Studio (OPC)",it:"🏋️ Personal trainer / Studio (OPC)",pt:"🏋️ Personal trainer / Estúdio (OPC)",zh:"🏋️ 私人教练 / 健身工作室（OPC）",ja:"🏋️ パーソナルトレーナー（OPC）",ko:"🏋️ 개인 트레이너 (OPC)",ar:"🏋️ مدرب شخصي / صالة (OPC)"}},
+  {key:"PLEX_PROPRIETAIRE_TAL",sec:"realestate",labels:{fr:"🏢 Propriétaire de Plex / TAL + Relevé 31",en:"🏢 Plex Landlord / TAL QC",es:"🏢 Propietario de Plex / TAL",de:"🏢 Vermieter / Plex (TAL QC)",it:"🏢 Proprietario Plex (TAL QC)",pt:"🏢 Proprietário de Plex (TAL)",zh:"🏢 出租物业 / Plex 房东（TAL）",ja:"🏢 賃貸物件オーナー（TAL）",ko:"🏢 임대주택·플렉스 소유주 (TAL)",ar:"🏢 مالك وحدات سكنية (TAL)"}},
+  {key:"ARTISAN_RBQ",sec:"workshop",labels:{fr:"🔧 Entrepreneur / Artisan autonome (RBQ)",en:"🔧 Independent Contractor (RBQ)",es:"🔧 Contratista / Artesano autónomo (RBQ)",de:"🔧 Selbstständiger Handwerker (RBQ)",it:"🔧 Artigiano / Imprenditore edile (RBQ)",pt:"🔧 Empreiteiro / Artesão (RBQ)",zh:"🔧 独立工程承包商 / 工匠（RBQ）",ja:"🔧 個人事業主工事業者（RBQ）",ko:"🔧 독립 전문 시공업자 (RBQ)",ar:"🔧 مقاول مستقل / حرفي (RBQ)"}},
+  {key:"CONSULTANT_TI",sec:"solo",labels:{fr:"💻 Consultant TI / Pigiste (TPS/TVQ)",en:"💻 IT Consultant / Freelancer",es:"💻 Consultor TI / Freelance",de:"💻 IT-Berater / Freelancer",it:"💻 Consulente IT / Freelance",pt:"💻 Consultor de TI / Freelancer",zh:"💻 IT 顾问 / 自由职业咨询",ja:"💻 IT コンサルタント・フリーランス",ko:"💻 IT 컨설턴트 / 프리랜서",ar:"💻 مستشار تقنية معلومات"}},
+  {key:"AUTRE_AUTONOME",sec:"solo",labels:{fr:"🧑‍💻 Autre travailleur autonome / Enr.",en:"🧑‍💻 Other Self-Employed",es:"🧑‍💻 Otro trabajador autónomo",de:"🧑‍💻 Sonstige Selbstständige",it:"🧑‍💻 Altro lavoratore autonomo",pt:"🧑‍💻 Outro trabalhador autónomo",zh:"🧑‍💻 其他自由职业者",ja:"🧑‍💻 その他の個人事業主",ko:"🧑‍💻 기타 1인 자영업자",ar:"🧑‍💻 عمل حر آخر / منشأة فردية"}}
+];
+const WSEC_ORDER=["solo","restaurant","hotel","clinic","pharmacy","workshop","realestate","school","tourisme","agroalimentaire","generic"];
 let cur="en";
 // The glass reel: language names passing through, semi-transparent.
 const ticksEl=document.getElementById("ticks");
@@ -116,6 +226,7 @@ const oList=document.getElementById("oList");
 for(const l of ORDER){
   const r=document.createElement("div");
   r.className="orow"+(l==="en"?" center":"");
+  r.dataset.tipLang=l;
   r.innerHTML='<span>'+LANGS[l]+'</span><span class="sub">'+GREET[Object.keys(LANGS).indexOf(l)]+'</span>';
   r.onclick=()=>choose(l);
   oList.appendChild(r);
@@ -126,34 +237,233 @@ document.getElementById("langBox").onclick=()=>{
   if(en)en.scrollIntoView({block:"center"});
 };
 document.getElementById("closeOverlay").onclick=()=>{document.getElementById("overlay").style.display="none";};
+function syncWelcomeCascade(){
+  const s=S[cur]||S.en;
+  const sc=document.getElementById("scale");
+  const wrap=document.getElementById("sectorWrap");
+  const secEl=document.getElementById("sector");
+  const lbl=document.getElementById("sectorLbl");
+  if(!sc||!secEl||!wrap)return;
+  if(!sc.value){
+    wrap.style.display="none";
+    Array.from(secEl.options).forEach(o=>{if(s.sec[o.value])o.textContent=s.sec[o.value];});
+    return;
+  }
+  wrap.style.display="block";
+  if(sc.value==="AUTONOMOUS_SOLO"){
+    if(lbl)lbl.textContent=s.profLbl||"2. Profession";
+    const prev=String(secEl.value||"").startsWith("prof:")?secEl.value:"prof:AUTRE_AUTONOME";
+    secEl.innerHTML=WPROFS.map(p=>'<option value="prof:'+p.key+'">'+(p.labels[cur]||p.labels.en)+'</option>').join("");
+    secEl.value=prev;
+  }else{
+    if(lbl)lbl.textContent=s.secLbl||"2. Sector";
+    const prev=String(secEl.value||"").startsWith("prof:")?"restaurant":(secEl.value||"restaurant");
+    secEl.innerHTML=WSEC_ORDER.map(id=>'<option value="'+id+'">'+(s.sec[id]||id)+'</option>').join("");
+    secEl.value=prev;
+  }
+}
+const W_SVG_PEND='<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7.5"/><circle cx="10" cy="10" r="2" fill="currentColor"/></svg>';
+const W_SVG_OK='<svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8.5" fill="#16a34a"/><path d="M6.2 10.3l2.5 2.5 5.1-5.4" stroke="#ffffff" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+let wPwReqOpen=false;
+function wI18n(k,fallback){
+  const g=window.I18N||{};
+  return (g[cur]&&g[cur][k])||(g.en&&g.en[k])||fallback||k;
+}
+function collectWelcomePayload(){
+  const scaleType=document.getElementById("scale")?document.getElementById("scale").value:"";
+  const rawSec=document.getElementById("sector")?document.getElementById("sector").value:"";
+  let professionKey="",sector=rawSec;
+  if(String(rawSec).startsWith("prof:")){
+    professionKey=rawSec.slice(5);
+    const p=WPROFS.find(x=>x.key===professionKey);
+    sector=(p&&p.sec)||"solo";
+  }
+  return {
+    lang:cur,
+    user:(document.getElementById("owner")?document.getElementById("owner").value.trim():""),
+    password:(document.getElementById("password")?document.getElementById("password").value:""),
+    passwordConfirm:(document.getElementById("passwordConfirm")?document.getElementById("passwordConfirm").value:""),
+    scaleType,professionKey,sector:scaleType==="AUTONOMOUS_SOLO"?sector:rawSec,
+    hasByokKey:Boolean(document.getElementById("key")&&document.getElementById("key").value.trim()),
+    constitution:{
+      bizName:document.getElementById("wBizName")?document.getElementById("wBizName").value.trim():"",
+      taxRegime:document.getElementById("wTaxRegime")?document.getElementById("wTaxRegime").value:"PETIT_FOURNISSEUR_EXEMPT",
+      neq:document.getElementById("wNeq")?document.getElementById("wNeq").value.trim():"",
+      tpsNumber:document.getElementById("wTps")?document.getElementById("wTps").value.trim():"",
+      tvqNumber:document.getElementById("wTvq")?document.getElementById("wTvq").value.trim():"",
+      rprpName:document.getElementById("wRprpName")?document.getElementById("wRprpName").value.trim():"",
+      rprpEmail:document.getElementById("wRprpEmail")?document.getElementById("wRprpEmail").value.trim():"",
+      toneRegister:document.getElementById("wTone")?document.getElementById("wTone").value:"VOUVOIEMENT_CHALEUREUX",
+      pricingFloorCad:Number(document.getElementById("wFloor")?document.getElementById("wFloor").value:0),
+      discountPolicy:document.getElementById("wDiscount")?document.getElementById("wDiscount").value:"LOCKED_0_PCT",
+      escalationRules:["RED_PROMISE_DEADLINE","RED_REFUND_OVER_FLOOR","RED_LEGAL_MEDICAL_OPINION"],
+      signerInitials:document.getElementById("wInitials")?document.getElementById("wInitials").value.trim().toUpperCase():""
+    }
+  };
+}
+function refreshWelcomeReadiness(){
+  const p=collectWelcomePayload();
+  const sv=window.FanalSetupValidator;
+  const fRow=document.getElementById("wFiscalRow");
+  if(fRow)fRow.classList.toggle("wcons-hide",p.constitution.taxRegime!=="INSCRIT_TPS_TVQ");
+  const gt=document.getElementById("wGateTitle");if(gt)gt.textContent=wI18n("setupGateTitle","Installation readiness check");
+  const wct=document.getElementById("wConsTitle");if(wct)wct.textContent=wI18n("setupConsTitle","⚖️ Closed Constitution & Loi 25");
+  const btnReq=document.getElementById("toggleWelcomePwReq");
+  if(btnReq){btnReq.textContent=wPwReqOpen?wI18n("pwReqHideBtn","Hide password requirements"):wI18n("pwReqShowBtn","Show password requirements");btnReq.setAttribute("aria-expanded",wPwReqOpen?"true":"false");}
+  const ulPw=document.getElementById("welcomePwReqList");
+  if(ulPw)ulPw.classList.toggle("hidden",!wPwReqOpen);
+  if(!sv)return null;
+  const res=sv.evaluateSetupReadiness(p);
+  const gp=document.getElementById("wGateProg");
+  if(gp){gp.textContent=res.completedRequiredCount+" / "+res.requiredCount;gp.classList.toggle("all-ok",res.ready);}
+  const labels={lang:"setupGateLang",structure:"setupGateStructure",constitution:"setupGateCons",credentials:"setupGateCreds",byok:"setupGateByok"};
+  const gl=document.getElementById("wGateList");
+  if(gl){
+    gl.innerHTML=res.items.map(it=>'<li class="wgate-item">'+(it.done?W_SVG_OK:W_SVG_PEND)+'<span>'+wI18n(labels[it.id],it.id)+'</span><span class="wgate-tag '+(it.done?"ok":(it.optional?"opt":"req"))+'">'+wI18n(it.done?"setupStatusVerified":(it.optional?"setupStatusOptional":"setupStatusRequired"))+'</span></li>').join("");
+  }
+  if(ulPw){
+    ulPw.innerHTML=sv.PASSWORD_RULES_SPEC.rules.map(r=>{
+      const met=Boolean(res.passwordAudit&&res.passwordAudit.criteria&&res.passwordAudit.criteria[r.id]);
+      return '<li class="wpw-item'+(met?" met":"")+'">'+(met?W_SVG_OK:W_SVG_PEND)+'<span>'+wI18n(r.labelKey,r.id)+'</span></li>';
+    }).join("");
+  }
+  return res;
+}
+document.getElementById("scale").onchange=()=>{syncWelcomeCascade();refreshWelcomeReadiness();};
+document.getElementById("toggleWelcomePwReq").onclick=()=>{wPwReqOpen=!wPwReqOpen;refreshWelcomeReadiness();};
+["owner","password","passwordConfirm","key","sector","wBizName","wTaxRegime","wNeq","wTps","wTvq","wRprpName","wRprpEmail","wTone","wFloor","wDiscount","wInitials"].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el){el.addEventListener("input",refreshWelcomeReadiness);el.addEventListener("change",refreshWelcomeReadiness);}
+});
 function choose(l){
   cur=l;
   const s=S[l];
+  document.documentElement.lang=l;
+  document.title=s.docTitle||s.title;
   document.getElementById("wTitle").textContent=s.title;
   document.getElementById("tagline").textContent=TAGS[l];
-  document.getElementById("owner").placeholder=s.name;
-  document.getElementById("password").placeholder=s.pass;
+  document.getElementById("owner").placeholder=wI18n("setupUserPh",s.name);
+  document.getElementById("password").placeholder=wI18n("setupPassPh",s.pass);
+  document.getElementById("passwordConfirm").placeholder=wI18n("setupPassConfirmPh","Confirm password");
+  document.getElementById("wBizName").placeholder=wI18n("consBizNamePh","Legal business name");
+  document.getElementById("wNeq").placeholder=wI18n("consNeqPh","Quebec NEQ (10 digits)");
+  document.getElementById("wRprpName").placeholder=wI18n("consRprpNamePh","Loi 25 RPRP full name");
+  document.getElementById("wRprpEmail").placeholder=wI18n("consRprpEmailPh","rprp@company.ca");
+  document.getElementById("wInitials").placeholder=wI18n("consInitialsPh","e.g. JFL-CPA");
+  document.getElementById("key").placeholder=s.key;
+  const mdl=document.getElementById("model");
+  if(mdl&&mdl.options){
+    if(mdl.options[0])mdl.options[0].textContent=s.mFast;
+    if(mdl.options[1])mdl.options[1].textContent=s.mDeep;
+  }
+  const sc=document.getElementById("scale");
+  if(sc&&sc.options){
+    Array.from(sc.options).forEach(o=>{
+      if(o.value==="")o.textContent=s.scPrompt;
+      else if(o.value==="AUTONOMOUS_SOLO")o.textContent=s.scSolo;
+      else if(o.value==="MICRO_SINGLE_OWNER")o.textContent=s.scMicro;
+      else if(o.value==="SME_CELL")o.textContent=s.scSme;
+    });
+  }
+  const secEl=document.getElementById("sector");
+  if(secEl&&secEl.options&&s.sec){
+    Array.from(secEl.options).forEach(o=>{if(s.sec[o.value])o.textContent=s.sec[o.value];});
+  }
+  syncWelcomeCascade();
   document.getElementById("go").textContent=s.btn;
   document.getElementById("hint").textContent=s.hint;
   document.getElementById("back").textContent=s.back;
   document.getElementById("step1").style.display="none";
   document.getElementById("step2").style.display="block";
+  refreshWelcomeReadiness();
 }
 document.getElementById("back").onclick=()=>{
   document.getElementById("step2").style.display="none";
   document.getElementById("step1").style.display="block";
 };
 document.getElementById("go").onclick=()=>{
-  const owner=document.getElementById("owner").value.trim();
-  const password=document.getElementById("password").value;
-  const sector=document.getElementById("sector").value;
-  if(!owner||password.length<8){alert(S[cur].name+" / "+S[cur].pass);return;}
+  const p=collectWelcomePayload();
+  const sv=window.FanalSetupValidator;
+  const errEl=document.getElementById("wFormErr");
+  if(errEl)errEl.textContent="";
+  if(sv){
+    const val=sv.validateSetupPayload(p,{},{});
+    if(!val.valid){
+      if(!p.password||!val.passwordAudit.valid){wPwReqOpen=true;refreshWelcomeReadiness();}
+      if(errEl)errEl.textContent=val.errors.join(" · ");
+      return;
+    }
+  }else if(!p.scaleType||!p.user||p.password.length<12||p.password!==p.passwordConfirm){
+    if(errEl)errEl.textContent=wI18n("consNeedValid","Complete all required fields.");
+    return;
+  }
   const btn=document.getElementById("go");
   btn.disabled=true;btn.textContent="…";
   try{
-    if(window.leVeilleux&&window.leVeilleux.setup)window.leVeilleux.setup({user:owner,password,sector,lang:cur,key:document.getElementById("key").value.trim(),model:document.getElementById("model").value});
+    if(window.leVeilleux&&window.leVeilleux.setup)window.leVeilleux.setup({user:p.user,password:p.password,passwordConfirm:p.passwordConfirm,sector:p.sector,professionKey:p.professionKey,scaleType:p.scaleType,lang:cur,key:document.getElementById("key").value.trim(),model:document.getElementById("model").value,constitution:p.constitution});
   }catch(e){btn.disabled=false;btn.textContent=S[cur].btn;}
 };
+const WTIP={
+  en:{langBox:"Click to choose the interface language",closeOverlay:"Close the language list",langRow:"To select English, click here",owner:"Enter the owner username for initial setup",password:"Enter an owner password (min. 8 characters)",key:"Optional DeepSeek BYOK API key (stays local)",model:"Select curated primary brain profile",scale:"Select solo, micro-business, or enterprise size",sector:"Choose your primary industry sector",go:"Create your encrypted owner account and start Fanal",back:"Return to the language selector"},
+  es:{langBox:"Clic para elegir el idioma de Fanal",closeOverlay:"Cerrar la lista de idiomas",langRow:"Para seleccionar Español, presiona aquí",owner:"Escribe el nombre de usuario del dueño",password:"Define tu contraseña de dueño (mín. 8 caracteres)",key:"Clave API DeepSeek opcional (permanece local)",model:"Elegir perfil del cerebro cerrado",scale:"Seleccionar autónomo, microempresa o empresa",sector:"Seleccionar tu sector empresarial",go:"Crear tu cuenta de dueño e iniciar Fanal",back:"Volver al selector de idioma"},
+  fr:{langBox:"Cliquer pour choisir la langue de Fanal",closeOverlay:"Fermer la liste des langues",langRow:"Pour sélectionner Français, cliquez ici",owner:"Saisissez le nom du compte propriétaire",password:"Définissez votre mot de passe (min. 8 caractères)",key:"Clé API DeepSeek facultative (chiffrée localement)",model:"Choisir le profil du cerveau fermé",scale:"Choisir autonome, microentreprise ou PME",sector:"Sélectionner votre secteur d'activité",go:"Créer le compte propriétaire et lancer Fanal",back:"Revenir au choix de langue"},
+  de:{langBox:"Klicken, um die Sprache zu wählen",closeOverlay:"Sprachliste schließen",langRow:"Um Deutsch auszuwählen, hier klicken",owner:"Inhabernamen für die Ersteinrichtung eingeben",password:"Inhaber-Passwort festlegen (mind. 8 Zeichen)",key:"Optionaler DeepSeek-API-Schlüssel (bleibt lokal)",model:"Kuratiertes Gehirnprofil auswählen",scale:"Solo, Kleinstunternehmen oder Firma wählen",sector:"Branche auswählen",go:"Inhaberkonto erstellen und Fanal starten",back:"Zurück zur Sprachauswahl"},
+  it:{langBox:"Clicca per scegliere la lingua di Fanal",closeOverlay:"Chiudi l'elenco delle lingue",langRow:"Per selezionare Italiano, premi qui",owner:"Inserisci il nome del proprietario",password:"Imposta password proprietario (min. 8 caratteri)",key:"Chiave API DeepSeek facoltativa (resta locale)",model:"Scegli il profilo del cervello chiuso",scale:"Seleziona autonomo, microimpresa o azienda",sector:"Seleziona il settore della tua attività",go:"Crea account proprietario e avvia Fanal",back:"Torna alla scelta della lingua"},
+  pt:{langBox:"Clique para escolher o idioma do Fanal",closeOverlay:"Fechar a lista de idiomas",langRow:"Para selecionar Português, clique aqui",owner:"Escreva o nome do proprietário",password:"Defina a palavra-passe (mín. 8 caracteres)",key:"Chave API DeepSeek opcional (fica local)",model:"Escolher perfil do cérebro fechado",scale:"Escolher autônomo, microempresa ou empresa",sector:"Selecionar o seu setor de atividade",go:"Criar conta de proprietário e iniciar Fanal",back:"Voltar à escolha de idioma"},
+  zh:{langBox:"点击选择 Fanal 界面语言",closeOverlay:"关闭语言列表",langRow:"要选择中文，请点击此处",owner:"输入所有者账户名称",password:"设置所有者密码（至少 8 个字符）",key:"可选 DeepSeek API 密钥（仅保留在本地）",model:"选择内置封闭大脑配置",scale:"选择自由职业、微企或公司规模",sector:"选择您的业务行业",go:"创建所有者账户并启动 Fanal",back:"返回语言选择器"},
+  ja:{langBox:"クリックして Fanal の言語を選択",closeOverlay:"言語リストを閉じる",langRow:"日本語を選択するにはここをクリックしてください",owner:"オーナーのユーザー名を入力",password:"オーナーパスワードを設定（8文字以上）",key:"任意の DeepSeek API キー（ローカル保存）",model:"キュレーション脳プロファイルを選択",scale:"個人・小規模・法人規模を選択",sector:"業種セクターを選択",go:"オーナーアカウントを作成して Fanal を開始",back:"言語選択に戻る"},
+  ko:{langBox:"클릭하여 Fanal 언어 선택",closeOverlay:"언어 목록 닫기",langRow:"한국어를 선택하려면 여기를 누르세요",owner:"소유자 계정 이름 입력",password:"소유자 비밀번호 설정 (8자 이상)",key:"선택 사항 DeepSeek API 키 (로컬 보관)",model:"큐레이션된 두뇌 프로필 선택",scale:"1인 자영업, 소기업 또는 기업 선택",sector:"업종 섹터 선택",go:"소유자 계정을 만들고 Fanal 시작",back:"언어 선택으로 돌아가기"},
+  ar:{langBox:"انقر لاختيار لغة Fanal",closeOverlay:"إغلاق قائمة اللغات",langRow:"لاختيار العربية، اضغط هنا",owner:"أدخل اسم حساب المالك",password:"تعيين كلمة مرور المالك (8 أحرف على الأقل)",key:"مفتاح DeepSeek الاختياري (يبقى محليًا)",model:"اختر ملف تعريف الدماغ المغلق",scale:"اختر العمل الحر أو منشأة صغرى أو شركة",sector:"اختر قطاع عملك",go:"إنشاء حساب المالك وبدء Fanal",back:"العودة إلى اختيار اللغة"}
+};
+(function initWelcomeTooltips(){
+  const tip=document.getElementById("fanalTooltip");
+  if(!tip||typeof document.addEventListener!=="function")return;
+  const canHover=()=>{try{return typeof window.matchMedia==="function"&&window.matchMedia("(hover: hover) and (pointer: fine)").matches;}catch(e){return false;}};
+  const isOn=()=>{if(!canHover())return false;try{return localStorage.getItem("fanal-tooltips")!=="0";}catch(e){return true;}};
+  let timer=null,active=null;
+  const hide=()=>{if(timer){clearTimeout(timer);timer=null;}active=null;tip.classList.remove("show");tip.setAttribute("aria-hidden","true");};
+  const getKey=(el)=>{
+    if(!el)return "";
+    if(el.id==="langBox")return "langBox";
+    if(el.id==="closeOverlay")return "closeOverlay";
+    if(el.classList&&el.classList.contains("orow"))return "langRow";
+    if(el.id==="owner"||el.id==="password"||el.id==="key"||el.id==="model"||el.id==="scale"||el.id==="sector"||el.id==="go"||el.id==="back")return el.id;
+    return "";
+  };
+  const showTip=(el)=>{
+    const k=getKey(el);
+    const tl=(el.dataset&&el.dataset.tipLang)||cur;
+    const m=(k==="langRow"?(WTIP[tl]||WTIP.en):(WTIP[cur]||WTIP.en));
+    const txt=(k&&m[k])||"";
+    if(!txt){hide();return;}
+    tip.dir=tl==="ar"?"rtl":"ltr";
+    tip.textContent=txt;tip.setAttribute("aria-hidden","false");
+    const r=el.getBoundingClientRect();
+    tip.style.left="-9999px";tip.style.top="0px";tip.classList.add("show");
+    const tw=tip.offsetWidth||180,th=tip.offsetHeight||32,vw=window.innerWidth||800,vh=window.innerHeight||600;
+    const left=Math.max(10,Math.min(vw-tw-10,r.left+r.width/2-tw/2));
+    const top=(r.bottom+8+th+10>vh)?Math.max(10,r.top-th-8):r.bottom+8;
+    tip.style.left=Math.round(left)+"px";tip.style.top=Math.round(top)+"px";
+  };
+  document.addEventListener("pointerover",(ev)=>{
+    if(!isOn()){hide();return;}
+    const el=ev.target&&ev.target.closest?ev.target.closest("#langBox, #closeOverlay, .orow, input, select, button"):null;
+    if(!el||active===el)return;
+    if(timer)clearTimeout(timer);
+    active=el;
+    timer=setTimeout(()=>{if(active&&isOn())showTip(active);},280);
+  },true);
+  document.addEventListener("pointerout",(ev)=>{
+    if(!active)return;
+    if(ev.target&&ev.relatedTarget&&active.contains&&active.contains(ev.relatedTarget))return;
+    hide();
+  },true);
+  document.addEventListener("pointerdown",hide,true);
+  document.addEventListener("input",hide,true);
+  document.addEventListener("keydown",(ev)=>{if(ev.key==="Escape")hide();},true);
+  window.addEventListener("scroll",hide,true);
+  window.addEventListener("blur",hide);
+})();
 </script>
 </body>
 </html>

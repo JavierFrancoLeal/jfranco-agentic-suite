@@ -11,61 +11,71 @@
 <title>Fanal — Action Panel</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='f' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234D6BFE'/%3E%3Cstop offset='1' stop-color='%237c5cff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8' fill='none' stroke='url(%23f)' stroke-width='6' stroke-linecap='round'/%3E%3C/svg%3E">
 <style>
-:root{--blue:#4D6BFE;--violet:#7c5cff;--lavender:#a78bfa;--ink:#101828;--muted:#667085;--mut:var(--muted);--bg:#f6f7fb;--canvas:linear-gradient(165deg,#eef2ff 0%,#f6f7fb 46%,#f8f5ff 100%);--card:#ffffff;--line:#e3e6ee;--line2:#eef0f7;--ok:#15803d;--ok-bright:#22c55e;--bad:#b91c1c}
-body.dark{--ink:#e6ecf7;--muted:#94a3b8;--mut:var(--muted);--bg:#0b1220;--canvas:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%);--card:#141f31;--line:#26334d;--line2:#1e293b}
+:root{--blue:#354ed6;--violet:#573bd4;--lavender:#a78bfa;--ink:#101828;--muted:#475467;--mut:var(--muted);--bg:#f6f7fb;--canvas:linear-gradient(165deg,#eef2ff 0%,#f6f7fb 46%,#f8f5ff 100%);--card:#ffffff;--line:#cbd5e1;--line2:#e2e8f0;--ok:#15803d;--ok-bright:#22c55e;--bad:#b91c1c}
+body.dark{--blue:#354ed6;--ink:#e6ecf7;--muted:#cbd5e1;--mut:var(--muted);--bg:#0b1220;--canvas:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%);--card:#141f31;--line:#334155;--line2:#1e293b}
 *{box-sizing:border-box}
 body{margin:0;min-height:100vh;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--canvas);color:var(--ink)}
 main{max-width:760px;margin:0 auto;padding:18px 16px 24px}
-header{background:linear-gradient(135deg,#4D6BFE,#7c5cff,#a78bfa);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 10px 30px rgba(77,107,254,.2)}
-header .logo{width:38px;height:38px;display:flex;align-items:center;justify-content:center;border-radius:11px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28)}
+header{background:linear-gradient(135deg,#354ed6 0%,#573bd4 60%,#6842cc 100%);color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 10px 30px rgba(53,78,214,.25)}
+header .logo{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:12px;background:linear-gradient(155deg,#ffffff 0%,#f3f6ff 100%);border:1.5px solid #ffffff;box-shadow:0 6px 18px rgba(15,23,42,.22),0 0 0 3px rgba(255,255,255,.16);flex-shrink:0}
+header .logo svg{width:34px;height:34px;display:block}
+.fanal-tip{position:fixed;left:0;top:0;z-index:1000010;pointer-events:none;max-width:240px;padding:7px 11px;border-radius:10px;background:rgba(16,24,40,.94);color:#f8fafc;border:1px solid rgba(167,139,250,.45);box-shadow:0 12px 28px rgba(15,23,42,.30);font-size:12px;font-weight:500;line-height:1.38;text-align:left;opacity:0;transform:translateY(3px);transition:opacity .14s ease,transform .14s ease}
+.fanal-tip.show{opacity:1;transform:translateY(0)}
+body.dark .fanal-tip{background:rgba(30,27,75,.96);color:#eef2ff;border-color:rgba(165,180,252,.42);box-shadow:0 12px 30px rgba(0,0,0,.48)}
+@media (hover: none), (pointer: coarse){#fanalTooltip{display:none!important}}
 header .ht{flex:1;min-width:180px}
 header h1{margin:0;font-size:19px;letter-spacing:-.01em}
 header p{margin:3px 0 0;opacity:.9;font-size:12.5px}
-.panel-back{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);border-radius:11px;padding:8px 14px;font-size:13px;font-weight:700;color:#fff;text-decoration:none;backdrop-filter:blur(8px);cursor:pointer;transition:background .15s,transform .12s}
-.panel-back:hover{background:rgba(255,255,255,.26)}
+.panel-back{display:inline-flex;align-items:center;gap:6px;background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.38);border-radius:11px;padding:8px 14px;font-size:13px;font-weight:700;color:#fff;text-decoration:none;backdrop-filter:blur(8px);cursor:pointer;transition:background .15s,transform .12s}
+.panel-back:hover{background:rgba(15,23,42,.52)}
 .panel-back:active{transform:scale(.97)}
-.panel-back svg,.ico-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block}
-.ico-btn{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px);padding:0;transition:background .15s,transform .12s}
-.ico-btn:hover{background:rgba(255,255,255,.26)}
+.panel-back svg,.ico-btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;display:block;pointer-events:none}
+.ico-btn{position:relative;width:38px;height:38px;border-radius:11px;background:rgba(15,23,42,.34);border:1px solid rgba(255,255,255,.36);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px);padding:0;transition:background .15s,transform .12s}
+.ico-btn svg{position:absolute;inset:0;margin:auto;opacity:1;transform:scale(1) rotate(0deg);transition:opacity .22s cubic-bezier(.22,1,.36,1),transform .24s cubic-bezier(.22,1,.36,1)}
+.ico-btn svg.is-off{opacity:0;transform:scale(.62) rotate(-18deg)}
+.ico-btn:hover{background:rgba(15,23,42,.48)}
 .ico-btn:active{transform:scale(.96)}
-.ico-btn.is-active{background:rgba(255,255,255,.94);color:#4D6BFE;border-color:#fff}
-.chip{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:600;color:#fff}
+.ico-btn.is-active{background:rgba(255,255,255,.94);color:#354ed6;border-color:#fff}
+.chip{background:rgba(15,23,42,.38);border:1px solid rgba(255,255,255,.38);border-radius:999px;padding:7px 14px;font-size:13.5px;font-weight:600;color:#fff}
 main{max-width:580px;margin:0 auto;padding:16px}
-.idcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 8px 24px rgba(77,107,254,.07)}
-.idcard .avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+.idcard{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:13px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 8px 24px rgba(53,78,214,.08)}
+.idcard .avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#354ed6,#573bd4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
 .idcard .who{flex:1;min-width:130px}
 .idcard .who b{display:block;font-size:15px}
 .idcard .who span{font-size:12.5px;color:var(--muted)}
 .idcard input{width:118px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px;background:var(--card);color:var(--ink)}
 .idcard.warn{border-color:rgba(185,28,28,.45);background:rgba(185,28,28,.07)}
 body.dark .idcard.warn{background:rgba(239,68,68,.12);border-color:rgba(248,113,113,.5)}
-.idcard a{color:var(--blue);font-weight:700;font-size:13.5px}
-.primary{display:block;width:100%;margin:14px 0;background:linear-gradient(135deg,#4D6BFE,#7c5cff);border:none;border-radius:20px;padding:24px 16px;font-size:23px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 12px 28px rgba(77,107,254,.30);transition:transform .12s,box-shadow .15s}
+.idcard a{color:#354ed6;font-weight:700;font-size:13.5px}
+.primary{display:block;width:100%;margin:14px 0;background:linear-gradient(135deg,#354ed6,#573bd4);border:none;border-radius:20px;padding:24px 16px;font-size:23px;font-weight:800;color:#fff;cursor:pointer;box-shadow:0 12px 28px rgba(53,78,214,.30);transition:transform .12s,box-shadow .15s}
 .primary:active{transform:scale(.98)}
-.primary.live{background:linear-gradient(135deg,#b91c1c,#ef4444);box-shadow:0 10px 26px rgba(185,28,28,.35);animation:pulse 1.6s infinite}
+.primary.live{background:linear-gradient(135deg,#b91c1c,#dc2626);box-shadow:0 10px 26px rgba(185,28,28,.35);animation:pulse 1.6s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.5)}70%{box-shadow:0 0 0 24px rgba(239,68,68,0)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0)}}
 .status{text-align:center;font-size:13.5px;color:var(--muted);margin:4px 0}
 .prompt{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;min-height:90px;white-space:pre-wrap;font-size:15px;line-height:1.55}
 .row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
 .row button{flex:1;min-width:130px;border:none;border-radius:12px;padding:12px;font-size:15px;font-weight:600;color:#fff;cursor:pointer}
-.copy{background:var(--blue)}
-.speak{background:#7c5cff}
+.copy{background:#354ed6}
+.speak{background:#573bd4}
 .fbcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:16px 0}
 .fbcard h3{margin:0 0 10px;font-size:16px}
-.tradread{background:#ffffff;border:2px solid #4D6BFE;border-left:8px solid #4D6BFE;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 10px 30px rgba(77,107,254,.18)}
+.tradread{background:#ffffff;border:2px solid #354ed6;border-left:8px solid #354ed6;border-radius:18px;padding:18px;margin:12px 0;box-shadow:0 10px 30px rgba(53,78,214,.18)}
 .tradread-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
-.tradread small{color:#4D6BFE;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
-.tradread #tradClearBtn{border:none;background:var(--line2);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}
+.tradread small{color:#354ed6;font-weight:800;font-size:12px;letter-spacing:.08em;text-transform:uppercase}
+.tradread #tradClearBtn{border:none;background:var(--line2);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px;cursor:pointer}
 .tradread #tradDisplay{font-size:26px;font-weight:800;line-height:1.5;white-space:pre-wrap;color:#101828}
 body.dark .tradread{background:#141f31}
+body.dark .tradread small{color:#a5b4fc}
 body.dark .tradread #tradDisplay{color:#e6ecf7}
+body.dark .idcard a{color:#a5b4fc}
 .tradcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:12px 0}
 .tradrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:6px 0;flex-wrap:wrap}
-.tradToggle{border:none;border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;background:var(--line2);color:var(--muted);cursor:pointer}
-.tradToggle.on{background:linear-gradient(135deg,#4D6BFE,#7c5cff);color:#fff;box-shadow:0 4px 12px rgba(77,107,254,.35)}
+.tradToggle{border:1px solid var(--line);border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;background:#e2e8f0;color:#1e293b;cursor:pointer}
+body.dark .tradToggle{background:#1e293b;color:#e2e8f0}
+.tradToggle.on{background:linear-gradient(135deg,#354ed6,#573bd4);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(53,78,214,.35)}
 .langmini{display:flex;gap:6px;flex-wrap:wrap}
 .langmini .pill2{border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;background:var(--card);color:var(--ink)}
-.langmini .pill2.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.langmini .pill2.active{background:#354ed6;color:#fff;border-color:#354ed6}
 @media (max-width:480px){#dayList{display:flex;flex-wrap:wrap;gap:4px}#dayList .dayItem{height:30px;border:1px solid var(--line);border-radius:6px;padding:0 6px;flex:1 1 auto;min-width:calc(50% - 8px)}}
 .sumcard{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
 .sumcard h3{margin:0 0 10px;font-size:16px}
@@ -74,16 +84,16 @@ body.dark .tradread #tradDisplay{color:#e6ecf7}
 .sumcard .req{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;background:var(--line2);border:1px solid var(--line);margin:6px 0;font-size:14px}
 .sumcard .req span{flex:1}
 .tier{font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px}
-.tier-GREEN{background:#dcfce7;color:#15803d}
-.tier-SEMI{background:#fef9c3;color:#a16207}
-.tier-YELLOW{background:#fef9c3;color:#a16207}
-.tier-RED{background:#fee2e2;color:#b91c1c}
+.tier-GREEN{background:#dcfce7;color:#166534}
+.tier-SEMI{background:#fef9c3;color:#854d0e}
+.tier-YELLOW{background:#fef9c3;color:#854d0e}
+.tier-RED{background:#fee2e2;color:#991b1b}
 .confirmBtn{border:none;border-radius:10px;padding:7px 12px;font-size:13px;font-weight:700;background:var(--ok);color:#fff;cursor:pointer}
 .confirmBtn.done{background:var(--line2);color:var(--muted);cursor:default}
 #convInput{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:14px;padding:12px;font-size:16px;margin:12px 0 0;font-family:inherit;background:var(--card);color:var(--ink);resize:vertical}
 .fbcard select,.fbcard textarea,.fbcard button{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:14px;margin-bottom:8px;font-family:inherit;background:var(--card);color:var(--ink)}
 .fbcard textarea{resize:vertical}
-.fbcard button{background:var(--blue);color:#fff;font-weight:600;border:none;cursor:pointer}
+.fbcard button{background:#354ed6;color:#fff;font-weight:600;border:none;cursor:pointer}
 .note{font-size:13px;color:var(--muted);line-height:1.65}
 code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
 .foot{text-align:center;padding:6px 16px 16px}
@@ -92,19 +102,20 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
 .langs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:10px 0}
 .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:13px;cursor:pointer;color:var(--ink)}
 .pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.pill *,.pill2 *{pointer-events:none}
 </style>
 </head>
 <body>
 <header>
-  <a href="/dashboard" id="panelBackBtn" class="panel-back" title="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg><span id="panelBackLbl">Back</span></a>
-  <div class="logo"><svg width="26" height="22" viewBox="0 0 64 64" aria-hidden="true"><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <a href="/dashboard" id="panelBackBtn" class="panel-back" data-tip-panel="back" aria-label="Back"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5"/><path d="m12 19-7-7 7-7"/></svg><span id="panelBackLbl">Back</span></a>
+  <div class="logo"><svg width="34" height="34" viewBox="6 6 52 52" aria-hidden="true"><defs><linearGradient id="fanalPanelGd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4D6BFE"/><stop offset="1" stop-color="#7c5cff"/></linearGradient></defs><path d="M10 32 C10 22 16 14 32 14 C48 14 54 22 54 32 C54 42 48 50 32 50 C20 50 12.5 45.2 10.5 38.5 C14 42.5 20 41 25.4 34.8 A6.6 6.6 0 0 1 38.6 34.8 C38.6 31.4 36.6 28.2 32 22.5 C27.4 28.2 25.4 31.4 25.4 34.8" fill="none" stroke="url(#fanalPanelGd)" stroke-width="6.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
   <div class="ht">
     <h1 id="title">Fanal — Action Panel</h1>
     <p id="subtitle">TRASUNTO · J.Franco · Québec</p>
   </div>
-  <button class="ico-btn" id="darkBtn" type="button" aria-label="Dark mode" title="Dark mode">
-    <svg id="icoMoon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
-    <svg id="icoSun" viewBox="0 0 24 24" aria-hidden="true" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+  <button class="ico-btn" id="darkBtn" type="button" data-tip-panel="lightActive" aria-label="Light mode">
+    <svg id="icoMoon" class="is-off" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/></svg>
+    <svg id="icoSun" viewBox="0 0 24 24" aria-hidden="false"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.2v2.1M12 19.7v2.1M4.93 4.93l1.48 1.48M17.59 17.59l1.48 1.48M2.2 12h2.1M19.7 12h2.1M4.93 19.07l1.48-1.48M17.59 6.41l1.48-1.48"/></svg>
   </button>
 </header>
 <main>
@@ -123,13 +134,13 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
     <a href="/dashboard" id="gateLink">Log in on the Dashboard</a>
   </div>
 
-  <button class="primary" id="listenBtn">🎙️ LISTEN / DICTATE</button>
+  <button class="primary" id="listenBtn" data-tip-panel="listen">🎙️ LISTEN / DICTATE</button>
   <div class="status" id="status"></div>
 
   <div class="tradcard" id="tradCard">
     <div class="tradrow">
       <b id="tradTitle">Real-time translation</b>
-      <button class="tradToggle" id="tradToggle">OFF</button>
+      <button class="tradToggle" id="tradToggle" data-tip-panel="trad">OFF</button>
     </div>
     <div class="tradrow" id="tradLangRow" style="display:none">
       <span id="tradLangLabel">Other language</span>
@@ -138,7 +149,7 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
     <div class="tradread" id="tradReadBox" style="display:none">
       <div class="tradread-head">
         <small id="tradReadLabel">Lo que dice el cliente:</small>
-        <button id="tradClearBtn" type="button" aria-label="Clear" title="Clear"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        <button id="tradClearBtn" type="button" data-tip-panel="tradClear" aria-label="Clear"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
       </div>
       <div id="tradDisplay"></div>
     </div>
@@ -146,8 +157,8 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
   </div>
 
   <textarea id="convInput" rows="4" placeholder="Speak or type what each person said…"></textarea>
-  <button class="primary" id="sendPhraseBtn" style="background:var(--blue);box-shadow:0 4px 14px rgba(77,107,254,.35);margin-top:8px">📤 Send phrase</button>
-  <button class="primary" id="readForMeBtn" style="background:#7c5cff;box-shadow:0 4px 14px rgba(124,92,255,.35);padding:14px;font-size:16px">👁️ Traducir para leer</button>
+  <button class="primary" id="sendPhraseBtn" data-tip-panel="sendPhrase" style="background:var(--blue);box-shadow:0 4px 14px rgba(77,107,254,.35);margin-top:8px">📤 Send phrase</button>
+  <button class="primary" id="readForMeBtn" data-tip-panel="readForMe" style="background:#573bd4;box-shadow:0 4px 14px rgba(87,59,212,.35);padding:14px;font-size:16px">👁️ Traducir para leer</button>
 
   <div class="sumcard" id="stateCard" style="display:none">
     <div style="display:flex;flex-direction:column;gap:6px;text-align:left">
@@ -181,9 +192,9 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
     <div id="ordersList"></div>
     <p class="note" id="sentNote"></p>
     <div class="row">
-      <button id="newConvBtn" style="background:var(--blue)">➕ Nouvelle conversation</button>
-      <button id="dayBtn" style="background:var(--blue)">📅 Ma journée</button>
-      <button id="backBtn" style="background:var(--line2);color:var(--ink)">← Retour</button>
+      <button id="newConvBtn" data-tip-panel="newConv" style="background:var(--blue)">➕ Nouvelle conversation</button>
+      <button id="dayBtn" data-tip-panel="day" style="background:var(--blue)">📅 Ma journée</button>
+      <button id="backBtn" data-tip-panel="back" style="background:var(--line2);color:var(--ink)">← Retour</button>
     </div>
   </div>
 
@@ -198,10 +209,11 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
       <option id="catIdea" value="idea">Idea</option>
     </select>
     <textarea id="fbText" rows="3" placeholder="What happened? What should improve?"></textarea>
-    <button id="fbSend">Send feedback</button>
+    <button id="fbSend" data-tip-panel="fbSend">Send feedback</button>
   </div>
 </main>
 
+<div id="fanalTooltip" class="fanal-tip" role="tooltip" aria-hidden="true"></div>
 <footer class="foot">
   <div class="langs" id="langs"></div>
   <div class="copyr">Fanal · open source (MIT) · autor J.Franco</div>
@@ -335,6 +347,7 @@ function updateIdentity(){
   const w=workerInput.value.trim(),r=roleInput.value.trim();
   $("idCard").style.display=w?"flex":"none";
   $("gateCard").style.display=w?"none":"flex";
+  if(langsEl)langsEl.style.display=w?"none":"flex";
   if(w){
     $("whoName").textContent=w;
     $("whoRole").textContent=S[cur].signedIn+(r?" · "+r:"");
@@ -354,7 +367,46 @@ const F={
  ar:{sayPh:"تحدث أو اكتب ما قاله كل شخص…",sendPhrase:"📤 إرسال",back:"← رجوع",summaryTitle:"ملخص المحادثة",sentNote:"أُرسل إلى المطبخ والمركز",processing:"الذكاء الاصطناعي يلخص…",noSummary:"سيظهر الملخص هنا.",person:"شخص",confirm:"تأكيد ✓",confirmed:"تم التأكيد ✔",typeHint:"اكتب العبارة بالأسفل واضغط إرسال."}
 };
 const TIER={GREEN:"🟢",SEMI:"⚑",YELLOW:"🟡",RED:"🔴"};
+const PTIP={
+ es:{back:"Volver al panel principal de Fanal",dark:"Alternar tema claro u oscuro",darkActive:"Modo oscuro activo — clic para pasar a claro",lightActive:"Modo claro activo — clic para pasar a oscuro",workerInput:"Escribe tu nombre o usuario operativo",roleInput:"Define tu puesto o rol de turno",gateLink:"Ir al acceso principal para iniciar sesión",listen:"Escuchar conversación por micrófono",trad:"Activar o pausar traducción simultánea",tradLang:"Elegir el idioma de salida del cliente",tradClear:"Borrar texto traducido en pantalla",convInput:"Escribe o edita las frases de la conversación",sendPhrase:"Enviar frase para generar resumen",readForMe:"Traducir y mostrar texto al cliente",stateBack:"Volver a la vista anterior",taskLabel:"Nombre de mesa, turno o expediente a abrir",taskOpen:"Abrir una sesión de tarea en tu jornada",closeYes:"Mantener la tarea abierta para seguir",closeNo:"Cerrar y archivar esta tarea ahora",dayBack:"Volver al panel principal",dayItem:"Tocar o reabrir esta tarea de la jornada",confirm:"Confirmar este punto para enviarlo a operación",newConv:"Cerrar actual e iniciar nueva conversación",day:"Ver mis tareas y alertas del día",fbCat:"Elegir tipo de reporte o mejora",fbText:"Describir incidente o sugerencia de campo",fbSend:"Enviar reporte de mejora al equipo",langPill:"Cambiar el idioma de este Panel de Acción",langPickSelf:"Para seleccionar Español, presiona aquí"},
+ en:{back:"Return to main Fanal dashboard",dark:"Switch between light and dark theme",darkActive:"Dark mode active — click to switch to light",lightActive:"Light mode active — click to switch to dark",workerInput:"Enter your operator name or account",roleInput:"Enter your current shift role or station",gateLink:"Go to the main dashboard to sign in",listen:"Capture speech continuously by microphone",trad:"Turn real-time client translation on or off",tradLang:"Select target language for the customer",tradClear:"Clear live translated client display",convInput:"Type or edit conversation phrases",sendPhrase:"Send phrase to summarize items",readForMe:"Translate written phrase for client view",stateBack:"Return to previous card",taskLabel:"Table, customer, or case label to open",taskOpen:"Open a task session for your shift",closeYes:"Keep task active to continue",closeNo:"Close and archive this task now",dayBack:"Return from shift task list",dayItem:"Open or inspect this shift task",confirm:"Confirm this item for execution",newConv:"Start a fresh conversation summary",day:"View open tasks and shift alerts",fbCat:"Choose feedback category",fbText:"Describe what happened or what to improve",fbSend:"Send field feedback to the team",langPill:"Switch Action Panel display language",langPickSelf:"To select English, click here"},
+ fr:{back:"Revenir au tableau de bord Fanal",dark:"Basculer entre thème clair et sombre",darkActive:"Mode sombre actif — cliquer pour passer au clair",lightActive:"Mode clair actif — cliquer pour passer au sombre",workerInput:"Saisissez votre nom d'employé ou identifiant",roleInput:"Indiquez votre poste ou fonction",gateLink:"Ouvrir le tableau principal pour se connecter",listen:"Capturer la voix en continu au micro",trad:"Activer ou couper la traduction temps réel",tradLang:"Choisir la langue cible du client",tradClear:"Effacer le texte traduit affiché",convInput:"Saisir ou corriger les propos de l'échange",sendPhrase:"Envoyer la phrase pour résumer",readForMe:"Traduire et afficher pour le client",stateBack:"Revenir à la carte précédente",taskLabel:"Nom de table, client ou dossier à ouvrir",taskOpen:"Ouvrir une session de tâche du jour",closeYes:"Garder la tâche ouverte pour continuer",closeNo:"Fermer et archiver cette tâche",dayBack:"Quitter la liste des tâches du jour",dayItem:"Reprendre ou consulter cette tâche",confirm:"Confirmer cet élément pour exécution",newConv:"Démarrer une nouvelle conversation",day:"Voir mes tâches et alertes du jour",fbCat:"Choisir la catégorie du retour",fbText:"Décrire un incident ou une piste d'amélioration",fbSend:"Envoyer un retour terrain à l'équipe",langPill:"Changer la langue du Panneau d'action",langPickSelf:"Pour sélectionner Français, cliquez ici"},
+ de:{back:"Zurück zum Haupt-Dashboard von Fanal",dark:"Zwischen hellem und dunklem Design wechseln",darkActive:"Dunkelmodus aktiv — Klicken für helles Design",lightActive:"Helles Design aktiv — Klicken für Dunkelmodus",workerInput:"Mitarbeitername oder Konto eingeben",roleInput:"Aktuelle Schichtrolle eintragen",gateLink:"Zur Hauptansicht zum Anmelden wechseln",listen:"Gespräch laufend per Mikrofon erfassen",trad:"Echtzeit-Übersetzung ein- oder ausschalten",tradLang:"Zielsprache für den Kunden wählen",tradClear:"Übersetzten Text vom Schirm löschen",convInput:"Gesprochene Sätze eingeben oder bearbeiten",sendPhrase:"Satz zur Zusammenfassung senden",readForMe:"Text für den Kunden sichtbar übersetzen",stateBack:"Zur vorherigen Ansicht zurückkehren",taskLabel:"Tisch, Kunde oder Vorgang benennen",taskOpen:"Neue Tagesaufgabe öffnen",closeYes:"Aufgabe offen lassen und fortsetzen",closeNo:"Diese Aufgabe jetzt abschließen",dayBack:"Zurück aus der Tagesliste",dayItem:"Diese Aufgabe erneut öffnen oder prüfen",confirm:"Diesen Punkt zur Ausführung bestätigen",newConv:"Neues Gespräch starten",day:"Offene Tagesaufgaben und Warnungen zeigen",fbCat:"Feedback-Kategorie wählen",fbText:"Vorfall oder Verbesserung kurz beschreiben",fbSend:"Feld-Feedback an das Team senden",langPill:"Sprache des Aktionspanels umstellen",langPickSelf:"Um Deutsch auszuwählen, hier klicken"},
+ it:{back:"Torna alla dashboard principale Fanal",dark:"Alterna tra tema chiaro e scuro",darkActive:"Tema scuro attivo — clicca per passare al chiaro",lightActive:"Tema chiaro attivo — clicca per passare allo scuro",workerInput:"Inserisci nome o account operatore",roleInput:"Indica il tuo ruolo nel turno",gateLink:"Vai alla dashboard principale per accedere",listen:"Acquisisci la voce dal microfono",trad:"Attiva o disattiva traduzione dal vivo",tradLang:"Seleziona la lingua del cliente",tradClear:"Cancella il testo tradotto mostrato",convInput:"Scrivi o modifica le frasi rilevate",sendPhrase:"Invia frase per generare il riepilogo",readForMe:"Traduci e mostra per il cliente",stateBack:"Torna alla scheda precedente",taskLabel:"Etichetta tavolo, cliente o pratica",taskOpen:"Apri una nuova attività di turno",closeYes:"Mantieni aperta l'attività",closeNo:"Chiudi e archivia l'attività ora",dayBack:"Torna dall'elenco giornaliero",dayItem:"Riprendi o apri questa attività",confirm:"Conferma questo punto per l'esecuzione",newConv:"Inizia una nuova conversazione",day:"Vedi attività e avvisi di oggi",fbCat:"Scegli categoria del feedback",fbText:"Descrivi cosa è successo o cosa migliorare",fbSend:"Invia feedback dal campo al team",langPill:"Cambia la lingua del Pannello d'Azione",langPickSelf:"Per selezionare Italiano, premi qui"},
+ pt:{back:"Voltar ao painel principal do Fanal",dark:"Alternar entre tema claro e escuro",darkActive:"Modo escuro ativo — clique para mudar para claro",lightActive:"Modo claro ativo — clique para mudar para escuro",workerInput:"Escreva o seu nome ou conta",roleInput:"Indique a sua função no turno",gateLink:"Ir para o painel principal para entrar",listen:"Captar conversa pelo microfone",trad:"Ativar ou pausar tradução ao vivo",tradLang:"Escolher o idioma do cliente",tradClear:"Limpar texto traduzido no ecrã",convInput:"Escrever ou editar frases da conversa",sendPhrase:"Enviar frase para gerar resumo",readForMe:"Traduzir e mostrar para o cliente",stateBack:"Voltar ao cartão anterior",taskLabel:"Etiqueta da mesa, cliente ou caso",taskOpen:"Abrir nova sessão de tarefa",closeYes:"Manter tarefa aberta",closeNo:"Fechar e arquivar esta tarefa",dayBack:"Sair da lista de tarefas do dia",dayItem:"Abrir ou retomar esta tarefa",confirm:"Confirmar este item para execução",newConv:"Iniciar nova conversa",day:"Ver tarefas e alertas do dia",fbCat:"Selecionar categoria do feedback",fbText:"Descreva o ocorrido ou sugestão",fbSend:"Enviar feedback de campo à equipa",langPill:"Alterar o idioma do Painel de Ação",langPickSelf:"Para selecionar Português, clique aqui"},
+ zh:{back:"返回 Fanal 主控制台",dark:"切换浅色与深色模式",darkActive:"当前深色模式 — 点击切换浅色",lightActive:"当前浅色模式 — 点击切换深色",workerInput:"输入您的姓名或操作员账号",roleInput:"填写当前班次岗位角色",gateLink:"前往主控制台登录账号",listen:"通过麦克风持续识别对话",trad:"开启或关闭实时客户端翻译",tradLang:"选择客户目标翻译语言",tradClear:"清除屏幕上显示的翻译内容",convInput:"输入或编辑对话内容",sendPhrase:"发送句子并生成摘要",readForMe:"将输入内容翻译展示给客户",stateBack:"返回上一视图",taskLabel:"输入要开启的桌号、客户或任务名称",taskOpen:"开启当日任务会话",closeYes:"保持当前任务开启",closeNo:"立即关闭并归档此任务",dayBack:"返回主界面",dayItem:"查看或继续此项当日任务",confirm:"确认并下发此执行项",newConv:"开始新的对话记录",day:"查看今日待办任务与提醒",fbCat:"选择反馈类别",fbText:"描述现场问题或改进建议",fbSend:"向团队发送现场反馈",langPill:"切换操作面板显示语言",langPickSelf:"要选择中文，请点击此处"},
+ ja:{back:"Fanal ダッシュボードへ戻る",dark:"ライト／ダーク表示を切り替える",darkActive:"ダークモード中 — クリックでライト表示へ",lightActive:"ライトモード中 — クリックでダーク表示へ",workerInput:"担当者名またはアカウントを入力",roleInput:"現在の担当役割を入力",gateLink:"メイン画面でログインする",listen:"マイクで会話を連続音声認識する",trad:"リアルタイム翻訳のオン／オフ切替",tradLang:"相手側の表示言語を選択",tradClear:"画面の翻訳テキストを消去する",convInput:"会話テキストを入力または編集",sendPhrase:"発言を送信して要約を作成する",readForMe:"入力文を翻訳して相手に表示する",stateBack:"前の画面に戻る",taskLabel:"開始するテーブル・顧客・案件名を入力",taskOpen:"本日のタスクセッションを開始",closeYes:"タスクを開いたまま続ける",closeNo:"このタスクを終了して保存",dayBack:"タスク一覧を閉じる",dayItem:"このタスクを再開または確認",confirm:"この項目を確定して実行へ送る",newConv:"新しい会話を開始する",day:"今日のタスクとアラートを確認",fbCat:"フィードバック分類を選択",fbText:"状況や改善提案を入力",fbSend:"現場フィードバックをチームへ送信",langPill:"アクションパネルの表示言語を変更",langPickSelf:"日本語を選択するにはここをクリックしてください"},
+ ko:{back:"Fanal 대시보드로 돌아가기",dark:"라이트 / 다크 테마 전환",darkActive:"다크 모드 켜짐 — 클릭하여 라이트 모드로",lightActive:"라이트 모드 켜짐 — 클릭하여 다크 모드로",workerInput:"작업자 이름 또는 계정 입력",roleInput:"현재 근무 역할 입력",gateLink:"대시보드에서 로그인하기",listen:"마이크로 대화를 연속 인식하기",trad:"실시간 통역 켜기/끄기",tradLang:"고객 대상 언어 선택",tradClear:"화면에 표시된 번역 문장 지우기",convInput:"대화 내용을 입력하거나 수정",sendPhrase:"문장을 보내 대화 요약 생성",readForMe:"작성한 문장을 번역해 고객에게 표시",stateBack:"이전 카드로 돌아가기",taskLabel:"열려는 테이블, 고객 또는 작업명 입력",taskOpen:"근무 작업 세션 열기",closeYes:"작업을 계속 열어 두기",closeNo:"이 작업 닫고 보관하기",dayBack:"작업 목록에서 돌아가기",dayItem:"이 작업 열기 또는 이어서 하기",confirm:"이 항목을 확정하여 전달하기",newConv:"새 대화 요약 시작하기",day:"오늘의 작업과 알림 보기",fbCat:"피드백 유형 선택",fbText:"현장 상황이나 개선 의견 작성",fbSend:"팀에 현장 피드백 보내기",langPill:"작업 패널 표시 언어 변경",langPickSelf:"한국어를 선택하려면 여기를 누르세요"},
+ ar:{back:"العودة إلى لوحة Fanal الرئيسية",dark:"التبديل بين الوضع الفاتح والداكن",darkActive:"الوضع الداكن مفعّل — انقر للوضع الفاتح",lightActive:"الوضع الفاتح مفعّل — انقر للوضع الداكن",workerInput:"أدخل اسمك أو اسم الحساب التشغيلي",roleInput:"أدخل دورك أو مهمتك في المناوبة",gateLink:"الانتقال إلى اللوحة الرئيسية لتسجيل الدخول",listen:"التقاط الصوت باستمرار عبر الميكروفون",trad:"تشغيل أو إيقاف الترجمة الفورية",tradLang:"اختر لغة العميل المستهدفة",tradClear:"مسح نص الترجمة المعروض",convInput:"اكتب أو عدّل عبارات المحادثة",sendPhrase:"إرسال العبارة لتلخيص الطلبات",readForMe:"ترجمة النص وعرضه للعميل",stateBack:"العودة إلى البطاقة السابقة",taskLabel:"اكتب اسم الطاولة أو العميل أو المهمة",taskOpen:"فتح جلسة مهمة جديدة ليومك",closeYes:"إبقاء المهمة مفتوحة للمتابعة",closeNo:"إغلاق وأرشفة هذه المهمة الآن",dayBack:"الرجوع من قائمة المهام اليومية",dayItem:"فتح أو متابعة هذه المهمة",confirm:"تأكيد هذا البند وإرساله للتنفيذ",newConv:"بدء محادثة جديدة",day:"عرض مهام وتنبيهات اليوم",fbCat:"اختر فئة الملاحظة",fbText:"اشرح ما حدث أو ما يمكن تحسينه",fbSend:"إرسال ملاحظات الميدان للفريق",langPill:"تغيير لغة لوحة الإجراءات",langPickSelf:"لاختيار العربية، اضغط هنا"}
+};
 let tradOn=false,tradOther="AUTO";
+const SUP=location.origin;
+function getPanelToken(){try{return sessionStorage.getItem("dsh-sup-token")||"";}catch(e){return "";}}
+function showAuthGate(locked){
+  const gc=$("gateCard"),ic=$("idCard");
+  if(!gc)return;
+  if(locked){
+    gc.style.display="flex";
+    if(ic)ic.style.display="none";
+    if(langsEl)langsEl.style.display="flex";
+  }else{
+    updateIdentity();
+  }
+}
+async function authFetch(url,opts={}){
+  const full=String(url).startsWith("http")?url:(SUP+url);
+  const tok=getPanelToken();
+  const headers={"Content-Type":"application/json","X-Fanal-CSRF":"1",...(opts.headers||{}),...(tok?{Authorization:"Bearer "+tok}:{})};
+  const r=await fetch(full,{...opts,headers,credentials:"same-origin"});
+  if(r.status===401)showAuthGate(true);
+  return r;
+}
+async function api(path,body){
+  try{
+    const r=await authFetch(path,body?{method:"POST",body:JSON.stringify(body)}:{method:"GET"});
+    return await r.json();
+  }catch(e){return {error:"network"};}
+}
 function ft(k){return (F[cur]&&F[cur][k])||F.en[k]||k;}
 function renderSummary(st){
   summaryCard.style.display="block";
@@ -371,7 +423,7 @@ function renderSummary(st){
       conf.textContent=r.status==="confirmed"?ft("confirmed"):ft("confirm");
       if(r.status!=="confirmed")conf.onclick=async()=>{
         conf.disabled=true;
-        await fetch(SUP+"/api/live/confirm",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestId:r.id})});
+        await authFetch("/api/live/confirm",{method:"POST",body:JSON.stringify({requestId:r.id})});
         pollLive();
       };
       row.appendChild(conf);box.appendChild(row);
@@ -403,7 +455,14 @@ function applyLang(){
     $("stateBack").textContent=ft("back");
     const pb=$("panelBackBtn"),pbl=$("panelBackLbl");
     if(pbl)pbl.textContent=ft("back").replace(/^←\s*/,"");
-    if(pb)pb.title=ft("back");
+    if(pb){pb.setAttribute("aria-label",ft("back"));pb.removeAttribute&&pb.removeAttribute("title");}
+    if($("darkBtn")){
+      const mp=PTIP[cur]||PTIP.en;
+      const dkKey=darkOn?"darkActive":"lightActive";
+      if($("darkBtn").dataset)$("darkBtn").dataset.tipPanel=dkKey;
+      $("darkBtn").setAttribute&&$("darkBtn").setAttribute("aria-label",mp[dkKey]||mp.dark);
+      $("darkBtn").removeAttribute&&$("darkBtn").removeAttribute("title");
+    }
   }catch(e){}
   if(typeof tradUI==="function")tradUI();
   if(!recording)$("listenBtn").textContent=s.listen;
@@ -432,9 +491,15 @@ applyLang();
 function applyToggles(){
   document.body.classList.toggle("dark",darkOn);
   const db=$("darkBtn"),m=$("icoMoon"),sn=$("icoSun");
-  if(m)m.style.display=darkOn?"none":"block";
-  if(sn)sn.style.display=darkOn?"block":"none";
-  if(db)db.classList.toggle("is-active",darkOn);
+  if(m){m.classList.toggle("is-off",!darkOn);m.setAttribute&&m.setAttribute("aria-hidden",darkOn?"false":"true");}
+  if(sn){sn.classList.toggle("is-off",darkOn);sn.setAttribute&&sn.setAttribute("aria-hidden",darkOn?"true":"false");}
+  if(db){
+    db.classList.toggle("is-active",darkOn);
+    db.setAttribute&&db.setAttribute("aria-pressed",darkOn?"true":"false");
+    if(db.dataset)db.dataset.tipPanel=darkOn?"darkActive":"lightActive";
+    const mp=PTIP[cur]||PTIP.en;
+    db.setAttribute&&db.setAttribute("aria-label",mp[darkOn?"darkActive":"lightActive"]||mp.dark);
+  }
 }
 $("darkBtn").onclick=()=>{darkOn=!darkOn;try{localStorage.setItem("dsh-panel-dark",darkOn?"1":"0");}catch(e){}applyToggles();};
 try{darkOn=localStorage.getItem("dsh-panel-dark")==="1";}catch(e){}
@@ -506,7 +571,8 @@ let lastClientLang=tradOther!=="AUTO"?tradOther:"fr";
 async function translateUtterance(text,mode){
   if(!text)return;
   try{
-    const r=await fetch(SUP+"/api/translate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text,appLang:cur,otherLang:tradOther})});
+    const r=await authFetch("/api/translate",{method:"POST",body:JSON.stringify({text,appLang:cur,otherLang:tradOther})});
+    if(!r.ok)return;
     const j=await r.json();
     if(!j.translation)return;
     if(mode==="client"){
@@ -529,9 +595,9 @@ async function translateUtterance(text,mode){
 }
 $("readForMeBtn").onclick=async()=>{if(tradOn&&convInput.value.trim())await translateUtterance(convInput.value.trim(),"client");};
 $("tradClearBtn").onclick=()=>{$("tradDisplay").textContent="";};
-$("newConvBtn").onclick=async()=>{await fetch(SUP+"/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";$("tradReadBox").style.display="none";$("tradDisplay").textContent="";};
+$("newConvBtn").onclick=async()=>{await authFetch("/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";$("tradReadBox").style.display="none";$("tradDisplay").textContent="";};
 let closeTimer=null,closeSessionId=null;
-async function loadMyDay(){try{const r=await fetch(SUP+"/api/task/mine");const j=await r.json();const ss=(j&&j.sessions)||[];
+async function loadMyDay(){try{const r=await authFetch("/api/task/mine");if(!r.ok)return;const j=await r.json();const ss=(j&&j.sessions)||[];
   const open=ss.filter(x=>x.status==="open");
   const urgent=open.filter(x=>(x.operational&&x.operational.alerts&&x.operational.alerts.length)||x.closing);
   const rest=open.filter(x=>!urgent.includes(x)).sort((a,b)=>String(a.label||"").localeCompare(String(b.label||""),"fr",{numeric:true}));
@@ -541,25 +607,36 @@ async function loadMyDay(){try{const r=await fetch(SUP+"/api/task/mine");const j
   document.querySelectorAll(".dayItem").forEach(el=>el.onclick=()=>openLive(el.dataset.id));
   document.querySelectorAll(".dayClose").forEach(b=>b.onclick=()=>askClose(b.dataset.id));}catch(e){}}
 let liveSessionId=null;
-function openLive(id){liveSessionId=id;const r=null;api("/api/task/mine").then(j=>{const x=(j.sessions||[]).find(y=>y.id===id);if(!x)return;renderStateBox(x);$("dayCard").style.display="none";$("stateCard").style.display="block";});}
+function openLive(id){liveSessionId=id;api("/api/task/mine").then(j=>{const x=(j.sessions||[]).find(y=>y.id===id);if(!x)return;renderStateBox(x);$("dayCard").style.display="none";$("stateCard").style.display="block";});}
 async function renderStateBox(x){const op=x.operational||{items:[],alerts:[],incidents:[],total:""};$("lineItems").innerHTML=(op.items||[]).map((it,i)=>'<button class="pill" data-i="'+i+'">'+esc(it)+' −</button>').join("");$("lineAlerts").innerHTML=(op.alerts||[]).map(a=>'<span class="badge-al">⚠️ '+esc(a)+'</span>').join("");$("lineInc").textContent=(op.incidents||[]).join(" · ")||"Aucun";$("lineTotal").textContent=(op.total||"0,00 $");
   document.querySelectorAll("#lineItems .pill").forEach(b=>b.onclick=()=>{op.items.splice(Number(b.dataset.i),1);saveOp(op);renderStateBox(x);});}
-async function saveOp(op){await fetch(SUP+"/api/task/op",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:liveSessionId,items:op.items,alerts:op.alerts,incidents:op.incidents,total:op.total})});}
-async function askClose(id){const r=await fetch(SUP+"/api/task/close-prompt",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id})});const j=await r.json();if(!j||!j.ok)return;closeSessionId=id;$("closePrompt").style.display="block";$("closeQuestion").textContent=j.question||"Désirez-vous faire autre chose ?";
+async function saveOp(op){await authFetch("/api/task/op",{method:"POST",body:JSON.stringify({id:liveSessionId,items:op.items,alerts:op.alerts,incidents:op.incidents,total:op.total})});}
+async function askClose(id){const r=await authFetch("/api/task/close-prompt",{method:"POST",body:JSON.stringify({id})});const j=await r.json();if(!j||!j.ok)return;closeSessionId=id;$("closePrompt").style.display="block";$("closeQuestion").textContent=j.question||"Désirez-vous faire autre chose ?";
   $("closeYes").onclick=()=>{clearTimeout(closeTimer);$("closePrompt").style.display="none";loadMyDay();};
-  $("closeNo").onclick=async()=>{clearTimeout(closeTimer);await fetch(SUP+"/api/task/close",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:closeSessionId})});$("closePrompt").style.display="none";loadMyDay();};
-  clearTimeout(closeTimer);closeTimer=setTimeout(async()=>{await fetch(SUP+"/api/task/close",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:closeSessionId,auto:true})});$("closePrompt").style.display="none";loadMyDay();},10000);}
-$("taskOpen").onclick=async()=>{const label=$("taskLabel").value.trim();await fetch(SUP+"/api/task/open",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({label})});$("taskLabel").value="";loadMyDay();};
+  $("closeNo").onclick=async()=>{clearTimeout(closeTimer);await authFetch("/api/task/close",{method:"POST",body:JSON.stringify({id:closeSessionId})});$("closePrompt").style.display="none";loadMyDay();};
+  clearTimeout(closeTimer);closeTimer=setTimeout(async()=>{await authFetch("/api/task/close",{method:"POST",body:JSON.stringify({id:closeSessionId,auto:true})});$("closePrompt").style.display="none";loadMyDay();},10000);}
+$("taskOpen").onclick=async()=>{const label=$("taskLabel").value.trim();await authFetch("/api/task/open",{method:"POST",body:JSON.stringify({label})});$("taskLabel").value="";loadMyDay();};
 $("dayBtn").onclick=()=>{$("dayCard").style.display="block";$("summaryCard").style.display="none";loadMyDay();};
 $("dayBack").onclick=()=>{$("dayCard").style.display="none";};
 $("stateBack").onclick=()=>{$("stateCard").style.display="none";$("dayCard").style.display="block";loadMyDay();};
 try{$("micBtn").addEventListener("mousedown",()=>{try{$("micBtn").style.background="#dc2626";$("micBtn").textContent="● ÉCOUTE…";}catch(e){}});}catch(e){}
 $("backBtn").onclick=()=>{summaryCard.style.display="none";};
 // ── The real field flow: phrase → transcript → FLASH summary → confirm ──
-const SUP=location.origin;
+async function verifyPanelAuth(){
+  try{
+    const m=await api("/api/me");
+    if(m&&!m.error&&m.name){
+      if(!workerInput.value.trim()){workerInput.value=m.label||m.name;roleInput.value=m.role||"";updateIdentity();}
+      return true;
+    }
+    showAuthGate(true);
+    return false;
+  }catch(e){return false;}
+}
 async function pollLive(){
   try{
-    const r=await fetch(SUP+"/api/live");
+    const r=await authFetch("/api/live");
+    if(!r.ok)return;
     const st=await r.json();
     if(st&&st.status==="summary")renderSummary(st);
   }catch(e){}
@@ -569,12 +646,12 @@ sendPhraseBtn.onclick=async()=>{
   if(!text){convInput.focus();return;}
   $("status").textContent=ft("processing");
   if(tradOn)await translateUtterance(text,"worker");
-  await fetch(SUP+"/api/live/transcript",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({worker:workerInput.value.trim()||"worker",text,lang:cur})});
+  await authFetch("/api/live/transcript",{method:"POST",body:JSON.stringify({worker:workerInput.value.trim()||"worker",text,lang:cur})});
   convInput.value="";
   $("status").textContent="";
 };
+verifyPanelAuth().then((ok)=>{if(ok)pollLive();});
 setInterval(pollLive,3000);
-pollLive();
 // Field feedback: send to the supervisor backend, or copy a prompt for DSH.
 $("fbSend").onclick=async()=>{
   const text=$("fbText").value.trim();
@@ -582,8 +659,8 @@ $("fbSend").onclick=async()=>{
   const w=workerInput.value.trim(),r=roleInput.value.trim();
   let sent=false;
   try{
-    const res=await fetch(SUP+"/api/feedback",{
-      method:"POST",headers:{"Content-Type":"application/json"},
+    const res=await authFetch("/api/feedback",{
+      method:"POST",
       body:JSON.stringify({worker:w||"anonymous",role:r,category:$("fbCat").value,text})
     });
     sent=res.ok;
@@ -600,6 +677,76 @@ $("fbSend").onclick=async()=>{
     setTimeout(()=>$("fbSend").textContent=S[cur].fbSent,3000);
   }
 };
+const PTIP_BY_ID={panelBackBtn:"back",darkBtn:"dark",workerInput:"workerInput",roleInput:"roleInput",gateLink:"gateLink",listenBtn:"listen",tradToggle:"trad",tradClearBtn:"tradClear",convInput:"convInput",sendPhraseBtn:"sendPhrase",readForMeBtn:"readForMe",stateBack:"stateBack",taskLabel:"taskLabel",taskOpen:"taskOpen",closeYes:"closeYes",closeNo:"closeNo",dayBack:"dayBack",newConvBtn:"newConv",dayBtn:"day",backBtn:"back",fbCat:"fbCat",fbText:"fbText",fbSend:"fbSend"};
+(function initPanelTooltips(){
+  const tip=$("fanalTooltip");
+  if(!tip||typeof document.addEventListener!=="function")return;
+  const canHover=()=>{try{return typeof window.matchMedia==="function"&&window.matchMedia("(hover: hover) and (pointer: fine)").matches;}catch(e){return false;}};
+  const isOn=()=>{if(!canHover())return false;try{return localStorage.getItem("fanal-tooltips")!=="0";}catch(e){return true;}};
+  let timer=null,active=null;
+  const hide=()=>{if(timer){clearTimeout(timer);timer=null;}active=null;tip.classList.remove("show");tip.setAttribute("aria-hidden","true");};
+  const getKey=(el)=>{
+    if(!el)return "";
+    if(el.dataset&&el.dataset.tipPanel)return el.dataset.tipPanel;
+    if(el.id&&PTIP_BY_ID[el.id])return PTIP_BY_ID[el.id];
+    if(el.classList){
+      if(el.classList.contains("pill2"))return "tradLang";
+      if(el.classList.contains("pill"))return "langPill";
+      if(el.classList.contains("confirmBtn"))return "confirm";
+      if(el.classList.contains("dayItem"))return "dayItem";
+    }
+    return "";
+  };
+  const getText=(el)=>{
+    if(el&&el.classList&&el.classList.contains("pill")&&el.dataset&&el.dataset.l){
+      const pm=PTIP[el.dataset.l]||PTIP.en;
+      if(pm&&pm.langPickSelf)return pm.langPickSelf;
+    }
+    const k=getKey(el),m=PTIP[cur]||PTIP.en;
+    return (k&&m[k])||(el&&el.dataset&&el.dataset.tipNative)||(el&&el.getAttribute&&(el.getAttribute("aria-label")||el.getAttribute("placeholder")))||"";
+  };
+  const showTip=(el)=>{
+    const txt=getText(el);if(!txt){hide();return;}
+    tip.textContent=txt;tip.dir=(el&&el.classList&&el.classList.contains("pill")&&el.dataset&&el.dataset.l==="ar")||(cur==="ar"&&!(el&&el.classList&&el.classList.contains("pill")))?"rtl":"ltr";tip.setAttribute("aria-hidden","false");
+    const r=el.getBoundingClientRect();
+    tip.style.left="-9999px";tip.style.top="0px";tip.classList.add("show");
+    const tw=tip.offsetWidth||180,th=tip.offsetHeight||32,vw=window.innerWidth||800,vh=window.innerHeight||600;
+    const left=Math.max(10,Math.min(vw-tw-10,r.left+r.width/2-tw/2));
+    const top=(r.bottom+8+th+10>vh)?Math.max(10,r.top-th-8):r.bottom+8;
+    tip.style.left=Math.round(left)+"px";tip.style.top=Math.round(top)+"px";
+  };
+  const MATCH="[data-tip-panel], button, a[href], input, select, textarea, .pill, .pill2, .confirmBtn, .dayItem";
+  document.addEventListener("pointerover",(ev)=>{
+    if(!isOn()){hide();return;}
+    const el=ev.target&&ev.target.closest?ev.target.closest(MATCH):null;
+    if(!el)return;
+    if(el.hasAttribute&&el.hasAttribute("title")){const raw=el.getAttribute("title");if(raw)el.dataset.tipNative=raw;el.removeAttribute("title");}
+    if(active===el)return;
+    if(timer)clearTimeout(timer);
+    const wasShown=tip.classList.contains("show");
+    active=el;
+    timer=setTimeout(()=>{if(active&&isOn())showTip(active);},wasShown?80:150);
+  },true);
+  document.addEventListener("pointerout",(ev)=>{
+    if(!active)return;
+    if(ev.target&&ev.relatedTarget&&active.contains&&active.contains(ev.relatedTarget))return;
+    if(ev.target===active||(ev.target&&ev.target.closest&&ev.target.closest(MATCH)===active))hide();
+  },true);
+  document.addEventListener("pointerdown",hide,true);
+  document.addEventListener("input",hide,true);
+  document.addEventListener("keydown",(ev)=>{if(ev.key==="Escape")hide();},true);
+  window.addEventListener("scroll",hide,true);
+  window.addEventListener("blur",hide);
+})();
+try{
+  fetch(SUP+"/api/edition").then(r=>r.json()).then(ed=>{
+    if(ed&&ed.edition==="studio"){
+      const sb=$("subtitle");
+      if(sb&&!sb.textContent.includes("STUDIO"))sb.textContent="STUDIO · "+sb.textContent;
+      if($("title")&&!$("title").textContent.includes("Studio"))$("title").textContent=$("title").textContent.replace("Fanal","Fanal Studio");
+    }
+  }).catch(()=>{});
+}catch(e){}
 if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }

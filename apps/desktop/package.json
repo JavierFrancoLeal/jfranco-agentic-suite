@@ -8,7 +8,12 @@
   "scripts": {
     "start": "electron .",
     "kiosk": "electron . --kiosk",
-    "dist": "electron-builder --mac --win --linux"
+    "pack": "node ../../tools/build-editions.mjs --edition client --dir",
+    "pack:studio": "node ../../tools/build-editions.mjs --edition studio --dir",
+    "pack:all": "node ../../tools/build-editions.mjs --all --dir",
+    "dist": "node ../../tools/build-editions.mjs --edition client",
+    "dist:studio": "node ../../tools/build-editions.mjs --edition studio",
+    "dist:all": "node ../../tools/build-editions.mjs --all"
   },
   "devDependencies": {
     "electron": "^45.3.0",
@@ -22,6 +27,7 @@
       "preload.js",
       "vault-biometric.js",
       "desktop-sandbox.js",
+      "edition.json",
       "assets/**",
       "brain/**",
       "ui/**",

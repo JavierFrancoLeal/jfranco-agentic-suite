@@ -171,10 +171,14 @@ function buildSanitizedDiagnosticReport(input = {}) {
     .slice(-10)
     .map((tk) => sanitizeTicketRecord(tk, extraSanitizeFn));
 
+  const telIn = input.telemetrySummary && typeof input.telemetrySummary === "object" ? input.telemetrySummary : null;
   const bundleCore = {
     schema: "fanal-diagnostic-v1",
     createdAtIso: new Date().toISOString(),
     loi25Redacted: true,
+    scaleType: String(input.scaleType || ""),
+    professionKey: String(input.professionKey || ""),
+    sector: String(input.sector || ""),
     environment: {
       appVersion: String(input.appVersion || ""),
       platform: String(input.platform || process.platform),
@@ -189,6 +193,12 @@ function buildSanitizedDiagnosticReport(input = {}) {
       locked: Boolean(vs.locked),
       biometricLinked: Boolean(vs.biometricLinked),
     },
+    telemetrySummary: telIn ? {
+      totals: telIn.totals || null,
+      byModel: Array.isArray(telIn.byModel) ? telIn.byModel.slice(0, 8) : [],
+      byTaskType: Array.isArray(telIn.byTaskType) ? telIn.byTaskType.slice(0, 10) : [],
+      byActor: Array.isArray(telIn.byActor) ? telIn.byActor.slice(0, 10) : [],
+    } : null,
     sanitizedLogs: rawLogs,
     recentTickets: tickets,
   };

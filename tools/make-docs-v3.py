@@ -205,7 +205,7 @@ def one_pager(out):
          size=9, color=INK, space_before=8, space_after=8)
 
     label(doc, "L'offre", space_before=2)
-    para(doc, "Rencontre et estimation gratuites → Implantation clé en main → Abonnement simple à partir de 249 $/mois. Pilote de 6 mois à tarif réduit pour votre première expérience, sans engagement.", space_after=8)
+    para(doc, "Rencontre et estimation gratuites → Implantation clé en main → Buffet Fixe Pur dès 350 $/mois (Fanal Solo) ou 490 $/mois (Fanal Équipe). Zéro frais et zéro plafond par dossier (usage illimité sous mutualisation), sans engagement.", space_after=8)
 
     ask_box(doc, "L'appui recherché — SADC Charlevoix : (1) diffuser nos services auprès des PME de la région ; (2) identifier une entreprise pilote pour tester et raffiner le produit ; (3) orienter nos clients vers les subventions fédérales et provinciales de modernisation technologique — IA (Futurpreneur, programme LIFT de la BDC, et autres) afin d'ajuster nos prix et notre modèle d'affaires.")
     para(doc, "Notre métier n'est pas de vendre de l'IA : nous vendons l'économie de capital humain et le capital technologique et organisationnel de la quatrième révolution industrielle. La machine exécute ce qui n'a pas de conséquences ; l'humain signe ce qui en a. Chaque acteur garde sa peau et ses incitations exactement là où sa signature vaut.", size=9, bold=True, color=V, space_before=8)
@@ -219,7 +219,7 @@ def accord(out):
     para(doc, "ENTRE : Trasunto inc., Charlevoix (Québec) · ET : [Nom de l'entreprise], [ville], ci-après « le Client ».",
          size=9, color=MUTED, space_after=8)
     label(doc, "Objet et durée", space_before=2)
-    para(doc, "Pilote de 6 mois — implantation de Fanal à tarif opérationnel (couvre uniquement les frais, sans marge) : 349 $/mois.", size=9.5)
+    para(doc, "Pilote de 6 mois — implantation de Fanal au tarif Bêta Fondateurs tout inclus : Fanal Solo 350 $/mois (implantation 350 $) ou Fanal Équipe 490 $/mois (implantation 750 $), 0 $/dossier.", size=9.5)
     label(doc, "Inclus")
     bullets(doc, [
         ("Implantation clé en main — ", "installation, personnalisation et formation de votre équipe."),
@@ -268,8 +268,8 @@ def grille(out):
         ("1", "Diagnostic de préparation à l'IA", "Gratuit", False),
         ("2", "Implantation et automatisation — par problème à résoudre", "1 500 $ – 4 000 $", False),
         ("3", "Intégration d'outils existants et formation", "750 $/journée", False),
-        ("4a", "Accompagnement continu — Essentiel : 1 site, jusqu'à 10 travailleurs, caisse + rapports + support", "249 $/mois", True),
-        ("4b", "Accompagnement continu — Pro : analyses approfondies, support prioritaire, révision mensuelle", "449 $/mois", True),
+        ("4a", "Accompagnement continu — Fanal Solo (Buffet Fixe Pur) : 1 personne, dossiers illimités sans supplément, caisse + rapports + support", "350 $/mois", True),
+        ("4b", "Accompagnement continu — Fanal Équipe : 2 à 35 postes, Wallboard SME authentifié, support prioritaire", "490 $/mois", True),
         ("4c", "Accompagnement continu — Sur mesure (multi-sites, kiosque, matériel)", "Sur devis", True),
         ("5", "Ateliers, conférences et formations", "750 $ / 1 200 $ par journée", False),
     ]
@@ -356,8 +356,8 @@ def grille(out):
     heading(doc, "Les packs d'automatisations", size=12)
     para(doc, "La demande sectorielle se traduit en automatisations livrées et maintenues :", size=9, color=MUTED, space_after=6)
     for a3, b3, c3 in [
-        ("Pack Essentiel", "249 $/mois", "Jusqu'à 6 automatisations actives — réparties entre le Publicateur, le Répondant et le Secrétaire"),
-        ("Pack Actif", "449 $/mois", "Jusqu'à 15 automatisations actives + analyses approfondies mensuelles + support prioritaire"),
+        ("Forfait Fanal Solo", "350 $/mois", "1 dirigeant autonome · Téléphoniste, Répondant, Secrétaire, Buffet Fixe Pur à dossiers illimités"),
+        ("Forfait Fanal Équipe", "490 $/mois", "2 à 35 postes · Multi-postes, Caisse Z, Quarts, Wallboard SME authentifié"),
         ("Pack Intensif", "Sur devis", "Automatisations sur mesure par secteur (multi-langues, connecteurs, multi-sites, kiosque)"),
     ]:
         para(doc, "• " + a3 + " — " + c3 + " · " + b3, size=9, space_after=4)

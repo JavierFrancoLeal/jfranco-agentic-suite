@@ -66,7 +66,24 @@ async function run() {
     const setupRes = await fetch(`${baseUrl}/api/setup`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-Fanal-CSRF": "1" },
-      body: JSON.stringify({ user: "Owner", password: "password12345", sector: "accounting" }),
+      body: JSON.stringify({
+        user: "Owner",
+        password: "VaultGuard!2026",
+        passwordConfirm: "VaultGuard!2026",
+        scaleType: "AUTONOMOUS_SOLO",
+        professionKey: "CPA_COMPTABLE",
+        constitution: {
+          bizName: "Cabinet Alpha CPA",
+          taxRegime: "PETIT_FOURNISSEUR_EXEMPT",
+          rprpName: "Jean Owner",
+          rprpEmail: "rprp@cabinet-alpha.example",
+          toneRegister: "VOUVOIEMENT_CHALEUREUX",
+          pricingFloorCad: 250,
+          discountPolicy: "LOCKED_0_PCT",
+          escalationRules: ["RED_PROMISE_DEADLINE", "RED_LEGAL_MEDICAL_OPINION"],
+          signerInitials: "JO",
+        },
+      }),
     });
     assert.equal(setupRes.status, 200);
     assert.equal(setupRes.headers.get("access-control-allow-origin"), null, "/api/setup must not broadcast wildcard CORS");

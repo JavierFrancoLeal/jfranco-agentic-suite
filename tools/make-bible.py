@@ -92,16 +92,16 @@ table3(doc, [
     ("Service 1", "Évaluation de la préparation à l'IA : diagnostic des données, des outils et des goulots ; feuille de route stratégique", "Inclus"),
     ("Service 2", "Implantation et automatisation — tarification par problème à résoudre (publications, comptabilité, administration, service client)", "1 500–4 000 $"),
     ("Service 3", "Intégration des outils existants (Microsoft 365, Google Workspace, ChatGPT…) et formation du personnel", "750 $/jour"),
-    ("Service 4", "Accompagnement continu — le cœur du modèle : le client reste maître de ses outils, avec un partenaire stable", "249–449 $/mois"),
+    ("Service 4", "Accompagnement continu — le cœur du modèle : Fanal Solo (350 $/mois) ou Fanal Équipe (490 $/mois) tout inclus", "350–490 $/mois"),
     ("Service 5", "Ateliers, conférences et formations — avec la Chambre de commerce, la SADC et les associations sectorielles", "750–1 200 $"),
-    ("Le produit", "Fanal : l'assistant de travail installé chez le client — caisse, contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes et centre de notifications « la IA informe, l'humain décide »", "SaaS"),
+    ("Le produit", "Fanal : l'assistant de travail installé chez le client — caisse, contre-registre (Z-rapport), journée d'ouverture/fermeture, alertes et centre de notifications « l'IA informe, l'humain décide »", "SaaS"),
     ("Ligne 1", "Le Publicateur — publications Facebook/Instagram/X : Fanal rédige le brouillon en français, le client publie", "Inclus"),
     ("Ligne 2", "Le Répondant — Messenger/Gmail/Airbnb : Fanal lit la conversation, propose la réponse dans la langue du client (10 langues), le client envoie", "Inclus"),
     ("Ligne 3", "Le Secrétaire — formulaires, factures, comptabilité : Fanal remplit l'évident, laisse vide le délicat, le client signe", "Inclus"),
-    ("Travailleurs autonomes", "Niveau 1 dédié : activation 1 500 $ + 199–349 $/mois — l'IA prépare, le professionnel signe ; compatible avec les ordres professionnels", "Micro-entreprises"),
+    ("Travailleurs autonomes", "Fanal Solo (Buffet Fixe Pur) : implantation 500 $ (Bêta : 350 $) + 350 $/mois (dossiers illimités, 0 $/dossier) — 11 métiers reconnus au Québec", "1 personne"),
 ], header=("Offre", "Ce que c'est", "Tarif"))
 
-para(doc, "Fanal est neutre par conception : une maison Apple, deux prises interchangeables — Google ou Microsoft 365 — et un seul cerveau (la clé du client). Copilot ne parle que Microsoft, Gemini ne parle que Google ; Fanal parle avec les deux, dans l'écosystème que le client possède déjà. Trasunto n'emprisonne personne : le client change de clé ou de fournisseur quand il veut.", size=9.5, color=MUTED, space_after=8)
+para(doc, "Fanal est neutre par conception : deux prises interchangeables — Google Workspace ou Microsoft 365 — et un seul Cerveau Dual Fermé (DeepSeek + Gemini) derrière le Voile PII exécuté localement chez le client. Architecture fermée style Apple (zéro Ollama requis).", size=9.5, color=MUTED, space_after=8)
 
 # ── 3bis. CONFORMITÉ LÉGALE (Loi 25) ─────────────────────────
 para(doc, "Conformité Loi 25 par conception : les données restent dans le silo du client ; le choix du cerveau (nuage ou local) est consigné à l'installation ; la télémétrie est anonymisée ; la politique de confidentialité, le protocole d'incidents et le calendrier de rétention sont publiés ; Trasunto nomme son responsable de la protection des renseignements personnels. La conformité n'est pas une charge — c'est un argument de vente : la PME québécoise achète la tranquillité réglementaire avec le produit.", size=9.5, color=MUTED, space_after=8)

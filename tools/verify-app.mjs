@@ -167,6 +167,35 @@ if (!brainServer.includes("repondant/scan")) {
   fail("apps/desktop/brain/server.js is stale (missing repondant/scan) — run sync-desktop");
 }
 
+// --- 3b2. Dual-edition separation sanity ---
+const edJsonPath = join(APP, "edition.json");
+if (!existsSync(edJsonPath)) {
+  fail("apps/desktop/edition.json missing");
+} else {
+  try {
+    const edJson = JSON.parse(readFileSync(edJsonPath, "utf8"));
+    if (edJson.edition !== "client") fail(`apps/desktop/edition.json must default to "client" (got ${edJson.edition})`);
+    if (edJson.appId !== "ca.trasunto.fanal") fail(`edition.json appId mismatch: ${edJson.appId}`);
+  } catch (e) {
+    fail(`apps/desktop/edition.json unreadable: ${e.message}`);
+  }
+}
+if (!existsSync(join(APP, "brain", "edition.js"))) {
+  fail("apps/desktop/brain/edition.js missing — run sync-desktop");
+}
+const studioIconPath = join(APP, "assets", "icon-studio.png");
+if (!existsSync(studioIconPath)) {
+  fail("apps/desktop/assets/icon-studio.png missing");
+} else {
+  const sBuf = readFileSync(studioIconPath);
+  const PNG_SIG = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  if (sBuf.length < 24 || !sBuf.subarray(0, 8).equals(PNG_SIG)) {
+    fail("assets/icon-studio.png is not a valid PNG");
+  } else if (sBuf.readUInt32BE(16) !== 1024 || sBuf.readUInt32BE(20) !== 1024) {
+    fail("assets/icon-studio.png must be 1024x1024");
+  }
+}
+
 // --- 3c. Desktop bundle parity (same check sync-desktop.mjs --check runs) ---
 for (const m of parityMismatches()) {
   fail(`bundle sync: ${m}`);

@@ -1,0 +1,87 @@
+{
+  "id": "solo",
+  "scaleDefault": "AUTONOMOUS_SOLO",
+  "tableLabel": {
+    "en": "Client",
+    "es": "Cliente",
+    "fr": "Client",
+    "de": "Kunde",
+    "it": "Cliente",
+    "pt": "Cliente",
+    "zh": "客户",
+    "ja": "顧客",
+    "ko": "고객",
+    "ar": "العميل"
+  },
+  "ordersTarget": {
+    "en": "Dossiers & follow-ups",
+    "es": "Expedientes y seguimientos",
+    "fr": "Dossiers et suivis",
+    "de": "Akten & Nachverfolgung",
+    "it": "Pratiche e solleciti",
+    "pt": "Processos e acompanhamentos",
+    "zh": "档案与跟进",
+    "ja": "案件とフォロー",
+    "ko": "안건 및 후속 조치",
+    "ar": "الملفات والمتابعة"
+  },
+  "entity": {
+    "en": "client",
+    "es": "cliente",
+    "fr": "client",
+    "de": "Kunde",
+    "it": "cliente",
+    "pt": "cliente",
+    "zh": "客户",
+    "ja": "顧客",
+    "ko": "고객",
+    "ar": "عميل"
+  },
+  "fields": [
+    {
+      "id": "deadline",
+      "type": "text",
+      "label": {
+        "en": "Due date & fee",
+        "es": "Plazo y honorarios",
+        "fr": "Échéance et honoraires",
+        "de": "Frist & Honorar",
+        "it": "Scadenza e onorario",
+        "pt": "Prazo e honorários",
+        "zh": "期限与费用",
+        "ja": "期限と報酬",
+        "ko": "기한 및 보수",
+        "ar": "الموعد والأتعاب"
+      }
+    }
+  ],
+  "suggestedUsers": [
+    {
+      "label": {
+        "en": "Owner / Practitioner",
+        "es": "Titular / Profesional",
+        "fr": "Titulaire / Professionnel",
+        "de": "Inhaber / Berater",
+        "it": "Titolare / Professionista",
+        "pt": "Titular / Profissional",
+        "zh": "负责人 / 执业师",
+        "ja": "代表 / 専門家",
+        "ko": "대표 / 전문가",
+        "ar": "المالك / المستشار"
+      },
+      "level": "owner"
+    }
+  ],
+  "sectorNote": {
+    "en": "Professional services & practice — client dossiers, fees, compliance & automated follow-ups",
+    "es": "Servicios profesionales y despacho — expedientes, honorarios, cumplimiento y seguimiento automático",
+    "fr": "Services professionnels et cabinet — dossiers, honoraires, conformité et suivis automatisés",
+    "de": "Beratung, Kanzlei & Praxis — Akten, Honorare, Nachweise & automatische Nachfassung",
+    "it": "Servizi professionali e studio — pratiche, onorari, conformità e follow-up automatici",
+    "pt": "Serviços profissionais e consultório — processos, honorários, conformidade e seguimentos",
+    "zh": "专业服务与事务所 — 客户档案、费用、合规与自动跟进",
+    "ja": "専門サービス・事務所 — 案件、報酬、コンプライアンスと自動フォロー",
+    "ko": "전문 서비스·사무소 — 고객 안건, 수수료, 규정 준수 및 자동 후속 조치",
+    "ar": "خدمات مهنية ومكاتب استشارية — ملفات العملاء والأتعاب والامتثال والمتابعة التلقائية"
+  }
+}

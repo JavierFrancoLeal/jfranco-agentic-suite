@@ -1,80 +1,63 @@
-# INSTALLERS — building Fanal for macOS and Windows
+# INSTALLERS — Architecture des éditions, empaquetage et déploiement (macOS / Windows)
 
-*The two installers are built from the same code, the same brain bundle,
-and the same pre-build gate. Everything below is prepared; nothing is
-generated here.*
+Ce document régit la distribution, l'installation sans friction, le contrôle obligatoire à l'ouverture et la séparation stricte entre l'édition destinée aux clients finaux (**Fanal**) et la console réservée au fondateur (**Fanal Studio**), conformément à la philosophie visuelle et opérationnelle de Trasunto inc.
 
-## The pre-build gate (ALWAYS first)
+---
 
-```sh
-sh tools/check.sh          # ALL CHECKS PASSED (smoke, bootflow, css, api)
-sh tools/verify-app.sh     # icons, productName, appId, spawn, targets, zero old brand
-sh tools/fanal-optimize.sh # the Compás audit: 15 ok expected (1 informational warning)
-```
+## 1. Principe directeur : zéro friction, deux éditions distinctes
 
-Only when all three pass, build. The Electron app spawns the supervisor
-with its OWN node (`process.execPath` + `ELECTRON_RUN_AS_NODE=1`), so the
-client's macOS or Windows machine needs NOTHING installed — not even
-Node.js.
+Le client final ne doit jamais manipuler de terminal, d'installateur Node.js, de dépôt Git, ni d'agent local tiers (l'option Ollama a été définitivement retirée afin d'éliminer les échecs matériels, la latence GPU et les 4 à 15 Go d'espace disque superflus). L'ensemble de l'orchestration repose sur un **Cerveau Dual Fermé style Apple** (`DeepSeek-Flash` + `DeepSeek-V4-Pro` + `Google Gemini`) protégé par un silo chiffré local.
 
-## The artifacts
+| Édition | Cible | Port local | Exécutable macOS / Windows | Capacités exclusives |
+| :--- | :--- | :--- | :--- | :--- |
+| **Fanal (Client)** | Dirigeants PME, travailleurs autonomes, cabinets | `8787` | `/Applications/Fanal.app` · `Fanal-Setup.exe` | Tableau de bord 10 langues, Voile PII Loi 25, Coffre chiffré, Caisse Z, Téléphoniste, Répondant, Secrétaire |
+| **Fanal Studio (Fondateur)** | Trasunto inc. (propriétaire & implantateurs) | `8788` | `/Applications/Fanal Studio.app` · `Fanal-Studio-Setup.exe` | Tout le socle client **+** console `studio-admin`, inspection de diagnostics assainis Loi 25, **Vérificateur cryptographique d'installations (`Ed25519`)**, registre de nœuds et gestion interne de facturation |
 
-| Platform | Commands (run in `apps/desktop`) | Output |
-|---|---|---|
-| 🍎 macOS | `env -u ELECTRON_RUN_AS_NODE CSC_IDENTITY_AUTO_DISCOVERY=false ./node_modules/.bin/electron-builder --mac dmg zip --arm64` · `--x64` for Intel | `dist/Fanal-<version>-<arch>.dmg` + `.zip` |
-| 🪟 Windows | `env -u ELECTRON_RUN_AS_NODE CSC_IDENTITY_AUTO_DISCOVERY=false ./node_modules/.bin/electron-builder --win nsis portable --x64` | `dist/Fanal-<version>-x64.exe` (NSIS installer) + portable `.exe` |
+---
 
-Config already in `package.json` → `build`: `appId: ca.trasunto.fanal`,
-`productName: Fanal`, win targets `nsis` + `portable`
-(oneClick:false, desktop shortcut, changeable directory), mac targets
-`dmg` + `zip`, the `trasunto-runtime` pack bundled as `extraResources`,
-icons from `assets/icon.png` (electron-builder converts to `.icns` /
-`.ico`).
+## 2. Séquence d'installation pas à pas sur le poste du client
 
-## Signing (the operator step, before real client installs)
+L'implantation repose sur une double validation stricte partagée entre le navigateur/Electron et le serveur HTTP via [`setup-validator.js`](../supervisor/setup-validator.js) :
 
-- macOS: an Apple Developer ID certificate → `CSC_NAME` + notarization
-  (`APPLE_ID`/`APPLE_APP_SPECIFIC_PASSWORD`/`APPLE_TEAM_ID`). Without it,
-  Gatekeeper warns the client.
-- Windows: a code-signing certificate (OV/EV) → electron-builder
-  `win.certificateFile`. Without it, SmartScreen warns the client.
+1. **Sélection de la langue (Écran 0)** : choix parmi 10 langues natives (`Français`, `English`, `Español`, `Deutsch`, `Italiano`, `Português`, `中文`, `日本語`, `한국어`, `العربية`), avec nuages d'aide contextuels rédigés dans la langue survolée.
+2. **Démarrage du silo et cascade structurelle (Étapes 1–2 du Wizard)** : l'installateur invite le dirigeant à saisir sa raison sociale, sa taille de structure (`AUTONOMOUS_SOLO` 1 personne, `MICRO_SINGLE_OWNER` 2–5 personnes, `SME_CELL` 6+ personnes) qui déverrouille dynamiquement les 11 métiers reconnus au Québec ou les 11 secteurs SCIAN.
+3. **Configuration optionnelle du Coffre chiffré et des clés BYOK (Étape 3)** : badge explicite *Optionnel* pour le démarrage immédiat du socle déterministe ; lorsque renseigné, chiffrement `scrypt + AES-256-GCM`, liaison biométrique optionnelle (`Touch ID` / `Windows Hello`) et scellement des sous-clés `DeepSeek` et `Gemini` via `safeStorage`. Aucune clé en clair ne subsiste sur disque.
+4. **Autorisations système Apple/Windows (Étape 4)** : demande unique et explicite d'accès au microphone, aux notifications locales et à l'accès dossiers (`Fanal-Inbox`).
+5. **Constitution Fermée V2 & Loi 25 (Étape 5 — `FANAL-CONSTITUTION-V2`)** : remplacement des anciens champs ouverts ambigus par huit champs fermés obligatoires (raison sociale, régime fiscal `PETIT_FOURNISSEUR_EXEMPT < 30 000 $` ou `INSCRIT_TPS_TVQ`, responsable RPRP Loi 25 nom + courriel, registre de voix fermé, plancher matériel CAD, politique d'escompte fermée, au moins 1 règle d'escalade ROUGE et paraphe d'initiales), combinés aux trois lois immuables DSH. L'étape 5 bloque toute progression vers le récapitulatif tant que les champs requis ne sont pas valides.
+6. **Porte de vérification en direct & Identifiants sécurisés (`setupReadinessPanel` / `welcomeGatePanel`)** :
+   - Contrôle d'unicité du nom d'utilisateur insensible à la casse (`GET /api/setup/check-username` et `HTTP 409 ERR_USER_EXISTS` côté serveur) et rejet des identifiants système réservés (`admin`, `root`, `fanal`, etc.).
+   - Exigence stricte de mot de passe (`>= 12` caractères, majuscule, minuscule, chiffre, caractère spécial, aucune répétition excessive ni inclusion du nom d'utilisateur ou de mots faibles) + champ de confirmation + bouton explicite **Afficher / Masquer les exigences** déployant la liste interactive à icônes dynamiques.
+   - Liste de complétude pédagogique (`4/4` requis avant activation de `POST /api/setup` et de l'IPC Electron `leveilleux-setup`).
+7. **Seconde porte de vérification (Post-création -> `#loginView`) et garde de réouverture** :
+   - Après le scellement de `FANAL-CONSTITUTION-V2`, l'interface bascule explicitement vers `#loginView` avec le bandeau vérifié affichant le `genesisHash`. Le propriétaire se connecte immédiatement (`POST /api/login`), validant son mot de passe réel et l'intégrité de l'installation (`verification.verified === true`).
+   - Au redémarrage de l'application, `GET /api/setup-status` (`serverSetupDone === true`) verrouille définitivement `showWizard()` et `#langStep` pour ne jamais relancer l'assistant d'installation sur un poste déjà configuré.
+8. **Adaptation de l'interface selon l'échelle** :
+   - En mode **Travailleur autonome** / **Microentreprise** : masquage des cartes d'équipe et du *Wallboard* (`#workersCard`, `#openWall`).
+   - En mode **Entreprise / PME (`6+`)** : activation complète du registre d'équipe, des quarts et du *Wallboard* authentifié (`401` si non connecté sur `GET /api/wall`).
 
-The unsigned artifacts remain valid for the pilot and the SADC demo.
+---
 
-## The content of both installers (identical)
+## 3. Vérification asynchrone zéro-PII vers Fanal Studio (`FANAL-INSTALL-ATTEST-V1`)
 
-```
-Fanal.app / Fanal.exe
- ├── main.js + preload.js          (single-instance, kiosk flag, window)
- ├── brain/  (dashboard + server)  (the whole supervisor — one brain)
- ├── ui/     (panel, manifest, sw) (the field + PWA pieces)
- └── runtime (trasunto-runtime)    (license notices etc.)
-```
+Pour permettre au fondateur de valider chaque nouvelle installation depuis **Fanal Studio** sans exiger de poste serveur allumé 24h/24 ni exposer de données client Loi 25 :
 
-On first run the app walks the client through: language → the Fanal
-animation → the closed 7-step installation (business, sector, client key,
-macOS/Windows permissions, summary) → the owner account.
+- **Côté Fanal (Client — `GET /api/installation/attestation`)** : génère et signe localement par **Ed25519** (`node:crypto`) un certificat JSON contenant uniquement `nodeId`, `publicKeyPem`, `genesisHash`, `constitutionSchema`, `scaleType`, `professionKey`/`sector`, `taxRegime`, `pricingFloorCad` et compteurs agrégés (**zéro nom propre, zéro courriel RPRP, zéro secret**).
+- **Côté Fanal Studio (Fondateur — `POST /api/studio/verify-installation` & `approve`)** : vérifie de manière asynchrone la signature Ed25519 (**Logiciel**), exécute un contrôle de cohérence métier/fiscal (**IA**) et consigne la décision nominative du fondateur (**Humain**) dans `verified-installations.json`.
 
-## The client installation (the definitive process — 2026-11-07)
+---
 
-A virgin client machine needs ONLY this:
+## 4. Empaquetage, vérification CI et signature numérique
 
-1. **Fanal** (the .dmg/.exe) — the ONLY mandatory install. The app
-   bundles EVERYTHING: the supervisor, the brain, the Node.js runtime,
-   the dashboard and the panel. The client NEVER installs DSH — DSH is
-   Trasunto's development environment, not the client's.
-2. **The wizard (~10 minutes, with the founder)** — language, business,
-   sector, the client's OWN DeepSeek + Google Gemini BYOK keys sealed in
-   their Vault (they hold direct provider accounts), permissions, house rules.
-3. **Zero extra LLM installs (closed Apple-style DeepSeek + Gemini brain)** —
-   local Ollama installation was intentionally retired to remove hardware
-   friction and setup uncertainty: the closed dual-hemisphere synergy runs
-   out of the box with PII Veil 2.0 and encrypted Vault keys.
-4. **Browser** — system browser already present on every machine.
-5. **NOTHING ELSE** — no Ollama, no Node.js, no terminal, no Git, no code.
+### Chaîne de génération des installeurs (`tools/build-editions.mjs`)
 
-Contrast with the business system: the installation IS Service 2 of the
-plan ("implantation clé en main") — the founder's human link makes it a
-20-minute guided conversation, not a technical ordeal; the client's key
-and data stay theirs (the two-worlds rule); and the local brain is the
-upsell of sovereignty (the $799 Mac mini runs it forever).
+- **macOS (`arm64` / `x64`)** : `node tools/sync-desktop.mjs --all && node tools/build-editions.mjs --all` génère `Fanal.app` + `.dmg` (édition client) et `Fanal Studio.app` + `.dmg` (édition fondateur), en embarquant `setup-validator.js` dans `apps/desktop/brain/` et `supervisor-pkg/`.
+- **Windows (`x64`)** : construction via `electron-builder --win nsis` dans le flux CI `windows-latest`.
+- **Porte de validation obligatoire avant toute livraison (`tools/check.sh`)** :
+  1. `smoke-dashboard.js` : simulation DOM stricte des 10 langues, Constitution Fermée V2, porte `4/4`, bascule des 6 règles mot de passe, transition post-setup vers `#loginView`, garde `SERVER_SETUP_DONE`, et présence de `welcomeGatePanel` dans `welcome.html`.
+  2. `audit-contrast.mjs` : audit automatisé Chrome CDP (WCAG `>= 4.5:1` / `3.0:1`, Delta-E `>= 18` sur les médaillons) sur 36 écrans client, Studio et Welcome Electron.
+  3. `api-smoke.sh` : rejet `400` des configurations faibles/incomplètes, unicité insensible à la casse (`409`), `FANAL-CONSTITUTION-V2`, attestation zéro-PII `FANAL-INSTALL-ATTEST-V1`, vérification Ed25519 + rejet d'altération `400` + approbation humaine dans Studio, facturation `350 $` / `490 $`.
+  4. `verify-app.sh` et `smoke-desktop.mjs --packed` : vérification des deux binaires macOS empaquetés sur ports isolés (`127.0.0.1`).
+
+### Signature Apple & Microsoft
+
+En attendant l'apposition des certificats définitifs *Apple Developer ID Application + Notarization* et *Microsoft Authenticode EV*, l'application macOS locale est signée ad hoc (`codesign --force --deep --sign -`) afin de préserver la cohérence du Trousseau (`safeStorage`) et l'amorçage biométrique.
