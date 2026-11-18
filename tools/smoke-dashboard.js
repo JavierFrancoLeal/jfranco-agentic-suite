@@ -878,6 +878,30 @@ process.on("unhandledRejection", (e) => { console.log("ASYNC ERROR:", e && e.sta
       throw new Error("STRICT: clicking #setupMetaEditBtn must reveal #setupMetaWrap and hide summary chip");
     }
 
+    // --- 12. Verify hardware/affluence cards, suspended CDP browser card, Z-importer & panel A2DP controls ---
+    for (const id of ["browserCard", "affluenceCard", "regImportZBtn", "secretaireWebcamBtn", "affluenceSettingsCard", "counterLiveSettingsCard", "mobileDockToggleBtn", "copilotDockGrid"]) {
+      if (!html.includes('id="' + id + '"')) throw new Error(`STRICT: dashboard.html missing #${id}`);
+    }
+    if (!html.includes("owner-shell") || !html.includes("triage-split")) {
+      throw new Error("STRICT: dashboard.html missing desktop adaptive .owner-shell / .triage-split grid layout");
+    }
+    for (const id of ["liveA2dpTitleEl", "tradMicSelect", "tradSinkSelect", "liveCounterBtn", "liveCounterMeter"]) {
+      if (!panelSrc.includes('id="' + id + '"')) throw new Error(`STRICT: ui/panel.html missing #${id}`);
+    }
+    if (!panelSrc.includes("panel-cols")) {
+      throw new Error("STRICT: ui/panel.html missing desktop 2-column .panel-cols wrapper");
+    }
+    const desktopMainSrc = fs.readFileSync(path.join(__dirname, "..", "apps", "desktop", "main.js"), "utf8").replace(/\r\n/g, "\n");
+    if (!desktopMainSrc.includes("workAreaSize") || /createWindow\([\s\S]{0,160}width:\s*420/.test(desktopMainSrc)) {
+      throw new Error("STRICT: apps/desktop/main.js createWindow must size for desktop workAreaSize, not narrow 420px phone width");
+    }
+    for (const loc of ["en", "es", "fr", "de", "it", "pt", "zh", "ja", "ko", "ar"]) {
+      const m = window.I18N[loc];
+      for (const k of ["browserSuspendedNote", "affluenceTitle", "regImportZBtn", "secretaireWebcamBtn", "counterLiveSaveBtn", "mobileDockOpen", "mobileDockClose", "tipMobileDock"]) {
+        if (!m || !m[k]) throw new Error(`STRICT: dashboard-i18n.js locale "${loc}" missing key ${k}`);
+      }
+    }
+
     console.log("SMOKE TEST PASSED: sin errores runtime — 10/10 idiomas completos (0 claves faltantes), sectores/asistente/welcome localizados, modo Autónomo/Micro/Empresa, #openWall autenticado + /api/wall 401, SVG/toggles, Studio gating y 10/10 nubes nativas OK");
     process.exit(0);
   } catch (e) {

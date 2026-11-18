@@ -10,8 +10,8 @@ Le client final ne doit jamais manipuler de terminal, d'installateur Node.js, de
 
 | Édition | Cible | Port local | Exécutable macOS / Windows | Capacités exclusives |
 | :--- | :--- | :--- | :--- | :--- |
-| **Fanal (Client)** | Dirigeants PME, travailleurs autonomes, cabinets | `8787` | `/Applications/Fanal.app` · `Fanal-Setup.exe` | Tableau de bord 10 langues, Voile PII Loi 25, Coffre chiffré, Caisse Z, Téléphoniste, Répondant, Secrétaire |
-| **Fanal Studio (Fondateur)** | Trasunto inc. (propriétaire & implantateurs) | `8788` | `/Applications/Fanal Studio.app` · `Fanal-Studio-Setup.exe` | Tout le socle client **+** console `studio-admin`, inspection de diagnostics assainis Loi 25, **Vérificateur cryptographique d'installations (`Ed25519`)**, registre de nœuds et gestion interne de facturation |
+| **Fanal (Client)** | Dirigeants PME, travailleurs autonomes, cabinets | `8787` | `/Applications/Fanal.app` · `Fanal-Setup.exe` | Tableau de bord 10 langues, Voile PII Loi 25, Coffre chiffré, Import Z MEV-WEB passif, Affluence sectorielle (`ToS` Maps), Adaptateurs `0 $` matériel (ADF/VoIP/Webcam/A2DP), Téléphoniste, Répondant, Secrétaire |
+| **Fanal Studio (Fondateur)** | Trasunto inc. (propriétaire & implantateurs) | `8788` | `/Applications/Fanal Studio.app` · `Fanal-Studio-Setup.exe` | Tout le socle client **+** console `studio-admin`, inspection de diagnostics assainis Loi 25, **Vérificateur cryptographique d'installations (`Ed25519`)**, télémétrie p50/p90 (`pricing-catalog.json`) et gestion interne de facturation |
 
 ---
 

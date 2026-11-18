@@ -190,4 +190,20 @@ echo "$STEL" | grep -q '"buffetPoolMetrics"' || { echo "FAIL studio telemetry mi
 echo "$STEL" | grep -q 'deterministic_triage' || { echo "FAIL studio telemetry did not record triage call"; exit 1; }
 echo "ok"
 
+step "suspended experimental CDP pilot + passive Z-report + sector Affluence + counter A2DP + webcam"
+BR_CODE="$(curl -s -o "$DATA/br.out" -w '%{http_code}' -X POST "$BASE/api/browser/start" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"url":"https://example.com"}')"
+[ "$BR_CODE" = "403" ] || { echo "FAIL /api/browser/start expected 403 suspended, got $BR_CODE"; exit 1; }
+grep -q 'experimental_pilot_suspended' "$DATA/br.out" || { echo "FAIL /api/browser/start missing experimental_pilot_suspended"; exit 1; }
+Z_OUT="$(curl -sf -X POST "$BASE/api/register/import-z" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"filename":"mev-z.csv","content":"date,total_sales,cash,card,tps,tvq,transactions,declared\n2026-11-15,1250.00,250.00,1000.00,62.50,124.69,42,1250.00"}')"
+echo "$Z_OUT" | grep -q '"totalSalesCad":1250' || { echo "FAIL /api/register/import-z totalSalesCad: $Z_OUT"; exit 1; }
+curl -sf -X POST "$BASE/api/profile" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"scaleType":"MICRO_SINGLE_OWNER","sector":"restaurant"}' | grep -q '"showAffluenceCard":true' || { echo "FAIL profile restaurant showAffluenceCard"; exit 1; }
+curl -sf -X POST "$BASE/api/affluence/config" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"enabled":true,"regionName":"Charlevoix Test","lat":47.44,"lon":-70.50}' | grep -q 'Charlevoix Test' || { echo "FAIL /api/affluence/config"; exit 1; }
+AFF_OUT="$(curl -sf "$BASE/api/affluence?skipNetwork=1" -H "$AUTH")"
+echo "$AFF_OUT" | grep -q '"FANAL-AFFLUENCE-V1"' || { echo "FAIL /api/affluence schemaVersion: $AFF_OUT"; exit 1; }
+curl -sf "$BASE/api/counter-interpreter/status" -H "$AUTH" | grep -q '"dailyMinutesCap"' || { echo "FAIL /api/counter-interpreter/status"; exit 1; }
+curl -sf -X POST "$BASE/api/counter-interpreter/config" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"dailyMinutesCap":45}' | grep -q '"dailyMinutesCap":45' || { echo "FAIL /api/counter-interpreter/config"; exit 1; }
+WB_OUT="$(curl -sf -X POST "$BASE/api/intake/webcam" -H "$AUTH" -H "Content-Type: application/json" -H "X-Fanal-CSRF: 1" -d '{"mimeType":"image/jpeg","imageBase64":"dGhpcyBpcyBhIGZha2UgYmFzZTY0IGpwZWcgcGF5bG9hZCBmb3Igc21va2UgdGVzdGluZw==","label":"Ticket comptoir test"}')"
+echo "$WB_OUT" | grep -q '"taskId":"t' || { echo "FAIL /api/intake/webcam taskId: $WB_OUT"; exit 1; }
+echo "ok"
+
 echo "API SMOKE PASSED: journey completa"

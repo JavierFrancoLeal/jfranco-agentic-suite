@@ -23,3 +23,8 @@ Every UI edit in Fanal or Fanal Studio (`supervisor/dashboard.html`, `ui/panel.h
 
 4. **Mandatory Verification Command**
    - After modifying any UI or theme file, run `node tools/audit-contrast.mjs` (and `sh tools/check.sh`) before declaring completion.
+
+5. **Trasunto App Kernel & Hardware/ToS Discipline (Shared Across DSH, Fanal & Future Apps)**
+   - **Pricing Single Source of Truth**: never duplicate DeepSeek/Gemini/USD_TO_CAD tables — read from `supervisor/pricing-catalog.json`.
+   - **Google Maps Platform Compliance**: never scrape Places *Popular Times* and never cache or persist Google Routes API traffic payloads to disk (`transientTraffic` only).
+   - **Zero-New-Hardware Reuse**: keep live audio translation decoupled (`PC/webcam fixed mic` -> `Bluetooth A2DP stereo output` via `AudioContext.setSinkId()`) with an active daily minute ceiling to preserve HFP-free stereo clarity and the `$5 USD/month` BYOK cap.

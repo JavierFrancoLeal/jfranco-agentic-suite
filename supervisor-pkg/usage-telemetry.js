@@ -8,53 +8,18 @@ const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
 
-const USD_TO_CAD = 1.40;
-const WORKSPACE_USD_CAP = 5.0;
+const PRICING_CATALOG = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "pricing-catalog.json"), "utf8")
+);
 
-// Canonical DeepSeek pricing rates (USD per 1M tokens) mirrored from
-// jfranco-deepseek-prices/lib/index.js (verified 2026-11-08) + Gemini refs.
-const CHINESE_HOLIDAYS_2026 = new Set([
-  "2026-01-01",
-  "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22",
-  "2026-04-04", "2026-04-05", "2026-04-06",
-  "2026-05-01", "2026-05-02", "2026-05-03", "2026-05-04", "2026-05-05",
-  "2026-06-19", "2026-06-20", "2026-06-21",
-  "2026-09-25", "2026-09-26", "2026-09-27",
-  "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07",
-]);
+const USD_TO_CAD = Number(PRICING_CATALOG.usdToCad || 1.40);
+const WORKSPACE_USD_CAP = Number(PRICING_CATALOG.workspaceMonthlyUsdCap || 5.0);
 
-const MODEL_RATES_USD_PER_M = {
-  "deepseek-flash": {
-    provider: "deepseek",
-    cacheHit: { peak: 0.006, offPeak: 0.003 },
-    cacheMiss: { peak: 0.30, offPeak: 0.15 },
-    output: { peak: 1.20, offPeak: 0.60 },
-  },
-  "deepseek-v4-pro": {
-    provider: "deepseek",
-    cacheHit: { peak: 0.044, offPeak: 0.022 },
-    cacheMiss: { peak: 1.32, offPeak: 0.66 },
-    output: { peak: 3.96, offPeak: 1.98 },
-  },
-  "gemini-3.8-flash": {
-    provider: "gemini",
-    cacheHit: { peak: 0.025, offPeak: 0.025 },
-    cacheMiss: { peak: 0.10, offPeak: 0.10 },
-    output: { peak: 0.40, offPeak: 0.40 },
-  },
-  "gemini-4-argon": {
-    provider: "gemini",
-    cacheHit: { peak: 0.31, offPeak: 0.31 },
-    cacheMiss: { peak: 1.25, offPeak: 1.25 },
-    output: { peak: 5.00, offPeak: 5.00 },
-  },
-  deterministic: {
-    provider: "deterministic",
-    cacheHit: { peak: 0, offPeak: 0 },
-    cacheMiss: { peak: 0, offPeak: 0 },
-    output: { peak: 0, offPeak: 0 },
-  },
-};
+// Canonical DeepSeek + Gemini pricing rates (USD per 1M tokens) loaded from
+// supervisor/pricing-catalog.json (single source of truth shared with jfranco-deepseek-prices).
+const CHINESE_HOLIDAYS_2026 = new Set(PRICING_CATALOG.chineseHolidays2026 || []);
+
+const MODEL_RATES_USD_PER_M = PRICING_CATALOG.modelsUsdPer1M || {};
 
 function isDeepSeekPeakUtc(dateInput) {
   const d = dateInput ? new Date(dateInput) : new Date();
@@ -71,6 +36,7 @@ function isDeepSeekPeakUtc(dateInput) {
 function normalizeModelKey(rawModel, providerHint) {
   const s = String(rawModel || "").toLowerCase();
   if (s === "deterministic" || s === "local_rule" || s === "none") return "deterministic";
+  if (s.includes("live-translate")) return "gemini-3.5-live-translate-preview";
   if (s.includes("v4-pro") || s.includes("reasoner") || s === "deep") return "deepseek-v4-pro";
   if (s.includes("argon") || (s.includes("gemini") && s.includes("pro"))) return "gemini-4-argon";
   if (s.includes("gemini") || providerHint === "gemini") return "gemini-3.8-flash";

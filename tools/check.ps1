@@ -44,6 +44,10 @@ if ($LASTEXITCODE -ne 0) { throw "quebec-profiles.js check failed" }
 if ($LASTEXITCODE -ne 0) { throw "setup-validator.js check failed" }
 & $node --check "supervisor\usage-telemetry.js"
 if ($LASTEXITCODE -ne 0) { throw "usage-telemetry.js check failed" }
+& $node --check "supervisor\affluence-forecast.js"
+if ($LASTEXITCODE -ne 0) { throw "affluence-forecast.js check failed" }
+& $node --check "supervisor\multimodal-bridge.js"
+if ($LASTEXITCODE -ne 0) { throw "multimodal-bridge.js check failed" }
 & $node "tools\smoke-dashboard.js"
 if ($LASTEXITCODE -ne 0) { throw "smoke-dashboard failed" }
 & $node "tools\audit-contrast.mjs"
@@ -58,6 +62,8 @@ if ($LASTEXITCODE -ne 0) { throw "test-api-closed-brain failed" }
 if ($LASTEXITCODE -ne 0) { throw "test-editions failed" }
 & $node "tools\test-intake-pipeline.mjs"
 if ($LASTEXITCODE -ne 0) { throw "test-intake-pipeline failed" }
+& $node "tools\test-hardware-affluence.mjs"
+if ($LASTEXITCODE -ne 0) { throw "test-hardware-affluence failed" }
 Write-Host "OK supervisor"
 
 Write-Host "== supervisor package (npm) =="

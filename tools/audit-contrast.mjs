@@ -526,6 +526,7 @@ async function runChromeAudit() {
   }
 
   const { cdp, stop } = chrome;
+  await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 840, deviceScaleFactor: 1, mobile: false });
   const tmpClientDir = mkdtempSync(join(tmpdir(), "fanal-contrast-client-"));
   const tmpStudioDir = mkdtempSync(join(tmpdir(), "fanal-contrast-studio-"));
   const clientPort = await getFreePort();
@@ -655,6 +656,8 @@ async function runChromeAudit() {
     await cdp.evalAsync(`
       const sc = document.getElementById("setupScale");
       if (sc) { sc.value = "SME_CELL"; sc.dispatchEvent(new Event("change")); }
+      const sec = document.getElementById("setupSector");
+      if (sec) { sec.value = "restaurant"; sec.dispatchEvent(new Event("change")); }
       const bn = document.getElementById("setupConsBizName");
       const reg = document.getElementById("setupConsTaxRegime");
       const tps = document.getElementById("setupConsTps");
@@ -749,6 +752,7 @@ async function runChromeAudit() {
       localStorage.setItem("dsh-lang", "fr");
       localStorage.setItem("lv-onboarded", "1");
     `);
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 840, deviceScaleFactor: 1, mobile: false });
     await navigateAndInject(cdp, `${studioBase}/`);
     await cdp.evalAsync(`
       const lo = document.getElementById("langOverlay"); if (lo) lo.style.display = "none";
@@ -767,11 +771,33 @@ async function runChromeAudit() {
     await cdp.evalAsync(`document.getElementById("darkBtn").click();`);
     await auditScreen(cdp, "studio:tabStudio(dark)", results);
 
-    // --- 3. Quick Panel (/panel) ---
+    // --- 3. Quick Panel (/panel) Desktop + Mobile ---
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 840, deviceScaleFactor: 1, mobile: false });
     await navigateAndInject(cdp, `${clientBase}/panel`);
     await auditScreen(cdp, "panel:gate(light)", results);
     await cdp.evalAsync(`document.getElementById("darkBtn").click();`);
     await auditScreen(cdp, "panel:gate(dark)", results);
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+    await cdp.evalAsync(`document.getElementById("darkBtn").click();`);
+    await auditScreen(cdp, "panel:mobile(light)", results);
+    await navigateAndInject(cdp, `${clientBase}/`);
+    await cdp.evalAsync(`
+      const lo = document.getElementById("langOverlay"); if (lo) lo.style.display = "none";
+      const ls = document.getElementById("langStep"); if (ls) ls.style.display = "none";
+      const sp = document.getElementById("splash"); if (sp) sp.classList.add("done");
+      document.getElementById("loginUser").value = "auditowner";
+      document.getElementById("loginPass").value = "AuditStrong!2026";
+      document.getElementById("loginBtn").click();
+      await new Promise((r) => setTimeout(r, 500));
+      if (document.body.classList.contains("simpleview")) document.getElementById("viewBtn").click();
+      const mb = document.getElementById("mobileDockToggleBtn");
+      if (mb) mb.click();
+      await new Promise((r) => setTimeout(r, 150));
+    `);
+    await auditScreen(cdp, "owner:mobile(light)", results);
+    await cdp.evalAsync(`document.getElementById("darkBtn").click();`);
+    await auditScreen(cdp, "owner:mobile(dark)", results);
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width: 1280, height: 840, deviceScaleFactor: 1, mobile: false });
 
     // --- 4. Electron Welcome (apps/desktop/welcome.html) ---
     const welcomeUrl = pathToFileURL(join(ROOT, "apps", "desktop", "welcome.html")).href;

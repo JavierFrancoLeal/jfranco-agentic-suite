@@ -103,6 +103,17 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
 .pill{background:var(--card);border:1px solid var(--line);border-radius:999px;padding:8px 13px;font-size:13px;cursor:pointer;color:var(--ink)}
 .pill.active{background:var(--blue);color:#fff;border-color:var(--blue)}
 .pill *,.pill2 *{pointer-events:none}
+.panel-cols{display:grid;grid-template-columns:1fr;gap:12px}
+@media(max-width:640px){
+  main{padding:12px}
+  .primary{padding:16px 14px;font-size:19px;border-radius:16px;margin:10px 0}
+  .tradcard,.fbcard,.sumcard,.idcard{padding:11px 12px;border-radius:14px;margin:8px 0;box-shadow:none}
+}
+@media(min-width:900px){
+  main{max-width:1080px;padding:20px 24px}
+  .panel-cols{grid-template-columns:1.05fr 0.95fr;gap:18px;align-items:start}
+  .panel-col-right .sumcard,.panel-col-right .fbcard{margin-top:0}
+}
 </style>
 </head>
 <body>
@@ -134,6 +145,8 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
     <a href="/dashboard" id="gateLink">Log in on the Dashboard</a>
   </div>
 
+  <div class="panel-cols">
+  <div class="panel-col-left">
   <button class="primary" id="listenBtn" data-tip-panel="listen">🎙️ LISTEN / DICTATE</button>
   <div class="status" id="status"></div>
 
@@ -145,6 +158,18 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
     <div class="tradrow" id="tradLangRow" style="display:none">
       <span id="tradLangLabel">Other language</span>
       <span class="langmini" id="tradLangs"></span>
+    </div>
+    <div id="tradA2dpBox" style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line2);display:flex;flex-direction:column;gap:6px">
+      <div class="tradrow" style="gap:6px">
+        <b id="liveA2dpTitleEl" style="font-size:12.5px">🎧 Counter A2DP Live</b>
+        <span id="liveCounterMeter" class="note" style="margin:0;font-weight:700">—</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <select id="tradMicSelect" data-tip-panel="tradMic" aria-label="Mic input" style="border:1px solid var(--line);border-radius:10px;padding:7px 8px;font-size:12.5px;background:var(--card);color:var(--ink)"><option value="">🎤 Default PC Mic</option></select>
+        <select id="tradSinkSelect" data-tip-panel="tradSink" aria-label="Audio output" style="border:1px solid var(--line);border-radius:10px;padding:7px 8px;font-size:12.5px;background:var(--card);color:var(--ink)"><option value="">🎧 Bluetooth / A2DP</option></select>
+      </div>
+      <button type="button" class="tradToggle" id="liveCounterBtn" data-tip-panel="liveCounter" style="width:100%;padding:9px 12px;text-align:center">🎧 Start Counter A2DP Interpreter</button>
+      <p class="note" id="liveCounterStatus" style="margin:0"></p>
     </div>
     <div class="tradread" id="tradReadBox" style="display:none">
       <div class="tradread-head">
@@ -159,6 +184,8 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
   <textarea id="convInput" rows="4" placeholder="Speak or type what each person said…"></textarea>
   <button class="primary" id="sendPhraseBtn" data-tip-panel="sendPhrase" style="background:var(--blue);box-shadow:0 4px 14px rgba(77,107,254,.35);margin-top:8px">📤 Send phrase</button>
   <button class="primary" id="readForMeBtn" data-tip-panel="readForMe" style="background:#573bd4;box-shadow:0 4px 14px rgba(87,59,212,.35);padding:14px;font-size:16px">👁️ Traducir para leer</button>
+  </div>
+  <div class="panel-col-right">
 
   <div class="sumcard" id="stateCard" style="display:none">
     <div style="display:flex;flex-direction:column;gap:6px;text-align:left">
@@ -210,6 +237,8 @@ code{background:var(--line2);border-radius:6px;padding:2px 6px;font-size:13px}
     </select>
     <textarea id="fbText" rows="3" placeholder="What happened? What should improve?"></textarea>
     <button id="fbSend" data-tip-panel="fbSend">Send feedback</button>
+  </div>
+  </div>
   </div>
 </main>
 
@@ -355,29 +384,29 @@ function updateIdentity(){
   }
 }
 const F={
- es:{sayPh:"Habla o escribe lo que dijo cada persona…",sendPhrase:"📤 Enviar frase",readForMe:"Traducir para leer",tradReadLabel:"Lo que dice el cliente:",tradTitle:"Traducción en tiempo real",tradOn:"🔁 ACTIVADA",tradOff:"ACTIVAR",tradLangLabel:"Otro idioma",tradHint:"Modo AUTO: escribe o dicta en CUALQUIERA de los 10 idiomas — la app lo detecta y lo traduce a tu idioma por la bocina. El micro escucha un idioma a la vez: para oír al cliente, elige su idioma en las píldoras.",tradLangsWord:"idiomas",newConv:"➕ Nueva conversación",back:"← Regresar",summaryTitle:"Resumen de la conversación",sentNote:"Enviado a cocina y central",processing:"La IA resume…",noSummary:"El resumen aparecerá aquí.",person:"Persona",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escribe la frase aquí abajo y pulsa Enviar."},
- en:{sayPh:"Speak or type what each person said…",sendPhrase:"📤 Send phrase",readForMe:"Translate to read",tradReadLabel:"What the client says:",tradTitle:"Real-time translation",tradOn:"🔁 ACTIVE",tradOff:"TURN ON",tradLangLabel:"Other language",tradHint:"AUTO mode: type or dictate in ANY of the 10 languages — the app detects it and speaks the translation in your language. The microphone hears one language at a time: to listen to the client, pick their language in the pills.",tradLangsWord:"languages",newConv:"➕ New conversation",back:"← Back",summaryTitle:"Conversation summary",sentNote:"Sent to kitchen & central",processing:"The AI is summarizing…",noSummary:"The summary will appear here.",person:"Person",confirm:"Confirm ✓",confirmed:"Confirmed ✔",typeHint:"type the phrase below and press Send."},
- fr:{sayPh:"Parlez ou écrivez ce que chaque personne a dit…",sendPhrase:"📤 Envoyer",readForMe:"Traduire pour lire",tradReadLabel:"Ce que dit le client :",tradTitle:"Traduction en temps réel",tradOn:"🔁 ACTIVÉE",tradOff:"ACTIVER",tradLangLabel:"Autre langue",tradHint:"Mode AUTO : écrivez ou dictez dans N'IMPORTE QUELLE des 10 langues — l'app la détecte et la traduit dans votre langue par le haut-parleur. Le micro écoute une langue à la fois : pour entendre le client, choisissez sa langue dans les pastilles.",tradLangsWord:"langues",newConv:"➕ Nouvelle conversation",back:"← Retour",summaryTitle:"Résumé de la conversation",sentNote:"Envoyé en cuisine et au central",processing:"L'IA résume…",noSummary:"Le résumé apparaîtra ici.",person:"Personne",confirm:"Confirmer ✓",confirmed:"Confirmé ✔",typeHint:"écrivez la phrase ci-dessous et appuyez sur Envoyer."},
- de:{sayPh:"Sprechen oder tippen Sie, was jede Person gesagt hat…",sendPhrase:"📤 Senden",back:"← Zurück",summaryTitle:"Gesprächsübersicht",sentNote:"An Küche & Zentrale gesendet",processing:"Die KI fasst zusammen…",noSummary:"Die Übersicht erscheint hier.",person:"Person",confirm:"Bestätigen ✓",confirmed:"Bestätigt ✔",typeHint:"tippen Sie die Phrase unten und drücken Sie Senden."},
- it:{sayPh:"Parla o scrivi cosa ha detto ogni persona…",sendPhrase:"📤 Invia",back:"← Indietro",summaryTitle:"Riepilogo della conversazione",sentNote:"Inviato a cucina e centrale",processing:"L'IA riassume…",noSummary:"Il riepilogo apparirà qui.",person:"Persona",confirm:"Conferma ✓",confirmed:"Confermato ✔",typeHint:"scrivi la frase sotto e premi Invia."},
- pt:{sayPh:"Fale ou escreva o que cada pessoa disse…",sendPhrase:"📤 Enviar",back:"← Voltar",summaryTitle:"Resumo da conversa",sentNote:"Enviado à cozinha e central",processing:"A IA resume…",noSummary:"O resumo aparecerá aqui.",person:"Pessoa",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escreva a frase abaixo e pressione Enviar."},
- zh:{sayPh:"说出或写下每个人说的话…",sendPhrase:"📤 发送",back:"← 返回",summaryTitle:"对话摘要",sentNote:"已发送到厨房和中心",processing:"AI 正在总结…",noSummary:"摘要将显示在这里。",person:"人",confirm:"确认 ✓",confirmed:"已确认 ✔",typeHint:"在下方输入内容并点击发送。"},
- ja:{sayPh:"各人の発言を話すか入力してください…",sendPhrase:"📤 送信",back:"← 戻る",summaryTitle:"会話の要約",sentNote:"キッチンと本部へ送信済み",processing:"AI が要約中…",noSummary:"要約がここに表示されます。",person:"人",confirm:"確認 ✓",confirmed:"確認済み ✔",typeHint:"下に入力して送信してください。"},
- ko:{sayPh:"각 사람이 한 말을 말하거나 입력하세요…",sendPhrase:"📤 보내기",back:"← 뒤로",summaryTitle:"대화 요약",sentNote:"주방과 중앙으로 전송됨",processing:"AI가 요약 중…",noSummary:"요약이 여기에 표시됩니다.",person:"사람",confirm:"확인 ✓",confirmed:"확인됨 ✔",typeHint:"아래에 입력하고 보내기를 누르세요."},
- ar:{sayPh:"تحدث أو اكتب ما قاله كل شخص…",sendPhrase:"📤 إرسال",back:"← رجوع",summaryTitle:"ملخص المحادثة",sentNote:"أُرسل إلى المطبخ والمركز",processing:"الذكاء الاصطناعي يلخص…",noSummary:"سيظهر الملخص هنا.",person:"شخص",confirm:"تأكيد ✓",confirmed:"تم التأكيد ✔",typeHint:"اكتب العبارة بالأسفل واضغط إرسال."}
+ es:{sayPh:"Habla o escribe lo que dijo cada persona…",sendPhrase:"📤 Enviar frase",readForMe:"Traducir para leer",tradReadLabel:"Lo que dice el cliente:",tradTitle:"Traducción en tiempo real",tradOn:"🔁 ACTIVADA",tradOff:"ACTIVAR",tradLangLabel:"Otro idioma",tradHint:"Mostrador A2DP: usa el micro fijo del PC + tus audífonos Bluetooth (A2DP) o dicta/escribe en cualquiera de los 10 idiomas.",tradLangsWord:"idiomas",newConv:"➕ Nueva conversación",back:"← Regresar",summaryTitle:"Resumen de la conversación",sentNote:"Enviado a cocina y central",processing:"La IA resume…",noSummary:"El resumen aparecerá aquí.",person:"Persona",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escribe la frase aquí abajo y pulsa Enviar.",liveA2dpTitle:"🎧 Intérprete Mostrador A2DP",liveA2dpStart:"🎧 Iniciar Intérprete Mostrador A2DP",liveA2dpStop:"⏹️ Detener Intérprete A2DP",liveA2dpMicDefault:"🎤 Micrófono fijo (PC/USB)",liveA2dpSinkDefault:"🎧 Audífonos Bluetooth (A2DP)",liveA2dpMeterFmt:"{m}/{c} min hoy",liveA2dpNoKey:"Configura tu clave Gemini BYOK para activar el intérprete en vivo.",liveA2dpCapReached:"Límite diario del intérprete alcanzado — usa el campo de texto abajo.",liveA2dpElectronNote:"Usa «Intérprete Mostrador A2DP» o escribe abajo",liveA2dpConnecting:"🔄 Conectando canal seguro A2DP…",liveA2dpLive:"🟢 Escuchando por micro PC -> oído A2DP…"},
+ en:{sayPh:"Speak or type what each person said…",sendPhrase:"📤 Send phrase",readForMe:"Translate to read",tradReadLabel:"What the client says:",tradTitle:"Real-time translation",tradOn:"🔁 ACTIVE",tradOff:"TURN ON",tradLangLabel:"Other language",tradHint:"Counter A2DP mode: pairs your fixed PC microphone with existing Bluetooth earbuds (A2DP stereo), or type in any of the 10 languages.",tradLangsWord:"languages",newConv:"➕ New conversation",back:"← Back",summaryTitle:"Conversation summary",sentNote:"Sent to kitchen & central",processing:"The AI is summarizing…",noSummary:"The summary will appear here.",person:"Person",confirm:"Confirm ✓",confirmed:"Confirmed ✔",typeHint:"type the phrase below and press Send.",liveA2dpTitle:"🎧 Counter A2DP Live Interpreter",liveA2dpStart:"🎧 Start Counter A2DP Interpreter",liveA2dpStop:"⏹️ Stop A2DP Interpreter",liveA2dpMicDefault:"🎤 Fixed PC / USB Mic",liveA2dpSinkDefault:"🎧 Bluetooth Output (A2DP)",liveA2dpMeterFmt:"{m}/{c} min today",liveA2dpNoKey:"Configure your Gemini BYOK key to enable live audio translation.",liveA2dpCapReached:"Daily interpreter cap reached — use text translation below.",liveA2dpElectronNote:"Use Counter A2DP Live above or type below",liveA2dpConnecting:"🔄 Opening ephemeral A2DP WebSocket…",liveA2dpLive:"🟢 Listening via PC mic -> A2DP earbuds…"},
+ fr:{sayPh:"Parlez ou écrivez ce que chaque personne a dit…",sendPhrase:"📤 Envoyer",readForMe:"Traduire pour lire",tradReadLabel:"Ce que dit le client :",tradTitle:"Traduction en temps réel",tradOn:"🔁 ACTIVÉE",tradOff:"ACTIVER",tradLangLabel:"Autre langue",tradHint:"Mode Comptoir A2DP : micro fixe du PC vers vos écouteurs Bluetooth (stéréo A2DP) sans perte HFP, ou saisie dans les 10 langues.",tradLangsWord:"langues",newConv:"➕ Nouvelle conversation",back:"← Retour",summaryTitle:"Résumé de la conversation",sentNote:"Envoyé en cuisine et au central",processing:"L'IA résume…",noSummary:"Le résumé apparaîtra ici.",person:"Personne",confirm:"Confirmer ✓",confirmed:"Confirmé ✔",typeHint:"écrivez la phrase ci-dessous et appuyez sur Envoyer.",liveA2dpTitle:"🎧 Interprète Comptoir A2DP",liveA2dpStart:"🎧 Démarrer l'Interprète Comptoir A2DP",liveA2dpStop:"⏹️ Arrêter l'Interprète A2DP",liveA2dpMicDefault:"🎤 Micro fixe (PC/USB)",liveA2dpSinkDefault:"🎧 Écouteurs Bluetooth (A2DP)",liveA2dpMeterFmt:"{m}/{c} min auj.",liveA2dpNoKey:"Configurez votre clé Gemini BYOK pour activer l'interprète vocal.",liveA2dpCapReached:"Plafond quotidien atteint — utilisez la traduction texte ci-dessous.",liveA2dpElectronNote:"Utilisez l'Interprète A2DP ou écrivez ci-dessous",liveA2dpConnecting:"🔄 Connexion WebSocket A2DP éphémère…",liveA2dpLive:"🟢 Écoute micro PC -> oreillette A2DP…"},
+ de:{sayPh:"Sprechen oder tippen Sie, was jede Person gesagt hat…",sendPhrase:"📤 Senden",readForMe:"Zum Lesen übersetzen",tradReadLabel:"Was der Gast sagt:",tradTitle:"Echtzeit-Übersetzung",tradOn:"🔁 AKTIV",tradOff:"AKTIVIEREN",tradLangLabel:"Andere Sprache",tradHint:"Theken-A2DP-Modus: PC-Festmikrofon auf Bluetooth-Kopfhörer (A2DP) oder Texteingabe in allen 10 Sprachen.",tradLangsWord:"Sprachen",newConv:"➕ Neues Gespräch",back:"← Zurück",summaryTitle:"Gesprächsübersicht",sentNote:"An Küche & Zentrale gesendet",processing:"Die KI fasst zusammen…",noSummary:"Die Übersicht erscheint hier.",person:"Person",confirm:"Bestätigen ✓",confirmed:"Bestätigt ✔",typeHint:"tippen Sie die Phrase unten und drücken Sie Senden.",liveA2dpTitle:"🎧 Theken-A2DP-Dolmetscher",liveA2dpStart:"🎧 Theken-A2DP-Dolmetscher starten",liveA2dpStop:"⏹️ A2DP-Dolmetscher stoppen",liveA2dpMicDefault:"🎤 Festmikrofon (PC/USB)",liveA2dpSinkDefault:"🎧 Bluetooth-Ausgabe (A2DP)",liveA2dpMeterFmt:"{m}/{c} Min heute",liveA2dpNoKey:"Bitte Gemini-BYOK-Schlüssel hinterlegen.",liveA2dpCapReached:"Tageslimit erreicht — nutzen Sie die Texteingabe.",liveA2dpElectronNote:"Nutzen Sie Theken-A2DP oder tippen Sie unten",liveA2dpConnecting:"🔄 Verbinde A2DP-Sitzung…",liveA2dpLive:"🟢 Aktiv: PC-Mikro -> Bluetooth A2DP…"},
+ it:{sayPh:"Parla o scrivi cosa ha detto ogni persona…",sendPhrase:"📤 Invia",readForMe:"Traduci per leggere",tradReadLabel:"Cosa dice il cliente:",tradTitle:"Traduzione dal vivo",tradOn:"🔁 ATTIVA",tradOff:"ATTIVA",tradLangLabel:"Altra lingua",tradHint:"Modalità Banco A2DP: microfono fisso del PC verso auricolari Bluetooth (A2DP) oppure testo nelle 10 lingue.",tradLangsWord:"lingue",newConv:"➕ Nuova conversazione",back:"← Indietro",summaryTitle:"Riepilogo della conversazione",sentNote:"Inviato a cucina e centrale",processing:"L'IA riassume…",noSummary:"Il riepilogo apparirà qui.",person:"Persona",confirm:"Conferma ✓",confirmed:"Confermato ✔",typeHint:"scrivi la frase sotto e premi Invia.",liveA2dpTitle:"🎧 Interprete Banco A2DP",liveA2dpStart:"🎧 Avvia Interprete Banco A2DP",liveA2dpStop:"⏹️ Ferma Interprete A2DP",liveA2dpMicDefault:"🎤 Microfono fisso (PC/USB)",liveA2dpSinkDefault:"🎧 Auricolari Bluetooth (A2DP)",liveA2dpMeterFmt:"{m}/{c} min oggi",liveA2dpNoKey:"Configura la chiave Gemini BYOK per la traduzione vocale.",liveA2dpCapReached:"Limite giornaliero raggiunto — usa il testo qui sotto.",liveA2dpElectronNote:"Usa Interprete A2DP o scrivi qui sotto",liveA2dpConnecting:"🔄 Apertura canale A2DP…",liveA2dpLive:"🟢 In ascolto: micro PC -> auricolari A2DP…"},
+ pt:{sayPh:"Fale ou escreva o que cada pessoa disse…",sendPhrase:"📤 Enviar",readForMe:"Traduzir para ler",tradReadLabel:"O que o cliente diz:",tradTitle:"Tradução ao vivo",tradOn:"🔁 ATIVA",tradOff:"ATIVAR",tradLangLabel:"Outro idioma",tradHint:"Modo Balcão A2DP: microfone fixo do PC para fones Bluetooth (A2DP estéreo) ou texto em qualquer um dos 10 idiomas.",tradLangsWord:"idiomas",newConv:"➕ Nova conversa",back:"← Voltar",summaryTitle:"Resumo da conversa",sentNote:"Enviado à cozinha e central",processing:"A IA resume…",noSummary:"O resumo aparecerá aqui.",person:"Pessoa",confirm:"Confirmar ✓",confirmed:"Confirmado ✔",typeHint:"escreva a frase abaixo e pressione Enviar.",liveA2dpTitle:"🎧 Intérprete Balcão A2DP",liveA2dpStart:"🎧 Iniciar Intérprete Balcão A2DP",liveA2dpStop:"⏹️ Parar Intérprete A2DP",liveA2dpMicDefault:"🎤 Microfone fixo (PC/USB)",liveA2dpSinkDefault:"🎧 Fone Bluetooth (A2DP)",liveA2dpMeterFmt:"{m}/{c} min hoje",liveA2dpNoKey:"Configure sua chave Gemini BYOK para tradução por voz.",liveA2dpCapReached:"Limite diário atingido — use o campo de texto abaixo.",liveA2dpElectronNote:"Use o Intérprete A2DP ou digite abaixo",liveA2dpConnecting:"🔄 Abrindo sessão A2DP…",liveA2dpLive:"🟢 Ouvindo: micro PC -> fone A2DP…"},
+ zh:{sayPh:"说出或写下每个人说的话…",sendPhrase:"📤 发送",readForMe:"翻译以供阅读",tradReadLabel:"客户说的话：",tradTitle:"实时翻译",tradOn:"🔁 已启用",tradOff:"开启",tradLangLabel:"对方语言",tradHint:"柜台 A2DP 模式：使用电脑固定麦克风拾音并通过现有蓝牙耳机（A2DP 立体声）收听，或在下方输入任意 10 种语言。",tradLangsWord:"种语言",newConv:"➕ 新对话",back:"← 返回",summaryTitle:"对话摘要",sentNote:"已发送到厨房和中心",processing:"AI 正在总结…",noSummary:"摘要将显示在这里。",person:"人",confirm:"确认 ✓",confirmed:"已确认 ✔",typeHint:"在下方输入内容并点击发送。",liveA2dpTitle:"🎧 柜台 A2DP 实时口译",liveA2dpStart:"🎧 启动柜台 A2DP 口译",liveA2dpStop:"⏹️ 停止 A2DP 口译",liveA2dpMicDefault:"🎤 固定电脑/USB麦克风",liveA2dpSinkDefault:"🎧 蓝牙耳机 (A2DP 立体声)",liveA2dpMeterFmt:"今日 {m}/{c} 分钟",liveA2dpNoKey:"请先配置 Gemini BYOK 密钥以启用实时语音口译。",liveA2dpCapReached:"今日口译额度已满 — 请使用下方文字翻译。",liveA2dpElectronNote:"请使用上方柜台 A2DP 口译或在下方输入",liveA2dpConnecting:"🔄 正在连接临时 A2DP 通道…",liveA2dpLive:"🟢 正在收听（电脑麦 -> 蓝牙 A2DP）…"},
+ ja:{sayPh:"各人の発言を話すか入力してください…",sendPhrase:"📤 送信",readForMe:"読んで確認用に翻訳",tradReadLabel:"お客様の発言：",tradTitle:"リアルタイム翻訳",tradOn:"🔁 有効",tradOff:"オンにする",tradLangLabel:"相手の言語",tradHint:"カウンターA2DPモード：PC固定マイク＋既存のBluetoothイヤホン(A2DP)で高音質通訳、または10言語テキスト入力。",tradLangsWord:"言語",newConv:"➕ 新しい会話",back:"← 戻る",summaryTitle:"会話の要約",sentNote:"キッチンと本部へ送信済み",processing:"AI が要約中…",noSummary:"要約がここに表示されます。",person:"人",confirm:"確認 ✓",confirmed:"確認済み ✔",typeHint:"下に入力して送信してください。",liveA2dpTitle:"🎧 カウンターA2DP通訳",liveA2dpStart:"🎧 A2DP通訳を開始",liveA2dpStop:"⏹️ A2DP通訳を停止",liveA2dpMicDefault:"🎤 固定PC/USBマイク",liveA2dpSinkDefault:"🎧 Bluetooth出力 (A2DP)",liveA2dpMeterFmt:"本日 {m}/{c} 分",liveA2dpNoKey:"音声通訳を使うには Gemini BYOK キーを設定してください。",liveA2dpCapReached:"本日の上限に達しました — 下のテキスト翻訳をご利用ください。",liveA2dpElectronNote:"上のA2DP通訳または下の入力欄をご利用ください",liveA2dpConnecting:"🔄 一時A2DPチャネル接続中…",liveA2dpLive:"🟢 待機中（PCマイク -> A2DPイヤホン）…"},
+ ko:{sayPh:"각 사람이 한 말을 말하거나 입력하세요…",sendPhrase:"📤 보내기",readForMe:"읽기용 번역",tradReadLabel:"고객 발언:",tradTitle:"실시간 번역",tradOn:"🔁 활성",tradOff:"켜기",tradLangLabel:"상대 언어",tradHint:"카운터 A2DP 모드: 고정 PC 마이크 + 기존 블루투스 이어폰(A2DP) 분리 수신 또는 10개 언어 텍스트 입력 지원.",tradLangsWord:"개 언어",newConv:"➕ 새 대화",back:"← 뒤로",summaryTitle:"대화 요약",sentNote:"주방과 중앙으로 전송됨",processing:"AI가 요약 중…",noSummary:"요약이 여기에 표시됩니다.",person:"사람",confirm:"확인 ✓",confirmed:"확인됨 ✔",typeHint:"아래에 입력하고 보내기를 누르세요.",liveA2dpTitle:"🎧 카운터 A2DP 실시간 통역",liveA2dpStart:"🎧 카운터 A2DP 통역 시작",liveA2dpStop:"⏹️ A2DP 통역 중지",liveA2dpMicDefault:"🎤 고정 PC/USB 마이크",liveA2dpSinkDefault:"🎧 블루투스 출력 (A2DP)",liveA2dpMeterFmt:"오늘 {m}/{c}분",liveA2dpNoKey:"실시간 음성 통역을 사용하려면 Gemini BYOK 키를 설정하세요.",liveA2dpCapReached:"일일 한도에 도달했습니다 — 아래 텍스트 입력을 사용하세요.",liveA2dpElectronNote:"위 A2DP 통역을 켜거나 아래에 입력하세요",liveA2dpConnecting:"🔄 임시 A2DP 세션 연결 중…",liveA2dpLive:"🟢 수신 중 (PC 마이크 -> A2DP 이어폰)…"},
+ ar:{sayPh:"تحدث أو اكتب ما قاله كل شخص…",sendPhrase:"📤 إرسال",readForMe:"ترجمة للقراءة",tradReadLabel:"ما يقوله العميل:",tradTitle:"ترجمة فورية",tradOn:"🔁 مفعلة",tradOff:"تفعيل",tradLangLabel:"لغة أخرى",tradHint:"وضع المنضدة A2DP: ميكروفون الحاسوب الثابت + سماعة البلوتوث (A2DP) بدون فقدان جودة، أو الكتابة باللغات العشر.",tradLangsWord:"لغات",newConv:"➕ محادثة جديدة",back:"← رجوع",summaryTitle:"ملخص المحادثة",sentNote:"أُرسل إلى المطبخ والمركز",processing:"الذكاء الاصطناعي يلخص…",noSummary:"سيظهر الملخص هنا.",person:"شخص",confirm:"تأكيد ✓",confirmed:"تم التأكيد ✔",typeHint:"اكتب العبارة بالأسفل واضغط إرسال.",liveA2dpTitle:"🎧 مترجم المنضدة A2DP",liveA2dpStart:"🎧 بدء مترجم المنضدة A2DP",liveA2dpStop:"⏹️ إيقاف مترجم A2DP",liveA2dpMicDefault:"🎤 ميكروفون ثابت (PC/USB)",liveA2dpSinkDefault:"🎧 سماعة بلوتوث (A2DP)",liveA2dpMeterFmt:"{m}/{c} د اليوم",liveA2dpNoKey:"أضف مفتاح Gemini BYOK لتفعيل الترجمة الصوتية الحية.",liveA2dpCapReached:"تم بلوغ الحد اليومي — استخدم الترجمة النصية بالأسفل.",liveA2dpElectronNote:"استخدم مترجم المنضدة A2DP أو اكتب بالأسفل",liveA2dpConnecting:"🔄 جارٍ فتح جلسة A2DP مؤقتة…",liveA2dpLive:"🟢 يستمع من ميكروفون الحاسوب -> سماعة A2DP…"}
 };
 const TIER={GREEN:"🟢",SEMI:"⚑",YELLOW:"🟡",RED:"🔴"};
 const PTIP={
- es:{back:"Volver al panel principal de Fanal",dark:"Alternar tema claro u oscuro",darkActive:"Modo oscuro activo — clic para pasar a claro",lightActive:"Modo claro activo — clic para pasar a oscuro",workerInput:"Escribe tu nombre o usuario operativo",roleInput:"Define tu puesto o rol de turno",gateLink:"Ir al acceso principal para iniciar sesión",listen:"Escuchar conversación por micrófono",trad:"Activar o pausar traducción simultánea",tradLang:"Elegir el idioma de salida del cliente",tradClear:"Borrar texto traducido en pantalla",convInput:"Escribe o edita las frases de la conversación",sendPhrase:"Enviar frase para generar resumen",readForMe:"Traducir y mostrar texto al cliente",stateBack:"Volver a la vista anterior",taskLabel:"Nombre de mesa, turno o expediente a abrir",taskOpen:"Abrir una sesión de tarea en tu jornada",closeYes:"Mantener la tarea abierta para seguir",closeNo:"Cerrar y archivar esta tarea ahora",dayBack:"Volver al panel principal",dayItem:"Tocar o reabrir esta tarea de la jornada",confirm:"Confirmar este punto para enviarlo a operación",newConv:"Cerrar actual e iniciar nueva conversación",day:"Ver mis tareas y alertas del día",fbCat:"Elegir tipo de reporte o mejora",fbText:"Describir incidente o sugerencia de campo",fbSend:"Enviar reporte de mejora al equipo",langPill:"Cambiar el idioma de este Panel de Acción",langPickSelf:"Para seleccionar Español, presiona aquí"},
- en:{back:"Return to main Fanal dashboard",dark:"Switch between light and dark theme",darkActive:"Dark mode active — click to switch to light",lightActive:"Light mode active — click to switch to dark",workerInput:"Enter your operator name or account",roleInput:"Enter your current shift role or station",gateLink:"Go to the main dashboard to sign in",listen:"Capture speech continuously by microphone",trad:"Turn real-time client translation on or off",tradLang:"Select target language for the customer",tradClear:"Clear live translated client display",convInput:"Type or edit conversation phrases",sendPhrase:"Send phrase to summarize items",readForMe:"Translate written phrase for client view",stateBack:"Return to previous card",taskLabel:"Table, customer, or case label to open",taskOpen:"Open a task session for your shift",closeYes:"Keep task active to continue",closeNo:"Close and archive this task now",dayBack:"Return from shift task list",dayItem:"Open or inspect this shift task",confirm:"Confirm this item for execution",newConv:"Start a fresh conversation summary",day:"View open tasks and shift alerts",fbCat:"Choose feedback category",fbText:"Describe what happened or what to improve",fbSend:"Send field feedback to the team",langPill:"Switch Action Panel display language",langPickSelf:"To select English, click here"},
- fr:{back:"Revenir au tableau de bord Fanal",dark:"Basculer entre thème clair et sombre",darkActive:"Mode sombre actif — cliquer pour passer au clair",lightActive:"Mode clair actif — cliquer pour passer au sombre",workerInput:"Saisissez votre nom d'employé ou identifiant",roleInput:"Indiquez votre poste ou fonction",gateLink:"Ouvrir le tableau principal pour se connecter",listen:"Capturer la voix en continu au micro",trad:"Activer ou couper la traduction temps réel",tradLang:"Choisir la langue cible du client",tradClear:"Effacer le texte traduit affiché",convInput:"Saisir ou corriger les propos de l'échange",sendPhrase:"Envoyer la phrase pour résumer",readForMe:"Traduire et afficher pour le client",stateBack:"Revenir à la carte précédente",taskLabel:"Nom de table, client ou dossier à ouvrir",taskOpen:"Ouvrir une session de tâche du jour",closeYes:"Garder la tâche ouverte pour continuer",closeNo:"Fermer et archiver cette tâche",dayBack:"Quitter la liste des tâches du jour",dayItem:"Reprendre ou consulter cette tâche",confirm:"Confirmer cet élément pour exécution",newConv:"Démarrer une nouvelle conversation",day:"Voir mes tâches et alertes du jour",fbCat:"Choisir la catégorie du retour",fbText:"Décrire un incident ou une piste d'amélioration",fbSend:"Envoyer un retour terrain à l'équipe",langPill:"Changer la langue du Panneau d'action",langPickSelf:"Pour sélectionner Français, cliquez ici"},
- de:{back:"Zurück zum Haupt-Dashboard von Fanal",dark:"Zwischen hellem und dunklem Design wechseln",darkActive:"Dunkelmodus aktiv — Klicken für helles Design",lightActive:"Helles Design aktiv — Klicken für Dunkelmodus",workerInput:"Mitarbeitername oder Konto eingeben",roleInput:"Aktuelle Schichtrolle eintragen",gateLink:"Zur Hauptansicht zum Anmelden wechseln",listen:"Gespräch laufend per Mikrofon erfassen",trad:"Echtzeit-Übersetzung ein- oder ausschalten",tradLang:"Zielsprache für den Kunden wählen",tradClear:"Übersetzten Text vom Schirm löschen",convInput:"Gesprochene Sätze eingeben oder bearbeiten",sendPhrase:"Satz zur Zusammenfassung senden",readForMe:"Text für den Kunden sichtbar übersetzen",stateBack:"Zur vorherigen Ansicht zurückkehren",taskLabel:"Tisch, Kunde oder Vorgang benennen",taskOpen:"Neue Tagesaufgabe öffnen",closeYes:"Aufgabe offen lassen und fortsetzen",closeNo:"Diese Aufgabe jetzt abschließen",dayBack:"Zurück aus der Tagesliste",dayItem:"Diese Aufgabe erneut öffnen oder prüfen",confirm:"Diesen Punkt zur Ausführung bestätigen",newConv:"Neues Gespräch starten",day:"Offene Tagesaufgaben und Warnungen zeigen",fbCat:"Feedback-Kategorie wählen",fbText:"Vorfall oder Verbesserung kurz beschreiben",fbSend:"Feld-Feedback an das Team senden",langPill:"Sprache des Aktionspanels umstellen",langPickSelf:"Um Deutsch auszuwählen, hier klicken"},
- it:{back:"Torna alla dashboard principale Fanal",dark:"Alterna tra tema chiaro e scuro",darkActive:"Tema scuro attivo — clicca per passare al chiaro",lightActive:"Tema chiaro attivo — clicca per passare allo scuro",workerInput:"Inserisci nome o account operatore",roleInput:"Indica il tuo ruolo nel turno",gateLink:"Vai alla dashboard principale per accedere",listen:"Acquisisci la voce dal microfono",trad:"Attiva o disattiva traduzione dal vivo",tradLang:"Seleziona la lingua del cliente",tradClear:"Cancella il testo tradotto mostrato",convInput:"Scrivi o modifica le frasi rilevate",sendPhrase:"Invia frase per generare il riepilogo",readForMe:"Traduci e mostra per il cliente",stateBack:"Torna alla scheda precedente",taskLabel:"Etichetta tavolo, cliente o pratica",taskOpen:"Apri una nuova attività di turno",closeYes:"Mantieni aperta l'attività",closeNo:"Chiudi e archivia l'attività ora",dayBack:"Torna dall'elenco giornaliero",dayItem:"Riprendi o apri questa attività",confirm:"Conferma questo punto per l'esecuzione",newConv:"Inizia una nuova conversazione",day:"Vedi attività e avvisi di oggi",fbCat:"Scegli categoria del feedback",fbText:"Descrivi cosa è successo o cosa migliorare",fbSend:"Invia feedback dal campo al team",langPill:"Cambia la lingua del Pannello d'Azione",langPickSelf:"Per selezionare Italiano, premi qui"},
- pt:{back:"Voltar ao painel principal do Fanal",dark:"Alternar entre tema claro e escuro",darkActive:"Modo escuro ativo — clique para mudar para claro",lightActive:"Modo claro ativo — clique para mudar para escuro",workerInput:"Escreva o seu nome ou conta",roleInput:"Indique a sua função no turno",gateLink:"Ir para o painel principal para entrar",listen:"Captar conversa pelo microfone",trad:"Ativar ou pausar tradução ao vivo",tradLang:"Escolher o idioma do cliente",tradClear:"Limpar texto traduzido no ecrã",convInput:"Escrever ou editar frases da conversa",sendPhrase:"Enviar frase para gerar resumo",readForMe:"Traduzir e mostrar para o cliente",stateBack:"Voltar ao cartão anterior",taskLabel:"Etiqueta da mesa, cliente ou caso",taskOpen:"Abrir nova sessão de tarefa",closeYes:"Manter tarefa aberta",closeNo:"Fechar e arquivar esta tarefa",dayBack:"Sair da lista de tarefas do dia",dayItem:"Abrir ou retomar esta tarefa",confirm:"Confirmar este item para execução",newConv:"Iniciar nova conversa",day:"Ver tarefas e alertas do dia",fbCat:"Selecionar categoria do feedback",fbText:"Descreva o ocorrido ou sugestão",fbSend:"Enviar feedback de campo à equipa",langPill:"Alterar o idioma do Painel de Ação",langPickSelf:"Para selecionar Português, clique aqui"},
- zh:{back:"返回 Fanal 主控制台",dark:"切换浅色与深色模式",darkActive:"当前深色模式 — 点击切换浅色",lightActive:"当前浅色模式 — 点击切换深色",workerInput:"输入您的姓名或操作员账号",roleInput:"填写当前班次岗位角色",gateLink:"前往主控制台登录账号",listen:"通过麦克风持续识别对话",trad:"开启或关闭实时客户端翻译",tradLang:"选择客户目标翻译语言",tradClear:"清除屏幕上显示的翻译内容",convInput:"输入或编辑对话内容",sendPhrase:"发送句子并生成摘要",readForMe:"将输入内容翻译展示给客户",stateBack:"返回上一视图",taskLabel:"输入要开启的桌号、客户或任务名称",taskOpen:"开启当日任务会话",closeYes:"保持当前任务开启",closeNo:"立即关闭并归档此任务",dayBack:"返回主界面",dayItem:"查看或继续此项当日任务",confirm:"确认并下发此执行项",newConv:"开始新的对话记录",day:"查看今日待办任务与提醒",fbCat:"选择反馈类别",fbText:"描述现场问题或改进建议",fbSend:"向团队发送现场反馈",langPill:"切换操作面板显示语言",langPickSelf:"要选择中文，请点击此处"},
- ja:{back:"Fanal ダッシュボードへ戻る",dark:"ライト／ダーク表示を切り替える",darkActive:"ダークモード中 — クリックでライト表示へ",lightActive:"ライトモード中 — クリックでダーク表示へ",workerInput:"担当者名またはアカウントを入力",roleInput:"現在の担当役割を入力",gateLink:"メイン画面でログインする",listen:"マイクで会話を連続音声認識する",trad:"リアルタイム翻訳のオン／オフ切替",tradLang:"相手側の表示言語を選択",tradClear:"画面の翻訳テキストを消去する",convInput:"会話テキストを入力または編集",sendPhrase:"発言を送信して要約を作成する",readForMe:"入力文を翻訳して相手に表示する",stateBack:"前の画面に戻る",taskLabel:"開始するテーブル・顧客・案件名を入力",taskOpen:"本日のタスクセッションを開始",closeYes:"タスクを開いたまま続ける",closeNo:"このタスクを終了して保存",dayBack:"タスク一覧を閉じる",dayItem:"このタスクを再開または確認",confirm:"この項目を確定して実行へ送る",newConv:"新しい会話を開始する",day:"今日のタスクとアラートを確認",fbCat:"フィードバック分類を選択",fbText:"状況や改善提案を入力",fbSend:"現場フィードバックをチームへ送信",langPill:"アクションパネルの表示言語を変更",langPickSelf:"日本語を選択するにはここをクリックしてください"},
- ko:{back:"Fanal 대시보드로 돌아가기",dark:"라이트 / 다크 테마 전환",darkActive:"다크 모드 켜짐 — 클릭하여 라이트 모드로",lightActive:"라이트 모드 켜짐 — 클릭하여 다크 모드로",workerInput:"작업자 이름 또는 계정 입력",roleInput:"현재 근무 역할 입력",gateLink:"대시보드에서 로그인하기",listen:"마이크로 대화를 연속 인식하기",trad:"실시간 통역 켜기/끄기",tradLang:"고객 대상 언어 선택",tradClear:"화면에 표시된 번역 문장 지우기",convInput:"대화 내용을 입력하거나 수정",sendPhrase:"문장을 보내 대화 요약 생성",readForMe:"작성한 문장을 번역해 고객에게 표시",stateBack:"이전 카드로 돌아가기",taskLabel:"열려는 테이블, 고객 또는 작업명 입력",taskOpen:"근무 작업 세션 열기",closeYes:"작업을 계속 열어 두기",closeNo:"이 작업 닫고 보관하기",dayBack:"작업 목록에서 돌아가기",dayItem:"이 작업 열기 또는 이어서 하기",confirm:"이 항목을 확정하여 전달하기",newConv:"새 대화 요약 시작하기",day:"오늘의 작업과 알림 보기",fbCat:"피드백 유형 선택",fbText:"현장 상황이나 개선 의견 작성",fbSend:"팀에 현장 피드백 보내기",langPill:"작업 패널 표시 언어 변경",langPickSelf:"한국어를 선택하려면 여기를 누르세요"},
- ar:{back:"العودة إلى لوحة Fanal الرئيسية",dark:"التبديل بين الوضع الفاتح والداكن",darkActive:"الوضع الداكن مفعّل — انقر للوضع الفاتح",lightActive:"الوضع الفاتح مفعّل — انقر للوضع الداكن",workerInput:"أدخل اسمك أو اسم الحساب التشغيلي",roleInput:"أدخل دورك أو مهمتك في المناوبة",gateLink:"الانتقال إلى اللوحة الرئيسية لتسجيل الدخول",listen:"التقاط الصوت باستمرار عبر الميكروفون",trad:"تشغيل أو إيقاف الترجمة الفورية",tradLang:"اختر لغة العميل المستهدفة",tradClear:"مسح نص الترجمة المعروض",convInput:"اكتب أو عدّل عبارات المحادثة",sendPhrase:"إرسال العبارة لتلخيص الطلبات",readForMe:"ترجمة النص وعرضه للعميل",stateBack:"العودة إلى البطاقة السابقة",taskLabel:"اكتب اسم الطاولة أو العميل أو المهمة",taskOpen:"فتح جلسة مهمة جديدة ليومك",closeYes:"إبقاء المهمة مفتوحة للمتابعة",closeNo:"إغلاق وأرشفة هذه المهمة الآن",dayBack:"الرجوع من قائمة المهام اليومية",dayItem:"فتح أو متابعة هذه المهمة",confirm:"تأكيد هذا البند وإرساله للتنفيذ",newConv:"بدء محادثة جديدة",day:"عرض مهام وتنبيهات اليوم",fbCat:"اختر فئة الملاحظة",fbText:"اشرح ما حدث أو ما يمكن تحسينه",fbSend:"إرسال ملاحظات الميدان للفريق",langPill:"تغيير لغة لوحة الإجراءات",langPickSelf:"لاختيار العربية، اضغط هنا"}
+ es:{back:"Volver al panel principal de Fanal",dark:"Alternar tema claro u oscuro",darkActive:"Modo oscuro activo — clic para pasar a claro",lightActive:"Modo claro activo — clic para pasar a oscuro",workerInput:"Escribe tu nombre o usuario operativo",roleInput:"Define tu puesto o rol de turno",gateLink:"Ir al acceso principal para iniciar sesión",listen:"Escuchar conversación por micrófono",trad:"Activar o pausar traducción simultánea",tradLang:"Elegir el idioma de salida del cliente",tradClear:"Borrar texto traducido en pantalla",tradMic:"Elegir micrófono fijo del mostrador (evita micrófono Bluetooth HFP)",tradSink:"Elegir salida hacia tus audífonos Bluetooth en modo estéreo A2DP",liveCounter:"Iniciar o detener interpretación en vivo con micrófono PC y audífono BT",convInput:"Escribe o edita las frases de la conversación",sendPhrase:"Enviar frase para generar resumen",readForMe:"Traducir y mostrar texto al cliente",stateBack:"Volver a la vista anterior",taskLabel:"Nombre de mesa, turno o expediente a abrir",taskOpen:"Abrir una sesión de tarea en tu jornada",closeYes:"Mantener la tarea abierta para seguir",closeNo:"Cerrar y archivar esta tarea ahora",dayBack:"Volver al panel principal",dayItem:"Tocar o reabrir esta tarea de la jornada",confirm:"Confirmar este punto para enviarlo a operación",newConv:"Cerrar actual e iniciar nueva conversación",day:"Ver mis tareas y alertas del día",fbCat:"Elegir tipo de reporte o mejora",fbText:"Describir incidente o sugerencia de campo",fbSend:"Enviar reporte de mejora al equipo",langPill:"Cambiar el idioma de este Panel de Acción",langPickSelf:"Para seleccionar Español, presiona aquí"},
+ en:{back:"Return to main Fanal dashboard",dark:"Switch between light and dark theme",darkActive:"Dark mode active — click to switch to light",lightActive:"Light mode active — click to switch to dark",workerInput:"Enter your operator name or account",roleInput:"Enter your current shift role or station",gateLink:"Go to the main dashboard to sign in",listen:"Capture speech continuously by microphone",trad:"Turn real-time client translation on or off",tradLang:"Select target language for the customer",tradClear:"Clear live translated client display",tradMic:"Pick fixed counter/PC mic (keeps headset on high-quality A2DP)",tradSink:"Pick Bluetooth headset/earbuds output via A2DP audio sink",liveCounter:"Start or stop Gemini Live counter translation within daily minute cap",convInput:"Type or edit conversation phrases",sendPhrase:"Send phrase to summarize items",readForMe:"Translate written phrase for client view",stateBack:"Return to previous card",taskLabel:"Table, customer, or case label to open",taskOpen:"Open a task session for your shift",closeYes:"Keep task active to continue",closeNo:"Close and archive this task now",dayBack:"Return from shift task list",dayItem:"Open or inspect this shift task",confirm:"Confirm this item for execution",newConv:"Start a fresh conversation summary",day:"View open tasks and shift alerts",fbCat:"Choose feedback category",fbText:"Describe what happened or what to improve",fbSend:"Send field feedback to the team",langPill:"Switch Action Panel display language",langPickSelf:"To select English, click here"},
+ fr:{back:"Revenir au tableau de bord Fanal",dark:"Basculer entre thème clair et sombre",darkActive:"Mode sombre actif — cliquer pour passer au clair",lightActive:"Mode clair actif — cliquer pour passer au sombre",workerInput:"Saisissez votre nom d'employé ou identifiant",roleInput:"Indiquez votre poste ou fonction",gateLink:"Ouvrir le tableau principal pour se connecter",listen:"Capturer la voix en continu au micro",trad:"Activer ou couper la traduction temps réel",tradLang:"Choisir la langue cible du client",tradClear:"Effacer le texte traduit affiché",tradMic:"Choisir le micro fixe du comptoir (évite le mode HFP basse qualité)",tradSink:"Choisir vos écouteurs Bluetooth comme sortie stéréo A2DP",liveCounter:"Démarrer ou arrêter l'interprète comptoir dans le plafond quotidien",convInput:"Saisir ou corriger les propos de l'échange",sendPhrase:"Envoyer la phrase pour résumer",readForMe:"Traduire et afficher pour le client",stateBack:"Revenir à la carte précédente",taskLabel:"Nom de table, client ou dossier à ouvrir",taskOpen:"Ouvrir une session de tâche du jour",closeYes:"Garder la tâche ouverte pour continuer",closeNo:"Fermer et archiver cette tâche",dayBack:"Quitter la liste des tâches du jour",dayItem:"Reprendre ou consulter cette tâche",confirm:"Confirmer cet élément pour exécution",newConv:"Démarrer une nouvelle conversation",day:"Voir mes tâches et alertes du jour",fbCat:"Choisir la catégorie du retour",fbText:"Décrire un incident ou une piste d'amélioration",fbSend:"Envoyer un retour terrain à l'équipe",langPill:"Changer la langue du Panneau d'action",langPickSelf:"Pour sélectionner Français, cliquez ici"},
+ de:{back:"Zurück zum Haupt-Dashboard von Fanal",dark:"Zwischen hellem und dunklem Design wechseln",darkActive:"Dunkelmodus aktiv — Klicken für helles Design",lightActive:"Helles Design aktiv — Klicken für Dunkelmodus",workerInput:"Mitarbeitername oder Konto eingeben",roleInput:"Aktuelle Schichtrolle eintragen",gateLink:"Zur Hauptansicht zum Anmelden wechseln",listen:"Gespräch laufend per Mikrofon erfassen",trad:"Echtzeit-Übersetzung ein- oder ausschalten",tradLang:"Zielsprache für den Kunden wählen",tradClear:"Übersetzten Text vom Schirm löschen",tradMic:"Festes Thekenmikrofon wählen (hält Headset im A2DP-Modus)",tradSink:"Bluetooth-Kopfhörer als A2DP-Ausgang wählen",liveCounter:"Theken-Dolmetscher im Rahmen des Tageslimits starten oder stoppen",convInput:"Gesprochene Sätze eingeben oder bearbeiten",sendPhrase:"Satz zur Zusammenfassung senden",readForMe:"Text für den Kunden sichtbar übersetzen",stateBack:"Zur vorherigen Ansicht zurückkehren",taskLabel:"Tisch, Kunde oder Vorgang benennen",taskOpen:"Neue Tagesaufgabe öffnen",closeYes:"Aufgabe offen lassen und fortsetzen",closeNo:"Diese Aufgabe jetzt abschließen",dayBack:"Zurück aus der Tagesliste",dayItem:"Diese Aufgabe erneut öffnen oder prüfen",confirm:"Diesen Punkt zur Ausführung bestätigen",newConv:"Neues Gespräch starten",day:"Offene Tagesaufgaben und Warnungen zeigen",fbCat:"Feedback-Kategorie wählen",fbText:"Vorfall oder Verbesserung kurz beschreiben",fbSend:"Feld-Feedback an das Team senden",langPill:"Sprache des Aktionspanels umstellen",langPickSelf:"Um Deutsch auszuwählen, hier klicken"},
+ it:{back:"Torna alla dashboard principale Fanal",dark:"Alterna tra tema chiaro e scuro",darkActive:"Tema scuro attivo — clicca per passare al chiaro",lightActive:"Tema chiaro attivo — clicca per passare allo scuro",workerInput:"Inserisci nome o account operatore",roleInput:"Indica il tuo ruolo nel turno",gateLink:"Vai alla dashboard principale per accedere",listen:"Acquisisci la voce dal microfono",trad:"Attiva o disattiva traduzione dal vivo",tradLang:"Seleziona la lingua del cliente",tradClear:"Cancella il testo tradotto mostrato",tradMic:"Scegli microfono fisso del banco (evita calo HFP)",tradSink:"Scegli auricolari Bluetooth in uscita stereo A2DP",liveCounter:"Avvia o ferma l'interprete live entro il limite giornaliero",convInput:"Scrivi o modifica le frasi rilevate",sendPhrase:"Invia frase per generare il riepilogo",readForMe:"Traduci e mostra per il cliente",stateBack:"Torna alla scheda precedente",taskLabel:"Etichetta tavolo, cliente o pratica",taskOpen:"Apri una nuova attività di turno",closeYes:"Mantieni aperta l'attività",closeNo:"Chiudi e archivia l'attività ora",dayBack:"Torna dall'elenco giornaliero",dayItem:"Riprendi o apri questa attività",confirm:"Conferma questo punto per l'esecuzione",newConv:"Inizia una nuova conversazione",day:"Vedi attività e avvisi di oggi",fbCat:"Scegli categoria del feedback",fbText:"Descrivi cosa è successo o cosa migliorare",fbSend:"Invia feedback dal campo al team",langPill:"Cambia la lingua del Pannello d'Azione",langPickSelf:"Per selezionare Italiano, premi qui"},
+ pt:{back:"Voltar ao painel principal do Fanal",dark:"Alternar entre tema claro e escuro",darkActive:"Modo escuro ativo — clique para mudar para claro",lightActive:"Modo claro ativo — clique para mudar para escuro",workerInput:"Escreva o seu nome ou conta",roleInput:"Indique a sua função no turno",gateLink:"Ir para o painel principal para entrar",listen:"Captar conversa pelo microfone",trad:"Ativar ou pausar tradução ao vivo",tradLang:"Escolher o idioma do cliente",tradClear:"Limpar texto traduzido no ecrã",tradMic:"Escolher microfone fixo do balcão (mantém A2DP)",tradSink:"Escolher fone Bluetooth como saída estéreo A2DP",liveCounter:"Iniciar ou parar intérprete de balcão dentro do limite diário",convInput:"Escrever ou editar frases da conversa",sendPhrase:"Enviar frase para gerar resumo",readForMe:"Traduzir e mostrar para o cliente",stateBack:"Voltar ao cartão anterior",taskLabel:"Etiqueta da mesa, cliente ou caso",taskOpen:"Abrir nova sessão de tarefa",closeYes:"Manter tarefa aberta",closeNo:"Fechar e arquivar esta tarefa",dayBack:"Sair da lista de tarefas do dia",dayItem:"Abrir ou retomar esta tarefa",confirm:"Confirmar este item para execução",newConv:"Iniciar nova conversa",day:"Ver tarefas e alertas do dia",fbCat:"Selecionar categoria do feedback",fbText:"Descreva o ocorrido ou sugestão",fbSend:"Enviar feedback de campo à equipa",langPill:"Alterar o idioma do Painel de Ação",langPickSelf:"Para selecionar Português, clique aqui"},
+ zh:{back:"返回 Fanal 主控制台",dark:"切换浅色与深色模式",darkActive:"当前深色模式 — 点击切换浅色",lightActive:"当前浅色模式 — 点击切换深色",workerInput:"输入您的姓名或操作员账号",roleInput:"填写当前班次岗位角色",gateLink:"前往主控制台登录账号",listen:"通过麦克风持续识别对话",trad:"开启或关闭实时客户端翻译",tradLang:"选择客户目标翻译语言",tradClear:"清除屏幕上显示的翻译内容",tradMic:"选择固定台式麦克风（避免蓝牙 HFP 降质）",tradSink:"选择蓝牙耳机作为 A2DP 立体声输出",liveCounter:"在每日分钟数上限内启停柜台实时口译",convInput:"输入或编辑对话内容",sendPhrase:"发送句子并生成摘要",readForMe:"将输入内容翻译展示给客户",stateBack:"返回上一视图",taskLabel:"输入要开启的桌号、客户或任务名称",taskOpen:"开启当日任务会话",closeYes:"保持当前任务开启",closeNo:"立即关闭并归档此任务",dayBack:"返回主界面",dayItem:"查看或继续此项当日任务",confirm:"确认并下发此执行项",newConv:"开始新的对话记录",day:"查看今日待办任务与提醒",fbCat:"选择反馈类别",fbText:"描述现场问题或改进建议",fbSend:"向团队发送现场反馈",langPill:"切换操作面板显示语言",langPickSelf:"要选择中文，请点击此处"},
+ ja:{back:"Fanal ダッシュボードへ戻る",dark:"ライト／ダーク表示を切り替える",darkActive:"ダークモード中 — クリックでライト表示へ",lightActive:"ライトモード中 — クリックでダーク表示へ",workerInput:"担当者名またはアカウントを入力",roleInput:"現在の担当役割を入力",gateLink:"メイン画面でログインする",listen:"マイクで会話を連続音声認識する",trad:"リアルタイム翻訳のオン／オフ切替",tradLang:"相手側の表示言語を選択",tradClear:"画面の翻訳テキストを消去する",tradMic:"PC固定マイクを選択（Bluetooth HFP劣化を防止）",tradSink:"A2DPステレオ再生先のBluetoothイヤホンを選択",liveCounter:"1日上限内でカウンター生通訳を開始/停止",convInput:"会話テキストを入力または編集",sendPhrase:"発言を送信して要約を作成する",readForMe:"入力文を翻訳して相手に表示する",stateBack:"前の画面に戻る",taskLabel:"開始するテーブル・顧客・案件名を入力",taskOpen:"本日のタスクセッションを開始",closeYes:"タスクを開いたまま続ける",closeNo:"このタスクを終了して保存",dayBack:"タスク一覧を閉じる",dayItem:"このタスクを再開または確認",confirm:"この項目を確定して実行へ送る",newConv:"新しい会話を開始する",day:"今日のタスクとアラートを確認",fbCat:"フィードバック分類を選択",fbText:"状況や改善提案を入力",fbSend:"現場フィードバックをチームへ送信",langPill:"アクションパネルの表示言語を変更",langPickSelf:"日本語を選択するにはここをクリックしてください"},
+ ko:{back:"Fanal 대시보드로 돌아가기",dark:"라이트 / 다크 테마 전환",darkActive:"다크 모드 켜짐 — 클릭하여 라이트 모드로",lightActive:"라이트 모드 켜짐 — 클릭하여 다크 모드로",workerInput:"작업자 이름 또는 계정 입력",roleInput:"현재 근무 역할 입력",gateLink:"대시보드에서 로그인하기",listen:"마이크로 대화를 연속 인식하기",trad:"실시간 통역 켜기/끄기",tradLang:"고객 대상 언어 선택",tradClear:"화면에 표시된 번역 문장 지우기",tradMic:"고정 카운터 마이크 선택 (블루투스 HFP 저하 방지)",tradSink:"A2DP 스테레오 출력 블루투스 이어폰 선택",liveCounter:"일일 한도 내에서 카운터 실시간 통역 시작/중지",convInput:"대화 내용을 입력하거나 수정",sendPhrase:"문장을 보내 대화 요약 생성",readForMe:"작성한 문장을 번역해 고객에게 표시",stateBack:"이전 카드로 돌아가기",taskLabel:"열려는 테이블, 고객 또는 작업명 입력",taskOpen:"근무 작업 세션 열기",closeYes:"작업을 계속 열어 두기",closeNo:"이 작업 닫고 보관하기",dayBack:"작업 목록에서 돌아가기",dayItem:"이 작업 열기 또는 이어서 하기",confirm:"이 항목을 확정하여 전달하기",newConv:"새 대화 요약 시작하기",day:"오늘의 작업과 알림 보기",fbCat:"피드백 유형 선택",fbText:"현장 상황이나 개선 의견 작성",fbSend:"팀에 현장 피드백 보내기",langPill:"작업 패널 표시 언어 변경",langPickSelf:"한국어를 선택하려면 여기를 누르세요"},
+ ar:{back:"العودة إلى لوحة Fanal الرئيسية",dark:"التبديل بين الوضع الفاتح والداكن",darkActive:"الوضع الداكن مفعّل — انقر للوضع الفاتح",lightActive:"الوضع الفاتح مفعّل — انقر للوضع الداكن",workerInput:"أدخل اسمك أو اسم الحساب التشغيلي",roleInput:"أدخل دورك أو مهمتك في المناوبة",gateLink:"الانتقال إلى اللوحة الرئيسية لتسجيل الدخول",listen:"التقاط الصوت باستمرار عبر الميكروفون",trad:"تشغيل أو إيقاف الترجمة الفورية",tradLang:"اختر لغة العميل المستهدفة",tradClear:"مسح نص الترجمة المعروض",tradMic:"اختر ميكروفون المنضدة الثابت لتجنب هبوط جودة HFP",tradSink:"اختر سماعة البلوتوث كمخرج صوت ستيريو A2DP",liveCounter:"تشغيل أو إيقاف مترجم المنضدة الفوري ضمن الحد اليومي",convInput:"اكتب أو عدّل عبارات المحادثة",sendPhrase:"إرسال العبارة لتلخيص الطلبات",readForMe:"ترجمة النص وعرضه للعميل",stateBack:"العودة إلى البطاقة السابقة",taskLabel:"اكتب اسم الطاولة أو العميل أو المهمة",taskOpen:"فتح جلسة مهمة جديدة ليومك",closeYes:"إبقاء المهمة مفتوحة للمتابعة",closeNo:"إغلاق وأرشفة هذه المهمة الآن",dayBack:"الرجوع من قائمة المهام اليومية",dayItem:"فتح أو متابعة هذه المهمة",confirm:"تأكيد هذا البند وإرساله للتنفيذ",newConv:"بدء محادثة جديدة",day:"عرض مهام وتنبيهات اليوم",fbCat:"اختر فئة الملاحظة",fbText:"اشرح ما حدث أو ما يمكن تحسينه",fbSend:"إرسال ملاحظات الميدان للفريق",langPill:"تغيير لغة لوحة الإجراءات",langPickSelf:"لاختيار العربية، اضغط هنا"}
 };
 let tradOn=false,tradOther="AUTO";
 const SUP=location.origin;
@@ -448,6 +477,12 @@ function applyLang(){
     $("tradReadLabel").textContent=ft("tradReadLabel");
     $("tradTitle").textContent=ft("tradTitle");
     $("tradLangLabel").textContent=ft("tradLangLabel");
+    if($("liveA2dpTitleEl"))$("liveA2dpTitleEl").textContent=ft("liveA2dpTitle");
+    if($("liveCounterBtn"))$("liveCounterBtn").textContent=liveCounterActive?ft("liveA2dpStop"):ft("liveA2dpStart");
+    if($("liveCounterStatus")&&typeof window!=="undefined"&&!(window.SpeechRecognition||window.webkitSpeechRecognition)&&!liveCounterActive)$("liveCounterStatus").textContent=ft("liveA2dpElectronNote");
+    if($("tradMicSelect")&&$("tradMicSelect").options&&$("tradMicSelect").options[0])$("tradMicSelect").options[0].textContent=ft("liveA2dpMicDefault");
+    if($("tradSinkSelect")&&$("tradSinkSelect").options&&$("tradSinkSelect").options[0])$("tradSinkSelect").options[0].textContent=ft("liveA2dpSinkDefault");
+    if($("liveCounterMeter")&&LAST_COUNTER_USAGE)renderLiveCounterMeter(LAST_COUNTER_USAGE);
     $("tradHint").textContent=ft("tradHint");
     $("newConvBtn").textContent=ft("newConv");
     $("backBtn").textContent=ft("back");
@@ -509,6 +544,7 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(!SR){
   $("listenBtn").disabled=true;
   $("listenBtn").textContent=S[cur].nospeech;
+  if($("liveCounterStatus"))$("liveCounterStatus").textContent=ft("liveA2dpElectronNote");
 }else{
   $("listenBtn").onclick=()=>{
     if(rec){armed=false;try{rec.stop();}catch(e){}return;}
@@ -595,6 +631,180 @@ async function translateUtterance(text,mode){
 }
 $("readForMeBtn").onclick=async()=>{if(tradOn&&convInput.value.trim())await translateUtterance(convInput.value.trim(),"client");};
 $("tradClearBtn").onclick=()=>{$("tradDisplay").textContent="";};
+var LAST_COUNTER_USAGE=null,liveCounterActive=false,liveWs=null,liveMicStream=null,liveInCtx=null,liveOutCtx=null,liveProc=null,liveStartedAt=0,liveMaxTimer=null,liveNextPlayTime=0;
+function renderLiveCounterMeter(u){
+  LAST_COUNTER_USAGE=u||null;
+  const el=$("liveCounterMeter");if(!el||!u)return;
+  el.textContent=ft("liveA2dpMeterFmt").replace("{m}",String(u.minutesUsed||0)).replace("{c}",String(u.dailyMinutesCap||30));
+}
+async function refreshCounterLiveStatus(){
+  if(typeof location==="undefined"||!/^https?:/.test(String(location.protocol||"")))return;
+  try{
+    const r=await authFetch("/api/counter-interpreter/status");
+    if(!r||!r.ok)return;
+    const j=await r.json();
+    if(j&&j.usage)renderLiveCounterMeter(j.usage);
+  }catch(e){}
+}
+async function initCounterAudioDevices(){
+  if(typeof navigator==="undefined"||!navigator.mediaDevices||typeof navigator.mediaDevices.enumerateDevices!=="function")return;
+  const micSel=$("tradMicSelect"),sinkSel=$("tradSinkSelect");
+  if(!micSel||!sinkSel)return;
+  try{
+    const devs=await navigator.mediaDevices.enumerateDevices();
+    const curMic=micSel.value,curSink=sinkSel.value;
+    while(micSel.options.length>1)micSel.remove(1);
+    while(sinkSel.options.length>1)sinkSel.remove(1);
+    const btRe=/bluetooth|airpods|buds|headset|wh-|wf-|jabra|bose|sony|hands-free/i;
+    let bestNonBtMic="",bestBtSink="";
+    devs.forEach((d,i)=>{
+      if(d.kind==="audioinput"){
+        const opt=document.createElement("option");
+        opt.value=d.deviceId;
+        opt.textContent=d.label||("Mic "+(i+1));
+        micSel.appendChild(opt);
+        if(!bestNonBtMic&&d.deviceId&&d.deviceId!=="default"&&!btRe.test(d.label||""))bestNonBtMic=d.deviceId;
+      }else if(d.kind==="audiooutput"){
+        const opt=document.createElement("option");
+        opt.value=d.deviceId;
+        opt.textContent=d.label||("Output "+(i+1));
+        sinkSel.appendChild(opt);
+        if(!bestBtSink&&d.deviceId&&d.deviceId!=="default"&&btRe.test(d.label||""))bestBtSink=d.deviceId;
+      }
+    });
+    if(curMic)micSel.value=curMic; else if(bestNonBtMic)micSel.value=bestNonBtMic;
+    if(curSink)sinkSel.value=curSink; else if(bestBtSink)sinkSel.value=bestBtSink;
+  }catch(e){}
+}
+function float32ToPcm16Base64(f32,srcRate){
+  const targetRate=16000;
+  const ratio=srcRate>0?srcRate/targetRate:1;
+  const len=Math.max(1,Math.floor(f32.length/ratio));
+  const buf=new ArrayBuffer(len*2);
+  const view=new DataView(buf);
+  for(let i=0;i<len;i++){
+    const idx=Math.min(f32.length-1,Math.floor(i*ratio));
+    const s=Math.max(-1,Math.min(1,f32[idx]));
+    view.setInt16(i*2,s<0?s*0x8000:s*0x7fff,true);
+  }
+  const bytes=new Uint8Array(buf);
+  let bin="";for(let i=0;i<bytes.length;i++)bin+=String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+function playPcm24Chunk(b64){
+  if(!liveOutCtx||!b64)return;
+  const bin=atob(b64);
+  const len=Math.floor(bin.length/2);
+  if(!len)return;
+  const ab=liveOutCtx.createBuffer(1,len,24000);
+  const ch=ab.getChannelData(0);
+  for(let i=0;i<len;i++){
+    const lo=bin.charCodeAt(i*2),hi=bin.charCodeAt(i*2+1);
+    let val=(hi<<8)|lo;
+    if(val>=0x8000)val-=0x10000;
+    ch[i]=val/32768;
+  }
+  const src=liveOutCtx.createBufferSource();
+  src.buffer=ab;
+  src.connect(liveOutCtx.destination);
+  const t=Math.max(liveOutCtx.currentTime,liveNextPlayTime);
+  src.start(t);
+  liveNextPlayTime=t+ab.duration;
+}
+async function stopLiveCounterInterpreter(){
+  const wasActive=liveCounterActive;
+  liveCounterActive=false;
+  if(liveMaxTimer){clearTimeout(liveMaxTimer);liveMaxTimer=null;}
+  try{if(liveProc)liveProc.disconnect();}catch(e){}
+  liveProc=null;
+  try{if(liveInCtx)await liveInCtx.close();}catch(e){}
+  liveInCtx=null;
+  try{if(liveOutCtx)await liveOutCtx.close();}catch(e){}
+  liveOutCtx=null;
+  try{if(liveMicStream&&liveMicStream.getTracks)liveMicStream.getTracks().forEach(t=>t.stop());}catch(e){}
+  liveMicStream=null;
+  try{if(liveWs&&liveWs.readyState<2)liveWs.close();}catch(e){}
+  liveWs=null;
+  if($("liveCounterBtn")){$("liveCounterBtn").textContent=ft("liveA2dpStart");$("liveCounterBtn").classList.remove("on");}
+  if($("liveCounterStatus"))$("liveCounterStatus").textContent="";
+  if(wasActive&&liveStartedAt>0){
+    const elapsed=Math.max(1,Math.round((Date.now()-liveStartedAt)/1000));
+    liveStartedAt=0;
+    try{
+      const r=await authFetch("/api/counter-interpreter/usage",{method:"POST",body:JSON.stringify({seconds:elapsed})});
+      if(r&&r.ok){const j=await r.json();if(j&&j.usage)renderLiveCounterMeter(j.usage);}
+    }catch(e){}
+  }
+}
+async function startLiveCounterInterpreter(){
+  if(typeof WebSocket!=="function"||!navigator||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    if($("liveCounterStatus"))$("liveCounterStatus").textContent=S[cur].micError;return;
+  }
+  const stEl=$("liveCounterStatus"),btn=$("liveCounterBtn");
+  if(stEl)stEl.textContent=ft("liveA2dpConnecting");
+  try{
+    const targetLang=tradOther!=="AUTO"?tradOther:cur;
+    const tokRes=await authFetch("/api/counter-interpreter/token",{method:"POST",body:JSON.stringify({targetLang,echoTargetLanguage:true})});
+    const tok=await tokRes.json();
+    if(!tokRes.ok||!tok||!tok.ok||!tok.wsUrl){
+      const msg=tok&&tok.error==="ERR_DAILY_LIVE_MINUTES_CAP_REACHED"?ft("liveA2dpCapReached"):(tok&&tok.error==="ERR_GEMINI_KEY_REQUIRED_FOR_LIVE"?ft("liveA2dpNoKey"):String(tok&&tok.error||"Error"));
+      if(stEl)stEl.textContent="⚠ "+msg;
+      if(tok&&tok.usage)renderLiveCounterMeter(tok.usage);
+      return;
+    }
+    if(tok.usage)renderLiveCounterMeter(tok.usage);
+    const micId=$("tradMicSelect")?$("tradMicSelect").value:"";
+    const sinkId=$("tradSinkSelect")?$("tradSinkSelect").value:"";
+    liveMicStream=await navigator.mediaDevices.getUserMedia({audio:micId?{deviceId:{exact:micId},echoCancellation:true,noiseSuppression:true}:{echoCancellation:true,noiseSuppression:true}});
+    await initCounterAudioDevices();
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    liveInCtx=new AudioCtx();
+    liveOutCtx=new AudioCtx({sampleRate:24000});
+    liveNextPlayTime=0;
+    if(sinkId&&typeof liveOutCtx.setSinkId==="function"){try{await liveOutCtx.setSinkId(sinkId);}catch(e){}}
+    liveWs=new WebSocket(tok.wsUrl);
+    liveWs.onopen=()=>{
+      liveCounterActive=true;liveStartedAt=Date.now();
+      if(btn){btn.textContent=ft("liveA2dpStop");btn.classList.add("on");}
+      if(stEl)stEl.textContent=ft("liveA2dpLive");
+      try{liveWs.send(JSON.stringify({setup:{model:"models/"+tok.model}}));}catch(e){}
+      const src=liveInCtx.createMediaStreamSource(liveMicStream);
+      liveProc=liveInCtx.createScriptProcessor(4096,1,1);
+      liveProc.onaudioprocess=(ev)=>{
+        if(!liveCounterActive||!liveWs||liveWs.readyState!==1)return;
+        const b64=float32ToPcm16Base64(ev.inputBuffer.getChannelData(0),liveInCtx.sampleRate);
+        try{liveWs.send(JSON.stringify({realtimeInput:{audio:{data:b64,mimeType:"audio/pcm;rate=16000"}}}));}catch(e){}
+      };
+      src.connect(liveProc);liveProc.connect(liveInCtx.destination);
+      const maxMs=Math.max(10000,(Number(tok.maxSessionMinutes)||10)*60*1000);
+      liveMaxTimer=setTimeout(()=>stopLiveCounterInterpreter(),maxMs);
+    };
+    liveWs.onmessage=(ev)=>{
+      try{
+        const msg=JSON.parse(typeof ev.data==="string"?ev.data:"{}");
+        const sc=msg.serverContent;
+        if(!sc)return;
+        if(sc.inputTranscription&&sc.inputTranscription.text){
+          const txt=sc.inputTranscription.text.trim();
+          if(txt){$("tradReadBox").style.display="block";$("tradDisplay").textContent+="\n[🎤] "+txt;}
+        }
+        if(sc.outputTranscription&&sc.outputTranscription.text){
+          const txt=sc.outputTranscription.text.trim();
+          if(txt){$("tradReadBox").style.display="block";$("tradDisplay").textContent+="\n[🎧] "+txt;}
+        }
+        const parts=sc.modelTurn&&Array.isArray(sc.modelTurn.parts)?sc.modelTurn.parts:[];
+        parts.forEach(p=>{if(p.inlineData&&p.inlineData.data)playPcm24Chunk(p.inlineData.data);});
+      }catch(e){}
+    };
+    liveWs.onerror=()=>{stopLiveCounterInterpreter();};
+    liveWs.onclose=()=>{if(liveCounterActive)stopLiveCounterInterpreter();};
+  }catch(e){
+    await stopLiveCounterInterpreter();
+    if(stEl)stEl.textContent="⚠ "+String(e&&e.message||e);
+  }
+}
+if($("liveCounterBtn"))$("liveCounterBtn").onclick=()=>liveCounterActive?stopLiveCounterInterpreter():startLiveCounterInterpreter();
+try{initCounterAudioDevices();refreshCounterLiveStatus();}catch(e){}
 $("newConvBtn").onclick=async()=>{await authFetch("/api/live/close",{method:"POST"});summaryCard.style.display="none";convInput.value="";$("tradReadBox").style.display="none";$("tradDisplay").textContent="";};
 let closeTimer=null,closeSessionId=null;
 async function loadMyDay(){try{const r=await authFetch("/api/task/mine");if(!r.ok)return;const j=await r.json();const ss=(j&&j.sessions)||[];
@@ -677,7 +887,7 @@ $("fbSend").onclick=async()=>{
     setTimeout(()=>$("fbSend").textContent=S[cur].fbSent,3000);
   }
 };
-const PTIP_BY_ID={panelBackBtn:"back",darkBtn:"dark",workerInput:"workerInput",roleInput:"roleInput",gateLink:"gateLink",listenBtn:"listen",tradToggle:"trad",tradClearBtn:"tradClear",convInput:"convInput",sendPhraseBtn:"sendPhrase",readForMeBtn:"readForMe",stateBack:"stateBack",taskLabel:"taskLabel",taskOpen:"taskOpen",closeYes:"closeYes",closeNo:"closeNo",dayBack:"dayBack",newConvBtn:"newConv",dayBtn:"day",backBtn:"back",fbCat:"fbCat",fbText:"fbText",fbSend:"fbSend"};
+const PTIP_BY_ID={panelBackBtn:"back",darkBtn:"dark",workerInput:"workerInput",roleInput:"roleInput",gateLink:"gateLink",listenBtn:"listen",tradToggle:"trad",tradMicSelect:"tradMic",tradSinkSelect:"tradSink",liveCounterBtn:"liveCounter",tradClearBtn:"tradClear",convInput:"convInput",sendPhraseBtn:"sendPhrase",readForMeBtn:"readForMe",stateBack:"stateBack",taskLabel:"taskLabel",taskOpen:"taskOpen",closeYes:"closeYes",closeNo:"closeNo",dayBack:"dayBack",newConvBtn:"newConv",dayBtn:"day",backBtn:"back",fbCat:"fbCat",fbText:"fbText",fbSend:"fbSend"};
 (function initPanelTooltips(){
   const tip=$("fanalTooltip");
   if(!tip||typeof document.addEventListener!=="function")return;

@@ -77,6 +77,21 @@ const {
   buildInstallationAttestation,
   verifyInstallationAttestation,
 } = require("./setup-validator");
+const {
+  isTourismAffluenceSector,
+  normalizeAffluenceConfig,
+  fetchOpenMeteoRegional,
+  fetchTransientGoogleRoutesCorridor,
+  computeRegionalAffluence,
+  parsePosZReport,
+} = require("./affluence-forecast");
+const {
+  callGeminiMultimodalInteraction,
+  verifyQuebecInvoiceMath,
+  readLiveTranslateUsage,
+  recordLiveTranslateUsageSeconds,
+  createCounterLiveSessionToken,
+} = require("./multimodal-bridge");
 
 const ARGS = process.argv.slice(2);
 const EDITION = resolveEdition({ cliArgs: ARGS, env: process.env, appDir: __dirname });
@@ -1040,6 +1055,7 @@ function resolveProfileSnapshot() {
       showShiftChecklist: !isSolo,
       showWall3Meters: scaleType === "SME_CELL",
       showShiftHandoffButton: !isSolo,
+      showAffluenceCard: isTourismAffluenceSector({ scaleType, sector: sectorId }),
       enableUdpMesh: scaleType === "SME_CELL",
       zeroHardwareNote: "Cerveau Fanal Dual (DeepSeek + Gemini) : le voile PII et le coffre AES-256-GCM tournent 100 % sur cette machine.",
     },
@@ -1682,7 +1698,17 @@ function liveRead() { try { const s = JSON.parse(fs.readFileSync(LIVE_FILE, "utf
 function liveWrite(s) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(LIVE_FILE, JSON.stringify(s, null, 2)); }
 function regRead() { try { return JSON.parse(fs.readFileSync(REG_FILE, "utf8")); } catch { return { status: "closed", openedAt: null, items: [], sales: [], declared: null }; } }
 function regWrite(r) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(REG_FILE, JSON.stringify(r, null, 2)); }
-function regView() { const r = regRead(); const recorded = Math.round((r.sales || []).reduce((a, x) => a + (x.total || 0), 0) * 100) / 100; return { ...r, recorded, variance: r.declared == null ? null : Math.round((r.declared - recorded) * 100) / 100 }; }
+function regView() {
+  const r = regRead();
+  const recorded = Math.round((r.sales || []).reduce((a, x) => a + (x.total || 0), 0) * 100) / 100;
+  return {
+    ...r,
+    recorded,
+    variance: r.declared == null ? null : Math.round((r.declared - recorded) * 100) / 100,
+    zImports: Array.isArray(r.zImports) ? r.zImports.slice(-14) : [],
+    mevWebPassiveMode: true,
+  };
+}
 function alertsRead() { try { return JSON.parse(fs.readFileSync(ALERTS_FILE, "utf8")); } catch { return { items: [] }; } }
 function alertsWrite(a) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(ALERTS_FILE, JSON.stringify(a, null, 2)); }
 function shiftRead() { try { return JSON.parse(fs.readFileSync(SHIFT_FILE, "utf8")); } catch { return { date: "", opened: null, closed: null }; } }
@@ -1690,10 +1716,20 @@ function shiftWrite(sh) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeF
 function todayStr() { return new Date().toISOString().slice(0, 10); }
 function tasksRead() { try { return JSON.parse(fs.readFileSync(TASKS_FILE, "utf8")); } catch { return { tasks: [] }; } }
 function tasksWrite(tk) { fs.mkdirSync(DATA_DIR, { recursive: true }); fs.writeFileSync(TASKS_FILE, JSON.stringify(tk, null, 2)); }
-// Weather: the EVIDENCE layer. Real data in (configurable source), never our predictions.
-async function fetchWeather() {
-  const lat = process.env.DSH_WEATHER_LAT || "47.66";
-  const lon = process.env.DSH_WEATHER_LON || "-70.15";
+function activeGemKey() {
+  return geminiClientKey() || String(process.env.GEMINI_API_KEY || "").trim();
+}
+function activeGoogleMapsKey() {
+  const s = settingsRead();
+  return String((s && s.affluence && s.affluence.googleMapsApiKey) || process.env.GOOGLE_MAPS_API_KEY || "").trim();
+}
+// Regional Weather + Tourism Affluence evaluator: strictly opt-in for tourism/hospitality/retail sectors
+// so non-tourism accounts (CPA, CRIC, Clinics) never receive spurious regional rain alerts.
+async function fetchWeather(latOverride, lonOverride) {
+  const prof = resolveProfileSnapshot();
+  const cfg = normalizeAffluenceConfig(settingsRead(), constitutionRead(), prof);
+  const lat = process.env.DSH_WEATHER_LAT || String(latOverride ?? cfg.lat);
+  const lon = process.env.DSH_WEATHER_LON || String(lonOverride ?? cfg.lon);
   const url = process.env.DSH_WEATHER_URL ||
     "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&hourly=precipitation_probability&forecast_days=1";
   try {
@@ -1702,9 +1738,11 @@ async function fetchWeather() {
     return await r.json();
   } catch { return null; }
 }
-// Alert creation: only on MEASURED facts (precipitation probability next 3 hours).
 async function weatherCheck() {
-  const w = await fetchWeather();
+  const prof = resolveProfileSnapshot();
+  const cfg = normalizeAffluenceConfig(settingsRead(), constitutionRead(), prof);
+  if (!cfg.enabled) return;
+  const w = await fetchWeather(cfg.lat, cfg.lon);
   if (!w || !w.hourly || !w.hourly.precipitation_probability) return;
   const probs = w.hourly.precipitation_probability;
   const hours = (w.hourly.time || []).map((t) => Number(t.slice(11, 13)));
@@ -1714,11 +1752,11 @@ async function weatherCheck() {
     const h = hours[i];
     if (h >= now && h < now + 3 && probs[i] > maxPct) { maxPct = probs[i]; inHour = h - now; }
   }
-  if (maxPct < 60) return; // threshold: only a meaningful rain risk
+  if (maxPct < 60) return;
   const a = alertsRead();
   const key = todayStr() + "-rain-" + inHour;
-  if (a.items.some((x) => x.key === key)) return; // one alert per event
-  a.items.push({ id: "a" + Date.now(), key, kind: "rain", pct: maxPct, inHour, ts: ts(), status: "active", decision: null, source: "weather" });
+  if (a.items.some((x) => x.key === key)) return;
+  a.items.push({ id: "a" + Date.now(), key, kind: "rain", region: cfg.regionName, pct: maxPct, inHour, ts: ts(), status: "active", decision: null, source: "affluence" });
   alertsWrite(a);
 }
 function metrics() {
@@ -1821,10 +1859,10 @@ function safeSectorId(raw) {
   const id = String(raw || "").trim();
   return /^[a-z0-9_-]+$/i.test(id) ? id : "";
 }
-function json(req) {
+function json(req, maxBytes = 1e6) {
   return new Promise((ok) => {
     let b = "";
-    req.on("data", (d) => { b += d; if (b.length > 1e6) req.destroy(); });
+    req.on("data", (d) => { b += d; if (b.length > maxBytes) req.destroy(); });
     req.on("end", () => { try { ok(b ? JSON.parse(b) : {}); } catch { ok({}); } });
   });
 }
@@ -1852,6 +1890,106 @@ function gatePass(req) {
 const GATE_PAGE = "<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>Fanal — Accès</title><style>body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(160deg,#4D6BFE,#7c5cff 60%,#a78bfa);min-height:100vh;display:flex;align-items:center;justify-content:center}form{background:#fff;border-radius:20px;padding:30px 28px;box-shadow:0 24px 60px rgba(15,23,42,.3);text-align:center;width:min(380px,92vw)}h1{margin:0 0 6px;font-size:20px}p{color:#667085;font-size:14px;margin:0 0 16px}input{width:100%;border:1.5px solid rgba(77,107,254,.35);border-radius:12px;padding:12px;font-size:15px;margin-bottom:12px;box-sizing:border-box}button{width:100%;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:700;color:#fff;background:linear-gradient(135deg,#4D6BFE,#7c5cff);cursor:pointer}</style></head><body><form method=\"post\" action=\"/api/gate\"><h1>👁️ Fanal</h1><p>Cette installation est protégée. Entrez la clé d'accès fournie avec votre Fanal.</p><input type=\"password\" name=\"token\" placeholder=\"Clé d'accès\" autofocus><button>Entrer</button></form></body></html>";
 function send(res, code, obj, pub) { const h = { "Content-Type": "application/json; charset=utf-8" }; if (pub) Object.assign(h, CORS); res.writeHead(code, h); res.end(JSON.stringify(obj)); }
 
+async function runHardwareMultimodalTriage({ taskId, hardwareOrigin, mediaType, mimeType, base64Data, label = "", actor = "Fanal Intake" }) {
+  const key = activeGemKey();
+  const tk = tasksRead();
+  const it = tk.tasks.find((x) => x.id === taskId);
+  if (!key) {
+    if (it) {
+      it.status = "done";
+      it.result = `[${hardwareOrigin} · sans clé Gemini] ${label || "Document/Audio reçu"}`;
+      it.rationale = "Fichier capturé sur matériel local; configurez Google Gemini BYOK dans Réglages pour l'analyse multimodale (store=false).";
+      it.doneAt = ts();
+      tasksWrite(tk);
+    }
+    return { ok: false, offline: true };
+  }
+
+  const isAudio = mediaType === "audio";
+  const prompt = isAudio
+    ? "Tu es Le Téléphoniste de Fanal (conformité Loi 25 Québec). Écoute ce message vocal professionnel (" + label + ") et retourne UNIQUEMENT un JSON: {\"transcript\":\"...\",\"clientIntent\":\"...\",\"semaphore\":\"GREEN|YELLOW|RED\",\"proposedReply\":\"...\"}."
+    : "Tu es Le Secrétaire de Fanal (conformité Loi 25 Québec). Analyse ce document/photo de comptoir (" + label + "). Si c'est une facture ou reçu, extrais les montants avant calcul déterministe. Retourne UNIQUEMENT un JSON: {\"docType\":\"...\",\"summary\":\"...\",\"semaphore\":\"GREEN|YELLOW|RED\",\"subtotalCad\":null,\"tpsCad\":null,\"tvqCad\":null,\"totalCad\":null,\"tpsNumber\":\"\",\"tvqNumber\":\"\",\"proposedAction\":\"...\"}.";
+
+  const out = await callGeminiMultimodalInteraction({
+    apiKey: key,
+    prompt,
+    mediaType,
+    mimeType,
+    base64Data,
+    telemetryDir: DATA_DIR,
+    taskType: hardwareOrigin === "voip_voicemail" ? "voip_voicemail" : (hardwareOrigin === "webcam_capture" ? "webcam_capture" : "scanner_adf"),
+    actor,
+    actorRole: "owner",
+  });
+
+  const tk2 = tasksRead();
+  const target = tk2.tasks.find((x) => x.id === taskId);
+  if (!out.ok) {
+    if (target) {
+      target.status = "done";
+      target.result = `[${hardwareOrigin}] ${label || "Capture"}`;
+      target.rationale = "Analyse multimodale indisponible (" + String(out.error || "ERR") + ").";
+      target.doneAt = ts();
+      tasksWrite(tk2);
+    }
+    return out;
+  }
+
+  const j = jsonBlock(out.text) || {};
+  let sem = String(j.semaphore || "YELLOW").toUpperCase();
+  let mathAudit = null;
+  if (!isAudio && (j.subtotalCad != null || j.totalCad != null)) {
+    mathAudit = verifyQuebecInvoiceMath(j);
+    if (mathAudit.semaphore === "RED") sem = "RED";
+    else if (mathAudit.semaphore === "YELLOW" && sem === "GREEN") sem = "YELLOW";
+  }
+
+  const redactedSummary = veil(String(isAudio ? (j.proposedReply || j.transcript || out.text) : (j.summary || j.proposedAction || out.text))).slice(0, 1200);
+  const rationaleParts = [];
+  if (isAudio && j.clientIntent) rationaleParts.push("Intention: " + String(j.clientIntent));
+  if (!isAudio && j.docType) rationaleParts.push("Type: " + String(j.docType));
+  if (mathAudit && mathAudit.issues && mathAudit.issues.length) rationaleParts.push("Audit TPS/TVQ: " + mathAudit.issues.join(" ; "));
+  if (!isAudio && j.proposedAction) rationaleParts.push("Action: " + String(j.proposedAction));
+  const rationale = `[${sem}] ` + (rationaleParts.join(" · ") || "Analysé sans rétention nuagique (store=false).");
+
+  telemetryTick("tier", sem === "RED" || sem === "YELLOW" || sem === "GREEN" ? sem : "YELLOW");
+  executorAct(sem === "GREEN" ? "GREEN" : "SEMI", `${hardwareOrigin}: ${label || "capture"} -> ${sem}`);
+
+  if (target) {
+    target.priority = sem;
+    target.status = "done";
+    target.result = redactedSummary;
+    target.rationale = rationale;
+    target.mathAudit = mathAudit;
+    target.doneAt = ts();
+    tasksWrite(tk2);
+  }
+  return { ok: true, semaphore: sem, result: redactedSummary, rationale, mathAudit };
+}
+
+function importPosZReportIntoRegister(rawContent, filename) {
+  const parsed = parsePosZReport(rawContent, filename);
+  if (!parsed.ok) return parsed;
+  const reg = regRead();
+  reg.zImports = Array.isArray(reg.zImports) ? reg.zImports : [];
+  reg.zImports.push(parsed);
+  if (reg.zImports.length > 90) reg.zImports = reg.zImports.slice(-90);
+  reg.status = "closed";
+  reg.closedAt = parsed.importedAt;
+  reg.declared = parsed.declaredCad;
+  reg.sales = Array.isArray(reg.sales) ? reg.sales : [];
+  reg.sales.push({
+    ts: parsed.importedAt,
+    worker: "POS MEV-WEB",
+    method: "pos_z_import",
+    items: [{ name: "Import Z (" + parsed.sourceFile + ")", price: parsed.totalSalesCad }],
+    total: parsed.totalSalesCad,
+  });
+  regWrite(reg);
+  telemetryTick("action", { tier: "GREEN", what: `Import Z passif (${parsed.sourceFile}): ${parsed.totalSalesCad} $ CAD (écart ${parsed.varianceCad} $)` });
+  return { ok: true, imported: parsed, register: regView() };
+}
+
 const SOURCE_TO_TASK_TYPE = {
   email_imap: "email",
   email: "email",
@@ -1877,12 +2015,43 @@ const intakeEngine = createIntakeEngine({
     telemetryWrite(t);
   },
   onDispatchItem: async (item) => {
+    const hw = item.hardwareMeta || null;
+    if (hw && hw.hardwareOrigin === "pos_z_csv" && hw.filePath) {
+      try {
+        const csvRaw = fs.readFileSync(hw.filePath, "utf8");
+        const zRes = importPosZReportIntoRegister(csvRaw, hw.filename || item.subject);
+        if (zRes.ok) {
+          const zId = "t" + Date.now() + "_" + crypto.randomBytes(2).toString("hex");
+          const tk = tasksRead();
+          tk.tasks.push({
+            id: zId,
+            type: "pos_z_import",
+            source: item.source,
+            priority: Math.abs(zRes.imported.varianceCad) > 1 ? "YELLOW" : "GREEN",
+            from: item.from,
+            subject: item.subject,
+            text: item.body,
+            by: "Fanal Intake (POS Z)",
+            ts: ts(),
+            status: "done",
+            result: `Import Z POS: Total ${zRes.imported.totalSalesCad.toFixed(2)} $ CAD · Déclaré ${zRes.imported.declaredCad.toFixed(2)} $ · Écart ${zRes.imported.varianceCad.toFixed(2)} $`,
+            rationale: "Calcul déterministe 0 jeton IA depuis le fichier CSV du POS MEV-WEB.",
+            doneAt: ts(),
+          });
+          tasksWrite(tk);
+          return { taskId: zId };
+        }
+      } catch {}
+    }
+
     const tk = tasksRead();
     const id = "t" + Date.now() + "_" + crypto.randomBytes(2).toString("hex");
-    const taskType = SOURCE_TO_TASK_TYPE[item.source] || "intake";
+    const taskType = (hw && hw.hardwareOrigin) || SOURCE_TO_TASK_TYPE[item.source] || "intake";
     const summaryText =
       "[" + item.priority + "] [" + item.source + "] " + item.from + " — " + item.subject + "\n\n" + item.body;
-    const hasBrain = brainOn();
+    const isMultimodalHw = Boolean(hw && (hw.mediaType === "audio" || hw.mediaType === "image" || hw.mediaType === "document"));
+    const hasBrain = isMultimodalHw ? Boolean(activeGemKey()) : brainOn();
+
     tk.tasks.push({
       id,
       type: taskType,
@@ -1901,7 +2070,27 @@ const intakeEngine = createIntakeEngine({
       doneAt: hasBrain ? null : ts(),
     });
     tasksWrite(tk);
-    if (hasBrain) {
+
+    if (isMultimodalHw) {
+      let b64 = hw.base64Data || "";
+      if (!b64 && hw.filePath) {
+        try {
+          const buf = fs.readFileSync(hw.filePath);
+          if (buf.length > 0 && buf.length <= 2.5 * 1024 * 1024) b64 = buf.toString("base64");
+        } catch {}
+      }
+      if (b64) {
+        runHardwareMultimodalTriage({
+          taskId: id,
+          hardwareOrigin: hw.hardwareOrigin,
+          mediaType: hw.mediaType,
+          mimeType: hw.mimeType,
+          base64Data: b64,
+          label: hw.filename || item.subject,
+          actor: "Fanal Intake",
+        }).catch(() => {});
+      }
+    } else if (hasBrain) {
       processStudio({ id, type: taskType, by: "Fanal Intake", text: summaryText });
     }
     return { taskId: id };
@@ -2808,39 +2997,40 @@ async function api(req, res, pathname) {
     telemetryTick("action", { tier: "GREEN", what: "Memory contact saved (type " + c.type + ")" });
     return send(res, 200, { ok: true });
   }
-  if (pathname === "/api/browser/start" && req.method === "POST") {
+  if (pathname.startsWith("/api/browser/")) {
     if (!ownerOnly(res, req)) return;
-    const b = await json(req);
-    const br = browserBridge();
-    if (!br || !br.chromeExists()) return send(res, 200, { ok: false, error: "Chrome not found on this machine" });
-    try { const r = await br.launch(String(b.url || "https://www.charlevoix.com")); telemetryTick("action", { tier: "GREEN", what: "Browser pilot started (badge always visible)" }); return send(res, 200, r); }
-    catch (e) { return send(res, 200, { ok: false, error: e.message }); }
-  }
-  if (pathname === "/api/browser/nav" && req.method === "POST") {
-    if (!ownerOnly(res, req)) return;
-    const b = await json(req);
-    try { const r = await browserBridge().nav(String(b.url || "")); telemetryTick("action", { tier: "GREEN", what: "Browser navigated to " + String(b.url || "") }); return send(res, 200, r); }
-    catch (e) { return send(res, 200, { ok: false, error: e.message }); }
-  }
-  if (pathname === "/api/browser/eval" && req.method === "POST") {
-    if (!ownerOnly(res, req)) return;
-    const b = await json(req);
-    if (!b.confirm) return send(res, 200, { ok: false, error: "this executes code in the page — send {confirm:true} to proceed (SEMI, logged)" });
-    try { const r = await browserBridge().evalJs(String(b.js || "")); telemetryTick("action", { tier: "SEMI", what: "Browser script executed: " + String(b.js || "").slice(0, 80) }); return send(res, 200, r); }
-    catch (e) { return send(res, 200, { ok: false, error: e.message }); }
-  }
-  if (pathname === "/api/browser/stop" && req.method === "POST") {
-    if (!ownerOnly(res, req)) return;
-    const r = browserBridge() ? browserBridge().stop() : { ok: true };
-    telemetryTick("action", { tier: "GREEN", what: "Browser pilot stopped" });
-    return send(res, 200, r);
-  }
-  if (pathname === "/api/browser/status" && req.method === "GET") {
-    if (!ownerOnly(res, req)) return;
-    const br = browserBridge();
-    if (!br) return send(res, 200, { running: false, badgeAlwaysOn: true });
-    try { const t = await br.targets(); return send(res, 200, { running: t.length > 0, pages: t.filter(x => x.type === "page").map(x => x.title), badgeAlwaysOn: true }); }
-    catch (e) { return send(res, 200, { running: false, badgeAlwaysOn: true }); }
+    if (process.env.FANAL_EXPERIMENTAL_BROWSER_PILOT !== "1") {
+      return send(res, 403, { error: "experimental_pilot_suspended", precedent: "browser_cdp_visible_badge" });
+    }
+    if (pathname === "/api/browser/start" && req.method === "POST") {
+      const b = await json(req);
+      const br = browserBridge();
+      if (!br || !br.chromeExists()) return send(res, 200, { ok: false, error: "Chrome not found on this machine" });
+      try { const r = await br.launch(String(b.url || "https://www.charlevoix.com")); telemetryTick("action", { tier: "GREEN", what: "Browser pilot started (badge always visible)" }); return send(res, 200, r); }
+      catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+    }
+    if (pathname === "/api/browser/nav" && req.method === "POST") {
+      const b = await json(req);
+      try { const r = await browserBridge().nav(String(b.url || "")); telemetryTick("action", { tier: "GREEN", what: "Browser navigated to " + String(b.url || "") }); return send(res, 200, r); }
+      catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+    }
+    if (pathname === "/api/browser/eval" && req.method === "POST") {
+      const b = await json(req);
+      if (!b.confirm) return send(res, 200, { ok: false, error: "this executes code in the page — send {confirm:true} to proceed (SEMI, logged)" });
+      try { const r = await browserBridge().evalJs(String(b.js || "")); telemetryTick("action", { tier: "SEMI", what: "Browser script executed: " + String(b.js || "").slice(0, 80) }); return send(res, 200, r); }
+      catch (e) { return send(res, 200, { ok: false, error: e.message }); }
+    }
+    if (pathname === "/api/browser/stop" && req.method === "POST") {
+      const r = browserBridge() ? browserBridge().stop() : { ok: true };
+      telemetryTick("action", { tier: "GREEN", what: "Browser pilot stopped" });
+      return send(res, 200, r);
+    }
+    if (pathname === "/api/browser/status" && req.method === "GET") {
+      const br = browserBridge();
+      if (!br) return send(res, 200, { running: false, badgeAlwaysOn: true });
+      try { const t = await br.targets(); return send(res, 200, { running: t.length > 0, pages: t.filter(x => x.type === "page").map(x => x.title), badgeAlwaysOn: true }); }
+      catch (e) { return send(res, 200, { running: false, badgeAlwaysOn: true }); }
+    }
   }
   if (pathname === "/api/telemetry" && req.method === "GET") {
     if (!managerOnly(res, req)) return;
@@ -2855,6 +3045,132 @@ async function api(req, res, pathname) {
   if (pathname === "/api/register/add" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); r.items.push({ name: String(b.name || ""), price: Number(b.price) || 0 }); regWrite(r); return send(res, 200, { ok: true }); }
   if (pathname === "/api/register/charge" && req.method === "POST") { const u = auth(req); if (!u) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); if (!r.items.length) return send(res, 400, { error: "no items" }); const total = Math.round(r.items.reduce((a, x) => a + x.price, 0) * 100) / 100; r.sales.push({ ts: ts(), worker: u.name, method: b.method || "terminal", items: r.items, total }); r.items = []; regWrite(r); return send(res, 200, { ok: true, total }); }
   if (pathname === "/api/register/close" && req.method === "POST") { if (!auth(req)) return send(res, 401, { error: "unauthorized" }); const b = await json(req); const r = regRead(); if (!r.items.length || true) { const leftover = r.items.length ? Math.round(r.items.reduce((a, x) => a + x.price, 0) * 100) / 100 : 0; if (leftover) r.sales.push({ ts: ts(), items: r.items, total: leftover }); r.items = []; } r.status = "closed"; r.closedAt = ts(); r.declared = Number(b.declared) || 0; regWrite(r); return send(res, 200, regView()); }
+  if (pathname === "/api/register/import-z" && req.method === "POST") {
+    if (!auth(req)) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const out = importPosZReportIntoRegister(b.content, b.filename);
+    if (!out.ok) return send(res, 400, out);
+    return send(res, 200, out);
+  }
+  if (pathname === "/api/affluence" && req.method === "GET") {
+    if (!auth(req)) return send(res, 401, { error: "unauthorized" });
+    const prof = resolveProfileSnapshot();
+    const cfg = normalizeAffluenceConfig(settingsRead(), constitutionRead(), prof);
+    const qUrl = new URL(req.url, "http://x");
+    const skipNet = qUrl.searchParams.get("skipNetwork") === "1";
+    const wantTraffic = qUrl.searchParams.get("liveTraffic") === "1";
+    const weather = (!skipNet && cfg.enabled) ? await fetchOpenMeteoRegional(cfg.lat, cfg.lon) : null;
+    const gKey = activeGoogleMapsKey();
+    const transientTraffic = (!skipNet && wantTraffic && gKey)
+      ? await fetchTransientGoogleRoutesCorridor({ origin: cfg.corridorOrigin, destination: cfg.corridorDestination, googleMapsApiKey: gKey })
+      : null;
+    const zImports = Array.isArray(regRead().zImports) ? regRead().zImports : [];
+    const forecast = computeRegionalAffluence({ config: cfg, weather, zImports, transientTraffic });
+    return send(res, 200, { ok: true, config: cfg, forecast });
+  }
+  if (pathname === "/api/affluence/config" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const s = settingsRead();
+    const prev = (s && typeof s.affluence === "object" && s.affluence) || {};
+    const next = {
+      ...prev,
+      ...(typeof b.enabled === "boolean" ? { enabled: b.enabled } : {}),
+      ...(b.regionName !== undefined ? { regionName: String(b.regionName || "").trim().slice(0, 80) } : {}),
+      ...(Number.isFinite(Number(b.lat)) ? { lat: Number(b.lat) } : {}),
+      ...(Number.isFinite(Number(b.lon)) ? { lon: Number(b.lon) } : {}),
+      ...(b.corridorOrigin !== undefined ? { corridorOrigin: String(b.corridorOrigin || "").trim().slice(0, 120) } : {}),
+      ...(b.corridorDestination !== undefined ? { corridorDestination: String(b.corridorDestination || "").trim().slice(0, 120) } : {}),
+      ...(b.googleMapsApiKey !== undefined ? { googleMapsApiKey: String(b.googleMapsApiKey || "").trim() } : {}),
+    };
+    s.affluence = next;
+    settingsWrite(s);
+    const cfg = normalizeAffluenceConfig(s, constitutionRead(), resolveProfileSnapshot());
+    return send(res, 200, { ok: true, config: cfg });
+  }
+  if (pathname === "/api/intake/webcam" && req.method === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req, 3 * 1024 * 1024);
+    const img = String(b.imageBase64 || "").trim();
+    if (!img || img.length < 32) return send(res, 400, { error: "ERR_WEBCAM_IMAGE_REQUIRED" });
+    const mimeType = String(b.mimeType || "image/jpeg").toLowerCase().startsWith("image/") ? String(b.mimeType).toLowerCase() : "image/jpeg";
+    const label = String(b.label || "Capture comptoir Webcam").trim().slice(0, 100);
+    const id = "t" + Date.now() + "_" + crypto.randomBytes(2).toString("hex");
+    const tk = tasksRead();
+    tk.tasks.push({
+      id,
+      type: "webcam_capture",
+      source: "webcam",
+      priority: "YELLOW",
+      from: "Webcam (" + u.name + ")",
+      subject: label,
+      text: "[webcam_capture] " + label,
+      by: u.name,
+      ts: ts(),
+      status: activeGemKey() ? "pending" : "done",
+      result: activeGemKey() ? null : `[webcam_capture offline] ${label}`,
+      rationale: activeGemKey() ? null : "Capture webcam locale enregistrée; configurez Gemini BYOK pour OCR/TPS-TVQ instantané.",
+      doneAt: activeGemKey() ? null : ts(),
+    });
+    tasksWrite(tk);
+    const tri = await runHardwareMultimodalTriage({
+      taskId: id,
+      hardwareOrigin: "webcam_capture",
+      mediaType: "image",
+      mimeType,
+      base64Data: img,
+      label,
+      actor: u.name,
+    });
+    return send(res, 200, { ok: true, taskId: id, triage: tri });
+  }
+  if (pathname === "/api/counter-interpreter/status" && req.method === "GET") {
+    if (!auth(req)) return send(res, 401, { error: "unauthorized" });
+    const s = settingsRead();
+    return send(res, 200, {
+      ok: true,
+      configured: Boolean(activeGemKey()),
+      usage: readLiveTranslateUsage(DATA_DIR, s),
+      audioPolicy: {
+        avoidHfpDrop: true,
+        recommendedInput: "PC / Webcam fixed microphone",
+        recommendedOutput: "Bluetooth headset / earbuds (A2DP stereo sink via AudioContext.setSinkId)",
+      },
+    });
+  }
+  if (pathname === "/api/counter-interpreter/config" && req.method === "POST") {
+    if (!ownerOnly(res, req)) return;
+    const b = await json(req);
+    const s = settingsRead();
+    const cap = Math.max(5, Math.min(120, Math.round(Number(b.dailyMinutesCap) || 30)));
+    s.counterLive = { ...(s.counterLive || {}), dailyMinutesCap: cap };
+    settingsWrite(s);
+    return send(res, 200, { ok: true, usage: readLiveTranslateUsage(DATA_DIR, s) });
+  }
+  if (pathname === "/api/counter-interpreter/token" && req.method === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const s = settingsRead();
+    const out = await createCounterLiveSessionToken({
+      apiKey: activeGemKey(),
+      dataDir: DATA_DIR,
+      settings: s,
+      targetLanguageCode: String(b.targetLang || "fr"),
+      echoTargetLanguage: b.echoTargetLanguage !== false,
+      actor: u.name,
+    });
+    return send(res, out.ok ? 200 : (out.status || 400), out);
+  }
+  if (pathname === "/api/counter-interpreter/usage" && req.method === "POST") {
+    const u = auth(req);
+    if (!u) return send(res, 401, { error: "unauthorized" });
+    const b = await json(req);
+    const s = settingsRead();
+    const usage = recordLiveTranslateUsageSeconds(DATA_DIR, b.seconds, s, u.name);
+    return send(res, 200, { ok: true, usage });
+  }
   if (pathname === "/api/setup-status" && req.method === "GET") {
     const usersMap = loadUsers();
     const userCount = Object.keys(usersMap).length;

@@ -20,7 +20,7 @@ body.dark{background:linear-gradient(165deg,#0b1220 0%,#141f31 50%,#1e1b4b 100%)
 body.dark .toast{background:#e6ecf7;color:#0b1220}
 .bnav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:none;justify-content:space-around;padding:6px 0 8px;z-index:50}
 .bnav button{background:none;border:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 12px;border-radius:12px;min-height:44px;font-family:inherit}
-.bnav button.active{color:var(--blue);font-weight:700}
+.bnav button.active{color:var(--blue-ink);font-weight:700}
 .checkpop{animation:pop .3s ease}
 @keyframes pop{0%{transform:scale(.6);opacity:0}70%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
 @keyframes flick{0%,100%{opacity:1}42%{opacity:.82}50%{opacity:1}58%{opacity:.9}}
@@ -188,7 +188,7 @@ body.dark .btn.gray{background:rgba(148,163,184,.2);color:#e6ecf7}
 .btn.small{padding:8px 12px;font-size:13px}
 .byok-row{display:flex;gap:8px;align-items:center}
 .byok-row input{margin-bottom:0;flex:1}
-main{max-width:960px;margin:0 auto;padding:14px}
+main{max-width:1380px;margin:0 auto;padding:16px 22px}
 .card{background:var(--card);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:20px;box-shadow:0 8px 24px rgba(15,23,42,.06);padding:16px;margin:12px 0}
 .card h2{margin:0 0 10px;font-size:16px}
 input,select,textarea{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:16px;margin-bottom:8px;font-family:inherit;background:var(--card);color:var(--ink)}
@@ -265,7 +265,8 @@ body.mode-micro #openWall,body.mode-micro #openWallLink{display:none!important}
 .setup-chip.hidden{display:none}
 .solo-banner{border:1px solid rgba(77,107,254,.28);background:linear-gradient(135deg,rgba(77,107,254,.08),rgba(124,92,255,.06))}
 .solo-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.solo-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:rgba(77,107,254,.14);color:var(--blue-ink)}
+.solo-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:#e0e7ff;color:#312e81}
+body.dark .solo-pill{background:#312e81;color:#e0e7ff}
 .langstep-inner{text-align:center}
 .langstep-hint{color:#f8fafc;font-size:14px;margin:18px 0 4px}
 .langstep-inner .langreel{width:min(340px,86vw);background:rgba(15,23,42,.4)!important;border:1px solid rgba(255,255,255,.58)!important;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
@@ -464,6 +465,49 @@ body.dark .inbox-item .when{color:#cbd5e1}
 .tel-table th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
 .tel-section-title{font-size:12.5px;font-weight:700;color:var(--ink);margin:14px 0 4px}
 .buffet-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11.5px;font-weight:700;background:rgba(77,107,254,.12);color:var(--blue-ink);margin-top:6px}
+
+/* ── Adaptive Desktop Workspace (Apple / Linear / Stripe) + Light Mobile ── */
+.mobile-dock-btn{display:none;width:100%;margin:10px 0 6px;justify-content:center;align-items:center;gap:6px}
+.copilot-grid{display:grid;grid-template-columns:1fr;gap:12px;margin:10px 0}
+.triage-split{display:grid;grid-template-columns:1fr;gap:12px;margin:10px 0}
+.tab-intro{margin:0 0 6px}
+.tab-intro h2{margin:0 0 4px}
+@media(max-width:720px){
+  main{padding:10px 12px}
+  .bnav{display:flex}
+  .tabs{display:none}
+  body{padding-bottom:76px}
+  .mobile-dock-btn{display:inline-flex}
+  .copilot-grid{display:none}
+  .copilot-grid.mob-open{display:grid;gap:8px;margin:6px 0 10px}
+  .card{box-shadow:0 2px 10px rgba(15,23,42,.04);padding:12px;margin:8px 0;border-radius:16px}
+  .hint{font-size:12px;line-height:1.38}
+}
+@media(min-width:721px){
+  .copilot-grid{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;align-items:stretch}
+  .copilot-grid .card,.triage-split .card{margin:0;height:100%;display:flex;flex-direction:column}
+  .triage-split{grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;align-items:stretch}
+  #discoverCard{grid-column:1 / -1}
+}
+@media(min-width:860px){
+  #loginView.is-setup{max-width:960px!important;padding:26px 28px}
+  #setupSection:not(.hidden){display:grid;grid-template-columns:1fr 1.15fr;gap:12px 16px;align-items:start}
+  #setupReadinessPanel,#setupWizSummary,#setupBtn,#setupHint{grid-column:1 / -1;margin-bottom:0}
+  #setupMetaWrap,#setupCredentialsBox{grid-column:1;margin:0}
+  #setupConstitutionBox{grid-column:2;grid-row:2 / span 2;margin:0;align-self:stretch}
+}
+@media(min-width:920px){
+  .owner-shell{display:grid;grid-template-columns:224px minmax(0,1fr);gap:20px;align-items:start;margin-top:14px}
+  .tabs{position:sticky;top:16px;display:flex;flex-direction:column;gap:4px;margin:0;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:10px;box-shadow:0 8px 24px rgba(15,23,42,.06)}
+  .tabs button{width:100%;text-align:left;background:transparent;border:1px solid transparent;border-radius:12px;padding:10px 13px;font-size:14px;font-weight:600;color:var(--ink)}
+  .tabs button:hover{background:rgba(77,107,254,.08)}
+  .tabs button.active{background:#354ed6;color:#ffffff;border-color:#354ed6;box-shadow:0 4px 12px rgba(53,78,214,.26)}
+  .owner-panels{min-width:0}
+  #tab-overview:not(.hidden),#tab-field:not(.hidden),#tab-rules:not(.hidden),#tab-sector:not(.hidden),#tab-reglages:not(.hidden),#tab-studio-admin:not(.hidden){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+  #tab-overview>.card,#tab-field>.card,#tab-rules>.card,#tab-sector>.card,#tab-reglages>.card,#tab-studio-admin>.card{margin:0}
+  #tab-reglages .tab-intro,#studioTelemetryCard{grid-column:1 / -1}
+  #inboxView .inbox-top,#inboxView #inboxList,#inboxView #inboxDecision{max-width:920px}
+}
 </style>
 </head>
 <body>
@@ -622,7 +666,10 @@ body.dark .inbox-item .when{color:#cbd5e1}
       <p id="welcomeBody" class="note"></p>
     </div>
     <div class="metrics" id="ownerMetrics"></div>
-    <div class="card adv-only"><h2 id="browserTitle">🌐 Navigateur</h2>
+    <button type="button" class="btn small gray adv-only mobile-dock-btn" id="mobileDockToggleBtn" data-tip-key="tipMobileDock" aria-expanded="false">⚡ Quick channels (Phone · Secretary · Responder)</button>
+    <div class="copilot-grid adv-only" id="copilotDockGrid">
+    <div class="card adv-only hidden" id="browserCard"><h2 id="browserTitle">🌐 Navigateur</h2>
+      <p class="hint" id="browserSuspendedNoteEl"></p>
       <input id="browserUrl" placeholder="https://…">
       <div class="row" style="display:flex;gap:8px">
         <button class="btn small" id="browserStart" style="flex:1">Piloter</button>
@@ -641,8 +688,17 @@ body.dark .inbox-item .when{color:#cbd5e1}
     </div>
     <div class="card adv-only"><h2 id="secretaireTitle">📋 Le Secrétaire</h2>
       <p class="hint" id="secretaireHint"></p>
-      <div class="row" style="display:flex;gap:8px">
+      <div class="row" style="display:flex;gap:8px;flex-wrap:wrap">
         <button class="btn small" id="secretaireScan" style="flex:1">Analyser le formulaire</button>
+        <button type="button" class="btn small gray" id="secretaireWebcamBtn" data-tip-key="tipSecretaireWebcam" style="flex:1">📷 Capturer au comptoir (Webcam)</button>
+      </div>
+      <div id="webcamCaptureBox" class="hidden" style="margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--card2)">
+        <video id="webcamPreview" autoplay playsinline muted style="width:100%;max-height:220px;border-radius:8px;background:#0f172a;display:block"></video>
+        <div class="row" style="margin-top:8px;display:flex;gap:8px">
+          <button type="button" class="btn small" id="webcamSnapBtn" style="flex:1">📸 Photographier &amp; trier</button>
+          <button type="button" class="btn small gray" id="webcamCancelBtn" style="flex:0">✖ Fermer</button>
+        </div>
+        <p class="hint" id="webcamStatus"></p>
       </div>
       <div id="secretaireResult"></div>
     </div>
@@ -653,7 +709,9 @@ body.dark .inbox-item .when{color:#cbd5e1}
       </div>
       <div id="repondantResult"></div>
     </div>
-    <div class="card" id="inboxFirst" style="display:none"><h2 id="inboxFirstTitleEl">✍️ Your decisions</h2><span id="inboxCount" style="display:none">0</span><p class="hint" id="inboxFirstDescEl"></p><button class="btn small" id="inboxOpenBtn" data-tip-key="tipInboxOpen" style="background:linear-gradient(135deg,#4D6BFE,#7c5cff)">Open decision inbox</button></div>
+    </div>
+    <div class="triage-split">
+    <div class="card" id="inboxFirst" style="display:none"><h2 id="inboxFirstTitleEl">✍️ Your decisions</h2><span id="inboxCount" style="display:none">0</span><p class="hint" id="inboxFirstDescEl"></p><button class="btn small" id="inboxOpenBtn" data-tip-key="tipInboxOpen" style="background:linear-gradient(135deg,#354ed6,#573bd4)">Open decision inbox</button></div>
     <div class="card" id="discoverCard" style="display:none"><h2 id="discoverTitleEl">⚡ Discover what Fanal can do</h2><p class="hint" id="discoverHintEl"></p><div id="discoverList"></div></div>
     <div class="card superCard"><h2 id="superTitle">🩺 Supervision</h2><p class="hint" id="kpiLine"></p><p class="hint hidden" id="repriseBanner" style="margin-top:6px;padding:6px 8px;border-radius:8px;background:rgba(77,107,254,.08)"></p>
       <div id="superTiers"></div>
@@ -663,6 +721,8 @@ body.dark .inbox-item .when{color:#cbd5e1}
       <div id="superActions" class="hint"></div>
       <div class="hostsig hint"></div>
     </div>
+    </div>
+    <div class="owner-shell">
     <div class="tabs">
       <button data-tab="overview" class="active" id="tabOverview" data-tip-key="tipTabOverview">Overview</button>
       <button data-tab="field" id="tabField" data-tip-key="tipTabField">Field</button>
@@ -681,6 +741,7 @@ body.dark .inbox-item .when{color:#cbd5e1}
       <button data-tab="reglages">⚙️<span id="bnavReglages">Réglages</span></button>
       <button data-tab="studio-admin" id="bnavStudioAdminBtn" data-tip-key="tipTabStudioAdmin" style="display:none">🛠️<span id="bnavStudioAdmin">Studio</span></button>
     </nav>
+    <div class="owner-panels">
     <div id="tab-overview">
       <div class="card solo-banner" id="soloModeBanner" style="display:none">
         <div class="solo-head">
@@ -690,6 +751,18 @@ body.dark .inbox-item .when{color:#cbd5e1}
             <p class="hint" id="soloModeBody" style="margin:0"></p>
           </div>
           <button type="button" class="btn small gray" id="soloScaleBtn" data-tip-key="tipSoloScaleAction">⚙️ Adjust mode</button>
+        </div>
+      </div>
+      <div class="card" id="affluenceCard" style="display:none">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+          <h2 id="affluenceTitleEl" style="margin:0">📈 Affluence Régionale &amp; Achalandage</h2>
+          <span class="wiz-pill" id="affluenceBadgeEl">—</span>
+        </div>
+        <p class="hint" id="affluenceHintEl" style="margin-top:6px"></p>
+        <div id="affluenceBody" style="margin-top:8px"></div>
+        <div class="row" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <button type="button" class="btn small gray" id="affluenceRefreshBtn" data-tip-key="tipAffluenceRefresh" style="flex:1">🔄 Actualiser</button>
+          <button type="button" class="btn small gray" id="affluenceTrafficBtn" data-tip-key="tipAffluenceTraffic" style="flex:1">🚗 Vérifier corridor routier</button>
         </div>
       </div>
       <div class="card" id="workersCard"><h2 id="workersTitle">Workers</h2>
@@ -705,7 +778,15 @@ body.dark .inbox-item .when{color:#cbd5e1}
       </div>
       <div class="card" id="ordersCard"><h2 id="ordersTitle">Orders — kitchen & bill</h2><button class="btn small gray" id="exportOrdersBtn" style="margin-bottom:8px">⬇ Export bill</button><div id="ownerOrders"></div><p class="hint" id="billSummary"></p></div>
       <div class="card" id="shiftCard"><h2 id="shiftTitle">🌅 Ouverture de la journée</h2><div id="shiftBody"></div><button class="btn small gray" id="closeDayBtn" style="display:none;margin-top:6px">Close the day</button></div>
-      <div class="card" id="regDayCard"><h2 id="regDayTitle">🪙 Day register (counter-audit)</h2><div id="regDay"></div><div class="row" style="margin-top:8px"><input id="regSearch" placeholder="Search items…" style="flex:2;margin:0"><select id="regMethod" style="flex:1;margin:0"><option value="all">All</option><option value="cash">Cash</option><option value="card">Card</option><option value="terminal">Terminal</option></select></div><div id="regSales"></div><button class="btn small gray" id="exportRegisterBtn" style="margin-top:6px">⬇ Export Z-report</button></div>
+      <div class="card" id="regDayCard"><h2 id="regDayTitle">🪙 Day register (counter-audit)</h2><div id="regDay"></div><div class="row" style="margin-top:8px"><input id="regSearch" placeholder="Search items…" style="flex:2;margin:0"><select id="regMethod" style="flex:1;margin:0"><option value="all">All</option><option value="cash">Cash</option><option value="card">Card</option><option value="terminal">Terminal</option></select></div><div id="regSales"></div><button class="btn small gray" id="exportRegisterBtn" style="margin-top:6px">⬇ Export Z-report</button>
+        <hr style="border:none;border-top:1px solid var(--line);margin:12px 0">
+        <h3 id="regImportZTitleEl" style="margin:0 0 4px;font-size:13.5px">Passive MEV-WEB Z-Report Importer (.csv / .txt)</h3>
+        <p class="hint" id="regImportZHintEl" style="margin:0 0 8px"></p>
+        <input type="file" id="regZFile" accept=".csv,.tsv,.txt" class="hidden">
+        <button type="button" class="btn small" id="regImportZBtn" data-tip-key="tipRegImportZ">⬆ Import POS Z-report</button>
+        <p class="hint" id="regImportZStatus"></p>
+        <div id="regZList" style="margin-top:6px"></div>
+      </div>
       <div class="card" id="usageCard"><h2 id="usageTitle">Usage & cost</h2><p class="hint" id="usageSub">(per worker, estimated)</p>
         <p class="hint" id="usageBudget"></p>
         <table id="usageTable"><thead><tr><th id="thWorker">Worker</th><th id="thSessions">Sessions</th><th id="thTokens">Tokens</th><th id="thCost">Est. cost</th></tr></thead><tbody></tbody></table>
@@ -770,8 +851,10 @@ body.dark .inbox-item .when{color:#cbd5e1}
       </div>
     </div>
     <div id="tab-reglages" class="hidden">
-      <h2 id="reglagesTitleEl" style="font-size:18px;margin:0 0 10px">⚙️ Réglages</h2>
-      <p id="reglagesHintEl" class="hint">Tout se règle ici dans votre silo privé — simple et verrouillé comme les Réglages Apple.</p>
+      <div class="tab-intro">
+        <h2 id="reglagesTitleEl" style="font-size:18px;margin:0 0 4px">⚙️ Réglages</h2>
+        <p id="reglagesHintEl" class="hint" style="margin:0">Tout se règle ici dans votre silo privé — simple et verrouillé comme les Réglages Apple.</p>
+      </div>
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
           <h2 id="brainCardTitleEl" style="margin:0">🧠 Cerveau Fanal Dual (DeepSeek + Gemini)</h2>
@@ -831,6 +914,42 @@ body.dark .inbox-item .when{color:#cbd5e1}
           <button type="button" class="btn small gray" id="intakeSyncBtn" data-tip-key="tipIntakeSync">🔄 Synchroniser maintenant</button>
         </div>
         <p class="hint" id="intakeStatus"></p>
+      </div>
+      <div class="card" id="affluenceSettingsCard">
+        <h2 id="affluenceSettingsTitleEl">🗺️ Regional Affluence &amp; Geography</h2>
+        <p class="hint" id="affluenceSettingsHintEl"></p>
+        <label style="display:flex;align-items:center;gap:8px;margin:8px 0;font-size:13px"><input type="checkbox" id="affluenceEnabledChk" checked> <span id="affluenceEnabledLblEl">Enable Regional Affluence forecast</span></label>
+        <div style="margin-top:6px">
+          <label id="affluenceRegionLblEl" class="hint" style="display:block;font-size:12px" for="affluenceRegionInput">Region / corridor name</label>
+          <input id="affluenceRegionInput" placeholder="Charlevoix (Route 138 / Baie-Saint-Paul)">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div><label class="hint" style="display:block;font-size:12px" for="affluenceLatInput">Latitude</label><input id="affluenceLatInput" type="number" step="0.0001" value="47.4419"></div>
+          <div><label class="hint" style="display:block;font-size:12px" for="affluenceLonInput">Longitude</label><input id="affluenceLonInput" type="number" step="0.0001" value="-70.4986"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px">
+          <div><label id="affluenceOriginLblEl" class="hint" style="display:block;font-size:12px" for="affluenceOriginInput">Origin city</label><input id="affluenceOriginInput" placeholder="Quebec City, QC"></div>
+          <div><label id="affluenceDestLblEl" class="hint" style="display:block;font-size:12px" for="affluenceDestInput">Destination</label><input id="affluenceDestInput" placeholder="Baie-Saint-Paul, QC"></div>
+        </div>
+        <div style="margin-top:6px">
+          <label id="affluenceMapsKeyLblEl" class="hint" style="display:block;font-size:12px" for="affluenceMapsKeyInput">Google Maps Routes API key (optional)</label>
+          <input id="affluenceMapsKeyInput" type="password" placeholder="AIza… (Routes API)">
+        </div>
+        <button type="button" class="btn small" id="affluenceSaveBtn" data-tip-key="tipAffluenceSave" style="margin-top:8px">💾 Save Affluence</button>
+        <p class="hint" id="affluenceSettingsStatus"></p>
+      </div>
+      <div class="card" id="counterLiveSettingsCard">
+        <h2 id="counterLiveSettingsTitleEl">🎧 Counter A2DP Live Interpreter Limit</h2>
+        <p class="hint" id="counterLiveSettingsHintEl"></p>
+        <p class="hint" id="counterLiveUsageEl" style="margin:6px 0"></p>
+        <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:180px">
+            <label id="counterLiveCapLblEl" class="hint" style="display:block;font-size:12px" for="counterLiveCapInput">Daily cap (minutes/day)</label>
+            <input id="counterLiveCapInput" type="number" min="5" max="120" value="30" style="margin-bottom:0">
+          </div>
+          <button type="button" class="btn small" id="counterLiveSaveBtn" data-tip-key="tipCounterLiveSave">💾 Save cap</button>
+        </div>
+        <p class="hint" id="counterLiveSettingsStatus"></p>
       </div>
       <div class="card" id="scalePrefCard">
         <h2 id="scalePrefTitleEl">🧑‍💻 Mode Autonome / Micro / PME</h2>
@@ -942,6 +1061,8 @@ body.dark .inbox-item .when{color:#cbd5e1}
         <button type="button" class="btn small" id="studioPassportBtn" data-tip-key="tipStudioPassportBtn">✔ Vérifier le passeport</button>
         <pre id="studioPassportOut" style="margin-top:8px"></pre>
       </div>
+    </div>
+    </div>
     </div>
   </div>
 
@@ -1320,9 +1441,39 @@ async function loadRegister(){
       $("regDay").innerHTML='<p class="hint">—</p>';
     }
     renderRegSales(r);
+    renderRegZImports(r.zImports);
   }
   if(me&&me.role==="employee"){$("regCount").textContent=(r.sales||[]).length+" "+t("salesToday");}
   try{api("/api/health").then(hp=>{if(hp&&hp.version){$("verBadge").textContent="supervisor v"+hp.version+" · app 0.1.0 · dsh "+((hp.workers!==undefined)?"":"")+"runtime";if(hp.demo&&$("demoAlertBtn"))$("demoAlertBtn").style.display="block";}});}catch(e){}
+}
+function renderRegZImports(items){
+  const host=$("regZList");if(!host)return;
+  const list=Array.isArray(items)?items.slice(-6).reverse():[];
+  if(!list.length){host.innerHTML='<p class="hint" style="margin:4px 0 0">'+esc(t("regZEmpty"))+'</p>';return;}
+  host.innerHTML=list.map(z=>'<div class="order"><b>'+esc(z.dateIso||"—")+'</b><span class="txt">'+esc(z.sourceFile||"POS Z")+' · '+esc(z.tpsCad!=null?("TPS $"+z.tpsCad+" "):"")+(z.tvqCad!=null?("TVQ $"+z.tvqCad):"")+'</span><span class="stat">$ '+esc(String(z.totalSalesCad||0))+'</span></div>').join("");
+}
+if($("regImportZBtn")&&$("regZFile")){
+  $("regImportZBtn").onclick=()=>$("regZFile").click();
+  $("regZFile").onchange=async(ev)=>{
+    const f=ev&&ev.target&&ev.target.files&&ev.target.files[0];
+    if(!f)return;
+    try{
+      const content=await f.text();
+      const r=await api("/api/register/import-z",{filename:f.name,content});
+      if(r&&r.ok){
+        const zAmt=(r.imported&&r.imported.totalSalesCad!=null)?r.imported.totalSalesCad:(r.totalSalesCad||0);
+        if($("regImportZStatus"))$("regImportZStatus").textContent=t("regZImportedOk")+" ("+esc(f.name)+": $"+esc(String(zAmt))+")";
+        toast(t("regZImportedOk"));
+        await loadRegister();
+        if(typeof loadAffluence==="function")loadAffluence(false);
+      }else{
+        if($("regImportZStatus"))$("regImportZStatus").textContent="⚠ "+(r&&r.error||"Error");
+      }
+    }catch(e){
+      if($("regImportZStatus"))$("regImportZStatus").textContent="⚠ "+String(e&&e.message||e);
+    }
+    ev.target.value="";
+  };
 }
 function renderRegSales(r){
   const q=($("regSearch").value||"").toLowerCase();
@@ -2335,8 +2486,11 @@ function applyUiProfile(p){
   if($("scalePrefSelect"))$("scalePrefSelect").value=st;
   if(typeof syncScalePrefCascade==="function")syncScalePrefCascade(true);
   const isSolo=st==="AUTONOMOUS_SOLO";
+  const showAff=Boolean(up.showAffluenceCard);
+  if($("affluenceCard"))$("affluenceCard").style.display=showAff?"":"none";
   if($("ordersTitle")&&(!PACK||!PACK.ordersTarget))$("ordersTitle").textContent=t(isSolo?"ordersSoloTitle":"ordersTitle");
   if($("panelNote"))$("panelNote").textContent=t(isSolo?"panelSoloNote":"panelNote");
+  if(showAff&&me&&typeof loadAffluence==="function")loadAffluence(false);
 }
 async function loadProfile(){
   try{
@@ -2344,6 +2498,87 @@ async function loadProfile(){
     if(r&&!r.error)applyUiProfile(r);
   }catch(e){}
 }
+async function loadAffluence(withLiveTraffic){
+  const card=$("affluenceCard"),body=$("affluenceBody"),badge=$("affluenceBadgeEl");
+  if(!card||!body||!me)return;
+  try{
+    const qs=withLiveTraffic?"?liveTraffic=1":"";
+    const r=await api("/api/affluence"+qs);
+    if(!r||r.error||!r.forecast)return;
+    const f=r.forecast;
+    if(!f.enabled&&!f.sectorEligible){card.style.display="none";return;}
+    card.style.display="";
+    const bandKey="affluenceBand_"+String(f.band||"MODERE").replace(/É/g,"E").replace(/[^A-Z0-9_]/g,"");
+    if(badge){
+      badge.textContent=esc((t(bandKey)!==bandKey?t(bandKey):f.band)+" · "+f.score+"/100");
+      badge.className="wiz-pill "+(f.score>=75?"ok":f.score>=55?"strong":"");
+    }
+    const w=f.weatherSummary;
+    const wLine=w?(t("affluenceWeather")+": "+esc(String(w.tempMaxC??"—"))+" °C · "+esc(String(w.rainProbTodayPct??0))+"% rain"):"";
+    const cLine=(f.calendarSignals&&f.calendarSignals.length)?(t("affluenceSignals")+": "+f.calendarSignals.map(s=>esc(s)).join(", ")):"";
+    const zLine=(f.zHistoryBaseline&&f.zHistoryBaseline.sampleDays>0)?(t("affluenceBaseline")+": $"+esc(String(f.zHistoryBaseline.avgDailySalesCad||0))+" CAD ("+f.zHistoryBaseline.sampleDays+"d)"):"";
+    const tr=f.transientTraffic;
+    const trLine=(tr&&tr.available)?(t("affluenceTraffic")+": "+esc(String(tr.durationMinutes))+" min (+"+esc(String(tr.congestionDeltaPct))+"% vs "+esc(String(tr.baselineMinutes))+" min)"):"";
+    body.innerHTML='<p class="note" style="margin:0 0 4px"><b>'+esc(f.regionName||"")+'</b> — '+esc(f.prepAdvice||"")+'</p>'
+      +'<p class="hint" style="margin:0">'+[wLine,cLine,zLine,trLine].filter(Boolean).join(" · ")+'</p>';
+  }catch(e){}
+}
+async function loadAffluenceSettings(){
+  try{
+    const r=await api("/api/affluence?skipNetwork=1");
+    if(!r||!r.config)return;
+    const c=r.config;
+    if($("affluenceEnabledChk"))$("affluenceEnabledChk").checked=Boolean(c.enabled);
+    if($("affluenceRegionInput"))$("affluenceRegionInput").value=c.regionName||"";
+    if($("affluenceLatInput")&&c.lat!=null)$("affluenceLatInput").value=String(c.lat);
+    if($("affluenceLonInput")&&c.lon!=null)$("affluenceLonInput").value=String(c.lon);
+    if($("affluenceOriginInput"))$("affluenceOriginInput").value=c.corridorOrigin||"";
+    if($("affluenceDestInput"))$("affluenceDestInput").value=c.corridorDestination||"";
+    if($("affluenceMapsKeyInput")){$("affluenceMapsKeyInput").value="";$("affluenceMapsKeyInput").placeholder=c.hasGoogleMapsKey?("•••••••• ("+t("brainConfigured")+")"):"AIza… (Routes API)";}
+  }catch(e){}
+}
+async function saveAffluenceSettings(){
+  const st=$("affluenceSettingsStatus");
+  const payload={
+    enabled:Boolean($("affluenceEnabledChk")&&$("affluenceEnabledChk").checked),
+    regionName:$("affluenceRegionInput")?$("affluenceRegionInput").value.trim():"",
+    lat:Number($("affluenceLatInput")&&$("affluenceLatInput").value),
+    lon:Number($("affluenceLonInput")&&$("affluenceLonInput").value),
+    corridorOrigin:$("affluenceOriginInput")?$("affluenceOriginInput").value.trim():"",
+    corridorDestination:$("affluenceDestInput")?$("affluenceDestInput").value.trim():"",
+  };
+  const k=$("affluenceMapsKeyInput")?$("affluenceMapsKeyInput").value.trim():"";
+  if(k)payload.googleMapsApiKey=k;
+  const r=await api("/api/affluence/config",payload);
+  if(r&&r.error){if(st)st.textContent="⚠ "+(r.message||r.error);return;}
+  if($("affluenceMapsKeyInput"))$("affluenceMapsKeyInput").value="";
+  if(st)st.textContent="✔ "+t("saved");
+  await loadAffluenceSettings();
+  await loadAffluence(false);
+}
+async function loadCounterLiveSettings(){
+  try{
+    const r=await api("/api/counter-interpreter/status");
+    if(!r||!r.usage)return;
+    const u=r.usage;
+    if($("counterLiveCapInput"))$("counterLiveCapInput").value=String(u.dailyMinutesCap||30);
+    if($("counterLiveUsageEl"))$("counterLiveUsageEl").textContent=t("counterLiveUsageFmt").replace("{m}",String(u.minutesUsed||0)).replace("{c}",String(u.dailyMinutesCap||30)).replace("{u}",String(u.estimatedUsdToday||0));
+  }catch(e){}
+}
+async function saveCounterLiveSettings(){
+  const st=$("counterLiveSettingsStatus");
+  const cap=Number($("counterLiveCapInput")&&$("counterLiveCapInput").value)||30;
+  const r=await api("/api/counter-interpreter/config",{dailyMinutesCap:cap});
+  if(r&&r.error){if(st)st.textContent="⚠ "+(r.message||r.error);return;}
+  if(st)st.textContent="✔ "+t("saved");
+  await loadCounterLiveSettings();
+}
+try{
+  if($("affluenceRefreshBtn"))$("affluenceRefreshBtn").addEventListener("click",()=>loadAffluence(false));
+  if($("affluenceTrafficBtn"))$("affluenceTrafficBtn").addEventListener("click",()=>loadAffluence(true));
+  if($("affluenceSaveBtn"))$("affluenceSaveBtn").addEventListener("click",saveAffluenceSettings);
+  if($("counterLiveSaveBtn"))$("counterLiveSaveBtn").addEventListener("click",saveCounterLiveSettings);
+}catch(e){}
 async function saveScalePref(){
   const sel=$("scalePrefSelect"),det=$("scaleProfOrSectorSelect");
   if(!sel)return;
@@ -2494,14 +2729,88 @@ async function secretaireScan(){const b=$("secretaireScan");b.disabled=true;b.te
   const fb=$("secretaireFill");if(fb)fb.onclick=async()=>{const rr=await api("/api/secretaire/fill",{values:lastValues});showMsg(rr&&rr.status?rr.status:(rr&&rr.error||""));};}
 try{$("secretaireScan").addEventListener("click",secretaireScan);}catch(e){}
 try{$("repondantScan").addEventListener("click",repondantScan);}catch(e){}
+let WEBCAM_STREAM=null;
+function closeWebcamCapture(){
+  if(WEBCAM_STREAM&&WEBCAM_STREAM.getTracks){WEBCAM_STREAM.getTracks().forEach(tr=>{try{tr.stop();}catch(e){}});}
+  WEBCAM_STREAM=null;
+  if($("webcamPreview"))$("webcamPreview").srcObject=null;
+  if($("webcamCaptureBox"))$("webcamCaptureBox").classList.add("hidden");
+}
+async function openWebcamCapture(){
+  const box=$("webcamCaptureBox"),vid=$("webcamPreview"),st=$("webcamStatus");
+  if(!box||!vid)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    if(st)st.textContent="⚠ "+t("secretaireWebcamErr");
+    box.classList.remove("hidden");
+    return;
+  }
+  try{
+    closeWebcamCapture();
+    WEBCAM_STREAM=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment",width:{ideal:1280}},audio:false});
+    vid.srcObject=WEBCAM_STREAM;
+    if(st)st.textContent="";
+    box.classList.remove("hidden");
+  }catch(e){
+    if(st)st.textContent="⚠ "+t("secretaireWebcamErr");
+    box.classList.remove("hidden");
+  }
+}
+async function snapWebcamCapture(){
+  const vid=$("webcamPreview"),st=$("webcamStatus"),btn=$("webcamSnapBtn");
+  if(!vid||!WEBCAM_STREAM){if(st)st.textContent="⚠ "+t("secretaireWebcamErr");return;}
+  if(btn)btn.disabled=true;
+  try{
+    const c=document.createElement("canvas");
+    c.width=vid.videoWidth||960;c.height=vid.videoHeight||720;
+    const ctx=c.getContext("2d");
+    ctx.drawImage(vid,0,0,c.width,c.height);
+    const dataUrl=c.toDataURL("image/jpeg",0.86);
+    const b64=dataUrl.split(",")[1]||"";
+    const r=await api("/api/intake/webcam",{mimeType:"image/jpeg",imageBase64:b64,label:"Capture comptoir Webcam"});
+    if(r&&r.ok){
+      closeWebcamCapture();
+      if($("secretaireResult"))$("secretaireResult").innerHTML='<div class="st-res">✅ '+esc(t("secretaireWebcamOk"))+(r.triage&&r.triage.priority?(' · '+esc(r.triage.priority)):'')+'</div>';
+      toast(t("secretaireWebcamOk"));
+      loadStudio();
+    }else{
+      if(st)st.textContent="⚠ "+(r&&r.error||"Error");
+    }
+  }catch(e){
+    if(st)st.textContent="⚠ "+String(e&&e.message||e);
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
 try{
-  $("browserStart").addEventListener("click",async()=>{const u=$("browserUrl").value.trim()||"https://www.charlevoix.com";const r=await api("/api/browser/start",{url:u});$("browserStatus").textContent=(r&&r.error)?("⚠ "+r.error):"🤖 "+t("browserRunning")+" — "+t("browserBadge");pollBrowserStatus();});
-  $("browserStop").addEventListener("click",async()=>{await api("/api/browser/stop",{});$("browserStatus").textContent=t("browserStopped");});
+  if($("secretaireWebcamBtn"))$("secretaireWebcamBtn").addEventListener("click",openWebcamCapture);
+  if($("webcamSnapBtn"))$("webcamSnapBtn").addEventListener("click",snapWebcamCapture);
+  if($("webcamCancelBtn"))$("webcamCancelBtn").addEventListener("click",closeWebcamCapture);
+}catch(e){}
+try{
+  if(location&&location.search&&location.search.indexOf("expBrowser=1")>=0&&$("browserCard"))$("browserCard").classList.remove("hidden");
+  $("browserStart").addEventListener("click",async()=>{
+    const u=$("browserUrl").value.trim()||"https://www.charlevoix.com";
+    const r=await api("/api/browser/start",{url:u});
+    if(r&&r.error==="experimental_pilot_suspended"){$("browserStatus").textContent=t("browserSuspendedNote");return;}
+    $("browserStatus").textContent=(r&&r.error)?("⚠ "+r.error):"🤖 "+t("browserRunning")+" — "+t("browserBadge");
+    pollBrowserStatus();
+  });
+  $("browserStop").addEventListener("click",async()=>{const r=await api("/api/browser/stop",{});$("browserStatus").textContent=(r&&r.error==="experimental_pilot_suspended")?t("browserSuspendedNote"):t("browserStopped");});
   async function pollBrowserStatus(){const r=await api("/api/browser/status");if(r&&r.running)$("browserStatus").textContent="🤖 "+t("browserRunning")+" — "+t("browserBadge");}
 }catch(e){}
 function pollDeepAnswers(){if(!me)return;api("/api/deep/answers").then(r=>{if(r&&r.answers&&r.answers.length){const a=r.answers[0];const lab=a.phase==="draft"?"⏳ "+t("deepDraftLabel"):t("deepAnswerLabel");$("deepAnswers").innerHTML="<div class=\"answerbox\"><b>"+lab+"</b><p>"+escapeHtml(a.answer)+"</p></div>";}}).catch(()=>{});}
 function escapeHtml(x){const d=document.createElement("div");d.textContent=String(x||"");return d.innerHTML;}
 function panelLinks(){const u=me?encodeURIComponent(me.name):"",r=me?encodeURIComponent(me.role):"",lb=me?encodeURIComponent(me.label||me.name):"";$("openPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);$("leadOpenPanelLink").setAttribute("href","/panel?user="+u+"&role="+r+"&label="+lb+"&lang="+cur);if(HOST.electron){try{$("openPanelLink").removeAttribute("target");$("leadOpenPanelLink").removeAttribute("target");}catch(e){}}}
+var mobileDockOpen=false;
+function syncMobileDockBtn(){
+  const btn=$("mobileDockToggleBtn"),grid=$("copilotDockGrid");
+  if(grid&&grid.classList)grid.classList.toggle("mob-open",mobileDockOpen);
+  if(btn){
+    btn.textContent=t(mobileDockOpen?"mobileDockClose":"mobileDockOpen");
+    if(btn.setAttribute)btn.setAttribute("aria-expanded",mobileDockOpen?"true":"false");
+  }
+}
+try{if($("mobileDockToggleBtn"))$("mobileDockToggleBtn").addEventListener("click",()=>{mobileDockOpen=!mobileDockOpen;syncMobileDockBtn();});}catch(e){}
 function applyLang(){
   // (the language is persisted only on an explicit human choice)
   $("welcomeClose").onclick=()=>{$("welcomeCard").style.display="none";try{localStorage.setItem("lv-welcome","1");}catch(e){}};
@@ -2576,6 +2885,30 @@ function applyLang(){
   if($("batterySaverLblEl"))$("batterySaverLblEl").textContent=t("batterySaverLbl");
   if($("intakeSaveBtn"))$("intakeSaveBtn").textContent=t("intakeSaveBtn");
   if($("intakeSyncBtn"))$("intakeSyncBtn").textContent=t("intakeSyncBtn");
+  if($("browserSuspendedNoteEl"))$("browserSuspendedNoteEl").textContent=t("browserSuspendedNote");
+  if($("affluenceTitleEl"))$("affluenceTitleEl").textContent=t("affluenceTitle");
+  if($("affluenceHintEl"))$("affluenceHintEl").textContent=t("affluenceHint");
+  if($("affluenceRefreshBtn"))$("affluenceRefreshBtn").textContent=t("affluenceRefreshBtn");
+  if($("affluenceTrafficBtn"))$("affluenceTrafficBtn").textContent=t("affluenceTrafficBtn");
+  if($("affluenceSettingsTitleEl"))$("affluenceSettingsTitleEl").textContent=t("affluenceSettingsTitle");
+  if($("affluenceSettingsHintEl"))$("affluenceSettingsHintEl").textContent=t("affluenceSettingsHint");
+  if($("affluenceEnabledLblEl"))$("affluenceEnabledLblEl").textContent=t("affluenceEnabledLbl");
+  if($("affluenceRegionLblEl"))$("affluenceRegionLblEl").textContent=t("affluenceRegionLbl");
+  if($("affluenceOriginLblEl"))$("affluenceOriginLblEl").textContent=t("affluenceOriginLbl");
+  if($("affluenceDestLblEl"))$("affluenceDestLblEl").textContent=t("affluenceDestLbl");
+  if($("affluenceMapsKeyLblEl"))$("affluenceMapsKeyLblEl").textContent=t("affluenceMapsKeyLbl");
+  if($("affluenceSaveBtn"))$("affluenceSaveBtn").textContent=t("affluenceSaveBtn");
+  if($("counterLiveSettingsTitleEl"))$("counterLiveSettingsTitleEl").textContent=t("counterLiveSettingsTitle");
+  if($("counterLiveSettingsHintEl"))$("counterLiveSettingsHintEl").textContent=t("counterLiveSettingsHint");
+  if($("counterLiveCapLblEl"))$("counterLiveCapLblEl").textContent=t("counterLiveCapLbl");
+  if($("counterLiveSaveBtn"))$("counterLiveSaveBtn").textContent=t("counterLiveSaveBtn");
+  if($("regImportZTitleEl"))$("regImportZTitleEl").textContent=t("regImportZSubTitle");
+  if($("regImportZHintEl"))$("regImportZHintEl").textContent=t("regImportZHint");
+  if($("regImportZBtn"))$("regImportZBtn").textContent=t("regImportZBtn");
+  if($("secretaireWebcamBtn"))$("secretaireWebcamBtn").textContent=t("secretaireWebcamBtn");
+  if($("webcamSnapBtn"))$("webcamSnapBtn").textContent=t("secretaireWebcamSnapBtn");
+  if($("webcamCancelBtn"))$("webcamCancelBtn").textContent=t("secretaireWebcamCancelBtn");
+  if(typeof syncMobileDockBtn==="function")syncMobileDockBtn();
   if($("langPrefTitleEl"))$("langPrefTitleEl").textContent=t("langPrefTitle");
   if($("langPrefHintEl"))$("langPrefHintEl").textContent=t("langPrefHint");
   if($("tipPrefTitleEl"))$("tipPrefTitleEl").textContent=t("tipPrefTitle");
@@ -2839,7 +3172,7 @@ async function enter(){
   if(!PACK){PACK=await api("/api/sector");applyPack();}
   setWho();
   clearRolePolls();
-  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadProfile();loadShift();pollAlerts();pollDeepAnswers();scheduleVisiblePoll("deepAnswers",pollDeepAnswers,6000);pollState();scheduleVisiblePoll("state",pollState,8000);pollKeyStatus();loadStudio().then((tasks)=>{const pend=(tasks||[]).filter(x=>x.status==="done").length;setInboxFirstCount(pend);if(pend>0){$("inboxView").style.display="flex";if($("inboxFirst"))$("inboxFirst").style.display="block";}});loadConstitution();loadMemory();loadBrain();loadIntakeConfig();loadInstallationAttestation();pollKpi();scheduleVisiblePoll("kpi",pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
+  if(me.role==="owner"){show("ownerView");try{if(!localStorage.getItem("lv-welcome"))$("welcomeCard").style.display="block";}catch(e){}flushPendingSetup();loadProfile();loadShift();pollAlerts();pollDeepAnswers();scheduleVisiblePoll("deepAnswers",pollDeepAnswers,6000);pollState();scheduleVisiblePoll("state",pollState,8000);pollKeyStatus();loadStudio().then((tasks)=>{const pend=(tasks||[]).filter(x=>x.status==="done").length;setInboxFirstCount(pend);if(pend>0){$("inboxView").style.display="flex";if($("inboxFirst"))$("inboxFirst").style.display="block";}});loadConstitution();loadMemory();loadBrain();loadIntakeConfig();loadAffluenceSettings();loadCounterLiveSettings();loadInstallationAttestation();pollKpi();scheduleVisiblePoll("kpi",pollKpi,30000);loadRegister();loadMetrics($("ownerMetrics"));loadUsers();loadField();loadRules();loadUsage();renderOrders();loadPresets();}
   else if(me.role==="lead"){show("leadView");loadProfile();loadMetrics($("leadMetrics"));loadLead();renderOrders();loadShift();pollAlerts();pollDeepAnswers();scheduleVisiblePoll("deepAnswers",pollDeepAnswers,6000);pollState();scheduleVisiblePoll("state",pollState,8000);loadIntakeStatus();pollKpi();scheduleVisiblePoll("kpi",pollKpi,30000);loadStudio().then((tasks)=>{const pend=(tasks||[]).filter(x=>x.status==="done").length;setInboxFirstCount(pend);if(pend>0)$("inboxView").style.display="flex";});scheduleVisiblePoll("kitchen",kitchenWatch,4000);}
   else{show("employeeView");$("workerHi").textContent=t("hi")+(me.label||me.name);loadRegister();workerFlow();scheduleVisiblePoll("live",()=>{if(me&&me.role==="employee")workerFlow();},3000);}
 }
@@ -3110,7 +3443,7 @@ async function initEditionMode(){
 initEditionMode();
 loadCatalog();
 syncSetupSectorOptions();
-document.querySelectorAll(".tabs button, .bnav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button, .bnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector","studio","reglages","studio-admin"].forEach(x=>{if($("tab-"+x))$("tab-"+x).classList.add("hidden");});if(b.dataset.tab==="studio"){$("inboxView").style.display="flex";loadStudio();}else if($("tab-"+b.dataset.tab)){$("tab-"+b.dataset.tab).classList.remove("hidden");if(b.dataset.tab==="reglages"){loadProfile();loadConstitution();loadMemory();loadBrain();loadIntakeConfig();}else if(b.dataset.tab==="studio-admin"){loadStudioAdmin();}}});
+document.querySelectorAll(".tabs button, .bnav button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button, .bnav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");["overview","field","rules","sector","studio","reglages","studio-admin"].forEach(x=>{if($("tab-"+x))$("tab-"+x).classList.add("hidden");});if(b.dataset.tab==="studio"){$("inboxView").style.display="flex";loadStudio();}else if($("tab-"+b.dataset.tab)){$("tab-"+b.dataset.tab).classList.remove("hidden");if(b.dataset.tab==="reglages"){loadProfile();loadConstitution();loadMemory();loadBrain();loadIntakeConfig();loadAffluenceSettings();loadCounterLiveSettings();}else if(b.dataset.tab==="studio-admin"){loadStudioAdmin();}}});
 $("reportBtn").onclick=async()=>{const r=await api("/api/report",{text:$("reportText").value});if(r.error){showMsg("Error: "+r.error);return;}$("reportText").value="";showMsg(t("reportSent"));};
 $("empFbBtn").onclick=async()=>{const r=await api("/api/feedback",{worker:me.name,role:me.role,category:$("empFbCat").value,text:$("empFbText").value});if(r.error){showMsg("Error: "+r.error);return;}$("empFbText").value="";showMsg(t("feedbackSent"));};
 (async()=>{const dm=(/[?&]demo=([a-z]+)/.exec(location.search)||[])[1];if(dm){const r=await api("/api/demo-login",{role:dm});if(r&&r.token){token=r.token;me={name:r.name,role:r.role,label:r.label||r.name};sessionStorage.setItem("dsh-sup-token",token);sessionStorage.setItem("dsh-sup-me",JSON.stringify(me));enter();if(/[?&]alert=1/.test(location.search)){await api("/api/demo/alert");setTimeout(pollAlerts,400);}return;}}})();
@@ -3213,7 +3546,8 @@ function isFanalTooltipsEnabled(){
     deepText:"tipDeepText",deepSend:"tipDeepSend",demoAlertBtn:"tipDemoAlert",
     browserUrl:"tipBrowserUrl",browserStart:"tipBrowserStart",browserStop:"tipBrowserStop",
     phoneAnnounce:"tipPhoneAnnounce",phoneInput:"tipPhoneInput",phoneSend:"tipPhoneSend",
-    secretaireScan:"tipSecretaireScan",secretaireFill:"tipSecretaireFill",
+    secretaireScan:"tipSecretaireScan",secretaireFill:"tipSecretaireFill",secretaireWebcamBtn:"tipSecretaireWebcam",mobileDockToggleBtn:"tipMobileDock",
+    regImportZBtn:"tipRegImportZ",affluenceRefreshBtn:"tipAffluenceRefresh",affluenceTrafficBtn:"tipAffluenceTraffic",affluenceSaveBtn:"tipAffluenceSave",counterLiveSaveBtn:"tipCounterLiveSave",
     repondantScan:"tipRepondantScan",repondantPrep:"tipRepondantPrep",
     studioTask:"tipStudioTask",studioCopy:"tipStudioCopy",
     decisions:"tipDecisions",saveDecisions:"tipSaveDecisions",

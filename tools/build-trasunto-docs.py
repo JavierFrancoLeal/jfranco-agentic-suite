@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import base64
 import html
+import json
 import os
 import subprocess
 import sys
@@ -32,16 +33,41 @@ from docx.oxml import OxmlElement  # noqa: E402
 from docx.oxml.ns import qn  # noqa: E402
 
 CHROME_BIN = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-USD_TO_CAD = 1.40
+_CATALOG_PATH = ROOT / "supervisor" / "pricing-catalog.json"
+_CATALOG = json.loads(_CATALOG_PATH.read_text(encoding="utf-8")) if _CATALOG_PATH.exists() else {}
+USD_TO_CAD = float(_CATALOG.get("usdToCad", 1.40))
 
-# Tarifs officiels vérifiés jfranco-deepseek-prices (USD / 1M jetons)
+# Tarifs officiels vérifiés depuis supervisor/pricing-catalog.json (USD / 1M jetons)
+_M = _CATALOG.get("modelsUsdPer1M", {})
+_DF = _M.get("deepseek-flash", {})
+_DV = _M.get("deepseek-v4-pro", {})
+_GF = _M.get("gemini-3.8-flash", {})
 DS_PRICES = {
-    "flash_offpeak": {"hit": 0.003, "miss": 0.15, "out": 0.60},
-    "flash_peak": {"hit": 0.006, "miss": 0.30, "out": 1.20},
-    "v4_offpeak": {"hit": 0.022, "miss": 0.66, "out": 1.98},
-    "v4_peak": {"hit": 0.044, "miss": 1.32, "out": 3.96},
+    "flash_offpeak": {
+        "hit": float(_DF.get("cacheHit", {}).get("offPeak", 0.003)),
+        "miss": float(_DF.get("cacheMiss", {}).get("offPeak", 0.15)),
+        "out": float(_DF.get("output", {}).get("offPeak", 0.60)),
+    },
+    "flash_peak": {
+        "hit": float(_DF.get("cacheHit", {}).get("peak", 0.006)),
+        "miss": float(_DF.get("cacheMiss", {}).get("peak", 0.30)),
+        "out": float(_DF.get("output", {}).get("peak", 1.20)),
+    },
+    "v4_offpeak": {
+        "hit": float(_DV.get("cacheHit", {}).get("offPeak", 0.022)),
+        "miss": float(_DV.get("cacheMiss", {}).get("offPeak", 0.66)),
+        "out": float(_DV.get("output", {}).get("offPeak", 1.98)),
+    },
+    "v4_peak": {
+        "hit": float(_DV.get("cacheHit", {}).get("peak", 0.044)),
+        "miss": float(_DV.get("cacheMiss", {}).get("peak", 1.32)),
+        "out": float(_DV.get("output", {}).get("peak", 3.96)),
+    },
 }
-GEMINI_FLASH = {"in": 0.30, "out": 2.50}
+GEMINI_FLASH = {
+    "in": float(_GF.get("cacheMiss", {}).get("offPeak", 0.10)),
+    "out": float(_GF.get("output", {}).get("offPeak", 0.40)),
+}
 
 
 def ds_usd(model_key: str, hit_k: float, miss_k: float, out_k: float) -> float:
@@ -558,6 +584,12 @@ def build_manual() -> None:
         widths_cm=[5.4, 3.0, 3.0, 3.0, 3.0],
         align_right_cols=(1, 2, 3, 4),
     )
+    d.section("5", "Protocole TECP-v1, leviers matériels à 0 $ et conformité", "Produit & Propriété intellectuelle")
+    d.bullets([
+        ("5 leviers matériels sans achat supplémentaire : ", "(1) Interprète comptoir A2DP découplé (micro fixe PC + écouteurs Bluetooth déjà possédés via AudioContext.setSinkId, plafond quotidien 30 min/jour), (2) Numériseur ADF + vérification mathématique TPS 5 % / TVQ 9,975 %, (3) Pièces jointes vocales VoIP/PBX IMAP, (4) Capture Webcam comptoir (/api/intake/webcam), (5) Import passif Rapport Z MEV-WEB (.csv/.txt)."),
+        ("Affluence Régionale (FANAL-AFFLUENCE-V1) & ToS Google Maps : ", "remplace l'alerte météo fixe par un indice sectoriel (restaurant, tourisme, hôtel, agro) croisant météo, calendrier québécois, historique Z et trafic Google Routes strictement éphémère (aucun scraping Popular Times ni cache disque). Le pilote navigateur CDP reste suspendu par défaut."),
+        ("Antériorité TECP-v1 & Modèle Open-Core : ", "divulgation technique structurée (DOI Zenodo) + dépôts de marques Trasunto/Fanal (OPIC/CIPO) ; le socle protocolaire reste ouvert tandis que la distribution zéro-friction, les connecteurs MEV-WEB et le Hub Fiduciaire soutiennent la valeur commerciale récurrente."),
+    ])
     d.sources(OFFICIAL_SOURCES)
     d.save()
 
@@ -760,8 +792,9 @@ def build_one_pager() -> None:
     d.section("1", "Ce que Fanal accomplit au quotidien", "Dirigeants PME & Autonomes")
     d.bullets([
         ("Le Téléphoniste & Le Répondant : ", "capte la demande (téléphone, courriel, Messenger), propose une réponse dans la langue du client et attend votre validation."),
-        ("Le Secrétaire : ", "pré-remplit vos devis, factures et formulaires en respectant vos prix planchers et la Loi 25, puis soumet les points sensibles à votre signature."),
-        ("Caisse & Rapport Z : ", "concilie ce qui a été enregistré contre le terminal bancaire physique pour détecter immédiatement les écarts."),
+        ("Le Secrétaire & Contrôle TPS/TVQ : ", "pré-remplit vos devis, numérisations ADF et captures webcam en respectant vos prix planchers et la Loi 25, vérifie TPS 5 % + TVQ 9,975 % et soumet les points sensibles à votre signature."),
+        ("Caisse Z MEV-WEB passive & Affluence Régionale : ", "importe le rapport Z de votre TPV existant sans double saisie et croise météo + calendrier touristique + historique Z pour anticiper l'achalandage sans matériel additionnel."),
+        ("Interprète Comptoir A2DP (0 $ matériel) : ", "utilise le micro du poste comptoir et vos écouteurs Bluetooth existants en stéréo A2DP nette avec plafond de minutes quotidien protégé."),
     ])
     d.section("2", "Déploiement simple et appui recherché", "SADC Charlevoix")
     d.callout(
@@ -810,7 +843,8 @@ def build_guide_client() -> None:
         ("1. Connexion & Déverrouillage sécurisé (>= 12 car.) : ", "votre compte propriétaire scellé avec la Constitution Fermée V2 (RPRP Loi 25 et régime fiscal < 30 000 $ ou TPS/TVQ) s'ouvre via mot de passe vérifié ou Touch ID / Windows Hello."),
         ("2. Consultez votre Boîte de décision (Inbox-First) : ", "tous les messages, appels Téléphoniste et dossiers Secrétaire en attente de signature s'affichent à un seul endroit."),
         ("3. Lisez le feu tricolore et épinglez les sources : ", "Vert = conforme à votre Constitution ; Jaune = votre révision requise (avec extrait source exact) ; Rouge = escalade impérative."),
-        ("4. Ajustez vos réglages et exportez votre attestation : ", "langue, mode d'affichage (Autonome / Micro / Équipe), IMAP et certificat zéro-PII d'attestation Ed25519 pour support Fanal Studio sont regroupés dans l'onglet Réglages."),
+        ("4. Valorisez votre matériel actuel à 0 $ de plus : ", "importez votre rapport Z POS (.csv), numérisez au scanner ou à la webcam comptoir avec contrôle TPS/TVQ automatique, recevez les messages vocaux VoIP par IMAP, activez l'Affluence Régionale (secteurs touristiques) ou utilisez le micro du poste + vos écouteurs Bluetooth A2DP en interprète comptoir."),
+        ("5. Ajustez vos réglages et exportez votre attestation : ", "langue, mode d'affichage (Autonome / Micro / Équipe), IMAP et certificat zéro-PII d'attestation Ed25519 pour support Fanal Studio sont regroupés dans l'onglet Réglages."),
     ])
     d.section("2", "Questions fréquentes et garanties", "Utilisateur final")
     d.table(

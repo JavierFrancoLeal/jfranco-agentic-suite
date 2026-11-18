@@ -18,6 +18,7 @@ const MAX_FOLDER_READ_BYTES = 5 * 1024 * 1024;
 const IGNORED_EXACT_NAMES = new Set([".DS_Store", "Thumbs.db", "desktop.ini", "Icon\r"]);
 const IGNORED_EXTS = new Set([".tmp", ".part", ".crdownload", ".download", ".swp", ".lock"]);
 const TEXT_EXTS = new Set([".txt", ".md", ".csv", ".tsv", ".json", ".log", ".eml", ".ics", ".vcf"]);
+const { classifyExtMedia } = require("./multimodal-bridge");
 
 function trimStr(v) {
   return typeof v === "string" ? v.trim() : "";
@@ -129,9 +130,9 @@ function parseHeaders(rawHeaders) {
   return out;
 }
 
-function extractReadableBody(rawBody, topContentType = "", topTransferEnc = "") {
+function extractReadableParts(rawBody, topContentType = "", topTransferEnc = "") {
   let body = String(rawBody || "");
-  if (!body.trim()) return "";
+  if (!body.trim()) return { text: "", mediaAttachment: null };
 
   const ct = String(topContentType || "").toLowerCase();
   const boundaryMatch = /boundary=["']?([^"';\s]+)["']?/i.exec(topContentType || "");
@@ -140,6 +141,7 @@ function extractReadableBody(rawBody, topContentType = "", topTransferEnc = "") 
     const parts = body.split(new RegExp("--" + boundary.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "(?:--)?\\s*\\r?\\n"));
     let plainCandidate = "";
     let htmlCandidate = "";
+    let mediaAttachment = null;
     for (const part of parts.slice(1)) {
       const splitIdx = part.search(/\r?\n\r?\n/);
       if (splitIdx < 0) continue;
@@ -147,9 +149,27 @@ function extractReadableBody(rawBody, topContentType = "", topTransferEnc = "") 
       const pBodyRaw = part.slice(splitIdx).replace(/^\r?\n\r?\n/, "");
       const pCt = (pHdrs["content-type"] || "text/plain").toLowerCase();
       const pEnc = (pHdrs["content-transfer-encoding"] || "").toLowerCase();
+      const pDisp = String(pHdrs["content-disposition"] || "") + " " + pCt;
+      if (!mediaAttachment && pEnc.includes("base64") && (pCt.includes("audio/") || /filename="?[^"]+\.(mp3|wav|m4a|ogg|pdf|jpg|jpeg|png)"?/i.test(pDisp))) {
+        const cleanB64 = pBodyRaw.replace(/\s+/g, "");
+        if (cleanB64.length > 16 && cleanB64.length <= 2 * 1024 * 1024) {
+          const fnM = /filename="?([^";\r\n]+)"?/i.exec(pDisp);
+          const ext = fnM ? path.extname(fnM[1]).toLowerCase() : (pCt.includes("audio/wav") ? ".wav" : pCt.includes("audio/mpeg") || pCt.includes("audio/mp3") ? ".mp3" : pCt.includes("pdf") ? ".pdf" : "");
+          const meta = classifyExtMedia(ext);
+          if (meta) {
+            mediaAttachment = {
+              filename: fnM ? fnM[1].slice(0, 120) : ("voicemail" + ext),
+              mediaType: meta.type,
+              mimeType: meta.mimeType,
+              hardwareOrigin: meta.hwOrigin,
+              base64Data: cleanB64,
+            };
+          }
+        }
+      }
       let decoded = pBodyRaw;
       if (pEnc.includes("quoted-printable")) decoded = decodeQuotedPrintable(pBodyRaw);
-      else if (pEnc.includes("base64")) {
+      else if (pEnc.includes("base64") && pCt.startsWith("text/")) {
         try {
           decoded = Buffer.from(pBodyRaw.replace(/\s+/g, ""), "base64").toString("utf8");
         } catch {}
@@ -158,33 +178,44 @@ function extractReadableBody(rawBody, topContentType = "", topTransferEnc = "") 
       else if (pCt.includes("text/html") && !htmlCandidate) htmlCandidate = stripHtmlBasic(decoded);
     }
     body = plainCandidate || htmlCandidate || body;
-  } else {
-    const enc = String(topTransferEnc || "").toLowerCase();
-    if (enc.includes("quoted-printable")) body = decodeQuotedPrintable(body);
-    else if (enc.includes("base64") && !/\s/.test(body.trim().slice(0, 40))) {
-      try {
-        body = Buffer.from(body.replace(/\s+/g, ""), "base64").toString("utf8");
-      } catch {}
-    }
-    if (ct.includes("text/html") || /^\s*</.test(body)) {
-      body = stripHtmlBasic(body);
-    }
+    return {
+      text: body.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 4000),
+      mediaAttachment,
+    };
+  }
+  const enc = String(topTransferEnc || "").toLowerCase();
+  if (enc.includes("quoted-printable")) body = decodeQuotedPrintable(body);
+  else if (enc.includes("base64") && !/\s/.test(body.trim().slice(0, 40))) {
+    try {
+      body = Buffer.from(body.replace(/\s+/g, ""), "base64").toString("utf8");
+    } catch {}
+  }
+  if (ct.includes("text/html") || /^\s*</.test(body)) {
+    body = stripHtmlBasic(body);
   }
 
-  return body.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 4000);
+  return {
+    text: body.replace(/\r\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim().slice(0, 4000),
+    mediaAttachment: null,
+  };
+}
+
+function extractReadableBody(rawBody, contentTypeHeader, topTransferEnc) {
+  return extractReadableParts(rawBody, contentTypeHeader, topTransferEnc).text;
 }
 
 function parseRfc2822Message(rawText) {
   const s = String(rawText || "");
   const sep = s.search(/\r?\n\r?\n/);
   if (sep < 0) {
-    return { headers: {}, body: s.trim().slice(0, 4000) };
+    return { headers: {}, body: s.trim().slice(0, 4000), mediaAttachment: null };
   }
   const hdrBlock = s.slice(0, sep);
   const bodyBlock = s.slice(sep).replace(/^\r?\n\r?\n/, "");
   const headers = parseHeaders(hdrBlock);
-  const body = extractReadableBody(bodyBlock, headers["content-type"], headers["content-transfer-encoding"]);
-  return { headers, body };
+  const parts = extractReadableParts(bodyBlock, headers["content-type"], headers["content-transfer-encoding"]);
+  const body = parts.text || (parts.mediaAttachment ? ("[" + parts.mediaAttachment.hardwareOrigin + "] " + parts.mediaAttachment.filename) : "");
+  return { headers, body, mediaAttachment: parts.mediaAttachment };
 }
 
 // ---------- Buffered IMAP4rev1 Socket Reader ----------
@@ -457,7 +488,8 @@ async function fetchImapIncremental(cfg = {}) {
       }
 
       const headers = parseHeaders(hdrRaw);
-      const body = extractReadableBody(bodyRaw, headers["content-type"], headers["content-transfer-encoding"]);
+      const parts = extractReadableParts(bodyRaw, headers["content-type"], headers["content-transfer-encoding"]);
+      const body = parts.text || (parts.mediaAttachment ? ("[" + parts.mediaAttachment.hardwareOrigin + "] " + parts.mediaAttachment.filename) : "");
       if (fetchedUid > highestUid) highestUid = fetchedUid;
 
       messages.push({
@@ -470,6 +502,7 @@ async function fetchImapIncremental(cfg = {}) {
         date: headers.date || internalDate || new Date().toISOString(),
         headers,
         body,
+        mediaAttachment: parts.mediaAttachment || null,
       });
     }
 
@@ -717,6 +750,7 @@ function createIntakeEngine({
       priority: triaged.priority,
       bucket: triaged.bucket,
       filteredReason: triaged.filteredReason,
+      hardwareMeta: raw.hardwareMeta || null,
       status: triaged.accepted ? "queued" : "filtered",
       taskId: null,
     };
@@ -752,10 +786,12 @@ function createIntakeEngine({
     st.folder.seenHashes.push({ hash, name, seenAt: new Date().toISOString() });
 
     const ext = path.extname(name).toLowerCase();
+    const mediaSpec = classifyExtMedia(ext);
     let parsedFrom = "Fanal-Inbox (" + name + ")";
     let parsedSubject = "File: " + name;
     let parsedBody = "";
     let headers = {};
+    let hardwareMeta = null;
 
     if (ext === ".eml") {
       const parsed = parseRfc2822Message(sliceBuf.toString("utf8"));
@@ -763,8 +799,31 @@ function createIntakeEngine({
       parsedSubject = parsed.headers.subject || parsedSubject;
       parsedBody = parsed.body || "(empty .eml file)";
       headers = parsed.headers;
+      if (parsed.mediaAttachment) {
+        hardwareMeta = { ...parsed.mediaAttachment, filePath: null, fileSizeBytes: stat.size };
+      }
     } else if (TEXT_EXTS.has(ext)) {
       parsedBody = sliceBuf.toString("utf8").replace(/\0/g, "").trim().slice(0, 4000);
+      if ((ext === ".csv" || ext === ".tsv") && (/z[-_\s]?report|rapport[-_\s]?z|caisse|mev/i.test(name) || /tps|tvq|total_sales/i.test(parsedBody.slice(0, 240)))) {
+        hardwareMeta = { hardwareOrigin: "pos_z_csv", filename: name, filePath, mediaType: "text", mimeType: "text/csv", fileSizeBytes: stat.size };
+      }
+    } else if (mediaSpec) {
+      hardwareMeta = {
+        hardwareOrigin: mediaSpec.hwOrigin,
+        filename: name,
+        filePath,
+        mediaType: mediaSpec.type,
+        mimeType: mediaSpec.mimeType,
+        fileSizeBytes: stat.size,
+      };
+      parsedBody =
+        "[" + mediaSpec.hwOrigin + "] " +
+        name +
+        " (" +
+        Math.max(1, Math.round(stat.size / 1024)) +
+        " KB, " +
+        mediaSpec.mimeType +
+        ")";
     } else {
       parsedBody =
         "New client file placed in Fanal-Inbox: " +
@@ -777,12 +836,13 @@ function createIntakeEngine({
     }
 
     return enqueueNormalizedItem(st, {
-      source: "folder",
+      source: mediaSpec && mediaSpec.hwOrigin === "voip_voicemail" ? "voip_sms" : "folder",
       externalId: "folder:" + hash,
       from: parsedFrom,
       subject: parsedSubject,
       body: parsedBody,
       headers,
+      hardwareMeta,
     });
   }
 
@@ -878,13 +938,14 @@ function createIntakeEngine({
             consecutiveErrors = 0;
             for (const msg of imapRes.messages) {
               const enq = enqueueNormalizedItem(st, {
-                source: "email_imap",
+                source: msg.mediaAttachment && msg.mediaAttachment.hardwareOrigin === "voip_voicemail" ? "voip_sms" : "email_imap",
                 externalId: "imap:" + (msg.uidValidity || 0) + ":" + msg.uid,
                 from: msg.from,
                 subject: msg.subject,
                 body: msg.body,
                 receivedAt: msg.date,
                 headers: msg.headers,
+                hardwareMeta: msg.mediaAttachment || null,
               });
               if (!enq.duplicate) {
                 if (enq.accepted) arrived.push(enq.item);
@@ -1152,6 +1213,11 @@ function createIntakeEngine({
         started,
         nextPollMs: nextPollDelayMs(),
         powerState: powerGovernor ? powerGovernor.getState() : null,
+      },
+      connectors: {
+        activeDefault: "folder_fanal_inbox",
+        oauthBridgePrepared: ["gmail_api_oauth2", "ms_graph_oauth2"],
+        zeroHardwareStreams: ["scanner_adf", "voip_voicemail", "pos_z_csv", "webcam_capture", "counter_a2dp_live"],
       },
       deferredCount: deferredItems.length,
       reprise: st.reprise,

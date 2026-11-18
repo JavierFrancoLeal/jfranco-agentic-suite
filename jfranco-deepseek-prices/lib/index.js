@@ -8,21 +8,39 @@
 //
 // The browser half (lib/client.js) renders the live price bar; it ships its
 // own copy of PRICING so the two halves stay independently loadable.
+import { readFileSync } from "node:fs";
 import { appendFile, mkdir } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
 const name = "jfranco-deepseek-prices";
 
-// Canonical pricing snapshot.
-// Verified 2026-11-08 against https://api-docs.deepseek.com/quick_start/pricing/
-// (con barra final: sin ella, Docusaurus cae en "Your First API Call").
+function loadSharedCatalogRates() {
+  try {
+    const raw = readFileSync(new URL("../../supervisor/pricing-catalog.json", import.meta.url), "utf8");
+    const j = JSON.parse(raw);
+    const m = j && j.modelsUsdPer1M;
+    if (m && m["deepseek-flash"] && m["deepseek-v4-pro"]) {
+      return {
+        verifiedAt: j.verifiedAt || "2026-11-15",
+        peakWindowsUtc: j.peakWindowsUtc,
+        chineseHolidays2026: j.chineseHolidays2026,
+        flash: m["deepseek-flash"],
+        pro: m["deepseek-v4-pro"],
+      };
+    }
+  } catch {}
+  return null;
+}
+const SHARED = loadSharedCatalogRates();
+
+// Canonical pricing snapshot (synced from supervisor/pricing-catalog.json when in monorepo).
 export const PRICING = {
-  verifiedAt: "2026-11-03",
+  verifiedAt: (SHARED && SHARED.verifiedAt) || "2026-11-03",
   source: "https://api-docs.deepseek.com/quick_start/pricing/",
   // Peak hours are 01:00-04:00 and 06:00-10:00 UTC, Monday-Friday, excluding
   // Chinese public holidays. Everything else is off-peak (50% of peak).
-  peakWindowsUtc: [
+  peakWindowsUtc: (SHARED && SHARED.peakWindowsUtc) || [
     { start: "01:00", end: "04:00" },
     { start: "06:00", end: "10:00" },
   ],
@@ -30,7 +48,7 @@ export const PRICING = {
   peakNote: "excluding Chinese public holidays",
   // 2026 Chinese statutory holidays (approximate — review annually; the daily
   // verifier checks prices and peak windows, not this list).
-  chineseHolidays2026: [
+  chineseHolidays2026: (SHARED && SHARED.chineseHolidays2026) || [
     "2026-01-01",
     "2026-02-16", "2026-02-17", "2026-02-18", "2026-02-19", "2026-02-20", "2026-02-21", "2026-02-22",
     "2026-04-04", "2026-04-05", "2026-04-06",
@@ -40,12 +58,20 @@ export const PRICING = {
     "2026-10-01", "2026-10-02", "2026-10-03", "2026-10-04", "2026-10-05", "2026-10-06", "2026-10-07",
   ],
   models: {
-    "deepseek-flash": {
+    "deepseek-flash": SHARED ? {
+      inputCacheHit: SHARED.flash.cacheHit,
+      inputCacheMiss: SHARED.flash.cacheMiss,
+      output: SHARED.flash.output,
+    } : {
       inputCacheHit: { peak: 0.006, offPeak: 0.003 },
       inputCacheMiss: { peak: 0.3, offPeak: 0.15 },
       output: { peak: 1.2, offPeak: 0.6 },
     },
-    "deepseek-v4-pro": {
+    "deepseek-v4-pro": SHARED ? {
+      inputCacheHit: SHARED.pro.cacheHit,
+      inputCacheMiss: SHARED.pro.cacheMiss,
+      output: SHARED.pro.output,
+    } : {
       inputCacheHit: { peak: 0.044, offPeak: 0.022 },
       inputCacheMiss: { peak: 1.32, offPeak: 0.66 },
       output: { peak: 3.96, offPeak: 1.98 },

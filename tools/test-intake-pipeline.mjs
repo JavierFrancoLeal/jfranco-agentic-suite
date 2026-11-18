@@ -358,8 +358,67 @@ async function runUnitTests() {
     const b3 = await intake.fetchImapIncremental({ host: "127.0.0.1", port: imapPort, tls: false, user: "o@e.ca", password: "p", lastUid: b2.lastUid, uidValidity: 2002, maxMessages: 2 });
     assert.deepEqual(b3.messages.map((m) => m.uid), [6]);
     assert.equal(b3.lastUid, 6);
+
+    // Multipart VoIP voicemail (.mp3 base64) attachment extraction via IMAP (without dropping text transcript)
+    const mp3B64 = Buffer.from("ID3_FAKE_MP3_VOICEMAIL_PAYLOAD_FOR_TESTING_0123456789").toString("base64");
+    mockImap.setMailbox(3003, [
+      {
+        uid: 10,
+        headers:
+          "From: pbx@voip.ms\r\n" +
+          "Subject: New Voicemail +14185550199\r\n" +
+          'Content-Type: multipart/mixed; boundary="FANALMIX1"',
+        body:
+          "--FANALMIX1\r\n" +
+          "Content-Type: text/plain; charset=utf-8\r\n\r\n" +
+          "Message vocal entrant pour reservation samedi.\r\n" +
+          "--FANALMIX1\r\n" +
+          'Content-Type: audio/mpeg; name="msg-102.mp3"\r\n' +
+          'Content-Disposition: attachment; filename="msg-102.mp3"\r\n' +
+          "Content-Transfer-Encoding: base64\r\n\r\n" +
+          mp3B64 + "\r\n" +
+          "--FANALMIX1--\r\n",
+      },
+    ]);
+    const resVoipAudio = await intake.fetchImapIncremental({ host: "127.0.0.1", port: imapPort, tls: false, user: "o@e.ca", password: "p", lastUid: 0, uidValidity: 3003 });
+    assert.equal(resVoipAudio.messages.length, 1);
+    assert.ok(resVoipAudio.messages[0].body.includes("Message vocal entrant"));
+    assert.ok(resVoipAudio.messages[0].mediaAttachment, "Multipart .mp3 attachment must be extracted");
+    assert.equal(resVoipAudio.messages[0].mediaAttachment.hardwareOrigin, "voip_voicemail");
+    assert.equal(resVoipAudio.messages[0].mediaAttachment.mimeType, "audio/mp3");
+    assert.equal(resVoipAudio.messages[0].mediaAttachment.filename, "msg-102.mp3");
   } finally {
     await mockImap.stop();
+  }
+
+  // 6. Folder watcher hardware adapters: ADF scanner PDF + POS Z-report CSV in Fanal-Inbox
+  const hwTmp = fs.mkdtempSync(path.join(os.tmpdir(), "fanal-hw-inbox-"));
+  const hwDataDir = path.join(hwTmp, "data");
+  const hwInbox = path.join(hwDataDir, "fanal-inbox");
+  fs.mkdirSync(hwInbox, { recursive: true });
+  try {
+    fs.writeFileSync(path.join(hwInbox, "facture-scanner.pdf"), "%PDF-1.4\n1 0 obj<<>>endobj\n%%EOF\n");
+    fs.writeFileSync(path.join(hwInbox, "rapport-z-caisse.csv"), "date,total_sales,tps,tvq\n2026-11-15,980.00,49.00,97.76\n");
+    const dispatched = [];
+    const eng = intake.createIntakeEngine({
+      dataDir: hwDataDir,
+      getSettings: () => ({ intake: { imap: { enabled: false }, folder: { enabled: true } } }),
+      powerGovernor: { shouldDeferBackgroundCompute: () => ({ defer: false, reason: null }) },
+      onDispatchItem: async (item) => {
+        dispatched.push(item);
+        return { taskId: "t_hw_" + dispatched.length };
+      },
+    });
+    const scanOut = await eng.syncNow({ reason: "hardware-test", manual: true });
+    assert.equal(scanOut.arrivedCount, 2, "Expected PDF scan + POS Z CSV to enqueue from Fanal-Inbox");
+    const pdfItem = dispatched.find((x) => x.hardwareMeta && x.hardwareMeta.hardwareOrigin === "scanner_adf");
+    const csvItem = dispatched.find((x) => x.hardwareMeta && x.hardwareMeta.hardwareOrigin === "pos_z_csv");
+    assert.ok(pdfItem, "ADF PDF scan must tag hardwareOrigin=scanner_adf");
+    assert.equal(pdfItem.hardwareMeta.mimeType, "application/pdf");
+    assert.ok(csvItem, "POS Z CSV must tag hardwareOrigin=pos_z_csv");
+    assert.equal(csvItem.hardwareMeta.mimeType, "text/csv");
+  } finally {
+    fs.rmSync(hwTmp, { recursive: true, force: true });
   }
 }
 

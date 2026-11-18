@@ -20,9 +20,10 @@
 
 ### A. Calcul exact du coût en jetons par dossier signé
 
-Base vérifiée (`jfranco-deepseek-prices`, novembre 2026 ; taux de change conservateur **`1 $ USD = 1,40 $ CAD`**) :
+Base vérifiée ([`supervisor/pricing-catalog.json`](../supervisor/pricing-catalog.json) partagé avec `jfranco-deepseek-prices`, novembre 2026 ; taux de change conservateur **`1 $ USD = 1,40 $ CAD`**) :
 - **`DeepSeek-Flash`** (tarif par 1M jetons USD) : CacheHit `0,003 $` creux / `0,006 $` pointe · CacheMiss `0,15 $` creux / `0,30 $` pointe · Sortie `0,60 $` creux / `1,20 $` pointe.
 - **`DeepSeek-V4-Pro`** (tarif par 1M jetons USD) : CacheHit `0,022 $` creux / `0,044 $` pointe · CacheMiss `0,66 $` creux / `1,32 $` pointe · Sortie `1,98 $` creux / `3,96 $` pointe.
+- **Interprète comptoir A2DP (`gemini-3.5-live-translate-preview`)** : `~0,023 $ USD/minute active` (plafonné par défaut à `30 min/jour` avec jetons éphémères à usage unique sans exposer la clé Gemini côté client).
 - **Avantage horaire Québec (`UTC-5`)** : les heures ouvrables québécoises (`08h00–18h00 EST`, soit `13h00–23h00 UTC`) tombent à **100 % hors des fenêtres de pointe DeepSeek** (`01h00–04h00 UTC` et `06h00–10h00 UTC`), offrant automatiquement **50 % de rabais** sur les tarifs nuagiques.
 
 | Scénario de dossier signé | Profil de jetons consommés | Coût USD (heures QC / pointe) | Coût réel CAD (`× 1,40`) |

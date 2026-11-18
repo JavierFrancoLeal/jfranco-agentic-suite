@@ -87,6 +87,13 @@ function sealSettingsObject(obj, masterKey) {
       copy.intake.imap.password = encryptSecretValue(pw.trim(), mk);
     }
   }
+  if (copy.affluence && typeof copy.affluence === "object" && typeof copy.affluence.googleMapsApiKey === "string") {
+    copy.affluence = { ...copy.affluence };
+    const gk = copy.affluence.googleMapsApiKey;
+    if (gk.trim() && !gk.startsWith("AESGCM2:")) {
+      copy.affluence.googleMapsApiKey = encryptSecretValue(gk.trim(), mk);
+    }
+  }
   return copy;
 }
 
@@ -110,6 +117,15 @@ function unsealSettingsObject(obj, masterKey) {
       const plain = decryptSecretValue(pw, mk);
       if (plain) copy.intake.imap.password = plain;
       else delete copy.intake.imap.password;
+    }
+  }
+  if (copy.affluence && typeof copy.affluence === "object" && typeof copy.affluence.googleMapsApiKey === "string") {
+    copy.affluence = { ...copy.affluence };
+    const gk = copy.affluence.googleMapsApiKey;
+    if (gk.startsWith("AESGCM2:")) {
+      const plain = decryptSecretValue(gk, mk);
+      if (plain) copy.affluence.googleMapsApiKey = plain;
+      else delete copy.affluence.googleMapsApiKey;
     }
   }
   return copy;

@@ -527,8 +527,9 @@ function watchMonitorPlugEvents() {
     screen.on("display-metrics-changed", refresh);
   } catch (e) {}
 }
-const COMPACT_WIDTH = 380;
-const EXPANDED_WIDTH = 1040;
+const COMPACT_WIDTH = 420;
+const EXPANDED_WIDTH = 1180;
+let preDrawerBounds = null;
 let drawerEventsRegistered = false;
 function ensureRightDrawerView() {
   if (rightDrawerView && rightDrawerView.webContents && !rightDrawerView.webContents.isDestroyed()) {
@@ -570,11 +571,18 @@ function setupCoworkRightDrawer() {
       const showDrawerInWindow = () => {
         const view = ensureRightDrawerView();
         const bounds = mainWindow.getBounds();
+        if (!preDrawerBounds) preDrawerBounds = { ...bounds };
         if (bounds.width < EXPANDED_WIDTH) {
-          mainWindow.setBounds({ x: Math.max(0, bounds.x - (EXPANDED_WIDTH - COMPACT_WIDTH)), y: bounds.y, width: EXPANDED_WIDTH, height: bounds.height });
+          const disp = screen.getDisplayMatching(bounds);
+          const wa = (disp && disp.workArea) || screen.getPrimaryDisplay().workArea;
+          const nextW = Math.min(EXPANDED_WIDTH, wa.width);
+          const nextX = Math.max(wa.x, Math.min(bounds.x - Math.round((nextW - bounds.width) / 2), wa.x + wa.width - nextW));
+          mainWindow.setBounds({ x: nextX, y: bounds.y, width: nextW, height: bounds.height });
         }
+        const curB = mainWindow.getBounds();
+        const appSplitW = Math.min(580, Math.max(440, Math.round(curB.width * 0.48)));
         mainWindow.contentView.addChildView(view);
-        view.setBounds({ x: COMPACT_WIDTH, y: 36, width: EXPANDED_WIDTH - COMPACT_WIDTH, height: bounds.height - 36 });
+        view.setBounds({ x: appSplitW, y: 36, width: curB.width - appSplitW, height: curB.height - 36 });
         return view;
       };
       if (/^https?:\/\//i.test(t)) {
@@ -620,9 +628,11 @@ function setupCoworkRightDrawer() {
       try {
         const mainWindow = getActivePrimaryWindow();
         if (mainWindow && rightDrawerView) {
-          const bounds = mainWindow.getBounds();
           try { mainWindow.contentView.removeChildView(rightDrawerView); } catch {}
-          if (bounds.width > COMPACT_WIDTH) { mainWindow.setBounds({ x: bounds.x + (bounds.width - COMPACT_WIDTH), y: bounds.y, width: COMPACT_WIDTH, height: bounds.height }); }
+          if (preDrawerBounds) {
+            try { mainWindow.setBounds(preDrawerBounds); } catch {}
+            preDrawerBounds = null;
+          }
         }
       } catch (e) {}
       return { closed: true };
@@ -795,7 +805,10 @@ try {
 try {
   if (typeof app.setName === "function") app.setName(EDITION.productName);
   if (typeof app.setPath === "function" && typeof app.getPath === "function") {
-    app.setPath("userData", path.join(app.getPath("appData"), EDITION.electronUserDataName));
+    const udPath = SMOKE
+      ? path.join(DATA_DIR, "electron-smoke-userdata")
+      : path.join(app.getPath("appData"), EDITION.electronUserDataName);
+    app.setPath("userData", udPath);
   }
 } catch {}
 let shuttingDown = false;
@@ -806,7 +819,8 @@ app.on("before-quit", () => {
   armWatchdog();
   if (brain) { try { brain.kill(); } catch {} }
 });
-if (!app.requestSingleInstanceLock()) {
+const hasSingleInstanceLock = SMOKE ? true : app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) {
   app.quit();
 } else {
   function showOrCreateMainWindow() {
@@ -821,10 +835,15 @@ if (!app.requestSingleInstanceLock()) {
   app.on("second-instance", () => showOrCreateMainWindow());
 
   function createWindow() {
+    const wa = (screen && screen.getPrimaryDisplay && screen.getPrimaryDisplay().workAreaSize) || { width: 1440, height: 900 };
+    const winW = KIOSK ? wa.width : Math.min(1320, Math.max(880, Math.round(wa.width * 0.86)));
+    const winH = KIOSK ? wa.height : Math.min(860, Math.max(620, Math.round(wa.height * 0.88)));
     win = new BrowserWindow({
-      width: 420,
-      height: 800,
-      minWidth: 360,
+      width: winW,
+      height: winH,
+      minWidth: 740,
+      minHeight: 540,
+      center: true,
       show: !SMOKE,
       kiosk: KIOSK,
       frame: !KIOSK,

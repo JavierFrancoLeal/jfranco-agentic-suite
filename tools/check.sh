@@ -77,6 +77,9 @@ echo "== supervisor =="
 "$NODE" --check supervisor/quebec-profiles.js
 "$NODE" --check supervisor/setup-validator.js
 "$NODE" --check supervisor/usage-telemetry.js
+"$NODE" --check supervisor/affluence-forecast.js
+"$NODE" --check supervisor/multimodal-bridge.js
+"$NODE" -e 'JSON.parse(require("fs").readFileSync("supervisor/pricing-catalog.json","utf8"))'
 "$NODE" tools/smoke-dashboard.js
 "$NODE" tools/audit-contrast.mjs
 "$NODE" tools/test-diagnostic-export.mjs
@@ -84,6 +87,7 @@ echo "== supervisor =="
 "$NODE" tools/test-api-closed-brain.mjs
 "$NODE" tools/test-editions.mjs
 "$NODE" tools/test-intake-pipeline.mjs
+"$NODE" tools/test-hardware-affluence.mjs
 echo "OK supervisor"
 
 echo "== supervisor package (npm) =="
